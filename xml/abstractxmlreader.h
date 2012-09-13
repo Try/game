@@ -25,6 +25,10 @@ class AbstractXMLReader {
                          const std::string & def,
                          const std::string &err );
 
+    std::string findStrOpt( TiXmlElement* e,
+                            const std::string & key,
+                            const std::string & def );
+
     std::string findStr( TiXmlElement* pElement,
                const std::string & key,
                const std::string &err );

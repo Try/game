@@ -60,8 +60,19 @@ std::string AbstractXMLReader::findStr(TiXmlElement *e,
       error(err);
 
     return def;
+    }
   }
-}
+
+std::string AbstractXMLReader::findStrOpt(TiXmlElement *e,
+                                          const std::string &key,
+                                          const std::string &def ) {
+  std::string ret;
+  if( find(e, key, ret ) ){
+    return ret;
+    }
+
+  return def;
+  }
 
 std::string AbstractXMLReader::findStr( TiXmlElement *e,
                                         const std::string &key,

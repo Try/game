@@ -54,6 +54,9 @@ void World::createTestMap() {
   createResp( 2, s-2000, 2000, 1, -1 );
   createResp( 3, 2000, s-2000, -1, 1 );
   createResp( 4, s-2000, s-2000, 1, 1 );
+
+
+  addObject("pikeman", 2 ).setPosition( 15000, 2500, 1 );
   }
 
 void World::createResp(int pl, int x, int y, int minX, int minY) {

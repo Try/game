@@ -216,6 +216,10 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       obj.data.size = Lexical::cast<int>( findStr( e, "size",
                                                    "1", "invalid size value" ) );
       obj.data.size = std::max(1, obj.data.size);
+
+      obj.data.visionRange =
+          Lexical::cast<int>( findStrOpt( e, "visionRange", "8" ) );
+      obj.data.visionRange = std::max(1, obj.data.visionRange);
       }
 
     if( type=="commands" )

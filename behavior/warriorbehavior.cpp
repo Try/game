@@ -17,7 +17,7 @@ void WarriorBehavior::tick( const Terrain & ) {
 
   for( size_t i=0; i<obj.world().objectsCount(); ++i ){
     GameObject & tg = obj.world().object(i);
-    int d = tg.distanceQ( obj.x(), obj.y() );
+    int d = tg.distanceSQ( obj.x(), obj.y() );
 
     if( tg.team()!=obj.team() &&
         tg.team()!=0 &&
@@ -28,10 +28,14 @@ void WarriorBehavior::tick( const Terrain & ) {
     }
 
   if( !obj.isOnMove() ){
-    if( id!=size_t(-1) && taget!=obj.world().objectWPtr(id) )
+    if( id!=size_t(-1) )
       taget = obj.world().objectWPtr(id);
 
-    if( taget )
+    int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
+
+    vrange = vrange*vrange;
+    if( taget &&
+        taget.value().distanceSQ(obj.x(), obj.y()) <= vrange )
       move( taget.value().x(), taget.value().y() );
     }
   }
