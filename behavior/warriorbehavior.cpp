@@ -31,13 +31,13 @@ void WarriorBehavior::tick( const Terrain & ) {
     if( id!=size_t(-1) )
       taget = obj.world().objectWPtr(id);
 
-    int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
-    int arange = (0 + obj.getClass().data.size
-                    + taget.value().getClass().data.size )*Terrain::quadSize;
-
-    vrange = vrange*vrange;
-    arange = arange*arange;
     if( taget ){
+      int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
+      int arange = (0 + obj.getClass().data.size
+                      + taget.value().getClass().data.size )*Terrain::quadSize;
+
+      vrange = vrange*vrange;
+      arange = arange*arange;
       int d = taget.value().distanceSQ(obj.x(), obj.y());
       if( d <= arange )
         damageTo( taget.value() ); else
