@@ -7,4 +7,5 @@ ProtoObject::ProtoObject()
   data.size  = 1;
   data.speed = 15;
   data.visionRange = 14;
+  data.maxHp       = 100;
 }

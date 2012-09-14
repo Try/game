@@ -27,6 +27,8 @@ GameObject::GameObject( MyGL::Scene & s,
   m.y = 0;
   m.z = 0;
 
+  m.hp = p.data.maxHp;
+
   m.pl = 0;
   wrld.player( m.pl ).addUnit(this);
   m.teamColor = wrld.player( m.pl ).color();
@@ -210,6 +212,14 @@ void GameObject::setViewPosition( MyGL::GraphicObject& obj,
   dz = modelSize[2]*obj.sizeZ()*align[2]*alignSize;
 
   obj.setPosition( x+dx, y+dy, z+dz );
+  }
+
+void GameObject::setHP( int hp ) {
+  m.hp = hp;
+  }
+
+int GameObject::hp() const {
+  return m.hp;
   }
 
 void GameObject::setViewPosition(float x, float y, float z) {

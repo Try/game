@@ -60,7 +60,6 @@ class World {
     const Terrain& terrain() const;
     Terrain& terrain();
 
-    void removeObject( GameObject* obj );
     void updateMouseOverFlag(double x0, double y0, double x1, double y1);
     void updateSelectionFlag( BehaviorMSGQueue & msg, int pl );
     void paintHUD( MyWidget::Painter &, int w, int h );

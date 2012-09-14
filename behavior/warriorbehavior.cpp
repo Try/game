@@ -32,11 +32,18 @@ void WarriorBehavior::tick( const Terrain & ) {
       taget = obj.world().objectWPtr(id);
 
     int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
+    int arange = (0 + obj.getClass().data.size
+                    + taget.value().getClass().data.size )*Terrain::quadSize;
 
     vrange = vrange*vrange;
-    if( taget &&
-        taget.value().distanceSQ(obj.x(), obj.y()) <= vrange )
-      move( taget.value().x(), taget.value().y() );
+    arange = arange*arange;
+    if( taget ){
+      int d = taget.value().distanceSQ(obj.x(), obj.y());
+      if( d <= arange )
+        damageTo( taget.value() ); else
+      if( d <= vrange )
+        move( taget.value().x(), taget.value().y() );
+      }
     }
   }
 
@@ -46,4 +53,8 @@ void WarriorBehavior::move(int x, int y) {
   x /= qs;
   y /= qs;
   obj.behavior.message( MoveSingle, x*qs + qs/2, y*qs + qs/2 );
+  }
+
+void WarriorBehavior::damageTo(GameObject &obj) {
+  obj.setHP( obj.hp() - 1 );
   }

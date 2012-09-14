@@ -12,6 +12,7 @@ struct ProtoObject {
     struct GameSpecific{
       int size, speed;
       int visionRange;
+      int maxHp;
       } data;
 
     struct View{

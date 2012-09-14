@@ -184,26 +184,13 @@ WeakWorldPtr World::objectWPtr(GameObject *x) {
 
   return WeakWorldPtr();
   }
-/*
-std::vector< World::PGameObject >& World::selectedObjects() {
-  return selected;
-  }
-*/
+
 const Terrain &World::terrain() const {
   return terr;
   }
 
 Terrain &World::terrain() {
   return terr;
-  }
-
-void World::removeObject(GameObject *obj) {
-  for( size_t i=0; i<gameObjects.size(); ++i ){
-    if( gameObjects[i].get()==obj ){
-      std::swap( gameObjects[i], gameObjects.back() );
-      gameObjects.pop_back();
-      }
-    }
   }
 
 void World::updateMouseOverFlag( double x0, double y0,
@@ -441,6 +428,14 @@ void World::tick() {
     }
 
   physics.tick();
+
+  for( size_t i=0; i<gameObjects.size(); ){
+    if( gameObjects[i]->hp() <= 0 ) {
+      deleteObject( gameObjects[i].get() );
+      } else {
+      ++i;
+      }
+    }
 
   for( size_t i=0; i<gameObjects.size(); ++i )
     gameObjects[i]->updatePos();

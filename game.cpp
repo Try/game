@@ -256,7 +256,7 @@ void Game::addEditorObject(const std::string &p, int pl, int x, int y ) {
   obj->updatePos();
 
   if( player(pl).editObj )
-    world->removeObject(player(pl).editObj);
+    world->deleteObject(player(pl).editObj);
 
   player(pl).editObj = obj;
   }

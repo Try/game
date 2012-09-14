@@ -94,6 +94,9 @@ class GameObject {
     static void setViewPosition( MyGL::GraphicObject& obj,
                                  const ProtoObject::View &v,
                                  float x, float y, float z );
+
+    void setHP( int h);
+    int  hp() const;
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;
@@ -130,6 +133,8 @@ class GameObject {
     struct M{
       int x, y, z;
       int pl;
+
+      int hp;
 
       int intentDirX, intentDirY;
       bool isSelected, isMouseOwer;

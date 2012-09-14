@@ -21,6 +21,8 @@ class WarriorBehavior : public AbstractBehavior  {
     WeakWorldPtr taget;
 
     void move(int, int);
+
+    void damageTo( GameObject & obj );
   };
 
 #endif // WARRIORBEHAVIOR_H
