@@ -4,7 +4,8 @@
 
 WarriorBehavior::WarriorBehavior( GameObject &obj,
                                   Behavior::Closure &c ):obj(obj) {
-
+  isAtk    = false;
+  dAtkTime = 0;
   }
 
 WarriorBehavior::~WarriorBehavior() {
@@ -12,6 +13,12 @@ WarriorBehavior::~WarriorBehavior() {
   }
 
 void WarriorBehavior::tick( const Terrain & ) {
+  if( dAtkTime>0 )
+    --dAtkTime;
+
+  if( dAtkTime )
+    return;
+
   size_t id = -1;
   int dist = -1;
 
@@ -27,7 +34,7 @@ void WarriorBehavior::tick( const Terrain & ) {
       }
     }
 
-  if( !obj.isOnMove() ){
+  if( !obj.isOnMove() || isAtk ){
     if( id!=size_t(-1) )
       taget = obj.world().objectWPtr(id);
 
@@ -47,14 +54,31 @@ void WarriorBehavior::tick( const Terrain & ) {
     }
   }
 
+bool WarriorBehavior::message( AbstractBehavior::Message msg,
+                               int /*x*/, int /*y*/,
+                               AbstractBehavior::Modifers /*md*/) {
+  if( msg==Move ||
+      msg==MoveGroup ||
+      msg==MineralMove ||
+      msg==MoveSingle ){
+    isAtk = false;
+    }
+
+  return false;
+  }
+
 void WarriorBehavior::move(int x, int y) {
   int qs = Terrain::quadSize;
 
   x /= qs;
   y /= qs;
   obj.behavior.message( MoveSingle, x*qs + qs/2, y*qs + qs/2 );
+
+  isAtk = true;
+  dAtkTime = 14;
   }
 
-void WarriorBehavior::damageTo(GameObject &obj) {
-  obj.setHP( obj.hp() - 1 );
+void WarriorBehavior::damageTo(GameObject &dobj) {
+  dobj.setHP( dobj.hp() - 1 );
+  obj.setViewDirection( dobj.x(), dobj.y() );
   }

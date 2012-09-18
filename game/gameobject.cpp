@@ -83,6 +83,7 @@ int GameObject::distanceQL(int xx, int yy) const {
 void GameObject::freePhysic(){
   if( physic ){
     physic->free(form.sphere);
+    physic->free(form.box);
 
     physic->free(anim.box);
     physic->free(anim.sphere);
@@ -119,7 +120,8 @@ void GameObject::loadView( Resource &r, Physics & p, bool env ) {
 
     if( v.physModel==ProtoObject::View::Box ){
       if( env ){
-        /////////////
+        const double *bs = getClass().view[i].boxSize;
+        setForm( p.createBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
         } else {
         const double *bs = getClass().view[i].boxSize;
         setForm( p.createAnimatedBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
@@ -232,6 +234,9 @@ void GameObject::setViewPosition(float x, float y, float z) {
   if( form.sphere.isValid() )
     form.sphere.setPosition(x,y,z);
 
+  if( form.box.isValid() )
+    form.box.setPosition(x,y,z);
+
   float dx = 0, dy = 0, dz = 0;
   if( view.size() ){
     const int * align = getClass().view[0].align;
@@ -244,6 +249,9 @@ void GameObject::setViewPosition(float x, float y, float z) {
 
   if( anim.sphere.isValid() ){
     anim.sphere.setPosition(x+dx,y+dy,z+dz);
+    }
+  if( anim.box.isValid() ){
+    anim.box.setPosition(x+dx,y+dy,z+dz);
     }
   }
 
@@ -311,6 +319,11 @@ void GameObject::setForm(const Physics::Sphere &f) {
   //animForm = Physics::AnimatedSphere();
   }
 
+void GameObject::setForm(const Physics::Box &f) {
+  form.box = f;
+  //animForm = Physics::AnimatedSphere();
+  }
+
 void GameObject::setForm(const Physics::AnimatedSphere &f) {
   anim.sphere = f;
   //form = Physics::Sphere();
@@ -335,32 +348,67 @@ void GameObject::updatePos() {
 
   //rigid bodyes
   if( form.sphere.isValid() ){
-    form.sphere.activate();
-    setViewPosition( form.sphere.x(), form.sphere.y(), form.sphere.z() );
-
-    for( size_t i=0; i<env.size(); ++i ){
-      MyGL::Matrix4x4 m;
-      m.identity();
-
-      m.mul  ( form.sphere.transform() );
-      m.scale( form.sphere.diameter()  );
-
-      if( i<getClass().view.size() ){
-        double sphereDiameter = getClass().view[i].sphereDiameter;
-
-        m.scale( getClass().view[i].size[0]/sphereDiameter,
-                 getClass().view[i].size[1]/sphereDiameter,
-                 getClass().view[i].size[2]/sphereDiameter );
-
-        //if( getClass().view[i].align[2] )
-          //m.translate( 0, 0, -getClass().view[i].size[2]/sphereDiameter );
-        }
-      //m.translate( 0, 0, -0.8 );
-
-      env[i].setTransform( m );
-      }
+    updatePosRigid(form.sphere);
     }
 
+  if( form.box.isValid() ){
+    updatePosRigid(form.box);
+    }
+  }
+
+template< class Rigid >
+void GameObject::updatePosRigid( Rigid &rigid ){
+  rigid.activate();
+  setViewPosition( rigid.x(), rigid.y(), rigid.z() );
+
+  for( size_t i=0; i<env.size(); ++i ){
+    updatePosRigid(rigid, i);
+    }
+  }
+
+void GameObject::updatePosRigid( Physics::Sphere &rigid, size_t i ) {
+  MyGL::Matrix4x4 m;
+  m.identity();
+
+  m.mul  ( rigid.transform() );
+  m.scale( rigid.diameter()  );
+
+  if( i<getClass().view.size() ){
+    double sphereDiameter = getClass().view[i].sphereDiameter;
+
+    m.scale( getClass().view[i].size[0]/sphereDiameter,
+             getClass().view[i].size[1]/sphereDiameter,
+             getClass().view[i].size[2]/sphereDiameter );
+
+    //if( getClass().view[i].align[2] )
+      //m.translate( 0, 0, -getClass().view[i].size[2]/sphereDiameter );
+    }
+  //m.translate( 0, 0, -0.8 );
+
+  env[i].setTransform( m );
+  }
+
+void GameObject::updatePosRigid( Physics::Box &rigid, size_t i ) {
+  MyGL::Matrix4x4 m;
+  m.identity();
+
+  m.mul  ( rigid.transform() );
+  const double * bs = getClass().view[i].boxSize;
+  m.scale( bs[0], bs[1], bs[2] );
+
+  if( i<getClass().view.size() ){
+    const double * lbs = getClass().view[i].boxSize;
+
+    m.scale( getClass().view[i].size[0]/lbs[0],
+             getClass().view[i].size[1]/lbs[1],
+             getClass().view[i].size[2]/lbs[2] );
+
+    //if( getClass().view[i].align[2] )
+      //m.translate( 0, 0, -getClass().view[i].size[2]/sphereDiameter );
+    }
+  //m.translate( 0, 0, -0.8 );
+
+  env[i].setTransform( m );
   }
 
 const ProtoObject &GameObject::getClass() const {

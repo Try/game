@@ -15,7 +15,7 @@ class WarriorBehavior : public AbstractBehavior  {
 
 
     void tick( const Terrain &  );
-
+    bool message(Message msg, int x, int y, Modifers md);
   private:
     GameObject & obj;
     WeakWorldPtr taget;
@@ -23,6 +23,9 @@ class WarriorBehavior : public AbstractBehavior  {
     void move(int, int);
 
     void damageTo( GameObject & obj );
+
+    bool isAtk;
+    int  dAtkTime;
   };
 
 #endif // WARRIORBEHAVIOR_H

@@ -250,7 +250,7 @@ void Game::setPlaylersCount(int c) {
   }
 
 void Game::addEditorObject(const std::string &p, int pl, int x, int y ) {
-  GameObject *obj = &world->addObject(p, pl);
+  GameObject *obj = &world->addObject( p, pl );
 
   obj->setPosition( x, y, 200 );
   obj->updatePos();

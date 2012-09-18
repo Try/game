@@ -429,6 +429,16 @@ void World::tick() {
 
   physics.tick();
 
+  for( size_t i=0; i<gameObjects.size(); ++i )
+    if( gameObjects[i]->hp() <= 0 ) {
+      GameObject & src = *gameObjects[i];
+      GameObject & obj = addObjectEnv( gameObjects[i]->getClass().name );
+
+      obj.setPlayer( src.playerNum() );
+      obj.setPosition( src.x(), src.y(), src.z()+100 );
+      //obj.rotate();
+      }
+
   for( size_t i=0; i<gameObjects.size(); ){
     if( gameObjects[i]->hp() <= 0 ) {
       deleteObject( gameObjects[i].get() );

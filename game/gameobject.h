@@ -104,6 +104,7 @@ class GameObject {
     void setViewPosition( float x, float y, float z );
 
     void setForm( const Physics::Sphere & form );
+    void setForm( const Physics::Box    & form );
     void setForm( const Physics::AnimatedSphere & form );
     void setForm( const Physics::AnimatedBox & form );
 
@@ -116,6 +117,7 @@ class GameObject {
 
     struct {
       Physics::Sphere sphere;
+      Physics::Box    box;
       } form;
 
     struct {
@@ -150,6 +152,12 @@ class GameObject {
 
     void setupMaterials( MyGL::AbstractGraphicObject &obj,
                          const ProtoObject::View &src );
+
+    template< class Rigid >
+    void updatePosRigid( Rigid & r );
+
+    void updatePosRigid( Physics::Sphere & r, size_t i );
+    void updatePosRigid( Physics::Box    & r, size_t i );
   };
 
 #endif // GAMEOBJECT_H

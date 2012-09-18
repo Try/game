@@ -26,6 +26,13 @@ struct Physics::Data{
     return out;
     }
 
+  static btVector3 localInertion( float mass,
+                                  const btBoxShape & s ){
+    btVector3 out;
+    s.calculateLocalInertia( mass, out );
+
+    return out;
+    }
 
   int animCount, rigidCount;
 
@@ -73,7 +80,7 @@ struct Physics::RigidBody{
               mass,
               &mstate,
               &box,
-              Data::localInertion( mass, sphere )
+              Data::localInertion( mass, box )
               )
             ) {
 
@@ -200,12 +207,20 @@ Physics::Sphere Physics::createSphere( float x, float y, float z, float d ) {
   return s;
   }
 
-void Physics::free(Physics::Sphere &s) {
+void Physics::free( Physics::Rigid &s) {
   if( s.data ){
     data->dynamicsWorld->removeRigidBody( &s.data->body );
     --data->rigidCount;
     s.data = 0;
     }
+  }
+
+Physics::Box Physics::createBox(float x, float y, float z,
+                                float sx, float sy, float sz) {
+  Physics::Box s;
+  s.data = new RigidBody( x, y, z, sx, sy, sz, 0.1 );
+  data->dynamicsWorld->addRigidBody( &s.data->body );
+  return s;
   }
 
 Physics::AnimatedSphere Physics::createAnimatedSphere( float x, float y,
@@ -240,32 +255,32 @@ void Physics::free(Physics::AnimatedBox &s) {
     }
   }
 
-Physics::Sphere::Sphere() {
+Physics::Rigid::Rigid() {
   data = 0;
   }
 
-float Physics::Sphere::x() const {
+float Physics::Rigid::x() const {
   btTransform trans;
   data->body.getMotionState()->getWorldTransform(trans);
 
   return trans.getOrigin().x();
   }
 
-float Physics::Sphere::y() const {
+float Physics::Rigid::y() const {
   btTransform trans;
   data->body.getMotionState()->getWorldTransform(trans);
 
   return trans.getOrigin().y();
   }
 
-float Physics::Sphere::z() const {
+float Physics::Rigid::z() const {
   btTransform trans;
   data->body.getMotionState()->getWorldTransform(trans);
 
   return trans.getOrigin().z();
   }
 
-MyGL::Matrix4x4 Physics::Sphere::transform() {
+MyGL::Matrix4x4 Physics::Rigid::transform() {
   btTransform n;
   data->body.getMotionState()->getWorldTransform(n);
   //data->body.activate(true);
@@ -285,23 +300,23 @@ MyGL::Matrix4x4 Physics::Sphere::transform() {
                            pos[0],  pos[1],  pos[2], 1 );
   }
 
-float Physics::Sphere::diameter() const {
+float Physics::Rigid::diameter() const {
   return data->sphere.getRadius()*2;
   }
 
-bool Physics::Sphere::isValid() const {
+bool Physics::Rigid::isValid() const {
   return data!=0;
   }
 
-void Physics::Sphere::activate() {
+void Physics::Rigid::activate() {
   data->body.activate(true);
   }
 
-bool Physics::Sphere::isActive() {
+bool Physics::Rigid::isActive() {
   return data->body.isActive();
   }
 
-void Physics::Sphere::setPosition(float x, float y, float z) {
+void Physics::Rigid::setPosition(float x, float y, float z) {
   btTransform tr;
   data->body.getMotionState()->getWorldTransform(tr);
   tr.setOrigin( btVector3(x,y,z) );

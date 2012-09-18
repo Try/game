@@ -24,11 +24,8 @@ class Physics {
     Physics( int tw, int th );
     ~Physics();
 
-    void tick();
-    void setTerrain( const Terrain & t );
-
-    struct Sphere {
-        Sphere();
+    struct Rigid {
+        Rigid();
 
         float x() const;
         float y() const;
@@ -47,8 +44,19 @@ class Physics {
       friend class Physics;
       };
 
+    void tick();
+    void setTerrain( const Terrain & t );
+
+    struct Sphere : public Rigid {
+      };
+
      Sphere createSphere(float x, float y, float z, float r);
-     void free( Sphere & s );
+     void free( Rigid &s );
+
+     struct Box : public Rigid {
+       };
+     Box createBox(float x, float y, float z, float sx, float sy, float sz);
+
 
      struct AnimatedSphere : Animated {
          using Animated::setPosition;
