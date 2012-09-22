@@ -24,7 +24,7 @@ class WarriorBehavior : public AbstractBehavior  {
 
     void damageTo( GameObject & obj );
 
-    bool isAtk;
+    bool isAtk; int lastX, lastY;
     int  dAtkTime;
   };
 

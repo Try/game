@@ -145,6 +145,10 @@ GameObject &World::addObject( const ProtoObject &p,
   }
 
 void World::deleteObject(GameObject *obj) {
+  for( size_t i=0; i<game.plCount(); ++i )
+    if( game.player(i).editObj==gameObjects[i].get() )
+      game.player(i).editObj = 0;
+
   deleteObject( gameObjects, obj );
   deleteObject(  eviObjects, obj );
   //deleteObject(    selected, obj );

@@ -4,6 +4,7 @@
 
 ScroolWidget::ScroolWidget(Resource &res)
   :MyWidget::Widget(), sb(res) {
+  setLayout( MyWidget::Horizontal );
   layout().add(&box);
   layout().add(&sb);
 

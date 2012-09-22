@@ -40,6 +40,7 @@ class Game {
     void toogleFullScr();
 
     Player & player( int i );
+    size_t plCount() const;
 
     void setPlaylersCount( int c );
     void addEditorObject( const std::string &p, int pl, int x, int y );

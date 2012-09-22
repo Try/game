@@ -326,6 +326,10 @@ Player &Game::player(int i) {
   return *players[i];
   }
 
+size_t Game::plCount() const {
+  return players.size();
+  }
+
 Player &Game::player() {
   return player( currentPlayer );
   }

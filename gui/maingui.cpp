@@ -12,22 +12,27 @@
 #include "gui/scroolbar.h"
 #include "gui/scroolwidget.h"
 #include "gui/commandspanel.h"
+#include "gui/overlaywidget.h"
+#include "gui/listbox.h"
 
 #include "algo/algo.h"
 
 MainGui::MainGui( MyGL::Device &, int w, int h,
                   Resource &r, PrototypesLoader &pr )
   : res(r), prototypes(pr), isHooksEnabled(true) {
-  //painter = new PainterGUI();
-  widget.resize(w,h);
+  mainwidget = new MainWidget();
+  central.layout().add( mainwidget );
+  central.resize(w,h);
   }
 
 MainGui::~MainGui() {
   }
 
 void MainGui::createControls( BehaviorMSGQueue & msg ) {
-  widget.paintObjectsHud.bind( paintObjectsHud );
-  widget.frame.data = res.pixmap("gui/colors");
+  MyWidget::Widget & widget = central.top();
+
+  mainwidget->paintObjectsHud.bind( paintObjectsHud );
+  mainwidget->frame.data = res.pixmap("gui/colors");
 
   widget.setLayout( MyWidget::Vertical );
   widget.layout().setMargin( MyWidget::Margin(4) );
@@ -119,8 +124,10 @@ MainGui::Widget *MainGui::createEditPanel() {
   Panel *p = new Panel(res);
   p->setDragable(1);
   p->layout().setMargin( 6, 6, 20, 6 );
+  p->setLayout( MyWidget::Vertical );
 
   ScroolWidget *w = new ScroolWidget(res);
+  w->useScissor(0);
 
   auto proto = prototypes.allClasses();
 
@@ -132,7 +139,7 @@ MainGui::Widget *MainGui::createEditPanel() {
 
     if( ok ){
       AddUnitButton *b = new AddUnitButton(res, **i);
-      b->clickedEx.bind( addObject, &MyWidget::signal<const ProtoObject&>::operator() );
+      b->clickedEx.bind( addObject );
 
       SizePolicy p = b->sizePolicy();
       p.typeH = MyWidget::Preferred;
@@ -143,28 +150,28 @@ MainGui::Widget *MainGui::createEditPanel() {
     }
 
   p->layout().add(w);
+  p->layout().add( new ListBox(*this, res) );
 
   return p;
   }
 
 bool MainGui::draw(GUIPass &pass) {
-  if( !widget.needToUpdate() )
-    return false;
+  if( central.needToUpdate() ){
+    PainterGUI painter( pass, 0,0, central.w(), central.h() );
+    MyWidget::PaintEvent event(painter);
+    central.paintEvent( event );
+    return 1;
+    }
 
-  PainterGUI painter( pass, 0,0, widget.w(), widget.h() );
-
-  MyWidget::PaintEvent event(painter);
-  widget.paintEvent( event );
-
-  return 1;
+  return 0;
   }
 
 void MainGui::resizeEvent(int w, int h) {
-  widget.resize( w, h );
+  central.resize( w, h );
   }
 
 int MainGui::mouseDownEvent( MyWidget::MouseEvent &e ) {
-  widget.mouseDownEvent(e);
+  central.mouseDownEvent(e);
 
   if( hookCall( &InputHookBase::mouseDownEvent, e ) )
     return 1;
@@ -173,7 +180,8 @@ int MainGui::mouseDownEvent( MyWidget::MouseEvent &e ) {
   }
 
 int MainGui::mouseUpEvent( MyWidget::MouseEvent &e) {
-  widget.mouseUpEvent(e);
+  central.mouseUpEvent(e);
+
   if( hookCall( &InputHookBase::mouseUpEvent, e ) )
     return 1;
 
@@ -181,11 +189,12 @@ int MainGui::mouseUpEvent( MyWidget::MouseEvent &e) {
   }
 
 int MainGui::mouseMoveEvent( MyWidget::MouseEvent &e) {
-  widget.mouseDragEvent(e);
+  central.mouseDragEvent(e);
+
   if( e.isAccepted() )
     return 1;
 
-  widget.mouseMoveEvent(e);
+  central.mouseMoveEvent(e);
 
   if( hookCall( &InputHookBase::mouseMoveEvent, e ) )
     return 1;
@@ -194,7 +203,7 @@ int MainGui::mouseMoveEvent( MyWidget::MouseEvent &e) {
   }
 
 int MainGui::mouseWheelEvent(MyWidget::MouseEvent &e) {
-  widget.mouseWheelEvent(e);
+  central.mouseWheelEvent(e);
 
   if( hookCall( &InputHookBase::mouseWheelEvent, e ) )
     return 1;
@@ -203,11 +212,12 @@ int MainGui::mouseWheelEvent(MyWidget::MouseEvent &e) {
 
 int MainGui::keyDownEvent(MyWidget::KeyEvent &e) {
   e.ignore();
-  widget.shortcutEvent(e);
+  central.shortcutEvent(e);
+
   if( e.isAccepted() )
     return 1;
 
-  widget.keyDownEvent(e);
+  central.keyDownEvent(e);
 
   if( hookCall( &InputHookBase::keyDownEvent, e ) )
     return 1;
@@ -216,7 +226,7 @@ int MainGui::keyDownEvent(MyWidget::KeyEvent &e) {
   }
 
 int MainGui::keyUpEvent(MyWidget::KeyEvent &e) {
-  widget.keyUpEvent(e);
+  central.keyUpEvent(e);
 
   if( hookCall( &InputHookBase::keyUpEvent, e ) )
     return 1;
@@ -225,11 +235,11 @@ int MainGui::keyUpEvent(MyWidget::KeyEvent &e) {
   }
 
 MyWidget::Rect &MainGui::selectionRect() {
-  return widget.selection;
+  return mainwidget->selection;
   }
 
 void MainGui::update() {
-  widget.update();
+  central.update();
   }
 
 void MainGui::updateSelectUnits( const std::vector<GameObject*> &u ) {
@@ -239,14 +249,14 @@ void MainGui::updateSelectUnits( const std::vector<GameObject*> &u ) {
 
 bool MainGui::instalHook(InputHookBase *h) {
   if( isHooksEnabled )
-    widget.hooks.push_back( h );
+    hooks.push_back( h );
 
   return isHooksEnabled;
   }
 
 void MainGui::removeHook(InputHookBase *h) {
   h->onRemove();
-  remove( widget.hooks, h );
+  remove( hooks, h );
   }
 
 void MainGui::enableHooks(bool e) {
@@ -256,10 +266,20 @@ void MainGui::enableHooks(bool e) {
     }
   }
 
+OverlayWidget *MainGui::addOverlay() {
+  OverlayWidget * w = new OverlayWidget( *this, res );
+  MyWidget::Widget * container = new MyWidget::Widget();
+
+  container->layout().add( w );
+  central.layout().add( container );
+
+  return w;
+  }
+
 void MainGui::removeAllHooks() {
-  for( size_t i=0; i<widget.hooks.size(); ++i )
-    widget.hooks[i]->onRemove();
-  widget.hooks.clear();
+  for( size_t i=0; i<hooks.size(); ++i )
+    hooks[i]->onRemove();
+  hooks.clear();
   }
 
 MainGui::AddUnitButton::AddUnitButton(Resource &res, ProtoObject &obj)

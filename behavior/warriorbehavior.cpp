@@ -6,6 +6,9 @@ WarriorBehavior::WarriorBehavior( GameObject &obj,
                                   Behavior::Closure &c ):obj(obj) {
   isAtk    = false;
   dAtkTime = 0;
+
+  lastX = obj.x();
+  lastY = obj.y();
   }
 
 WarriorBehavior::~WarriorBehavior() {
@@ -34,7 +37,7 @@ void WarriorBehavior::tick( const Terrain & ) {
       }
     }
 
-  if( !obj.isOnMove() || isAtk ){
+  if( !obj.isOnMove() || isAtk || (obj.distanceQL(lastX, lastY)>1) ){
     if( id!=size_t(-1) )
       taget = obj.world().objectWPtr(id);
 
@@ -75,7 +78,10 @@ void WarriorBehavior::move(int x, int y) {
   obj.behavior.message( MoveSingle, x*qs + qs/2, y*qs + qs/2 );
 
   isAtk = true;
-  dAtkTime = 14;
+
+  dAtkTime = 100;
+  lastX = obj.x();
+  lastY = obj.y();
   }
 
 void WarriorBehavior::damageTo(GameObject &dobj) {

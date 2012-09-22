@@ -11,6 +11,7 @@
 #include "gui/panel.h"
 #include "gui/button.h"
 
+#include "gui/centralwidget.h"
 #include "gui/inputhook.h"
 
 #include <memory>
@@ -27,6 +28,7 @@ class CommandsPanel;
 class GameObject;
 class World;
 class BehaviorMSGQueue;
+class OverlayWidget;
 
 class MainGui {
   public:
@@ -61,6 +63,7 @@ class MainGui {
 
     void enableHooks( bool e );
 
+    OverlayWidget* addOverlay();
   private:
     typedef MyWidget::PainterDevice Painter;
     typedef MyWidget::Widget  Widget;
@@ -71,10 +74,8 @@ class MainGui {
       MyWidget::signal< MyWidget::Painter&, int , int> paintObjectsHud;
       void paintEvent(MyWidget::PaintEvent &p);
 
-      MyWidget::Rect selection;
       MyWidget::Bind::UserTexture frame;
-
-      std::vector< InputHookBase* > hooks;
+      MyWidget::Rect selection;
       };
 
     struct AddUnitButton: public Button{
@@ -85,6 +86,8 @@ class MainGui {
       ProtoObject& prototype;
       };
 
+    std::vector< InputHookBase* > hooks;
+    MainWidget *mainwidget;
     void removeAllHooks();
 
     template< class E >
@@ -92,8 +95,8 @@ class MainGui {
       if( e.isAccepted() )
         return 1;
 
-      for( size_t i=0; i<widget.hooks.size(); ++i ){
-        InputHookBase &b = *widget.hooks[widget.hooks.size()-i-1];
+      for( size_t i=0; i<hooks.size(); ++i ){
+        InputHookBase &b = *hooks[hooks.size()-i-1];
 
         e.accept();
         (b.*f)(e);
@@ -105,7 +108,9 @@ class MainGui {
       return 0;
       }
 
-    MainWidget widget;
+    //MainWidget widget;
+    //std::vector< std::unique_ptr<MyWidget::Widget> > widgets;
+    CentralWidget central;
     Resource & res;
     PrototypesLoader & prototypes;
     bool isHooksEnabled;

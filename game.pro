@@ -83,7 +83,10 @@ HEADERS += \
     behavior/incompletebuilding.h \
     graphics/mainmaterial.h \
     graphics/mainpass.h \
-    behavior/warriorbehavior.h
+    behavior/warriorbehavior.h \
+    gui/overlaywidget.h \
+    gui/centralwidget.h \
+    gui/listbox.h
 
 SOURCES += \
     main.cpp \
@@ -135,7 +138,10 @@ SOURCES += \
     behavior/incompletebuilding.cpp \
     graphics/mainmaterial.cpp \
     graphics/mainpass.cpp \
-    behavior/warriorbehavior.cpp
+    behavior/warriorbehavior.cpp \
+    gui/overlaywidget.cpp \
+    gui/centralwidget.cpp \
+    gui/listbox.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
