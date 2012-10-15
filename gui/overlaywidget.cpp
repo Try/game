@@ -10,11 +10,20 @@ OverlayWidget::OverlayWidget( MainGui &mgui, Resource &r ):maingui(mgui) {
 
   resize(200, 200);
   setFocusPolicy( MyWidget::ClickFocus );
-  setFocus(1);
-  onFocusChange.bind( *this, &OverlayWidget::focusEvent );
+  //setFocus(1);
   }
 
-void OverlayWidget::focusEvent(bool f) {
-  if( !f )
+void OverlayWidget::setupSignals() {
+  owner()->onFocusChange     .bind( *this, &OverlayWidget::focusEvent );
+  owner()->onChildFocusChange.bind( *this, &OverlayWidget::focusEvent );
+  }
+
+void OverlayWidget::focusEvent(bool /*f*/) {
+  if( owner() && !owner()->hasFocus() && !owner()->hasChildFocus() )
     owner()->deleteLater();
+  }
+
+void OverlayWidget::ContainerLayout::applyLayout() {
+  for( size_t i=1; i<widgets().size(); ++i )
+    placeIn( widgets()[i], MyWidget::Rect(0,0, owner()->w(), owner()->h()) );
   }

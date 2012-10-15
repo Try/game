@@ -270,8 +270,15 @@ OverlayWidget *MainGui::addOverlay() {
   OverlayWidget * w = new OverlayWidget( *this, res );
   MyWidget::Widget * container = new MyWidget::Widget();
 
+  container->setLayout( new OverlayWidget::ContainerLayout() );
   container->layout().add( w );
-  central.layout().add( container );
+
+  if( central.layout().widgets().size()>1 )
+    central.layout().widgets().back()->layout().add( container ); else
+    central.layout().add( container );
+
+  w->setFocus(1);
+  w->setupSignals();
 
   return w;
   }

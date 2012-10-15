@@ -70,31 +70,33 @@ void Panel::paintEvent( MyWidget::PaintEvent &e ) {
   p.setTexture( back );
   p.drawRect( 0,0, w(), h() );
 
-  p.setTexture( frame );
+  if( 1 || hasFocus() || hasChildFocus() ){
+    p.setTexture( frame );
 
-  p.drawRect( 20, 0, w()-40, 20,
-              20, 0, 10, 20 );
+    p.drawRect( 20, 0, w()-40, 20,
+                20, 0, 10, 20 );
 
-  p.drawRect( 20, h()-20, w()-40, 20,
-              20, 30, 10, 20 );
+    p.drawRect( 20, h()-20, w()-40, 20,
+                20, 30, 10, 20 );
 
-  p.drawRect( 0, 20, 20, h()-40,
-              0, 20, 20, 10 );
+    p.drawRect( 0, 20, 20, h()-40,
+                0, 20, 20, 10 );
 
-  p.drawRect( w()-20, 20, 20, h()-40,
-              30, 20, 20, 10 );
+    p.drawRect( w()-20, 20, 20, h()-40,
+                30, 20, 20, 10 );
 
 
-  p.drawRect(      0, 0, 20, 20 );
-  p.drawRect( w()-20, 0, 20, 20,
-              30, 0 );
+    p.drawRect(      0, 0, 20, 20 );
+    p.drawRect( w()-20, 0, 20, 20,
+                30, 0 );
 
-  p.drawRect(      0, h()-20, 20, 20,
-                   0, 30 );
-  p.drawRect( w()-20, h()-20, 20, 20,
-              30, 30 );
+    p.drawRect(      0, h()-20, 20, 20,
+                     0, 30 );
+    p.drawRect( w()-20, h()-20, 20, 20,
+                30, 30 );
 
-  p.unsetTexture();
+    p.unsetTexture();
+    }
 
   paintNested(e);
   }

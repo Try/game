@@ -270,10 +270,6 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         break;
 
         case WM_CLOSE:
-        {
-            PostQuitMessage(0); 
-        }
-        
         case WM_DESTROY:
         {
             PostQuitMessage(0);
