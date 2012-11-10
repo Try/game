@@ -421,9 +421,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
   Resource &r = resource;
   GraphicsSystem::ObjectsClosure &c = graphics.closure;
 
-  MyGL::GBufferFillPass::Material
-      material( c.shadowMap->shadowMap().surface(),
-                c.shadow.matrix );
+  MainMaterial material( c.shadow.matrix );
 
   MyGL::ShadowMapPassBase::Material smMaterial;
 
@@ -439,8 +437,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     }
 
   if( contains( src.materials, "unit" )  ){
-    MainMaterial material( c.shadowMap->shadowMap().surface(),
-                           c.shadow.matrix,
+    MainMaterial material( c.shadow.matrix,
                            teamColor );
     material.diffuseTexture   = r.texture( src.name+"/diff" );
     smMaterial.diffuseTexture = material.diffuseTexture;
@@ -459,17 +456,12 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     }
 
   if( contains( src.materials, "displace" ) ){
-    DisplaceMaterial
-        material( c.shadowMap->shadowMap().surface(),
-                  c.shadow.matrix );
-
+    DisplaceMaterial material( c.shadow.matrix );
     obj.setupMaterial( material );
     }
 
   if( contains( src.materials, "water" ) ){
-    WaterMaterial
-        material( c.shadowMap->shadowMap().surface(),
-                  c.shadow.matrix );
+    WaterMaterial material( c.shadow.matrix );
     material.texture = r.texture( "water/diff" );
     material.normals = r.texture( "water/norm" );
 

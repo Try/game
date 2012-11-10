@@ -8,9 +8,8 @@
 
 #include "graphics/graphicssystem.h"
 
-WaterMaterial::WaterMaterial(const MyGL::Texture2d &sm,
-                                   const MyGL::Matrix4x4 &mat)
-  : shadowMap(&sm), shadowMatrix(&mat) {
+WaterMaterial::WaterMaterial( const MyGL::Matrix4x4 &mat)
+  : shadowMatrix(&mat) {
 
   }
 
@@ -35,7 +34,7 @@ bool WaterMaterial::bind( MyGL::RenderState &rs,
 
   table.add( texture, "texture",      MyGL::UniformTable::Fragment );
   //table.add( normals, "normalMap",    MyGL::UniformTable::Fragment );
-  table.add( *shadowMap, "shadowMap", MyGL::UniformTable::Fragment );
+  //table.add( *shadowMap, "shadowMap", MyGL::UniformTable::Fragment );
   table.add( 0.1, "specularFactor", MyGL::UniformTable::Fragment );
 
   if( useAlphaTest ){
@@ -50,6 +49,7 @@ void WaterMaterial::exec( const MyGL::Scene &scene,
                           const MyGL::Scene::Objects &v,
                           MyGL::Device &device,
                           GraphicsSystem &sys ) {
+  /*
   const MyGL::AbstractCamera & camera = scene.camera();
 
   MyGL::FragmentShader & fs = sys.displaceData.fsWater;
@@ -95,12 +95,12 @@ void WaterMaterial::exec( const MyGL::Scene &scene,
                      "scene" );
   device.setUniform( sys.displaceData.fsWater,
                      sys.waterNormals.surface(),
-                     "normalMap" );
+                     "normalMap" );*/
 /*
   device.setUniform( sys.displaceData.fsWater,
-                     sys.gbuffer.buffer(3).surface(),
-                     "sceneDepth" );*/
-
+                     sys.depthSmBuffer,
+                     "sceneDepth" );
+*/ /*
   float tc[] = { 1.0f/sys.sceneCopy.width(), 1.0f/sys.sceneCopy.height() };
   device.setUniform( sys.displaceData.fsWater, tc, 2, "dTexCoord");
 
@@ -117,5 +117,5 @@ void WaterMaterial::exec( const MyGL::Scene &scene,
                    ptr.transform(), camera );
       }
     }
-
+*/
   }

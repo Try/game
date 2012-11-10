@@ -30,6 +30,7 @@ void GlowMaterial::exec( const MyGL::Scene &scene,
                          const MyGL::Scene::Objects &v,
                          MyGL::Device &device,
                          GraphicsSystem &sys ) {
+  /*
   const MyGL::AbstractCamera & camera = scene.camera();
 
   MyGL::Render render( device,
@@ -47,5 +48,5 @@ void GlowMaterial::exec( const MyGL::Scene &scene,
                    ptr.transform(), camera );
       }
     }
-
+*/
   }

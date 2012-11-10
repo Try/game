@@ -7,19 +7,11 @@
 #include "resource.h"
 #include "gui/maingui.h"
 
-GUIPass::GUIPass( MyGL::RenderTaget &r,
-                  MyGL::Texture2d &d,
-                  Resource &res,
-                  MainGui &g,
-                  MyGL::VertexShaderHolder &vsh,
-                  MyGL::FragmentShaderHolder &fsh,
+GUIPass::GUIPass( const MyGL::VertexShader   & vsh,
+                  const MyGL::FragmentShader & fsh,
                   MyGL::VertexBufferHolder &vbo,
-
                   MyGL::Size &s  )
-  : rt(r), vbHolder(vbo), depth(d), size(s), gui(g) {
-  vs = vsh.load("./data/sh/gui.vert");
-  fs = fsh.load("./data/sh/gui.frag");
-
+  : vs(vsh), fs(fsh), vbHolder(vbo), size(s) {
   MyGL::VertexDeclaration::Declarator decl;
   decl.add( MyGL::Decl::float2, MyGL::Usage::Position )
       .add( MyGL::Decl::float2, MyGL::Usage::TexCoord );
@@ -29,11 +21,12 @@ GUIPass::GUIPass( MyGL::RenderTaget &r,
   guiRawData.reserve( 4*2048 );
   geometryBlocks.reserve( 512 );
 
-  noTexture = res.texture("gui/noTexture");
-  testTex   = res.texture("gui/frame");
+  //noTexture = res.texture("gui/noTexture");
+  //testTex   = res.texture("gui/frame");
   }
 
-void GUIPass::exec( const MyGL::Scene &, MyGL::Device &device ) {
+void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
+                    MyGL::Texture2d &depth, MyGL::Device &device ) {
   dev = &device;
 
   if( gui.draw( *this ) )
@@ -117,7 +110,7 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
   geometryBlocks.back().size += 6;
   }
 
-void GUIPass::setTexture( const PixmapsPool::TexturePtr &t) {
+void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
   texRect = t.rect;
 
   if( geometryBlocks.size() &&

@@ -18,8 +18,7 @@ class GraphicsSystem;
 
 class WaterMaterial : public MyGL::AbstractMaterial {
   public:
-    WaterMaterial( const MyGL::Texture2d & shadowMap,
-                   const MyGL::Matrix4x4 & shadowMatrix  );
+    WaterMaterial( const MyGL::Matrix4x4 & shadowMatrix  );
 
     bool bind( MyGL::RenderState & dev,
                const MyGL::Matrix4x4 & object,
@@ -37,7 +36,6 @@ class WaterMaterial : public MyGL::AbstractMaterial {
                       GraphicsSystem &rt );
 
   protected:
-    const MyGL::Texture2d * shadowMap;
     const MyGL::Matrix4x4 * shadowMatrix;
   };
 

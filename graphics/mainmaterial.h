@@ -13,9 +13,9 @@ class GraphicsSystem;
 
 class MainMaterial : public MyGL::AbstractMaterial {
   public:
-    MainMaterial( const MyGL::Texture2d & shadowMap,
-                  const MyGL::Matrix4x4 & shadowMatrix,
+    MainMaterial( const MyGL::Matrix4x4 & shadowMatrix,
                   const MyGL::Color & teamColor );
+    MainMaterial( const MyGL::Matrix4x4 & shadowMatrix );
 
     MyGL::Texture2d diffuseTexture,
                     normalMap;
@@ -23,7 +23,6 @@ class MainMaterial : public MyGL::AbstractMaterial {
     float alphaTrestRef, specular;
 
   protected:
-    const MyGL::Texture2d * shadowMap;
     const MyGL::Matrix4x4 * shadowMatrix;
 
   private:

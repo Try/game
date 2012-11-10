@@ -16,6 +16,7 @@ MainPass::MainPass( Buffer & b,
 
 void MainPass::exec( const Scene & scene,
                      const Scene::Objects &v, Device & device ){
+  /*
   const AbstractCamera & camera = scene.camera();
 
   Render render( device,
@@ -66,6 +67,7 @@ void MainPass::exec( const Scene & scene,
     }
 
   count = 0;
+  */
   }
 
 AbstractMaterial::MaterialID MainPass::materialId() const{

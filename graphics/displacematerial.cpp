@@ -6,9 +6,8 @@
 
 #include "graphics/graphicssystem.h"
 
-DisplaceMaterial::DisplaceMaterial(const MyGL::Texture2d &sm,
-                                   const MyGL::Matrix4x4 &mat)
-  : shadowMap(&sm), shadowMatrix(&mat) {
+DisplaceMaterial::DisplaceMaterial(const MyGL::Matrix4x4 &mat)
+  :shadowMatrix(&mat) {
 
   }
 
@@ -42,18 +41,24 @@ void DisplaceMaterial::exec( const MyGL::Scene &scene,
                              const MyGL::Scene::Objects &v,
                              MyGL::Device &device,
                              GraphicsSystem &sys ) {
+  /*
   const MyGL::AbstractCamera & camera = scene.camera();
 
   MyGL::Render render( device,
                        sys.gbuffer.buffer(0),
-                       sys.mainDepth,
+                       sys.sceneCopyDepth,
                        sys.displaceData.vs,
                        sys.displaceData.fs );
+  device.clearZ(1);
 
   device.setUniform( sys.displaceData.fs,
                      sys.sceneCopy.surface(),
-                     "scene" );
-
+                     "scene" );*/
+/*
+  device.setUniform( sys.displaceData.fs,
+                     sys.mainDepth,
+                     "sceneDepth" );*/
+/*
   float tc[] = { 1.0f/sys.sceneCopy.width(), 1.0f/sys.sceneCopy.height() };
   device.setUniform( sys.displaceData.fs, tc, 2, "dTexCoord");
 
@@ -66,5 +71,5 @@ void DisplaceMaterial::exec( const MyGL::Scene &scene,
                    ptr.transform(), camera );
       }
     }
-
+*/
   }

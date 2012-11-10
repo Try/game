@@ -11,6 +11,7 @@
 #include <MyGL/IndexBufferHolder>
 
 #include <MyGL/TextureHolder>
+#include <MyGL/LocalTexturesHolder>
 
 #include <MyGL/VertexShaderHolder>
 #include <MyGL/FragmentShaderHolder>
@@ -25,7 +26,7 @@
 #include <MyGL/Size>
 #include <MyGL/Algo/PostProcessHelper>
 
-#include "graphics/mainpass.h"
+#include "graphics/guipass.h"
 
 namespace MyGL{
   class Camera;
@@ -51,6 +52,7 @@ class GraphicsSystem {
     MyGL::Device   device;
 
     MyGL::TextureHolder        texHolder;
+    MyGL::LocalTexturesHolder  localTex;
     MyGL::VertexBufferHolder   vboHolder;
     MyGL::IndexBufferHolder    iboHolder;
 
@@ -61,93 +63,35 @@ class GraphicsSystem {
 
 
     struct ObjectsClosure{
-      const MyGL::ShadowMapPassBase::ShadowMap * shadowMap;
-
       struct{
         MyGL::Matrix4x4 matrix;
         } shadow;
 
       } closure;
   private:
-    MainPass::Buffer  gbuffer;
-    MyGL::RenderTaget              sceneCopy;
-    MyGL::Texture2d                sceneCopyDepth, mainDepth;
-
-    MyGL::ShadowMapPassBase::ShadowMap shadowMap;
-    MyGL::Texture2d                    depthSmBuffer;
-    MyGL::RenderTaget                  finalImage;
-
-    MyGL::RenderTaget                  bpRt, dwRt[3], gaussTmp[3],
-                                       bloom[3], glow, glowTmp;
-    MyGL::Texture2d                    dwRtDS, glowDS;
-
-    MyGL::RenderTaget waterNormals;
-    MyGL::Texture2d   wDepth, *waterHeightMap;
-
-    MyGL::RenderAlgo           renderAlgo;
-    MyGL::RenderAlgo           makeRenderAlgo( Resource &res, MainGui &gui, int w, int h );
-    MyGL::RenderAlgo           makeGlowAlgo( Resource &res, MainGui &gui, int w, int h );
-    MyGL::RenderAlgo           makeBloomAlgo( Resource &res, MainGui &gui, int w, int h );
+    GUIPass gui;
+    MainGui * widget;
 
     MyGL::Size  screenSize;
-
-    void makeBuffers(int w, int h);
-
-    typedef MyGL::Matrix4x4 (*MakeShadowMatrix)( const MyGL::Scene & s );
     static  MyGL::Matrix4x4 makeShadowMatrix( const MyGL::Scene & s );
 
-    static void copyPassBind ( const MyGL::Scene &,
-                               MyGL::Device &device,
-                               const MyGL::RenderTaget &t,
-                               MyGL::VertexShader      &  vs,
-                               MyGL::FragmentShader    &  fs );
+    MyGL::Texture2d::Sampler reflect, bufSampler;
 
-    static void waterPassBind ( const MyGL::Scene &,
-                                MyGL::Device &device,
-                                const MyGL::Texture2d &t,
-                                MyGL::VertexShader      &  vs,
-                                MyGL::FragmentShader    &  fs );
-
-    static void downSamplerBind( const MyGL::Scene &s,
-                                 MyGL::Device &d,
-                                 const MyGL::RenderTaget &input,
-                                 MyGL::VertexShader      &  vs,
-                                 MyGL::FragmentShader    &  fs );
-
-    static void brightPassBind ( const MyGL::Scene &,
-                                 MyGL::Device &device,
-                                 const GraphicsSystem & sys,
-                                 MyGL::VertexShader      &  vs,
-                                 MyGL::FragmentShader    &  fs );
-
-    static void gaussBindH( const MyGL::Scene &s,
-                            MyGL::Device &d,
-                            const MyGL::RenderTaget &input,
-                            MyGL::VertexShader      &  vs,
-                            MyGL::FragmentShader    &  fs );
-
-    static void gaussBindV( const MyGL::Scene &s,
-                            MyGL::Device &d,
-                            const MyGL::RenderTaget &input,
-                            MyGL::VertexShader      &  vs,
-                            MyGL::FragmentShader    &  fs );
-
-    static void bloomeCombineBind ( const MyGL::Scene &,
-                                    MyGL::Device &device,
-                                    const GraphicsSystem & sys,
-                                    MyGL::VertexShader      &  vs,
-                                    MyGL::FragmentShader    &  fs );
-
-    static void finalPassBind ( const MyGL::Scene &,
-                                MyGL::Device &device,
-                                const GraphicsSystem & sys,
-                                MyGL::VertexShader      &  vs,
-                                MyGL::FragmentShader    &  fs );
-
-    struct Glow{
+    void makeRenderAlgo( Resource &res,
+                         MainGui &gui,
+                         int w, int h );
+    struct Sm{
       MyGL::VertexShader   vs;
       MyGL::FragmentShader fs;
-      } glowData;
+      } smap;
+
+    struct GBuf{
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs;
+
+      MyGL::Uniform<float[3]> lightDirection, lightColor, lightAblimient,
+                              view;
+      } gbuf;
 
     struct Transparent{
       MyGL::VertexShader   vs;
@@ -158,6 +102,80 @@ class GraphicsSystem {
       MyGL::VertexShader   vs, vsWater;
       MyGL::FragmentShader fs, fsWater;
       } displaceData;
+
+    struct Glow{
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs;
+      } glowData;
+
+    struct Bloom{
+      MyGL::Uniform< MyGL::Texture2d > b[3];
+
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader brightPass, combine;
+      } bloomData;
+
+    struct Blt{
+      MyGL::Uniform< MyGL::Texture2d > texture;
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs;
+      } bltData;
+
+    struct Gauss{
+      MyGL::Uniform< MyGL::Texture2d > texture;
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs;
+      } gaussData;
+
+    struct Final{
+      MyGL::Uniform< MyGL::Texture2d > scene, bloom, glow;
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs;
+      } finalData;
+
+    MyGL::Uniform<float[2]> scrOffset, cpyOffset;
+
+    void fillGBuf( MyGL::Texture2d *gbuffer,
+                   MyGL::Texture2d &mainDepth,
+                   const MyGL::Texture2d &sm, const MyGL::Scene &scene);
+
+    void fillShadowMap( MyGL::Texture2d &sm,
+                        const MyGL::Scene &scene );
+
+    void drawObjects( MyGL::Texture2d* gbuffer,
+                      MyGL::Texture2d &mainDepth,
+                      const MyGL::Scene &scene, const MyGL::Scene::Objects &v, bool clr );
+
+    void drawObjects( MyGL::VertexShader   vs,
+                      MyGL::FragmentShader fs,
+
+                      MyGL::Texture2d* gbuffer,
+                      MyGL::Texture2d &mainDepth,
+                      const MyGL::Scene &scene,
+                      const MyGL::Scene::Objects &v,
+                      bool clr = false );
+
+    void drawTranscurent( MyGL::Texture2d &screen,
+                          MyGL::Texture2d& mainDepth,
+                          MyGL::Texture2d &sceneCopy,
+                          const MyGL::Scene &scene, const MyGL::Scene::Objects &v ) ;
+
+    void drawGlow( MyGL::Texture2d &out,
+                   MyGL::Texture2d &depth, const MyGL::Scene &scene );
+
+    void copy( MyGL::Texture2d &out,
+               const MyGL::Texture2d& in );
+    void copy( MyGL::Texture2d &out,
+               const MyGL::Texture2d& in, int w, int h );
+    void gauss( MyGL::Texture2d &out,
+                const MyGL::Texture2d& in, int w, int h, float dx, float dy );
+
+    void bloom( MyGL::Texture2d &out,
+                const MyGL::Texture2d& in );
+    void blt(const MyGL::Texture2d &tex);
+
+    MyGL::Texture2d depth( int w, int h );
+    MyGL::Texture2d depth( const MyGL::Size& sz );
 
     friend class DisplaceMaterial;
     friend class GlowMaterial;

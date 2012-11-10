@@ -23,18 +23,13 @@ class Resource;
 
 class GUIPass : public MyGL::AbstractRenderPass {
   public:
-    GUIPass( MyGL::RenderTaget & rt,
-             MyGL::Texture2d   & depth,
-             Resource &res,
-             MainGui &gui,
-             MyGL::VertexShaderHolder & vsh,
-             MyGL::FragmentShaderHolder & fsh,
+    GUIPass( const MyGL::VertexShader   & vsh,
+             const MyGL::FragmentShader & fsh,
              MyGL::VertexBufferHolder &vbo,
              MyGL::Size &s );
 
-    void exec( const MyGL::Scene &s, MyGL::Device &d );
-
-    MyGL::RenderTaget & rt;
+    void exec( MainGui &gui, MyGL::Texture2d &rt,
+               MyGL::Texture2d &depth, MyGL::Device &device );
 
     void rect( int x0, int y0, int x1, int y1, int texDx, int texDy, int tw, int th );
 
@@ -43,6 +38,7 @@ class GUIPass : public MyGL::AbstractRenderPass {
 
     void clearBuffers();
     void setBlendMode( MyWidget::BlendMode m );
+
   private:
     struct Vertex{
       float x,y;
@@ -67,10 +63,9 @@ class GUIPass : public MyGL::AbstractRenderPass {
     MyGL::VertexBufferHolder & vbHolder;
 
     MyGL::Texture2d noTexture, testTex;
-    MyGL::Texture2d   & depth;
 
     MyGL::Size         & size;
-    MainGui            & gui;
+    MyWidget::Size       texSize;
 
     float dTexCoord[2];
 
