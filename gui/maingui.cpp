@@ -16,6 +16,7 @@
 #include "gui/listbox.h"
 
 #include "algo/algo.h"
+#include "formbuilder.h"
 
 MainGui::MainGui( MyGL::Device &, int w, int h,
                   Resource &r, PrototypesLoader &pr )
@@ -23,6 +24,19 @@ MainGui::MainGui( MyGL::Device &, int w, int h,
   mainwidget = new MainWidget();
   central.layout().add( mainwidget );
   central.resize(w,h);
+
+  Font f;
+  std::wstring str;
+
+  for( wchar_t i='a'; i<'z'; ++i )
+    str.push_back(i);
+  for( wchar_t i='A'; i<'Z'; ++i )
+    str.push_back(i);
+
+  for( wchar_t i='0'; i<'9'; ++i )
+    str.push_back(i);
+
+  f.fetch(res, str);
   }
 
 MainGui::~MainGui() {
@@ -66,6 +80,7 @@ void MainGui::createControls( BehaviorMSGQueue & msg ) {
   top->layout().add( new Widget() );
 
   cen->layout().add( createEditPanel() );
+  cen->layout().add( new FormBuilder(res) );
 
   cen->useScissor( false );
   }
@@ -156,8 +171,10 @@ MainGui::Widget *MainGui::createEditPanel() {
   }
 
 bool MainGui::draw(GUIPass &pass) {
+  res.flushPixmaps();
+
   if( central.needToUpdate() ){
-    PainterGUI painter( pass, 0,0, central.w(), central.h() );
+    PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
     MyWidget::PaintEvent event(painter);
     central.paintEvent( event );
     return 1;
@@ -217,6 +234,7 @@ int MainGui::keyDownEvent(MyWidget::KeyEvent &e) {
   if( e.isAccepted() )
     return 1;
 
+  e.accept();
   central.keyDownEvent(e);
 
   if( hookCall( &InputHookBase::keyDownEvent, e ) )
@@ -226,6 +244,7 @@ int MainGui::keyDownEvent(MyWidget::KeyEvent &e) {
   }
 
 int MainGui::keyUpEvent(MyWidget::KeyEvent &e) {
+  //e.ignore();
   central.keyUpEvent(e);
 
   if( hookCall( &InputHookBase::keyUpEvent, e ) )
@@ -294,6 +313,10 @@ MainGui::AddUnitButton::AddUnitButton(Resource &res, ProtoObject &obj)
   clicked.bind( *this, &AddUnitButton::click );
   Texture t;
   t.data = res.pixmap("gui/icon/"+obj.name);
+  setText( obj.name );
+
+  Font f;
+  f.fetch(res, txt);
 
   icon = t;
   }
@@ -339,6 +362,8 @@ void MainGui::MainWidget::paintEvent( MyWidget::PaintEvent &e ) {
 
   p.unsetTexture();
 
+  //p.setFont( mainFont );
+  //p.drawText(100, 100, L"абвгд" );
   paintNested(e);
   }
 

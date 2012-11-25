@@ -39,7 +39,7 @@ class GraphicsSystem {
   public:
     GraphicsSystem( void *hwnd, int w, int h, bool isFullScreen, int smSize );
 
-    void render( const MyGL::Scene &scene, MyGL::Camera &camera );
+    void render(const MyGL::Scene &scene);
     void resizeEvent( int w, int h, bool isFullScreen );
 
     void load( Resource & r, MainGui & gui, int w, int h );
@@ -103,6 +103,13 @@ class GraphicsSystem {
       MyGL::FragmentShader fs, fsWater;
       } displaceData;
 
+    struct Water{
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs;
+
+      MyGL::Texture2d      waterHeightMap;
+      } water;
+
     struct Glow{
       MyGL::VertexShader   vs;
       MyGL::FragmentShader fs;
@@ -127,6 +134,12 @@ class GraphicsSystem {
       MyGL::FragmentShader fs;
       } gaussData;
 
+    struct Omni{
+      MyGL::Uniform< MyGL::Texture2d > texture;
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs;
+      } omniData;
+
     struct Final{
       MyGL::Uniform< MyGL::Texture2d > scene, bloom, glow;
       MyGL::VertexShader   vs;
@@ -137,14 +150,21 @@ class GraphicsSystem {
 
     void fillGBuf( MyGL::Texture2d *gbuffer,
                    MyGL::Texture2d &mainDepth,
-                   const MyGL::Texture2d &sm, const MyGL::Scene &scene);
+                   const MyGL::Texture2d &sm,
+                   const MyGL::Scene &scene);
+
+    void drawOmni(MyGL::Texture2d *gbuffer,
+                   MyGL::Texture2d &mainDepth, const MyGL::Scene &scene);
+
+    void setupLight(const MyGL::Scene &scene, MyGL::FragmentShader & fs , const MyGL::Texture2d &sm);
 
     void fillShadowMap( MyGL::Texture2d &sm,
                         const MyGL::Scene &scene );
 
     void drawObjects( MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
-                      const MyGL::Scene &scene, const MyGL::Scene::Objects &v, bool clr );
+                      const MyGL::Scene &scene,
+                      const MyGL::Scene::Objects &v, bool clr );
 
     void drawObjects( MyGL::VertexShader   vs,
                       MyGL::FragmentShader fs,
@@ -158,13 +178,24 @@ class GraphicsSystem {
     void drawTranscurent( MyGL::Texture2d &screen,
                           MyGL::Texture2d& mainDepth,
                           MyGL::Texture2d &sceneCopy,
-                          const MyGL::Scene &scene, const MyGL::Scene::Objects &v ) ;
+                          const MyGL::Scene &scene,
+                          const MyGL::Scene::Objects &v ) ;
+
+    void drawWater( MyGL::Texture2d &screen,
+                    MyGL::Texture2d& mainDepth,
+                    MyGL::Texture2d &sceneCopy,
+                    MyGL::Texture2d &sm,
+                    MyGL::Texture2d& sceneDepth,
+                    const MyGL::Scene &scene,
+                    const MyGL::Scene::Objects &v ) ;
 
     void drawGlow( MyGL::Texture2d &out,
                    MyGL::Texture2d &depth, const MyGL::Scene &scene );
 
     void copy( MyGL::Texture2d &out,
                const MyGL::Texture2d& in );
+    void copyDepth( MyGL::Texture2d &out,
+                    const MyGL::Texture2d& in );
     void copy( MyGL::Texture2d &out,
                const MyGL::Texture2d& in, int w, int h );
     void gauss( MyGL::Texture2d &out,
@@ -173,6 +204,9 @@ class GraphicsSystem {
     void bloom( MyGL::Texture2d &out,
                 const MyGL::Texture2d& in );
     void blt(const MyGL::Texture2d &tex);
+
+    void waves( MyGL::Texture2d &out,
+                const MyGL::Texture2d& in );
 
     MyGL::Texture2d depth( int w, int h );
     MyGL::Texture2d depth( const MyGL::Size& sz );

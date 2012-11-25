@@ -14,6 +14,8 @@
 #include "gui/centralwidget.h"
 #include "gui/inputhook.h"
 
+#include "gui/font.h"
+
 #include <memory>
 
 namespace MyGL{
@@ -76,6 +78,8 @@ class MainGui {
 
       MyWidget::Bind::UserTexture frame;
       MyWidget::Rect selection;
+
+      Font mainFont;
       };
 
     struct AddUnitButton: public Button{

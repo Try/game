@@ -134,7 +134,7 @@ const MyGL::Texture2d &Resource::texture(const std::string &key) const {
 
 MyGL::Texture2d &Resource::texture(const std::string &key) {
   return textures.get(key);
-}
+  }
 
 bool Resource::findTexture(const std::string &key) {
   return textures.contains(key);
@@ -149,8 +149,22 @@ MyGL::FragmentShader &Resource::fshader(const std::string &key){
   }
 
 PixmapsPool::TexturePtr Resource::pixmap(const std::string &key) {
-  pixmaps.flush();
+  //pixmaps.flush();
   return px.get(key);
+  }
+
+PixmapsPool::TexturePtr Resource::pixmap( const MyGL::Pixmap &px,
+                                          bool flush ) {
+  PixmapsPool::TexturePtr tmp = pixmaps.add(px);
+
+  if( flush )
+    pixmaps.flush();
+
+  return tmp;
+  }
+
+void Resource::flushPixmaps() {
+  pixmaps.flush();
   }
 
 void Resource::load(Box<MyGL::Model<> >& m,

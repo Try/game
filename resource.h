@@ -44,6 +44,9 @@ class Resource : public AbstractXMLReader {
     MyGL::FragmentShader & fshader( const std::string & key );
 
     PixmapsPool::TexturePtr pixmap( const std::string & key );
+    PixmapsPool::TexturePtr pixmap( const MyGL::Pixmap& pm, bool flush );
+
+    void flushPixmaps();
     using AbstractXMLReader::load;
 private:
     template< class T >

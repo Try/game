@@ -1,8 +1,9 @@
 #include "button.h"
 
 #include "resource.h"
+#include "font.h"
 
-Button::Button(Resource &res) : hotKey(this, MyWidget::KeyEvent::K_NoKey) {
+Button::Button(Resource &res):hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res) {
   back[0].data = res.pixmap("gui/buttonBack");
   back[1].data = res.pixmap("gui/buttonBackD");
 
@@ -32,6 +33,22 @@ void Button::setBackTexture(const Button::Texture &t) {
 void Button::setShortcut(const MyWidget::Shortcut &sc) {
   hotKey = sc;
   hotKey.activated.bind( clicked );
+  }
+
+const std::wstring Button::text() const {
+  return txt;
+  }
+
+void Button::setText(const std::wstring &t) {
+  txt = t;
+  Font f;
+  f.fetch(res, txt);
+  }
+
+void Button::setText(const std::string &t) {
+  txt.assign( t.begin(), t.end() );
+  Font f;
+  f.fetch(res, txt);
   }
 
 void Button::mouseDownEvent(MyWidget::MouseEvent &) {
@@ -89,9 +106,6 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
                     0, 0,
                     bk.data.rect.w, bk.data.rect.h );
 
-  p.setTexture( icon );
-  int sz = std::min(w(), h());
-  p.drawRect( 0, 0, sz, sz, 0, 0, icon.data.rect.w, icon.data.rect.h );
   p.setTexture( frame );
 
   p.drawRect( px+bw, py, pw-2*bw, 20,
@@ -117,6 +131,22 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
   p.drawRect( pw-bw, ph-bh, bw, bh,
               fx+50-bw, fy+50-bh );
   p.unsetTexture();
+
+
+  p.setTexture( icon );
+  Font f;
+
+  int sz = std::min(w(), h());
+
+  int icW = std::min(icon.data.rect.w, sz),
+      icH = std::min(icon.data.rect.h, sz);
+
+  p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
+              0, 0, icon.data.rect.w, icon.data.rect.h );
+
+  p.setFont(f);
+  p.drawText( 0,0,w(),h(), txt,
+              MyWidget::AlignHCenter | MyWidget::AlignVCenter );
 
   if( presAnim != pressed ){
     presAnim = pressed;

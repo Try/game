@@ -15,7 +15,8 @@ class Panel : public MyWidget::Widget {
 
     void setDragable( bool d );
     bool isDragable();
-  private:
+
+  protected:
     void mouseDownEvent(MyWidget::MouseEvent &e);
     void mouseDragEvent(MyWidget::MouseEvent &e);
     void mouseMoveEvent(MyWidget::MouseEvent &e);
@@ -25,6 +26,7 @@ class Panel : public MyWidget::Widget {
 
     void paintEvent( MyWidget::PaintEvent &p);
 
+  private:
     bool mouseTracking, dragable;
     MyWidget::Point mpos, oldPos;
   };

@@ -404,7 +404,7 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
     }
 
   if( e.button==MyWidget::MouseEvent::ButtonRight ){
-    // terrain().brushHeight( x, y, -200, 5 );
+    //terrain().brushHeight( x, y, -200, 5 );
 
     terrainView->loadView( terr.buildGeometry( graphics.vboHolder,
                                                   graphics.iboHolder ) );

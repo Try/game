@@ -18,6 +18,7 @@
 #include "graphics/addmaterial.h"
 #include "graphics/watermaterial.h"
 #include "graphics/mainmaterial.h"
+#include "graphics/omnimaterial.h"
 
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   : graphics( ihwnd, iw, ih, isFS, isFS ? 2048:1024 ),
@@ -44,6 +45,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   resource.load("./data/data.xml");
   proto   .load("./data/game.xml");
+
+  //MyGL::Model<>::saveRawData( "./sphere.mx", MyGL::TessObject::sphere(3, 1) );
 
   setPlaylersCount(1);
 
@@ -100,7 +103,7 @@ void Game::render() {
 
   DWORD time = GetTickCount();
 
-  graphics.render( world->getScene(), world->camera );
+  graphics.render( world->getScene() );
   ++fps.n;
   fps.time += int(GetTickCount() - time);
 
@@ -489,6 +492,11 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
 
     material = zpass;
     obj.setupMaterial( zpass    );
+    obj.setupMaterial( material );
+    }
+
+  if( contains( src.materials, "omni" ) ){
+    OmniMaterial material;
     obj.setupMaterial( material );
     }
   }

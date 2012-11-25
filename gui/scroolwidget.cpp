@@ -54,11 +54,11 @@ void ScroolWidget::ProxyLayout::applyLayout() {
     sback = sizeHint( widgets().back() );
 
   if( orientation()==MyWidget::Vertical ){
-    scrool->setRange(0, sh-sback.h);
+    scrool->setRange(0, sh-std::min( sback.h, scrool->h()) );
     owner()->setPosition( 0, -scrool->value() );
     owner()->resize( owner()->w(), sh );
     } else {
-    scrool->setRange(0, sw-sback.w);
+    scrool->setRange(0, sw-std::min(sback.w, scrool->w()));
     owner()->setPosition( -scrool->value(), 0 );
     owner()->resize( sw, owner()->h());
     }

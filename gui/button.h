@@ -18,6 +18,10 @@ class Button : public MyWidget::Widget {
 
     void setBackTexture( const Texture & t );
     void setShortcut( const MyWidget::Shortcut & sc );
+
+    const std::wstring text() const;
+    void setText( const std::wstring& t );
+    void setText( const std::string& t );
   protected:
     void mouseDownEvent(MyWidget::MouseEvent &e);
     void mouseMoveEvent(MyWidget::MouseEvent &e);
@@ -28,8 +32,10 @@ class Button : public MyWidget::Widget {
 
     void focusChange(bool);
     bool pressed, presAnim;
+    std::wstring txt;
 
     MyWidget::Shortcut hotKey;
+    Resource & res;
   };
 
 #endif // BUTTON_H

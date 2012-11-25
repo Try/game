@@ -133,7 +133,10 @@ int WINAPI WinMain( HINSTANCE hInstance,
           TranslateMessage( &uMsg );
           DispatchMessage( &uMsg );
           } else {
-          demo.render();
+
+          if( isAppActive )
+            demo.render();
+
           demo.tick();
           Sleep(10);
           }
@@ -151,23 +154,35 @@ int WINAPI WinMain( HINSTANCE hInstance,
 }
 
 MyWidget::KeyEvent makeKeyEvent( WPARAM k ){
-  MyWidget::KeyEvent::KeyType e;
+  MyWidget::KeyEvent::KeyType e = MyWidget::KeyEvent::K_NoKey;
 
   if( k==VK_ESCAPE )
     PostQuitMessage(0);
+
+  if( k==VK_BACK ){
+    e = MyWidget::KeyEvent::K_Back;
+    }
+
+  if( k==VK_DELETE ){
+    e = MyWidget::KeyEvent::K_Delete;
+    }
+
+  if( k==VK_RETURN ){
+    e = MyWidget::KeyEvent::K_Return;
+    }
 
   if( k>=VK_LEFT && k<=VK_DOWN )
     e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_Left) + size_t(k) - VK_LEFT );
 
   if( k>=VK_F1 && k<= VK_F24 )
     e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_F1) + size_t(k) - VK_F1 );
-
+/*
   if( k>=0x41 && k<=0x5A )
     e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_A) + size_t(k) - 0x41 );
 
   if( k>=0x30 && k<=0x39 )
     e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_0) + size_t(k) - 0x30 );
-
+*/
   return MyWidget::KeyEvent(e);
   }
 
@@ -195,11 +210,29 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
     switch( msg )
     {
+        case WM_CHAR:
+        {
+           MyWidget::KeyEvent e = MyWidget::KeyEvent( uint16_t(wParam) );
+
+           DWORD wrd[3] = {
+             VK_RETURN,
+             VK_BACK,
+             0
+             };
+
+           if( 0 == *std::find( wrd, wrd+2, wParam) ){
+             mgl_demo->keyDownEvent( e );
+             mgl_demo->keyUpEvent( e );
+             }
+           //std::cout << "wParaam = " << wParam << std::endl;
+        }
+        break;
+
         case WM_KEYDOWN:
         {
            MyWidget::KeyEvent e =  makeKeyEvent(wParam);
-           mgl_demo->keyDownEvent( e );
-
+           if( e.key!=MyWidget::KeyEvent::K_NoKey )
+             mgl_demo->keyDownEvent( e );
            //std::cout << "wParaam = " << wParam << std::endl;
         }
         break;

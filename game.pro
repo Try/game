@@ -1,4 +1,3 @@
-
 QT    -= core gui
 
 TARGET = cgDemo
@@ -18,7 +17,9 @@ LIBS        += -L"C:/Users/Try/Home/Programming/GuiCore/MyWidget-build-desktop/d
 
 INCLUDEPATH += "$$(DXSDK_DIR)/include"\
                "$$(CG_INC_PATH)" \
-               "$$(BULLET_INCLUDE_PATH)"
+               "$$(BULLET_INCLUDE_PATH)" \
+               "$$(FREETYPE_INCLUDE_PATH)" \
+               "$$(FREETYPE_INCLUDE_PATH)/freetype2"
 
 LIBS += -l"gdi32" -l"ws2_32"
 LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
@@ -32,6 +33,8 @@ LIBS += -L"$$(BULLET_LIB_PATH)" \
         -l"BulletSoftBody"      \
         -l"BulletWorldImporter" \
         -l"LinearMath"
+
+LIBS += -L"$$(FREETYPE_LIB_PATH)" -l"freetype"
 
 HEADERS += \
     graphics/graphicssystem.h \
@@ -86,7 +89,12 @@ HEADERS += \
     behavior/warriorbehavior.h \
     gui/overlaywidget.h \
     gui/centralwidget.h \
-    gui/listbox.h
+    gui/listbox.h \
+    graphics/omnimaterial.h \
+    gui/font.h \
+    gui/formbuilder.h \
+    gui/propertyeditor.h \
+    gui/lineedit.h
 
 SOURCES += \
     main.cpp \
@@ -141,7 +149,12 @@ SOURCES += \
     behavior/warriorbehavior.cpp \
     gui/overlaywidget.cpp \
     gui/centralwidget.cpp \
-    gui/listbox.cpp
+    gui/listbox.cpp \
+    graphics/omnimaterial.cpp \
+    gui/font.cpp \
+    gui/formbuilder.cpp \
+    gui/propertyeditor.cpp \
+    gui/lineedit.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

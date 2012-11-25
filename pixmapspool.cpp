@@ -45,7 +45,7 @@ void PixmapsPool::flush() {
       page[i].t.setSampler(s);
       std::string str = "./debug*.png";
       str[7] = i+'0';
-      page[i].p.save( str );
+      // page[i].p.save( str );
       }
 
     //page[0].p.save("./debug.png");
@@ -63,6 +63,8 @@ void PixmapsPool::addPage() {
 
 PixmapsPool::TexturePtr PixmapsPool::add(const MyGL::Pixmap &px, Page & page ) {
   needToflush = true;
+
+  page.t = MyGL::Texture2d();
 
   MyGL::PixEditor p( page.p );
 
