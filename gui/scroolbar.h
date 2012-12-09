@@ -26,6 +26,7 @@ class ScroolBar : public MyWidget::Widget {
     int  value() const;
 
     MyWidget::signal<int> valueChanged;
+
   private:
     void inc();
     void dec();

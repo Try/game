@@ -8,7 +8,7 @@ class PropertyEditor : public MyWidget::Widget {
     PropertyEditor( Resource & res );
 
     struct Property{
-      std::wstring name;
+      std::wstring name, valStr;
       };
 
     void setup( const std::vector<Property>& p );

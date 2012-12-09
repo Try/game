@@ -70,7 +70,7 @@ void Panel::paintEvent( MyWidget::PaintEvent &e ) {
   p.setTexture( back );
   p.drawRect( 0,0, w(), h() );
 
-  if( 1 || hasFocus() || hasChildFocus() ){
+  if( 1 || hasFocus() ){
     p.setTexture( frame );
 
     p.drawRect( 20, 0, w()-40, 20,
@@ -85,6 +85,11 @@ void Panel::paintEvent( MyWidget::PaintEvent &e ) {
     p.drawRect( w()-20, 20, 20, h()-40,
                 30, 20, 20, 10 );
 
+    p.unsetTexture();
+    }
+
+  if( 1 || hasChildFocus() ){
+    p.setTexture( frame );
 
     p.drawRect(      0, 0, 20, 20 );
     p.drawRect( w()-20, 0, 20, 20,

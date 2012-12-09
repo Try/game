@@ -65,7 +65,8 @@ struct Physics::RigidBody{
               Data::localInertion( mass, sphere )
               )
             ) {
-
+    body.setActivationState( DISABLE_DEACTIVATION );
+    // body.setDeactivationTime(8);
     }
 
   RigidBody( float  x, float  y, float  z,
@@ -154,7 +155,7 @@ Physics::Physics(int /*tw*/, int /*th*/) {
                               data->solver.get(),
                               data->collisionConfiguration.get() ) );
 
-  data->dynamicsWorld->setGravity( btVector3( 0, 0, -2 ) );
+  data->dynamicsWorld->setGravity( btVector3( 0, 0, -5 ) );
   }
 
 Physics::~Physics() {

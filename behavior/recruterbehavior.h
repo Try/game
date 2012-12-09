@@ -24,6 +24,7 @@ class RecruterBehavior : public AbstractBehavior  {
     int time, rallyX, rallyY;
     std::vector<std::string> queue;
 
+    bool queueLim;
     bool create( const std::string& s, const Terrain & terrain );
   };
 

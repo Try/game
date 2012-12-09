@@ -13,6 +13,8 @@ struct ProtoObject {
       int size, speed;
       int visionRange;
       int maxHp;
+
+      int gold, lim, limInc, buildTime;
       } data;
 
     struct View{

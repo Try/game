@@ -8,11 +8,16 @@
 
 IncompleteBuilding::IncompleteBuilding( GameObject & o, Behavior::Closure & c )
                    :BuildingBehavior(o,c), obj(o) {
-  time = 100;
+  time = obj.getClass().data.buildTime;
+  tmax = time;
+
+  obj.player().incLim( -obj.getClass().data.limInc );
+
   obj.behavior.clear();
   }
 
 IncompleteBuilding::~IncompleteBuilding() {
+  obj.player().incLim( obj.getClass().data.limInc );
   }
 
 void IncompleteBuilding::tick(const Terrain &t) {
@@ -21,11 +26,12 @@ void IncompleteBuilding::tick(const Terrain &t) {
     --time;
 
   obj.setPosition( obj.x(), obj.y(),
-                   World::coordCastD(-time * obj.viewHeight() /100.0) );
+                   World::coordCastD(-time * obj.viewHeight()/tmax) );
   if( time<=0 ){
     GameObject & ptr = obj;
 
     ptr.behavior.del(this);
+    //ptr.player().incLim( ptr.getClass().data.limInc );
 
     const ProtoObject & p = ptr.getClass();
     for( auto i=p.behaviors.begin(); i!=p.behaviors.end(); ++i ){

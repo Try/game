@@ -45,13 +45,14 @@ void BehaviorMSGQueue::message( int pl,
   data.push_back(m);
   }
 
-void BehaviorMSGQueue::message( int pl,
+void BehaviorMSGQueue::message(int pl,
                                 AbstractBehavior::Message msg,
                                 int x, int y,
-                                const std::string &str,
+                                const std::string &str, size_t size,
                                 AbstractBehavior::Modifers md) {
   message(pl, msg, x, y, md);
-  data.back().str = str;
+  data.back().str  = str;
+  data.back().size = size;
   }
 
 void BehaviorMSGQueue::tick(const Terrain &) {
@@ -151,7 +152,7 @@ void BehaviorMSGQueue::sysMSG( Game &game, World &w ){
       } else
 
     if( m.msg == EditAdd ){
-      game.addEditorObject( m.str, m.player, m.x, m.y );
+      game.addEditorObject( m.str, m.player, m.x, m.y, m.size );
       } else
 
     if( m.msg == EditMove ){

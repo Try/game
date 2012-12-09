@@ -34,6 +34,7 @@ class BehaviorMSGQueue : public AbstractBehavior {
                   Message msg,
                   int x, int y,
                   const std::string& str,
+                  size_t size,
                   Modifers md = NoModifer );
 
     void tick( Game & game, World & w );

@@ -4,12 +4,14 @@
 #include "game/world.h"
 
 #include "algo/algo.h"
+#include "game.h"
 
 #include <iostream>
 
 RecruterBehavior::RecruterBehavior( GameObject & o,
                                     Behavior::Closure & c ):obj(o) {
-  time = 0;
+  time     = 0;
+  queueLim = 0;
   }
 
 RecruterBehavior::~RecruterBehavior() {
@@ -21,13 +23,23 @@ void RecruterBehavior::tick( const Terrain &terrain ) {
     return;
 
   if( time==0 ){
-    if( create( queue[0], terrain ) ){
-      for( size_t i=1; i<queue.size(); ++i )
-        queue[i-1] = queue[i];
-      queue.pop_back();
+    if( queueLim || create( queue[0], terrain ) ){
+      if( !queueLim ){
+        for( size_t i=1; i<queue.size(); ++i )
+          queue[i-1] = queue[i];
+        queue.pop_back();
+        }
 
-      if( queue.size() )
-        time = 25;
+      if( queue.size() ){
+        const ProtoObject& p = obj.world().game.prototype( queue[0] );
+        if( p.data.lim <= obj.player().lim() ){
+          time = p.data.buildTime;
+          obj.player().addLim( -p.data.lim );
+          queueLim = false;
+          } else {
+          queueLim = true;
+          }
+        }
       } else {
       std::cout << "can't find placement for object" << std::endl;
       }
@@ -42,9 +54,19 @@ bool RecruterBehavior::message( AbstractBehavior::Message msg,
   if( msg!=Buy )
     return 0;
 
+  const ProtoObject& p = obj.world().game.prototype( cls );
+
+  if( obj.player().canBuild( p ) ){
+    obj.player().addGold( -p.data.gold );
+    } else {
+    return 0;
+    }
+
   queue.push_back( cls );
-  if( queue.size()==1 )
-    time = 25;
+  if( queue.size()==1 ){
+    time = p.data.buildTime;
+    obj.player().addLim( -p.data.lim );
+    }
 
   return 1;
   }
@@ -61,8 +83,6 @@ bool RecruterBehavior::message( AbstractBehavior::Message msg,
   }
 
 bool RecruterBehavior::create(const std::string &s, const Terrain &terrain) {
-  GameObject & tg = obj.world().addObject( s );
-
   int size = obj.getClass().data.size;
   int sq = Terrain::quadSize,
       x = obj.x()/sq,
@@ -125,8 +145,10 @@ bool RecruterBehavior::create(const std::string &s, const Terrain &terrain) {
   if( l<0 )
     return false;
 
+  GameObject & tg = obj.world().addObject( s );
   tg.setPosition( x1, y1, obj.z() );
   tg.setPlayer( obj.playerNum() );
+  tg.player().addLim( tg.getClass().data.lim );
 
   tg.setViewDirection( -(obj.x()-x1), -(obj.y()-y1) );
 

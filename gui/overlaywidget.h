@@ -9,16 +9,19 @@ class MainGui;
 
 class OverlayWidget : public MyWidget::Widget {
   public:
-    OverlayWidget( MainGui& mgui, Resource &r );
+    OverlayWidget( Resource &r );
 
     void setupSignals();
 
     struct ContainerLayout : public MyWidget::Layout {
+      ContainerLayout();
       void applyLayout();
+      bool used;
       };
   protected:
     void focusEvent( bool f );
-    MainGui & maingui;
+
+    void mouseDownEvent(MyWidget::MouseEvent &e);
   };
 
 #endif // OVERLAYWIDGET_H

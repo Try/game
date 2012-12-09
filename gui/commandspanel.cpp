@@ -174,7 +174,8 @@ void CommandsPanel::bind(const ProtoObject::Commans::Page &p) {
 void CommandsPanel::buyEvent(const std::string &unit) {
   msg.message( pl, Behavior::Buy,
                u0->x(), u0->y(),
-               unit );
+               unit,
+               pl );
   }
 
 void CommandsPanel::setPage(int page) {

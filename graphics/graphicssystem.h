@@ -73,7 +73,7 @@ class GraphicsSystem {
     MainGui * widget;
 
     MyGL::Size  screenSize;
-    static  MyGL::Matrix4x4 makeShadowMatrix( const MyGL::Scene & s );
+    static  MyGL::Matrix4x4 makeShadowMatrix(const MyGL::Scene & s , double *dxyz);
 
     MyGL::Texture2d::Sampler reflect, bufSampler;
 
@@ -94,8 +94,8 @@ class GraphicsSystem {
       } gbuf;
 
     struct Transparent{
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      MyGL::VertexShader   vs, vsAdd;
+      MyGL::FragmentShader fs, fsAdd;
       } transparentData;
 
     struct Displace{
@@ -146,6 +146,15 @@ class GraphicsSystem {
       MyGL::FragmentShader fs;
       } finalData;
 
+    struct SSAO{
+      MyGL::Uniform< MyGL::Texture2d > texture, blured, macro;
+      MyGL::Uniform< MyGL::Texture2d > scene, diff, ssao;
+      MyGL::Uniform<float[3]> lightAblimient;
+
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs, detail, accept;
+      } ssaoData;
+
     MyGL::Uniform<float[2]> scrOffset, cpyOffset;
 
     void fillGBuf( MyGL::Texture2d *gbuffer,
@@ -156,7 +165,9 @@ class GraphicsSystem {
     void drawOmni(MyGL::Texture2d *gbuffer,
                    MyGL::Texture2d &mainDepth, const MyGL::Scene &scene);
 
-    void setupLight(const MyGL::Scene &scene, MyGL::FragmentShader & fs , const MyGL::Texture2d &sm);
+    void setupLight( const MyGL::Scene &scene,
+                     MyGL::FragmentShader & fs ,
+                     const MyGL::Texture2d &sm);
 
     void fillShadowMap( MyGL::Texture2d &sm,
                         const MyGL::Scene &scene );
@@ -194,8 +205,8 @@ class GraphicsSystem {
 
     void copy( MyGL::Texture2d &out,
                const MyGL::Texture2d& in );
-    void copyDepth( MyGL::Texture2d &out,
-                    const MyGL::Texture2d& in );
+    void copyDepth(MyGL::Texture2d &out,
+                    const MyGL::Texture2d& in , int w, int h);
     void copy( MyGL::Texture2d &out,
                const MyGL::Texture2d& in, int w, int h );
     void gauss( MyGL::Texture2d &out,
@@ -207,6 +218,21 @@ class GraphicsSystem {
 
     void waves( MyGL::Texture2d &out,
                 const MyGL::Texture2d& in );
+
+    void ssao(MyGL::Texture2d &out,
+               const MyGL::Texture2d& in , const MyGL::Scene &scene);
+
+    void aceptSsao( const MyGL::Scene &s,
+                    MyGL::Texture2d &out,
+                    const MyGL::Texture2d& scene,
+                    const MyGL::Texture2d &diff,
+                    const MyGL::Texture2d &ssao);
+
+    void ssaoDetail( MyGL::Texture2d &out,
+                     const MyGL::Texture2d& in , const MyGL::Texture2d &macro);
+
+    void ssaoGMap( const MyGL::Scene &s,
+                   MyGL::Texture2d &out );
 
     MyGL::Texture2d depth( int w, int h );
     MyGL::Texture2d depth( const MyGL::Size& sz );

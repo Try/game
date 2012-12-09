@@ -1,19 +1,37 @@
 #ifndef LISTBOX_H
 #define LISTBOX_H
 
-#include "gui/button.h"
+#include <vector>
+#include <string>
+
+#include "abstractlistbox.h"
 
 class Resource;
-class MainGui;
 
-class ListBox : public Button {
+class ListBox : public AbstractListBox {
   public:
-    ListBox( MainGui& gui, Resource & r );
+    ListBox( Resource & r );
+
+    void setItemList( const std::vector<std::wstring> & list );
+    const std::vector<std::wstring> & items() const;
+
+    MyWidget::signal<size_t> onItemSelected;
+    MyWidget::signal<const std::wstring&> onItemSelectedW;
+
+    void setCurrentItem( size_t i );
+  protected:
+    void mouseWheelEvent(MyWidget::MouseEvent &e);
 
   private:
-    void showList();
-    MainGui& gui;
     Resource &res;
+    int selected;
+
+    MyWidget::Widget *createDropList();
+    std::vector<std::wstring> data;
+
+    class ItemBtn;
+
+    void onItem( size_t id );
   };
 
 #endif // LISTBOX_H

@@ -26,6 +26,15 @@ MyWidget::Widget &ScroolWidget::centralWidget() {
   return *cen;
   }
 
+void ScroolWidget::mouseWheelEvent(MyWidget::MouseEvent &e) {
+  if( !rect().contains(e.x+x(), e.y+y()) ){
+    e.ignore();
+    return;
+    }
+
+  sb.setValue( sb.value() - e.delta);//*std::max(1, int(sb.range()*0.05)) );
+  }
+
 void ScroolWidget::scrool(int v) {
   lay->applyLayout();
   }

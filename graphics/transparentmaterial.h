@@ -11,20 +11,26 @@ class GraphicsSystem;
 
 class TransparentMaterial : public MyGL::AbstractMaterial {
   public:
+    TransparentMaterial( const MyGL::Matrix4x4 & shadowMatrix );
+
     bool bind( MyGL::RenderState &dev,
                const MyGL::Matrix4x4 &object,
                const MyGL::AbstractCamera &c,
                MyGL::UniformTable &) const;
 
     MyGL::Texture2d texture;
+
+  private:
+    const MyGL::Matrix4x4 * shadowMatrix;
 };
 
-class TransparentMaterialZPass : public TransparentMaterial {
+class TransparentMaterialZPass : public MyGL::AbstractMaterial {
   public:
     bool bind( MyGL::RenderState &dev,
                const MyGL::Matrix4x4 &object,
                const MyGL::AbstractCamera &c,
                MyGL::UniformTable &) const;
+    MyGL::Texture2d texture;
 };
 
 #endif // TRANSPARENTMATERIAL_H

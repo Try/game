@@ -8,6 +8,8 @@ LineEdit::LineEdit(Resource &res):res(res) {
   frame.data = res.pixmap("gui/colors");
   sedit = 0;
   eedit = 0;
+
+  editable = 1;
   isEdited = false;
 
   setFocusPolicy( ClickFocus );
@@ -30,7 +32,14 @@ void LineEdit::setText(const std::wstring &t) {
   font.fetch(res, t);
   txt = t;
 
+  sedit = std::max<size_t>(0, std::min(sedit, txt.size() ));
+  eedit = std::max<size_t>(0, std::min(eedit, txt.size() ));
+
   onTextChanged(txt);
+  }
+
+const std::wstring &LineEdit::text() const {
+  return txt;
   }
 
 size_t LineEdit::selectionBegin() {
@@ -39,6 +48,25 @@ size_t LineEdit::selectionBegin() {
 
 size_t LineEdit::selectionEnd() {
   return eedit;
+  }
+
+void LineEdit::setSelectionBounds(size_t begin, size_t end) {
+  if( begin > end )
+    std::swap(begin, end);
+
+  begin = std::min( txt.size(), begin );
+  end   = std::min( txt.size(), end   );
+
+  sedit = begin;
+  eedit = end;
+  }
+
+void LineEdit::setEditable(bool e) {
+  editable = e;
+  }
+
+bool LineEdit::isEditable() const {
+  return editable;
   }
 
 void LineEdit::mouseDownEvent(MyWidget::MouseEvent &e) {
@@ -92,7 +120,7 @@ void LineEdit::paintEvent( MyWidget::PaintEvent &pe ) {
     }
 
   int oldSc = scrool;
-  if( sx==x ){
+  if( editable && sx==x ){
     --sx;
     if( x+oldSc > w() ){
       scrool += ( w() - (x+oldSc) );
@@ -103,6 +131,8 @@ void LineEdit::paintEvent( MyWidget::PaintEvent &pe ) {
       scrool -= (x+oldSc);
       //scrool -= w()/3;
       }
+
+    x += 1;
     }
 
   p.drawRect( sx+oldSc, 0, x-sx, h(),
@@ -115,9 +145,9 @@ void LineEdit::paintEvent( MyWidget::PaintEvent &pe ) {
   }
 
 void LineEdit::keyDownEvent( KeyEvent &e ) {
-  if( e.key==KeyEvent::K_NoKey ){
+  if( e.key==KeyEvent::K_NoKey && editable ){
     wchar_t ch[2] = { wchar_t(e.u16), 0 };
-    if( sedit+1 < eedit )
+    if( sedit < eedit )
       txt.erase( sedit, eedit-1 );
 
     txt.insert( sedit, ch );
@@ -126,6 +156,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
 
     isEdited = true;
     onTextChanged( txt );
+    onTextEdited(txt);
     update();
     return;
     }
@@ -153,8 +184,8 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
     return;
     }
 
-  if( e.key==KeyEvent::K_Back ){
-    if( sedit+1 < eedit )
+  if( e.key==KeyEvent::K_Back && editable ){
+    if( sedit < eedit )
       txt.erase( sedit, eedit-sedit ); else
     if( sedit > 0 ){
       txt.erase( sedit-1, 1 );
@@ -165,12 +196,13 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
 
     isEdited = true;
     onTextChanged( txt );
+    onTextEdited(txt);
     update();
     return;
     }
 
-  if( e.key==KeyEvent::K_Delete ){
-    if( sedit+1 < eedit )
+  if( e.key==KeyEvent::K_Delete && editable ){
+    if( sedit < eedit )
       txt.erase( sedit, eedit-sedit ); else
     if( sedit >= 0 ){
       txt.erase( sedit, 1 );
@@ -181,6 +213,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
 
     isEdited = true;
     onTextChanged( txt );
+    onTextEdited(txt);
     update();
     return;
     }

@@ -34,8 +34,6 @@ bool MainMaterial::bind( MyGL::RenderState &rs,
   table.add( sh,     "shadowMatrix", MyGL::UniformTable::Vertex );
 
   table.add( diffuseTexture, "texture",   MyGL::UniformTable::Fragment );
-  //table.add( *shadowMap,     "shadowMap", MyGL::UniformTable::Fragment );
-
   table.add( specular, "specularFactor", MyGL::UniformTable::Fragment );
 
   if( teamColor ){// FIXME

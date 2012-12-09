@@ -26,6 +26,9 @@ class WarriorBehavior : public AbstractBehavior  {
 
     bool isAtk; int lastX, lastY;
     int  dAtkTime;
+
+    bool mvLock;
+    int lkX, lkY;
   };
 
 #endif // WARRIORBEHAVIOR_H

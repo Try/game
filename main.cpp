@@ -66,7 +66,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
 
     memset(&uMsg,0,sizeof(uMsg));
 
-    static std::wstring wclass = toStr("MY_WINDOWS_CLASS");
+    static std::wstring wclass = toStr("game");
 
     winClass.lpszClassName = wclass.data();
     winClass.cbSize        = sizeof(WNDCLASSEX);
@@ -128,17 +128,28 @@ int WINAPI WinMain( HINSTANCE hInstance,
       demo.toogleFullScreen.bind( toogleFullScreen );
 
 
+      DWORD time = GetTickCount();
       while( uMsg.message != WM_QUIT ) {
         if( PeekMessage( &uMsg, NULL, 0, 0, PM_REMOVE ) ) {
           TranslateMessage( &uMsg );
           DispatchMessage( &uMsg );
           } else {
+          DWORD ft = GetTickCount();
 
           if( isAppActive )
             demo.render();
 
-          demo.tick();
-          Sleep(10);
+          DWORD tc = std::min<DWORD>( (GetTickCount() - time)/60, 5 );
+          tc = std::max<DWORD>(1, tc);
+
+          for( DWORD i=0; i<tc; ++i )
+            demo.tick();
+
+          time = GetTickCount();
+          ft  = GetTickCount() - ft;
+
+          if( ft< 1000/60 )
+            Sleep(1000/60-ft);
           }
         }
       }
@@ -153,7 +164,8 @@ int WINAPI WinMain( HINSTANCE hInstance,
     return uMsg.wParam;
 }
 
-MyWidget::KeyEvent makeKeyEvent( WPARAM k ){
+MyWidget::KeyEvent makeKeyEvent( WPARAM k,
+                                 bool scut = false ){
   MyWidget::KeyEvent::KeyType e = MyWidget::KeyEvent::K_NoKey;
 
   if( k==VK_ESCAPE )
@@ -176,13 +188,15 @@ MyWidget::KeyEvent makeKeyEvent( WPARAM k ){
 
   if( k>=VK_F1 && k<= VK_F24 )
     e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_F1) + size_t(k) - VK_F1 );
-/*
-  if( k>=0x41 && k<=0x5A )
-    e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_A) + size_t(k) - 0x41 );
 
-  if( k>=0x30 && k<=0x39 )
-    e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_0) + size_t(k) - 0x30 );
-*/
+  if( scut ){
+    if( k>=0x41 && k<=0x5A )
+      e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_A) + size_t(k) - 0x41 );
+
+    if( k>=0x30 && k<=0x39 )
+      e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_0) + size_t(k) - 0x30 );
+    }
+
   return MyWidget::KeyEvent(e);
   }
 
@@ -230,9 +244,14 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
         case WM_KEYDOWN:
         {
-           MyWidget::KeyEvent e =  makeKeyEvent(wParam);
-           if( e.key!=MyWidget::KeyEvent::K_NoKey )
-             mgl_demo->keyDownEvent( e );
+           MyWidget::KeyEvent sce =  makeKeyEvent(wParam, true);
+           mgl_demo->scutEvent(sce);
+
+           if( !sce.isAccepted() ){
+             MyWidget::KeyEvent e =  makeKeyEvent(wParam);
+             if( e.key!=MyWidget::KeyEvent::K_NoKey )
+               mgl_demo->keyDownEvent( e );
+             }
            //std::cout << "wParaam = " << wParam << std::endl;
         }
         break;
@@ -279,8 +298,13 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         break;
 
         case WM_MOUSEWHEEL:{
-          MyWidget::MouseEvent e( LOWORD (lParam),
-                                  HIWORD (lParam),
+          POINT p;
+          p.x = LOWORD (lParam);
+          p.y = HIWORD (lParam);
+
+          ScreenToClient(hWnd, &p);
+
+          MyWidget::MouseEvent e( p.x, p.y,
                                   MyWidget::Event::ButtonNone,
                                   GET_WHEEL_DELTA_WPARAM(wParam) );
           mgl_demo->mouseWheelEvent(e);

@@ -32,7 +32,7 @@ Terrain::Terrain(int w, int h) {
       //int z = abs(16*(i-width()/2)*(r-height()/2)) - 16*w*h/4;
       heightMap[i][r] = 0;
       }*/
-
+/*
   for( int i=0; i<w; ++i )
     for( int r=0; r<h; ++r ){
       int dz = -std::max( (5-abs( i-w/2 ))*100, (5-abs(r-h/2))*100 )
@@ -40,7 +40,7 @@ Terrain::Terrain(int w, int h) {
       dz = std::min(dz, 0);
 
       waterMap[i][r] = -dz;
-      }
+      }*/
 
   computeEnableMap();
   }

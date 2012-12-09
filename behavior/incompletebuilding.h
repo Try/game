@@ -19,6 +19,7 @@ class IncompleteBuilding : public BuildingBehavior  {
   private:
     GameObject & obj;
     int time;
+    float tmax;
   };
 
 #endif // INCOMPLETEBUILDING_H

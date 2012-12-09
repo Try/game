@@ -184,7 +184,7 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
   int l = Math::distance( obj.x(), obj.y(),
                           tx, ty )/curentSpeed;
 
-  if( l>1 ){
+  if( l>2 ){
     int x = obj.x()+(tx-obj.x())/l,
         y = obj.y()+(ty-obj.y())/l;
 

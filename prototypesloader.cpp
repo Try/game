@@ -213,17 +213,19 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       }
 
     if( type=="property" ){
-      obj.data.size = Lexical::cast<int>( findStr( e, "size",
-                                                   "1", "invalid size value" ) );
+      readIf( e, "size", obj.data.size );
       obj.data.size = std::max(1, obj.data.size);
 
-      obj.data.visionRange =
-          Lexical::cast<int>( findStrOpt( e, "visionRange", "8" ) );
+      readIf( e, "visionRange", obj.data.visionRange );
       obj.data.visionRange = std::max(1, obj.data.visionRange);
 
-      obj.data.maxHp =
-          Lexical::cast<int>( findStrOpt( e, "maxHp", "100" ) );
+      readIf( e, "maxHp", obj.data.maxHp );
       obj.data.maxHp = std::max(1, obj.data.maxHp);
+
+      readIf( e, "gold",      obj.data.gold      );
+      readIf( e, "lim",       obj.data.lim       );
+      readIf( e, "limInc",    obj.data.limInc    );
+      readIf( e, "buildTime", obj.data.buildTime );
       }
 
     if( type=="commands" )

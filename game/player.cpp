@@ -1,9 +1,16 @@
 #include "player.h"
 
 #include "algo/algo.h"
+#include "gameobject.h"
+
+#include "protoobject.h"
 
 Player::Player(int num) {
   editObj  = 0;
+
+  m.gold = 100500;
+  m.lim    = 0;
+  m.limMax = 0;
 
   m.team   = num;
   m.num    = num;
@@ -28,9 +35,19 @@ Player::Player(int num) {
 
 void Player::addUnit(GameObject *u) {
   m.objects.push_back(u);
+  m.lim -= u->getClass().data.lim;
+  m.lim += u->getClass().data.limInc;
+
+  m.limMax += u->getClass().data.limInc;
   }
 
 void Player::delUnit(GameObject *u) {
+  onUnitDied(*u);
+
+  m.lim += u->getClass().data.lim;
+  m.lim -= u->getClass().data.limInc;
+  m.limMax -= u->getClass().data.limInc;
+
   remove( m.objects,  u );
   remove( m.selected, u );
   }
@@ -65,4 +82,34 @@ std::vector<GameObject*> &Player::selected() {
 
 const MyGL::Color &Player::color() const {
   return m.color;
+  }
+
+void Player::addGold(int g) {
+  m.gold += g;
+  }
+
+int Player::gold() const {
+  return m.gold;
+  }
+
+int Player::lim() const {
+  return m.lim;
+  }
+
+void Player::addLim(int l) {
+  m.lim += l;
+  }
+
+void Player::incLim(int l) {
+  m.lim += l;
+  m.limMax += l;
+  }
+
+bool Player::canBuild( const ProtoObject &p ) const {
+  return (  m.gold>= p.data.gold &&
+           (m.lim >= p.data.lim || p.data.lim<=0));
+  }
+
+int Player::limMax() const {
+  return m.limMax;
   }

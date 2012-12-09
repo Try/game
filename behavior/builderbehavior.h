@@ -21,7 +21,7 @@ class BuilderBehavior : public AbstractBehavior  {
     bool message(Message msg, int x, int y, Modifers md);
   private:
     GameObject & obj;
-    MyGL::GraphicObject hud;
+    MyGL::GraphicObject hud, hudIntent;
     const ProtoObject* proto;
 
     InputHook hook;

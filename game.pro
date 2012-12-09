@@ -94,7 +94,14 @@ HEADERS += \
     gui/font.h \
     gui/formbuilder.h \
     gui/propertyeditor.h \
-    gui/lineedit.h
+    gui/lineedit.h \
+    gui/ingamecontrols.h \
+    gui/abstractlistbox.h \
+    gui/modalwindow.h \
+    gui/ingamemenu.h \
+    gui/gen/ui_ingamemenu.h \
+    gui/gen/ui_toppanel.h \
+    gui/unitlist.h
 
 SOURCES += \
     main.cpp \
@@ -154,7 +161,14 @@ SOURCES += \
     gui/font.cpp \
     gui/formbuilder.cpp \
     gui/propertyeditor.cpp \
-    gui/lineedit.cpp
+    gui/lineedit.cpp \
+    gui/ingamecontrols.cpp \
+    gui/abstractlistbox.cpp \
+    gui/modalwindow.cpp \
+    gui/ingamemenu.cpp \
+    gui/gen/ui_ingamemenu.cpp \
+    gui/gen/ui_toppanel.cpp \
+    gui/unitlist.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

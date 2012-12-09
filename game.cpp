@@ -33,6 +33,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   h = ih;
   isFullScreen = isFS;
 
+  curMPos = MyWidget::Point(w/2, h/2);
+
   hwnd = ihwnd;
   currentPlayer = 1;
 
@@ -50,7 +52,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   setPlaylersCount(1);
 
-  gui.createControls( msg );
+  gui.createControls( msg, *this );
   gui.enableHooks( !serializator.isReader() );
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
   gui.addObject.bind( *this, &Game::createEditorObject );
@@ -63,6 +65,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
                                                       128, 128) ) );
 
   world = worlds[0].get();
+  gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
 
   world->camera.setPerespective( true, w, h );
   world->camera.setPosition( 2, 3, 0 );
@@ -75,6 +78,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   }
 
 void Game::tick() {
+  moveCamera();
+
   DWORD time = GetTickCount();
 
   F3 v = unProject( curMPos.x, curMPos.y, 0 );
@@ -118,7 +123,7 @@ void Game::render() {
   //std::cout << GetTickCount() - time << std::endl;
 
 
-  moveCamera();
+  //moveCamera();
   }
 
 void Game::resizeEvent( int iw, int ih ){
@@ -137,6 +142,7 @@ void Game::mouseDownEvent( MyWidget::MouseEvent &e) {
   if( gui.mouseDownEvent(e) )
     return;
 
+  gui.setFocus();
   mouseTracking         = (e.button==MyWidget::MouseEvent::ButtonRight);
   selectionRectTracking = (e.button==MyWidget::MouseEvent::ButtonLeft);
 
@@ -157,6 +163,8 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
   if( gui.mouseUpEvent(e) )
     return;
 
+  gui.setFocus();
+
   mouseTracking         = false;
   selectionRectTracking = false;
   gui.selectionRect() = MyWidget::Rect(-1, -1, 0, 0);
@@ -166,6 +174,7 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
 
   if( e.button==MyWidget::MouseEvent::ButtonLeft ){    
     world->updateSelectionFlag( msg, currentPlayer );
+    //gui.updateSelectUnits( *world );
     }
 
   if( e.button==MyWidget::MouseEvent::ButtonRight ){
@@ -214,6 +223,7 @@ void Game::mouseWheelEvent( MyWidget::MouseEvent &e ) {
   if( gui.mouseWheelEvent(e) ){
     return;
     }
+  gui.setFocus();
 
   if( (player().editObj && !serializator.isReader() ) &&
       lastKEvent!=MyWidget::KeyEvent::K_Down ){
@@ -223,6 +233,10 @@ void Game::mouseWheelEvent( MyWidget::MouseEvent &e ) {
       world->camera.setDistance( world->camera.distance() * 1.1 ); else
       world->camera.setDistance( world->camera.distance() / 1.1 );
     }
+}
+
+void Game::scutEvent(MyWidget::KeyEvent &e) {
+  gui.scutEvent(e);
   }
 
 void Game::keyDownEvent( MyWidget::KeyEvent &e ) {
@@ -252,8 +266,9 @@ void Game::setPlaylersCount(int c) {
     addPlayer();
   }
 
-void Game::addEditorObject(const std::string &p, int pl, int x, int y ) {
-  GameObject *obj = &world->addObject( p, pl );
+void Game::addEditorObject(const std::string &p, int pl, int x, int y,
+                           size_t unitPl ) {
+  GameObject *obj = &world->addObject( p, unitPl );
 
   obj->setPosition( x, y, 200 );
   obj->updatePos();
@@ -265,8 +280,13 @@ void Game::addEditorObject(const std::string &p, int pl, int x, int y ) {
   }
 
 void Game::moveEditorObject( int pl, int x, int y) {
-  if( player(pl).editObj )
-    player(pl).editObj->setPosition( x, y, 0 );
+  if( player(pl).editObj ){
+    float wx = x/Terrain::quadSizef,
+          wy = y/Terrain::quadSizef;
+
+    GameObject & obj = *player(pl).editObj;
+    obj.setPosition( x, y, obj.world().terrain().heightAt(wx,wy) );
+    }
   }
 
 void Game::rotateEditorObject(int pl, int x) {
@@ -280,7 +300,8 @@ void Game::nextEditorObject(int pl) {
 
   GameObject * obj = player(pl).editObj;
   player(pl).editObj = 0;
-  addEditorObject( obj->getClass().name, pl, obj->x(), obj->y() );
+  addEditorObject( obj->getClass().name, pl, obj->x(), obj->y(),
+                   obj->playerNum() );
   }
 
 void Game::delEditorObject(int pl) {
@@ -319,6 +340,7 @@ void Game::addPlayer() {
   if( players.size() == 2 ){
     players[1]->setHostCtrl(1);
     players[1]->onUnitSelected.bind( gui, &MainGui::updateSelectUnits );
+    players[1]->onUnitDied    .bind( gui, &MainGui::onUnitDied );
     }
   }
 
@@ -337,12 +359,13 @@ Player &Game::player() {
   return player( currentPlayer );
   }
 
-void Game::createEditorObject(const ProtoObject &p) {
+void Game::createEditorObject(const ProtoObject &p, int pl) {
   msg.message( currentPlayer,
                Behavior::EditAdd,
                World::coordCastD(world->camera.x()),
                World::coordCastD(world->camera.y()),
-               p.name );
+               p.name,
+               pl );
   }
 
 Game::F3 Game::unProject( int x, int y, float destZ ) {
@@ -487,10 +510,10 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
 
   if( contains( src.materials, "transparent" ) ){
     TransparentMaterialZPass zpass;
-    TransparentMaterial      material;
+    TransparentMaterial      material(c.shadow.matrix);
     zpass.texture = r.texture( src.name+"/diff" );
 
-    material = zpass;
+    material.texture = zpass.texture;
     obj.setupMaterial( zpass    );
     obj.setupMaterial( material );
     }
@@ -499,4 +522,8 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     OmniMaterial material;
     obj.setupMaterial( material );
     }
+  }
+
+MyGL::Matrix4x4 &Game::shadowMat() {
+  return graphics.closure.shadow.matrix;
   }

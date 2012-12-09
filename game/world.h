@@ -82,13 +82,15 @@ class World {
     void setMousePos( int x, int y );
     int mouseX() const;
     int mouseY() const;
-  private:
 
+    void toogleEditLandMode();
+  private:
     Physics physics;
     Terrain terr;
 
     MyGL::Scene scene;
     int mpos[2];
+    bool editLandMode;
 
     std::vector< PGameObject > gameObjects, eviObjects;
     // std::vector< PGameObject > selected;

@@ -6,6 +6,7 @@
 #include <MyGL/Color>
 
 class GameObject;
+class ProtoObject;
 
 class Player {
   public:
@@ -26,13 +27,26 @@ class Player {
     std::vector<GameObject*>& selected();
 
     MyWidget::signal< std::vector<GameObject*>& > onUnitSelected;
+    MyWidget::signal< GameObject& > onUnitDied;
 
     const MyGL::Color& color() const;
+
+    void addGold( int g );
+    int  gold() const;
+    int  lim()  const;
+    void addLim( int l );
+    void incLim( int l );
+
+    bool canBuild(const ProtoObject &p) const;
+
+    int  limMax()  const;
   private:
     struct {
       int num;
       int team;
       bool htCtrl;
+
+      int gold, lim, limMax;
       std::vector<GameObject*> objects, selected;
 
       MyGL::Color color;

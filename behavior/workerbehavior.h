@@ -29,7 +29,7 @@ class WorkerBehavior : public AbstractBehavior  {
     WeakWorldPtr res;
     WeakWorldPtr castle;
     int mtime;
-    bool foceWalk;
+    bool forceWalk;
 
     void toCastle();
     void toMineral();

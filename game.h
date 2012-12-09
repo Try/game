@@ -33,6 +33,7 @@ class Game {
 
     void mouseWheelEvent ( MyWidget::MouseEvent &e );
 
+    void scutEvent   ( MyWidget::KeyEvent &e );
     void keyDownEvent( MyWidget::KeyEvent &e );
     void keyUpEvent  ( MyWidget::KeyEvent &e );
 
@@ -40,10 +41,11 @@ class Game {
     void toogleFullScr();
 
     Player & player( int i );
+    Player & player();
     size_t plCount() const;
 
     void setPlaylersCount( int c );
-    void addEditorObject( const std::string &p, int pl, int x, int y );
+    void addEditorObject(const std::string &p, int pl, int x, int y , size_t unitPl);
     void moveEditorObject( int pl, int x, int y );
     void rotateEditorObject( int pl, int x );
     void nextEditorObject( int pl );
@@ -62,7 +64,10 @@ class Game {
     const Resource& resources() const;
 
     void setupMaterials( MyGL::AbstractGraphicObject &obj,
-                         const ProtoObject::View &src, const MyGL::Color &teamColor );
+                         const ProtoObject::View &src,
+                         const MyGL::Color &teamColor );
+
+    MyGL::Matrix4x4& shadowMat();
   private:
     void* hwnd;
     bool isFullScreen;
@@ -76,9 +81,8 @@ class Game {
     Serialize serializator;
 
     void addPlayer();
-    Player & player();
     int currentPlayer;
-    void createEditorObject( const ProtoObject & p );
+    void createEditorObject( const ProtoObject & p, int pl );
     std::vector< std::unique_ptr<Player> > players;
     std::vector< std::unique_ptr<World> >  worlds;
     World * world;

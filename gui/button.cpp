@@ -133,6 +133,7 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
   p.unsetTexture();
 
 
+  p.setBlendMode( MyWidget::alphaBlend );
   p.setTexture( icon );
   Font f;
 

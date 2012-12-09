@@ -229,7 +229,8 @@ void GameObject::setViewPosition(float x, float y, float z) {
     setViewPosition( view[i], getClass().view[i], x, y, z );
     }
 
-  selection.setPosition( x, y, z+0.01 );
+  float zland = World::coordCast( world().terrain().heightAt( x, y ) );
+  selection.setPosition( x, y, std::max(zland, z)+0.01 );
 
   if( form.sphere.isValid() )
     form.sphere.setPosition(x,y,z);
@@ -358,7 +359,7 @@ void GameObject::updatePos() {
 
 template< class Rigid >
 void GameObject::updatePosRigid( Rigid &rigid ){
-  rigid.activate();
+  // rigid.activate();
   setViewPosition( rigid.x(), rigid.y(), rigid.z() );
 
   for( size_t i=0; i<env.size(); ++i ){
@@ -456,6 +457,9 @@ void GameObject::updateSelection() {
   }
 
 void GameObject::setViewDirection(int lx, int ly) {
+  if( lx==0 && ly==0 )
+    return;
+
   m.intentDirX = lx;
   m.intentDirY = ly;
   }
@@ -523,6 +527,10 @@ void GameObject::setPlayer(int pl) {
 
 int GameObject::playerNum() const {
   return m.pl;
+  }
+
+Player &GameObject::player() {
+  return wrld.player( playerNum() );
   }
 
 int GameObject::team() const {

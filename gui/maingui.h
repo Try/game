@@ -31,6 +31,9 @@ class GameObject;
 class World;
 class BehaviorMSGQueue;
 class OverlayWidget;
+class Game;
+
+class InGameControls;
 
 class MainGui {
   public:
@@ -40,10 +43,16 @@ class MainGui {
              PrototypesLoader & prototypes );
     ~MainGui();
 
-    void createControls(BehaviorMSGQueue &msg);
-    MyWidget::signal<const ProtoObject&> addObject;
+    void setFocus();
+    void setupSelUnitsList( const World& obj );
+    void onUnitDied( GameObject & obj );
+
+    void createControls( BehaviorMSGQueue &msg,
+                         Game &game );
+    MyWidget::signal<const ProtoObject&, int> addObject;
     MyWidget::signal< MyWidget::Painter&, int, int> paintObjectsHud;
     MyWidget::signal<> toogleFullScreen;
+    MyWidget::signal<> toogleEditLandMode;
 
     bool draw( GUIPass & pass );
     void resizeEvent( int w, int h );
@@ -53,76 +62,30 @@ class MainGui {
     int mouseMoveEvent  (MyWidget::MouseEvent &e);
     int mouseWheelEvent (MyWidget::MouseEvent &e);
 
+    int scutEvent   ( MyWidget::KeyEvent & e );
     int keyDownEvent( MyWidget::KeyEvent & e );
     int keyUpEvent  ( MyWidget::KeyEvent & e );
 
     MyWidget::Rect& selectionRect();
     void update();
 
-    void updateSelectUnits( const std::vector<GameObject*>& u );
+    void updateSelectUnits(const std::vector<GameObject *> &u );
     bool instalHook( InputHookBase* h );
     void removeHook( InputHookBase* h );
 
     void enableHooks( bool e );
 
-    OverlayWidget* addOverlay();
   private:
     typedef MyWidget::PainterDevice Painter;
     typedef MyWidget::Widget  Widget;
     typedef MyWidget::Image<> Image;
     typedef MyWidget::SizePolicy        SizePolicy;
 
-    struct MainWidget: public Widget {
-      MyWidget::signal< MyWidget::Painter&, int , int> paintObjectsHud;
-      void paintEvent(MyWidget::PaintEvent &p);
+    InGameControls *mainwidget;
 
-      MyWidget::Bind::UserTexture frame;
-      MyWidget::Rect selection;
-
-      Font mainFont;
-      };
-
-    struct AddUnitButton: public Button{
-      AddUnitButton( Resource & res, ProtoObject& obj );
-      void click();
-
-      MyWidget::signal<const ProtoObject&> clickedEx;
-      ProtoObject& prototype;
-      };
-
-    std::vector< InputHookBase* > hooks;
-    MainWidget *mainwidget;
-    void removeAllHooks();
-
-    template< class E >
-    bool hookCall( void (InputHookBase::*f)(E &), E & e ){
-      if( e.isAccepted() )
-        return 1;
-
-      for( size_t i=0; i<hooks.size(); ++i ){
-        InputHookBase &b = *hooks[hooks.size()-i-1];
-
-        e.accept();
-        (b.*f)(e);
-
-        if( e.isAccepted() )
-          return 1;
-        }
-
-      return 0;
-      }
-
-    //MainWidget widget;
-    //std::vector< std::unique_ptr<MyWidget::Widget> > widgets;
     CentralWidget central;
     Resource & res;
     PrototypesLoader & prototypes;
-    bool isHooksEnabled;
-
-    Widget *createConsole(BehaviorMSGQueue &q);
-    Widget *createEditPanel();
-
-    CommandsPanel * commands;
   };
 
 #endif // MAINGUI_H

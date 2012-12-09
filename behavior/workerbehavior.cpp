@@ -5,11 +5,13 @@
 #include "resourcebehavior.h"
 #include "warehousebehavior.h"
 
+#include "game/player.h"
+
 WorkerBehavior::WorkerBehavior( GameObject & object,
                                 Behavior::Closure &  ):obj(object) {
   mode  = NoWork;
   mtime = 0;
-  foceWalk = 0;
+  forceWalk = 0;
   }
 
 WorkerBehavior::~WorkerBehavior() {
@@ -19,7 +21,7 @@ WorkerBehavior::~WorkerBehavior() {
 void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
   int x = obj.x(), y = obj.y();
 
-  if( mode==ToMineral && !res && (!foceWalk || !obj.isOnMove()) ){
+  if( mode==ToMineral && !res && (!forceWalk || !obj.isOnMove()) ){
     toMineral();
     }
 
@@ -53,6 +55,7 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
 
     if( d <= s ){
       //mode = ToMineral;
+      obj.player().addGold(5);
       toMineral();
       return;
       } else {
@@ -99,7 +102,7 @@ bool WorkerBehavior::message( AbstractBehavior::Message msg,
   if( l>=0 && l<3 ){
     GameObject & m = *w.resouce()[id];
     move( m.x(), m.y() );
-    foceWalk = 1;
+    forceWalk = 1;
     mode = ToMineral;
     return 1;
     }
@@ -137,7 +140,7 @@ void WorkerBehavior::toCastle() {
 
 void WorkerBehavior::toMineral() {
   const int maxLen = 10;
-  foceWalk = 0;
+  forceWalk = 0;
 
   int x = obj.x(), y = obj.y();
   World & w = obj.world();

@@ -6,16 +6,25 @@ WarriorBehavior::WarriorBehavior( GameObject &obj,
                                   Behavior::Closure &c ):obj(obj) {
   isAtk    = false;
   dAtkTime = 0;
+  mvLock   = 0;
 
   lastX = obj.x();
   lastY = obj.y();
   }
 
 WarriorBehavior::~WarriorBehavior() {
-
+  if( mvLock ){
+    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
+    }
   }
 
 void WarriorBehavior::tick( const Terrain & ) {
+  /*
+  if( mvLock ){
+    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
+    mvLock = 0;
+    }*/
+
   if( dAtkTime>0 )
     --dAtkTime;
 
@@ -49,8 +58,16 @@ void WarriorBehavior::tick( const Terrain & ) {
       vrange = vrange*vrange;
       arange = arange*arange;
       int d = taget.value().distanceSQ(obj.x(), obj.y());
-      if( d <= arange )
-        damageTo( taget.value() ); else
+      if( d <= arange ){
+        damageTo( taget.value() );
+        if( !mvLock ){
+          lkX = obj.x()/Terrain::quadSize;
+          lkY = obj.y()/Terrain::quadSize;
+
+          obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, +1 );
+          mvLock = 1;
+          }
+        } else
       if( d <= vrange )
         move( taget.value().x(), taget.value().y() );
       }
@@ -65,6 +82,11 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
       msg==MineralMove ||
       msg==MoveSingle ){
     isAtk = false;
+
+    if( mvLock ){
+      obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
+      mvLock = 0;
+      }
     }
 
   return false;
@@ -79,7 +101,7 @@ void WarriorBehavior::move(int x, int y) {
 
   isAtk = true;
 
-  dAtkTime = 100;
+  dAtkTime = 20;
   lastX = obj.x();
   lastY = obj.y();
   }

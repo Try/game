@@ -11,6 +11,10 @@ class ScroolWidget : public MyWidget::Widget {
     ScroolWidget( Resource & res );
 
     Widget& centralWidget();
+
+  protected:
+    void mouseWheelEvent(MyWidget::MouseEvent &e);
+
   private:
     ScroolBar sb;
     Widget box, *cen;

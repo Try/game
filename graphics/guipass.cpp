@@ -175,7 +175,7 @@ void GUIPass::setBlendMode( MyWidget::BlendMode m ) {
 MyGL::RenderState GUIPass::makeRS(MyWidget::BlendMode m) {
   MyGL::RenderState rs;
   rs.setZTest(false);
-  rs.setZWriting(true);
+  rs.setZWriting( true );
 
   rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
   rs.setBlend(0);
@@ -193,6 +193,7 @@ MyGL::RenderState GUIPass::makeRS(MyWidget::BlendMode m) {
 
   if( m==MyWidget::alphaBlend ){
     rs.setBlend(1);
+    rs.setZWriting(0);
     }
 
   return rs;

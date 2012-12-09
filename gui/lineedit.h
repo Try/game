@@ -13,13 +13,18 @@ class LineEdit : public MyWidget::Widget {
     LineEdit( Resource & res );
 
     void setText( const std::wstring& t );
+    const std::wstring& text() const;
 
     MyWidget::signal<const std::wstring&> onTextChanged;
+    MyWidget::signal<const std::wstring&> onTextEdited;
     MyWidget::signal<const std::wstring&> onEditingFinished;
 
     size_t selectionBegin();
     size_t selectionEnd();
+    void setSelectionBounds( size_t begin, size_t end );
 
+    void setEditable( bool e );
+    bool isEditable() const;
   protected:
     void mouseDownEvent(MyWidget::MouseEvent &e);
     void mouseUpEvent(MyWidget::MouseEvent &e);
@@ -32,6 +37,8 @@ class LineEdit : public MyWidget::Widget {
   private:
     std::wstring txt;
     Resource & res;
+
+    bool editable;
 
     size_t sedit, eedit;
     MyWidget::Point sp, ep;

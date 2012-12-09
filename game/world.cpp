@@ -13,6 +13,7 @@
 #include "algo/algo.h"
 
 #include "util/weakworldptr.h"
+#include "behavior/buildingbehavior.h"
 
 World::World( GraphicsSystem& g,
               Resource & r,
@@ -21,6 +22,7 @@ World::World( GraphicsSystem& g,
               int w, int h )
   : game(gm), physics(w,h), terr(w,h), graphics(g), resource(r), prototypes(p) {
   tx = ty = 0;
+  editLandMode = 0;
 
   initTerrain();
   createTestMap();
@@ -146,7 +148,7 @@ GameObject &World::addObject( const ProtoObject &p,
 
 void World::deleteObject(GameObject *obj) {
   for( size_t i=0; i<game.plCount(); ++i )
-    if( game.player(i).editObj==gameObjects[i].get() )
+    if( game.player(i).editObj==obj )
       game.player(i).editObj = 0;
 
   deleteObject( gameObjects, obj );
@@ -211,6 +213,9 @@ void World::updateMouseOverFlag( double x0, double y0,
 
   double data[4];
 
+  bool hostCtrl = 0,
+       hostUnit = 0;
+
   for( size_t i=0; i<gameObjects.size(); ++i ){
     GameObject & obj = *gameObjects[i];
     double x = coordCast( obj.x() ),
@@ -224,6 +229,21 @@ void World::updateMouseOverFlag( double x0, double y0,
 
     obj.setMouseOverFlag( x0 <= data[0] && data[0] <= x1 &&
                           y0 <= data[1] && data[1] <= y1 );
+
+    if( obj.isMouseOwer() && obj.hasHostCtrl() ){
+      hostCtrl = 1;
+      if( obj.behavior.find<BuildingBehavior>()==0 )
+        hostUnit = 1;
+      }
+    }
+
+  if( hostCtrl ){
+    for( size_t i=0; i<gameObjects.size(); ++i ){
+      GameObject & obj = *gameObjects[i];
+      if( !obj.hasHostCtrl() ||
+          (hostUnit && obj.behavior.find<BuildingBehavior>()!=0))
+        obj.setMouseOverFlag(0);
+      }
     }
   }
 
@@ -374,6 +394,10 @@ int World::mouseY() const {
   return mpos[1];
   }
 
+void World::toogleEditLandMode() {
+  editLandMode = !editLandMode;
+  }
+
 void World::initTerrain() {
   GameObject *obj = new GameObject( scene,
                                     *this,
@@ -403,8 +427,20 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
     ty = y;
     }
 
-  if( e.button==MyWidget::MouseEvent::ButtonRight ){
-    //terrain().brushHeight( x, y, -200, 5 );
+  if( editLandMode ){
+    if( e.button==MyWidget::MouseEvent::ButtonRight )
+      terrain().brushHeight( x, y, -200, 5 );
+
+    if( e.button==MyWidget::MouseEvent::ButtonLeft )
+      terrain().brushHeight( x, y, 200, 5 );
+
+    for( size_t i=0; i<objectsCount(); ++i ){
+      GameObject & obj = object(i);
+      float wx = obj.x()/Terrain::quadSizef,
+            wy = obj.y()/Terrain::quadSizef;
+
+      obj.setPosition( obj.x(), obj.y(), terrain().heightAt(wx,wy) );
+      }
 
     terrainView->loadView( terr.buildGeometry( graphics.vboHolder,
                                                   graphics.iboHolder ) );

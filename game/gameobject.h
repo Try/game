@@ -18,6 +18,7 @@ class Resource;
 class ProtoObject;
 class PrototypesLoader;
 class World;
+class Player;
 
 class GameObject {
   public:
@@ -81,6 +82,8 @@ class GameObject {
 
     void setPlayer( int pl );
     int playerNum() const;
+    Player& player();
+
     int team() const;
 
     bool hasHostCtrl() const;

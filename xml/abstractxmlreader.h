@@ -2,6 +2,7 @@
 #define ABSTRACTXMLREADER_H
 
 #include <string>
+#include "util/lexicalcast.h"
 
 class TiXmlNode;
 class TiXmlElement;
@@ -32,6 +33,19 @@ class AbstractXMLReader {
     std::string findStr( TiXmlElement* pElement,
                const std::string & key,
                const std::string &err );
+
+    template< class T >
+    bool readIf( TiXmlElement* e,
+                 const std::string & key,
+                 T & def ){
+      std::string str;
+      if( find(e, key, str ) ){
+        def = Lexical::cast<T>( str );
+        return 1;
+        }
+
+      return 0;
+      }
 
     void error( const std::string & what );
   private:

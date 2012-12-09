@@ -3,6 +3,11 @@
 #include <MyGL/UniformTable>
 #include <MyGL/RenderState>
 
+TransparentMaterial::TransparentMaterial(const MyGL::Matrix4x4 &sm)
+                    :shadowMatrix(&sm) {
+
+  }
+
 bool TransparentMaterial::bind( MyGL::RenderState &rs,
                                 const MyGL::Matrix4x4 &object,
                                 const MyGL::AbstractCamera &c,
@@ -11,8 +16,15 @@ bool TransparentMaterial::bind( MyGL::RenderState &rs,
   m.mul( c.view() );
   m.mul( object );
 
-  u.add( m,      "mvpMatrix", MyGL::UniformTable::Vertex   );
-  u.add( texture, "texture",  MyGL::UniformTable::Fragment );
+  MyGL::Matrix4x4 sh = *shadowMatrix;
+  sh.mul( object );
+
+  u.add( m,       "mvpMatrix",    MyGL::UniformTable::Vertex );
+  u.add( object,  "objectMatrix", MyGL::UniformTable::Vertex );
+  u.add( sh,      "shadowMatrix", MyGL::UniformTable::Vertex );
+
+  u.add( texture, "texture",      MyGL::UniformTable::Fragment );
+  u.add( 0.1, "specularFactor", MyGL::UniformTable::Fragment );
 
   rs.setBlend(1);
   rs.setAlphaTestRef(0.01);
@@ -35,7 +47,7 @@ bool TransparentMaterialZPass::bind( MyGL::RenderState &rs,
   u.add( texture, "texture",  MyGL::UniformTable::Fragment );
 
   rs.setAlphaTestRef(0.01);
-  //rs.setColorMask(0,0,0,0);
+  rs.setColorMask(0,0,0,0);
 
   return 1;
   }
