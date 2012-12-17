@@ -13,7 +13,7 @@ class PixmapsPool {
     PixmapsPool( MyGL::TextureHolder & h );
 
     struct TexturePtr{
-      TexturePtr():id(0){}
+      TexturePtr():tex(0), id(0){}
       MyWidget::Rect rect;
       std::vector<Page> * tex;
       size_t id;

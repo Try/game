@@ -114,7 +114,8 @@ void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
   texRect = t.rect;
 
   if( geometryBlocks.size() &&
-      geometryBlocks.back().texture.tex==t.tex ){
+      geometryBlocks.back().texture.tex==t.tex &&
+      geometryBlocks.back().texture.id ==t.id ){
 
     return;
     }

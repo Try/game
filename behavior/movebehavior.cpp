@@ -29,56 +29,83 @@ MoveBehavior::~MoveBehavior() {
   clos.isOnMove    = false;
   clos.isReposMove = false;
   }
-
+/*
 bool MoveBehavior::message( Message msg, int x, int y, Modifers md ) {
   clos.isReposMove = 0;
 
-  if( msg==Move ){/*
-    tx = x;
-    ty = y;
-
-    clos.isOnMove = true;*/
-    isWayAcept = 1;
-    isMWalk    = 0;
-    obj.world().game.message( obj.playerNum(), MoveGroup, x, y, md);
-    }
-
-  if( msg==MoveSingle ){
-    calcWayAndMove( x, y, obj.world().terrain() );
-    }
-
-  if( msg==MineralMove ){
-    way.clear();
-    isMWalk = 1;
-
-    tx = x;
-    ty = y;
-    mask = -1;
-    isLocked = 0;
-
-    clos.isOnMove    = true;
-    clos.isReposMove = false;
-
-    return 1;
-    }
-
-  if( msg==Reposition && !clos.isOnMove && !isMWalk ){
-    tx = x;
-    ty = y;
-
-    clos.isReposMove = true;
-    clos.isOnMove    = true;
-
-    return 1;
-    }
-
-  if( msg==onPositionChange || msg==Cancel || msg==Hold ){
+  if( msg==Cancel || msg==Hold ){
     tx = obj.x();
     ty = obj.y();
     isLocked = 0;
     }
 
-  return 0;
+  return AbstractBehavior::message(msg, x, y, md);
+  }*/
+
+void MoveBehavior::moveEvent( MoveEvent &m ) {
+  clos.isReposMove = 0;
+
+  isWayAcept = 1;
+  isMWalk    = 0;
+  obj.world().game.message( obj.playerNum(), MoveGroup, m.x, m.y, m.modif );
+  }
+
+void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
+  clos.isReposMove = 0;
+
+  calcWayAndMove( m.x, m.y, obj.world().terrain() );
+  }
+
+void MoveBehavior::moveEvent( MineralMoveEvent &m ) {
+  clos.isReposMove = 0;
+
+  way.clear();
+  isMWalk = 1;
+
+  tx = m.x;
+  ty = m.y;
+  mask = -1;
+  isLocked = 0;
+
+  clos.isOnMove    = true;
+  clos.isReposMove = false;
+  }
+
+void MoveBehavior::stopEvent(StopEvent &) {
+  clos.isReposMove = 0;
+
+  way.clear();
+  isMWalk = 1;
+
+  tx = obj.x();
+  ty = obj.y();
+  mask = -1;
+  isLocked = 0;
+
+  clos.isOnMove    = false;
+  clos.isReposMove = false;
+  }
+
+void MoveBehavior::repositionEvent(RepositionEvent &m) {
+  clos.isReposMove = 0;
+
+  if( !clos.isOnMove && !isMWalk ){
+    tx = m.x;
+    ty = m.y;
+
+    clos.isReposMove = true;
+    clos.isOnMove    = true;
+    } else
+    m.ignore();
+
+  }
+
+void MoveBehavior::positionChangeEvent( PositionChangeEvent & ) {
+  clos.isReposMove = 0;
+
+  tx = obj.x();
+  ty = obj.y();
+  isLocked = 0;
   }
 
 GameObject *MoveBehavior::isCollide( int x, int y,

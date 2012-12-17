@@ -17,4 +17,8 @@ ModalWindow::ModalWindow(Resource &res, Widget *owner) {
 
   w->layout().add( this );
   setFocus(1);
-  }
+}
+
+void ModalWindow::mouseWheelEvent(MyWidget::MouseEvent &)
+{
+}

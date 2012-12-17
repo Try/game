@@ -8,6 +8,46 @@ class GameObject;
 
 class Game;
 
+class BehaviorEvent{
+  public:
+    BehaviorEvent();
+
+    void accept();
+    void ignore();
+    bool isAccepted() const;
+
+    enum Modifers{
+      NoModifer = 0,
+      Shift = 1,
+      Ctrl  = 2
+      } modif;
+  private:
+    bool acpt;
+  };
+
+struct MoveEvent : BehaviorEvent{
+  int x,y;
+  };
+
+struct MoveSingleEvent : BehaviorEvent{
+  int x,y;
+  };
+
+struct MineralMoveEvent : BehaviorEvent{
+  int x,y;
+  };
+
+struct RepositionEvent : BehaviorEvent{
+  int x,y;
+  };
+
+struct PositionChangeEvent : BehaviorEvent{
+  int x,y;
+  };
+
+struct StopEvent : BehaviorEvent{
+  };
+
 class AbstractBehavior {
   public:
     virtual ~AbstractBehavior();
@@ -23,6 +63,8 @@ class AbstractBehavior {
       Atack,
       Buy,
       BuildAt,
+
+      StopMove,
 
       /* signals */
       onPositionChange,
@@ -45,19 +87,23 @@ class AbstractBehavior {
       SystemLast
       };
 
-    enum Modifers{
-      NoModifer = 0,
-      Shift = 1,
-      Ctrl  = 2
-      };
+    typedef BehaviorEvent::Modifers Modifers;
+
+    virtual void moveEvent( MoveEvent & m );
+    virtual void moveEvent( MoveSingleEvent &m );
+    virtual void moveEvent( MineralMoveEvent &m );
+    virtual void stopEvent( StopEvent &m );
+
+    virtual void repositionEvent( RepositionEvent &m );
+    virtual void positionChangeEvent(PositionChangeEvent &m );
 
     virtual bool message( Message msg,
                           int x, int y,
-                          Modifers md= NoModifer );
+                          Modifers md = BehaviorEvent::NoModifer );
 
     virtual bool message( Message msg,
                           const std::string &s,
-                          Modifers md= NoModifer );
+                          Modifers md = BehaviorEvent::NoModifer );
     virtual void tick( const Terrain & terrain ) = 0;
   };
 

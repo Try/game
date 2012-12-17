@@ -229,7 +229,7 @@ void GraphicsSystem::render( const MyGL::Scene &scene ) {
   drawOmni( gbuffer, mainDepth, scene );
 
   if( 0 ){
-    MyGL::Texture2d ssaoTex, ssaoTexDet;
+    MyGL::Texture2d ssaoTex;
     ssao( ssaoTex, gbuffer[3], scene );
     //ssaoDetail( ssaoTexDet, gbuffer[2], ssaoTex );
 

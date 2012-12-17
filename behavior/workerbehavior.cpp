@@ -6,12 +6,21 @@
 #include "warehousebehavior.h"
 
 #include "game/player.h"
+#include "game.h"
+
+#include <cmath>
 
 WorkerBehavior::WorkerBehavior( GameObject & object,
-                                Behavior::Closure &  ):obj(object) {
+                                Behavior::Closure &  )
+  :obj(object), mineral( obj, obj.game().prototype("crystal") ) {
   mode  = NoWork;
   mtime = 0;
   forceWalk = 0;
+
+  mineral.setSelectionVisible(0);
+  mineral.setViewSize(0.4, 0.4, 0.4);
+
+  bank = 0;
   }
 
 WorkerBehavior::~WorkerBehavior() {
@@ -20,6 +29,18 @@ WorkerBehavior::~WorkerBehavior() {
 
 void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
   int x = obj.x(), y = obj.y();
+
+  int vx = 0, vy = 0;
+  vx = 100*cos( obj.rAngle() );
+  vy = 100*sin( obj.rAngle() );
+
+  mineral.setPosition( x, y );
+  mineral.setViewPosition( World::coordCast(x+vx),
+                           World::coordCast(y+vy),
+                           0 );
+  mineral.setViewDirection(vx,vy);
+  mineral.setVisible( bank>0 );
+  mineral.tick();
 
   if( mode==ToMineral && !res && (!forceWalk || !obj.isOnMove()) ){
     toMineral();
@@ -55,7 +76,8 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
 
     if( d <= s ){
       //mode = ToMineral;
-      obj.player().addGold(5);
+      obj.player().addGold( bank );
+      bank = 0;
       toMineral();
       return;
       } else {
@@ -66,10 +88,11 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
 
 
   if( mode==Mining && mtime>=0 ){
-    if( mtime>0 && res ){
+    if( bank==0 && mtime>0 && res ){
       assert( res.value().behavior.find<ResourceBehavior>()->isBusy==this );
       --mtime;
       } else {
+      bank = 5;
       mode  = ToCastle;
       toCastle();
       }

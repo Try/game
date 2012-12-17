@@ -55,7 +55,7 @@ class Game {
                   AbstractBehavior::Message m,
                   int x,
                   int y,
-                  AbstractBehavior::Modifers md = BehaviorMSGQueue::NoModifer );
+                  AbstractBehavior::Modifers md = BehaviorEvent::NoModifer );
 
     bool instalHook( InputHookBase* b );
     void removeHook( InputHookBase* b );

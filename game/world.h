@@ -84,8 +84,8 @@ class World {
     int mouseY() const;
 
     void toogleEditLandMode();
-  private:
     Physics physics;
+  private:
     Terrain terr;
 
     MyGL::Scene scene;

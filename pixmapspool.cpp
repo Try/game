@@ -19,7 +19,7 @@ PixmapsPool::TexturePtr PixmapsPool::add(const MyGL::Pixmap &p) {
   for( size_t i=0; i<page.size(); ++i ){
     PixmapsPool::TexturePtr r = add( p, page[i] );
     if( r.tex ){
-      r.id = 0;
+      r.id  = i;
       r.tex = &page;
 
       return r;

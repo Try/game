@@ -14,8 +14,9 @@ class Behavior : public AbstractBehavior {
     Behavior();
 
     bool message( Message msg, int x,
-                  int y, Modifers md = NoModifer );
-    bool message( Message msg, const std::string& s, Modifers md = NoModifer );
+                  int y, Modifers md = BehaviorEvent::NoModifer );
+    bool message( Message msg, const std::string& s,
+                  Modifers md = BehaviorEvent::NoModifer );
 
     void tick( const Terrain & terrain );
 
@@ -42,6 +43,8 @@ class Behavior : public AbstractBehavior {
 
       return 0;
       }
+
+    size_t size() const{ return behaviors.size(); }
   private:
     GameObject * object;
     Closure    * clos;

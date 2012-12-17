@@ -14,6 +14,8 @@
 #include <cmath>
 #include "game/player.h"
 
+#include "bullet.h"
+
 GameObject::GameObject( MyGL::Scene & s,
                         World &w,
                         const ProtoObject &p,
@@ -21,8 +23,8 @@ GameObject::GameObject( MyGL::Scene & s,
   : scene(s),
     wrld(w),
     prototypes(pl),
-    selection(s),
-    myClass(&p) {
+    view(s, w, p, pl),
+    myClass(&p){
   m.x = 0;
   m.y = 0;
   m.z = 0;
@@ -31,14 +33,12 @@ GameObject::GameObject( MyGL::Scene & s,
 
   m.pl = 0;
   wrld.player( m.pl ).addUnit(this);
-  m.teamColor = wrld.player( m.pl ).color();
+  view.teamColor = wrld.player( m.pl ).color();
 
-  m.intentDirX = 1;
-  m.intentDirY = 0;
+  view.setViewDirection(1, 0);
 
   m.isSelected = false;
 
-  m.radius = 0;
   setMouseOverFlag(0);
 
   behavior.bind( *this, bclos );
@@ -49,8 +49,8 @@ GameObject::GameObject( MyGL::Scene & s,
   }
 
 GameObject::~GameObject() {
-  wrld.player( m.pl ).delUnit(this);
-  freePhysic();
+  if( behavior.size() )
+    wrld.player( m.pl ).delUnit(this);
   }
 
 int GameObject::distanceSQ(const GameObject &other) const {
@@ -80,121 +80,36 @@ int GameObject::distanceQL(int xx, int yy) const {
   return std::max( abs(dx), abs(dy) );
   }
 
-void GameObject::freePhysic(){
-  if( physic ){
-    physic->free(form.sphere);
-    physic->free(form.box);
-
-    physic->free(anim.box);
-    physic->free(anim.sphere);
-    }
-  }
-
 void GameObject::setupMaterials( MyGL::AbstractGraphicObject &obj,
                                  const ProtoObject::View &src ) {
   game().setupMaterials( obj, src, teamColor() );
   }
 
-void GameObject::loadView( Resource &r, Physics & p, bool env ) {
-  physic = &p;
-  view.clear();
-  m.radius = 0;
+void GameObject::loadView( const Resource &r, Physics & p, bool env ) {
+  view.loadView(r, p, env );
 
-  if( env )
+  if( env ){
+    if( behavior.size() )
+      wrld.player( m.pl ).delUnit(this);
+
     behavior.clear();
-
-  for( size_t i=0; i<getClass().view.size(); ++i ){
-    const ProtoObject::View &v = getClass().view[i];
-
-    loadView( r, v, env );
-
-    if( v.physModel==ProtoObject::View::Sphere ){
-      if( env ){
-        setForm( p.createSphere( x(), y(), 0,
-                                 getClass().view[i].sphereDiameter ) );
-        } else {
-        setForm( p.createAnimatedSphere
-                 ( x(), y(), 0, getClass().view[i].sphereDiameter ));
-        }
-      }
-
-    if( v.physModel==ProtoObject::View::Box ){
-      if( env ){
-        const double *bs = getClass().view[i].boxSize;
-        setForm( p.createBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
-        } else {
-        const double *bs = getClass().view[i].boxSize;
-        setForm( p.createAnimatedBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
-        }
-      }
     }
 
-  const ProtoObject::View & v = prototypes.get("selection.green").view[0];
-  setupMaterials( selection, v );
-  selection.setModel( r.model("quad/model") );
-
-  setViewSize(1);
   rotate( 180 );
   }
 
 void GameObject::loadView( Resource & r,
                            const ProtoObject::View &src,
                            bool isEnv ) {
-  const MyGL::Model<> & model = r.model( src.name+"/model" );
-
-  for( int i=0; i<3; ++i )
-    m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
-
-  MyGL::AbstractGraphicObject * obj = 0;
-
-  if( isEnv ){
-    EnvObject object( scene );    
-    object.setModel( model );
-
-    env.push_back( object );
-    obj = &env.back();
-    } else {
-    MyGL::GraphicObject object( scene );
-    object.setModel( model );
-
-    view.push_back( object );
-    obj = &view.back();
-
-    if( src.randRotate )
-      view.back().setRotation(0, rand()%360 );
-    }
-
-  setupMaterials(*obj, src );
-
-  m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
+  view.loadView( r, src, isEnv );
   }
 
 void GameObject::loadView( const MyGL::Model<> &model ){
-  view.clear();
-
-  for( int i=0; i<3; ++i )
-    m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
-
-  MyGL::GraphicObject object( scene );
-  object.setModel( model );
-  m.radius = model.bounds().radius();
-
-  setupMaterials( object, getClass().view[0] );
-  view.push_back( object );
+  view.loadView( model );
   }
 
 void GameObject::loadView( const MyGL::Model<Terrain::WVertex> &model ){
-  view.clear();
-
-  for( int i=0; i<3; ++i )
-    m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
-
-  MyGL::GraphicObject object( scene );
-  object.setModel( model );
-  m.radius = model.bounds().radius();
-
-  setupMaterials( object, getClass().view[0] );
-  view.push_back( object );
+  view.loadView( model );
   }
 
 void GameObject::setViewPosition( MyGL::GraphicObject& obj,
@@ -225,50 +140,15 @@ int GameObject::hp() const {
   }
 
 void GameObject::setViewPosition(float x, float y, float z) {
-  for( size_t i=0; i<view.size(); ++i ){
-    setViewPosition( view[i], getClass().view[i], x, y, z );
-    }
-
-  float zland = World::coordCast( world().terrain().heightAt( x, y ) );
-  selection.setPosition( x, y, std::max(zland, z)+0.01 );
-
-  if( form.sphere.isValid() )
-    form.sphere.setPosition(x,y,z);
-
-  if( form.box.isValid() )
-    form.box.setPosition(x,y,z);
-
-  float dx = 0, dy = 0, dz = 0;
-  if( view.size() ){
-    const int * align = getClass().view[0].align;
-    double alignSize  = getClass().view[0].alignSize;
-
-    dx = m.modelSize[0]*view[0].sizeX()*align[0]*alignSize;
-    dy = m.modelSize[1]*view[0].sizeY()*align[1]*alignSize;
-    dz = m.modelSize[2]*view[0].sizeZ()*align[2]*alignSize;
-    }
-
-  if( anim.sphere.isValid() ){
-    anim.sphere.setPosition(x+dx,y+dy,z+dz);
-    }
-  if( anim.box.isValid() ){
-    anim.box.setPosition(x+dx,y+dy,z+dz);
-    }
+  view.setViewPosition(x,y,z);
   }
 
 double GameObject::viewHeight() const {
-  if( view.size() ){
-    const int   align = getClass().view[0].align[2];
-    double alignSize  = getClass().view[0].alignSize;
-
-    return m.modelSize[2]*view[0].sizeZ()*( 1 - align*alignSize );
-    }
-
-  return 0;
+  return view.viewHeight();
   }
 
 const MyGL::Color& GameObject::teamColor() const {
-  return m.teamColor;
+  return view.teamColor;
   }
 
 void GameObject::setPosition(int x, int y, int z) {
@@ -278,6 +158,7 @@ void GameObject::setPosition(int x, int y, int z) {
   m.x = x;
   m.y = y;
   m.z = z;//world.terrain().heightAt(x, y);
+  view.setPosition(x,y);
 
   behavior.message( Behavior::onPositionChange, x, y );
   }
@@ -294,6 +175,9 @@ void GameObject::setViewSize( MyGL::GraphicObject &obj,
   }
 
 void GameObject::setViewSize(float x, float y, float z) {
+  view.setViewSize(x,y,z);
+  view.setSelectionVisible( m.isMouseOwer );
+  /*
   for( size_t i=0; i<view.size(); ++i ){
     setViewSize( view[i], getClass().view[i], x, y, z );
     }
@@ -313,8 +197,9 @@ void GameObject::setViewSize(float x, float y, float z) {
     s = std::min(s, m.selectionSize[i] );
 
   selection.setSize( s );
+  */
   }
-
+/*
 void GameObject::setForm(const Physics::Sphere &f) {
   form.sphere = f;
   //animForm = Physics::AnimatedSphere();
@@ -334,8 +219,10 @@ void GameObject::setForm(const Physics::AnimatedBox &f) {
   anim.box = f;
   //form = Physics::Sphere();
   }
-
+*/
 void GameObject::updatePos() {
+  view.updatePos();
+  /*
   //anim bodyes
   if( anim.sphere.isValid() && view.size() ){
     MyGL::GraphicObject & g = view[0];
@@ -355,8 +242,9 @@ void GameObject::updatePos() {
   if( form.box.isValid() ){
     updatePosRigid(form.box);
     }
+    */
   }
-
+/*
 template< class Rigid >
 void GameObject::updatePosRigid( Rigid &rigid ){
   // rigid.activate();
@@ -411,7 +299,7 @@ void GameObject::updatePosRigid( Physics::Box &rigid, size_t i ) {
 
   env[i].setTransform( m );
   }
-
+*/
 const ProtoObject &GameObject::getClass() const {
   return *myClass;
   }
@@ -435,7 +323,8 @@ bool GameObject::isSelected() const {
 void GameObject::select() {
   if( !m.isSelected ){
     m.isSelected = true;
-    selection.setVisible( m.isSelected );
+    //selection.setVisible( m.isSelected );
+    view.setSelectionVisible( m.isSelected );
 
     world().player( m.pl ).select( this, 1);
     }
@@ -444,7 +333,8 @@ void GameObject::select() {
 void GameObject::unSelect() {
   if( m.isSelected ){
     m.isSelected  = false;
-    selection.setVisible( m.isSelected );
+    //selection.setVisible( m.isSelected );
+    view.setSelectionVisible( m.isSelected );
 
     world().player( m.pl ).select( this, 0);
     }
@@ -452,26 +342,25 @@ void GameObject::unSelect() {
 
 void GameObject::updateSelection() {
   //m.isSelected  = m.isMouseOwer;
-  selection.setVisible( m.isMouseOwer );
+  //selection.setVisible( m.isMouseOwer );
+  view.setSelectionVisible( m.isMouseOwer );
   m.isMouseOwer = 0;
   }
 
 void GameObject::setViewDirection(int lx, int ly) {
-  if( lx==0 && ly==0 )
-    return;
+  view.setViewDirection(lx, ly);
+  }
 
-  m.intentDirX = lx;
-  m.intentDirY = ly;
+void GameObject::viewDirection(int &x, int &y) {
+  view.viewDirection(x,y);
   }
 
 void GameObject::rotate( int delta ) {
-  for( size_t i=0; i<view.size(); ++i ){
-    double a = view[i].angleZ() + delta;
-    m.intentDirX = 10000*cos( M_PI*a/180.0 );
-    m.intentDirY = 10000*sin( M_PI*a/180.0 );
+  view.rotate( delta );
+  }
 
-    view[i].setRotation( 0, a );
-    }
+double GameObject::rAngle() const {
+  return view.rAngle()*M_PI/180.0;
   }
 
 bool GameObject::isMouseOwer() const {
@@ -480,19 +369,20 @@ bool GameObject::isMouseOwer() const {
 
 void GameObject::setMouseOverFlag(bool f) {
   m.isMouseOwer = f;
-  selection.setVisible( m.isMouseOwer );
+//  selection.setVisible( m.isMouseOwer );
+  view.setSelectionVisible( m.isMouseOwer );
   }
 
 double GameObject::radius() const {
-  return m.selectionSize[0]*1.44;
+  return view.radius();
   }
 
 double GameObject::rawRadius() const {
-  return m.radius;
+  return view.rawRadius();
   }
 
 MyGL::Matrix4x4 GameObject::_transform() const {
-  return view[0].transform();
+  return MyGL::Matrix4x4();//view[0].transform();
   }
 
 bool GameObject::isOnMove() const {
@@ -519,10 +409,14 @@ void GameObject::setPlayer(int pl) {
   if( m.pl==pl )
     return;
 
-  wrld.player( m.pl ).delUnit(this);
+  if( behavior.size() )
+    wrld.player( m.pl ).delUnit(this);
+
   m.pl = pl;
-  m.teamColor = wrld.player( m.pl ).color();
-  wrld.player( m.pl ).addUnit(this);
+  view.teamColor = wrld.player( m.pl ).color();
+
+  if( behavior.size() )
+    wrld.player( m.pl ).addUnit(this);
   }
 
 int GameObject::playerNum() const {
@@ -550,22 +444,33 @@ bool GameObject::isMineralMove() const {
   }
 
 void GameObject::tick( const Terrain &terrain ) {
-  double a  = 180.0*atan2(m.intentDirY, m.intentDirX)/M_PI;
-  double at = 10;
-
-  for( size_t i=0; i<view.size(); ++i ){
-    double az = view[i].angleZ();
-    double da = a - az;
-
-    if( fabs(da) > at && !getClass().view[i].randRotate ){
-      if( cos( M_PI*da/180.0 ) > cos(M_PI*2*at/180.0 ) )
-        view[i].setRotation(0, a); else
-      if( sin( M_PI*da/180.0 ) > 0 )
-        view[i].setRotation(0, az+at); else
-        view[i].setRotation(0, az-at);
-      }
-
-    }
-
+  view.tick();
   behavior.tick( terrain );
+
+  for( size_t i=0; i<bullets.size(); ++i )
+    bullets[i]->tick();
+
+  for( size_t i=0; i<bullets.size(); )
+    if( bullets[i]->isFinished ){
+      setHP( hp() - bullets[i]->absDmg );
+      std::swap( bullets[i], bullets.back() );
+      bullets.pop_back();
+      } else {
+      ++i;
+      }
+  }
+
+std::shared_ptr<Bullet> GameObject::reciveBulldet( const std::string &v ){
+  assert( view.physicEngine() );
+
+  Bullet *b = new Bullet( scene, wrld,
+                          prototypes.get(v),
+                          prototypes );
+
+  b->view.loadView( game().resources(), wrld.physics, 0 );
+  b->tgX = x();
+  b->tgY = y();
+
+  bullets.push_back( std::shared_ptr<Bullet>(b) );
+  return bullets.back();
   }

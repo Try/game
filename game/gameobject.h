@@ -2,6 +2,7 @@
 #define GAMEOBJECT_H
 
 #include <vector>
+#include <memory>
 
 namespace MyGL{
   class GraphicObject;
@@ -13,12 +14,15 @@ namespace MyGL{
 #include "behavior/behavior.h"
 #include "game/envobject.h"
 #include "game/protoobject.h"
+#include "game/gameobjectview.h"
 
 class Resource;
 class ProtoObject;
 class PrototypesLoader;
 class World;
 class Player;
+
+class Bullet;
 
 class GameObject {
   public:
@@ -33,7 +37,7 @@ class GameObject {
     int distanceQ ( int x, int y ) const;
     int distanceQL( int x, int y ) const;
 
-    void loadView( Resource & r, Physics &p,
+    void loadView(const Resource &r, Physics &p,
                    bool env );
     void loadView( const MyGL::Model<> & model );
 
@@ -62,7 +66,9 @@ class GameObject {
     void updateSelection();
 
     void setViewDirection( int lx, int ly );
+    void viewDirection( int &x, int &y );
     void rotate( int delta );
+    double rAngle() const;
 
     bool isMouseOwer() const;
     void setMouseOverFlag( bool f );
@@ -100,16 +106,13 @@ class GameObject {
 
     void setHP( int h);
     int  hp() const;
+
+    std::shared_ptr<Bullet> reciveBulldet( const std::string& view );
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;
 
     void setViewPosition( float x, float y, float z );
-
-    void setForm( const Physics::Sphere & form );
-    void setForm( const Physics::Box    & form );
-    void setForm( const Physics::AnimatedSphere & form );
-    void setForm( const Physics::AnimatedBox & form );
 
     void loadView( Resource & r, const ProtoObject::View &src,
                    bool isEnv );
@@ -118,49 +121,26 @@ class GameObject {
     World       & wrld;
     const PrototypesLoader & prototypes;
 
-    struct {
-      Physics::Sphere sphere;
-      Physics::Box    box;
-      } form;
-
-    struct {
-      Physics::AnimatedSphere sphere;
-      Physics::AnimatedBox    box;
-      } anim;
-
-    std::vector<EnvObject> env;
-    std::vector<MyGL::GraphicObject> view;
-    MyGL::GraphicObject selection;
+    GameObjectView view;
 
     const ProtoObject * myClass;
-    Physics * physic;
+    //Physics * physic;
 
     struct M{
       int x, y, z;
       int pl;
-
       int hp;
 
-      int intentDirX, intentDirY;
       bool isSelected, isMouseOwer;
-      double selectionSize[3], radius;
-
-      double modelSize[3];
-      MyGL::Color teamColor;
       } m;
 
     Behavior::Closure bclos;
-
-    void freePhysic();
+    std::vector< std::shared_ptr<Bullet> > bullets;
 
     void setupMaterials( MyGL::AbstractGraphicObject &obj,
                          const ProtoObject::View &src );
 
-    template< class Rigid >
-    void updatePosRigid( Rigid & r );
-
-    void updatePosRigid( Physics::Sphere & r, size_t i );
-    void updatePosRigid( Physics::Box    & r, size_t i );
+    friend class GameObjectView;
   };
 
 #endif // GAMEOBJECT_H

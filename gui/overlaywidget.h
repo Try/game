@@ -22,6 +22,7 @@ class OverlayWidget : public MyWidget::Widget {
     void focusEvent( bool f );
 
     void mouseDownEvent(MyWidget::MouseEvent &e);
+    void mouseWheelEvent(MyWidget::MouseEvent &e);
   };
 
 #endif // OVERLAYWIDGET_H

@@ -15,7 +15,7 @@ class BuildingBehavior : public AbstractBehavior {
 
     bool message( Message msg,
                   int x, int y,
-                  Modifers md = NoModifer );
+                  Modifers md = BehaviorEvent::NoModifer );
     void tick( const Terrain & /*terrain*/ ){}
 
     static bool canBuild( const Terrain &t, const ProtoObject &p, int x, int y );

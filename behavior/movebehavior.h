@@ -12,8 +12,15 @@ class MoveBehavior : public AbstractBehavior {
                   Behavior::Closure & c );
     ~MoveBehavior();
 
-    bool message( Message msg, int x,
-                  int y, Modifers md = NoModifer );
+    //bool message( Message msg, int x,
+    //              int y, Modifers md = BehaviorEvent::NoModifer );
+    void moveEvent( MoveEvent &m );
+    void moveEvent( MoveSingleEvent  &m );
+    void moveEvent( MineralMoveEvent &m );
+    void stopEvent(StopEvent &m);
+    void repositionEvent( RepositionEvent &m );
+    void positionChangeEvent(PositionChangeEvent &);
+
     void tick( const Terrain & terrain );
 
     void setWay( const std::vector<Point> & v );

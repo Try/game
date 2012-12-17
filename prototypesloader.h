@@ -21,6 +21,8 @@ class PrototypesLoader : public AbstractXMLReader {
     void readCommands(ProtoObject &obj, TiXmlNode *node);
     void readCommandsPage(ProtoObject &obj, TiXmlNode *node);
     void readButton(ProtoObject::CmdButton &obj, TiXmlNode *node);
+    void readAtack( ProtoObject::GameSpecific::Atack &b,
+                    TiXmlNode *node );
 
     std::unordered_map<std::string, PProtoObject> data;
   };

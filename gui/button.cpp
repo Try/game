@@ -139,8 +139,11 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
 
   int sz = std::min(w(), h());
 
-  int icW = std::min(icon.data.rect.w, sz),
-      icH = std::min(icon.data.rect.h, sz);
+  float k = std::min( sz/float(icon.data.rect.w),
+                      sz/float(icon.data.rect.h) );
+
+  int icW = icon.data.rect.w*k,
+      icH = icon.data.rect.h*k;
 
   p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
               0, 0, icon.data.rect.w, icon.data.rect.h );

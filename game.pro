@@ -101,7 +101,9 @@ HEADERS += \
     gui/ingamemenu.h \
     gui/gen/ui_ingamemenu.h \
     gui/gen/ui_toppanel.h \
-    gui/unitlist.h
+    gui/unitlist.h \
+    game/bullet.h \
+    game/gameobjectview.h
 
 SOURCES += \
     main.cpp \
@@ -168,7 +170,9 @@ SOURCES += \
     gui/ingamemenu.cpp \
     gui/gen/ui_ingamemenu.cpp \
     gui/gen/ui_toppanel.cpp \
-    gui/unitlist.cpp
+    gui/unitlist.cpp \
+    game/bullet.cpp \
+    game/gameobjectview.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

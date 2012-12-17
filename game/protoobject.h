@@ -15,6 +15,13 @@ struct ProtoObject {
       int maxHp;
 
       int gold, lim, limInc, buildTime;
+
+      struct Atack{
+        int range;
+        int damage, delay;
+        };
+
+      std::vector<Atack> atk;
       } data;
 
     struct View{

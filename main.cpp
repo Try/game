@@ -128,7 +128,9 @@ int WINAPI WinMain( HINSTANCE hInstance,
       demo.toogleFullScreen.bind( toogleFullScreen );
 
 
-      DWORD time = GetTickCount();
+      DWORD time = GetTickCount(), gameTime = 0, tickCount = 0;
+      const DWORD frameTime = 1000/40;
+
       while( uMsg.message != WM_QUIT ) {
         if( PeekMessage( &uMsg, NULL, 0, 0, PM_REMOVE ) ) {
           TranslateMessage( &uMsg );
@@ -139,13 +141,21 @@ int WINAPI WinMain( HINSTANCE hInstance,
           if( isAppActive )
             demo.render();
 
-          DWORD tc = std::min<DWORD>( (GetTickCount() - time)/60, 5 );
-          tc = std::max<DWORD>(1, tc);
+          gameTime += std::min<DWORD>((GetTickCount() - time), 5*frameTime);
+          time = GetTickCount();
+
+          if( gameTime < tickCount*frameTime )
+            gameTime = tickCount*frameTime;
+
+          DWORD tc = (gameTime-tickCount*frameTime)/frameTime;
+          //std::cout << "tc = " << tc << std::endl;
+
+          //tc = std::max<DWORD>(1, tc);
+          tickCount += tc;
 
           for( DWORD i=0; i<tc; ++i )
             demo.tick();
 
-          time = GetTickCount();
           ft  = GetTickCount() - ft;
 
           if( ft< 1000/60 )

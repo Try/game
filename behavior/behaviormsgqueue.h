@@ -15,7 +15,7 @@ class BehaviorMSGQueue : public AbstractBehavior {
 
     bool message( Message msg,
                   int x, int y,
-                  Modifers md = NoModifer );
+                  Modifers md = BehaviorEvent::NoModifer );
 
     void message( int pl,
                   Message msg );
@@ -28,14 +28,14 @@ class BehaviorMSGQueue : public AbstractBehavior {
     void message( int pl,
                   Message msg,
                   int x, int y,
-                  Modifers md = NoModifer );
+                  Modifers md = BehaviorEvent::NoModifer );
 
     void message( int pl,
                   Message msg,
                   int x, int y,
                   const std::string& str,
                   size_t size,
-                  Modifers md = NoModifer );
+                  Modifers md = BehaviorEvent::NoModifer );
 
     void tick( Game & game, World & w );
     void tick( const Terrain& );

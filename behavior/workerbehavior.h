@@ -6,6 +6,8 @@
 
 #include "util/weakworldptr.h"
 
+#include "game/gameobjectview.h"
+
 class WorkerBehavior : public AbstractBehavior  {
   public:
     WorkerBehavior( GameObject & obj,
@@ -18,6 +20,7 @@ class WorkerBehavior : public AbstractBehavior  {
 
   private:
     GameObject & obj;
+    GameObjectView mineral;
 
     enum Mode{
       NoWork,
@@ -30,6 +33,8 @@ class WorkerBehavior : public AbstractBehavior  {
     WeakWorldPtr castle;
     int mtime;
     bool forceWalk;
+
+    int bank;
 
     void toCastle();
     void toMineral();

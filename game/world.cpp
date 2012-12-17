@@ -153,7 +153,6 @@ void World::deleteObject(GameObject *obj) {
 
   deleteObject( gameObjects, obj );
   deleteObject(  eviObjects, obj );
-  //deleteObject(    selected, obj );
 
   for( size_t i=0; i<wptrs.size(); ++i )
     if( wptrs[i]->v.get()==obj )
@@ -475,6 +474,7 @@ void World::tick() {
       GameObject & obj = addObjectEnv( gameObjects[i]->getClass().name );
 
       obj.setPlayer( src.playerNum() );
+
       obj.setPosition( src.x(), src.y(), src.z()+100 );
       //obj.rotate();
       }
@@ -492,14 +492,6 @@ void World::tick() {
 
   for( size_t i=0; i<eviObjects.size(); ++i )
     eviObjects[i]->updatePos();
-
-  // FIXME
-  /*
-  selected.clear();
-  for( size_t i=0; i<gameObjects.size(); ++i )
-    if( gameObjects[i]->isSelected() )
-      selected.push_back( gameObjects[i] );
-      */
   }
 
 const MyGL::Scene &World::getScene() const {

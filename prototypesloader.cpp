@@ -230,6 +230,16 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
 
     if( type=="commands" )
       readCommands(obj, e);
+
+    if( type=="atack" ){
+      ProtoObject::GameSpecific::Atack a;
+      a.damage = 0;
+      a.delay  = 0;
+      a.range  = 0;
+
+      readAtack(a, e);
+      obj.data.atk.push_back( a );
+      }
     }
 
   }
@@ -307,4 +317,21 @@ void PrototypesLoader::readButton(ProtoObject::CmdButton &b, TiXmlNode *node) {
   if( find(e, "hotkey", str ) && str.size() ){
     b.hotkey = MyWidget::KeyEvent::KeyType( MyWidget::KeyEvent::K_A + str[0] - 'a' );
     }
+  }
+
+void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &b,
+                                  TiXmlNode *node ) {
+  std::string str;
+  TiXmlElement * e = node->ToElement();
+
+  if( find(e, "damage", str ) ){
+    b.damage = Lexical::cast<int>(str);
+    }
+  if( find(e, "range",  str ) ){
+    b.range  = Lexical::cast<int>(str);
+    }
+  if( find(e, "delay", str ) ){
+    b.delay  = Lexical::cast<int>(str);
+    }
+
   }
