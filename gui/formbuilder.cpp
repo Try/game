@@ -11,6 +11,8 @@
 #include "propertyeditor.h"
 #include "lineedit.h"
 
+#include "nativesavedialog.h"
+
 using namespace MyWidget;
 
 class FormBuilder::FrmWidget : public Widget {
@@ -262,13 +264,14 @@ class FormBuilder::Central:public FormWidget<Panel>{
       }
   };
 
-FormBuilder::FormBuilder( Resource & res ):Panel(res), res(res) {
+FormBuilder:: FormBuilder(Resource & res , Widget *ow)
+            : ModalWindow(res, ow), res(res) {
   selected  = 0;
   editorBtn = 0;
   bintent = NoIntent;
 
-  resize(900, 500);
-  setDragable(1);
+  resize( ow->w(), ow->h() );
+  //setDragable(1);
   setLayout( Vertical );
 
   Widget* w = new Widget();
@@ -541,9 +544,23 @@ void FormBuilder::propEditor( const PropertyEditor::Property &p,
   }
 
 void FormBuilder::save() {
-  std::fstream foutH("./out.h", std::wfstream::out );
-  std::fstream foutCpp("./out.cpp", std::wfstream::out );
-  std::fstream xml("./out.xml", std::wfstream::out );
+  NativeSaveDialog dlg;
+
+  std::string fname = "./out.xml";
+
+  if( dlg.save() )
+    fname.assign( dlg.fileName().begin(),
+                  dlg.fileName().end() );
+
+  while( fname.size() && fname[fname.size()-1]!='.' )
+    fname.resize( fname.size()-1 );
+
+  if( fname.size() && fname[ fname.size()-1 ]=='.' )
+    fname.resize( fname.size()-1 );
+
+  std::fstream foutH( (fname+".h").data(), std::ios::out );
+  std::fstream foutCpp( (fname+".cpp").data(), std::ios::out );
+  std::fstream xml( (fname+".xml").data(), std::ios::out );
 
   foutH << "#include <MyWidget/Widget>" << std::endl << std::endl
         << "class Resource;" << std::endl << std::endl

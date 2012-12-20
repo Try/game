@@ -23,6 +23,9 @@ class Serialize {
     void write( int  val );
     void read ( int& val );
 
+    void write( bool  val );
+    void read ( bool& val );
+
     void write( const std::string& val );
     void read ( std::string& val );
 
@@ -30,6 +33,7 @@ class Serialize {
     void read ( char& val );
 
     bool isEof() const;
+    bool isOpen() const;
     bool isReader() const;
 
     template< class T >

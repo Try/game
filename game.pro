@@ -21,7 +21,8 @@ INCLUDEPATH += "$$(DXSDK_DIR)/include"\
                "$$(FREETYPE_INCLUDE_PATH)" \
                "$$(FREETYPE_INCLUDE_PATH)/freetype2"
 
-LIBS += -l"gdi32" -l"ws2_32"
+LIBS += -l"gdi32" -l"ws2_32" -l"comdlg32"
+
 LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
 LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
 LIBS += -L"$$(DEVIL_LIB_PATH)" -l"DevIL"
@@ -103,7 +104,10 @@ HEADERS += \
     gui/gen/ui_toppanel.h \
     gui/unitlist.h \
     game/bullet.h \
-    game/gameobjectview.h
+    game/gameobjectview.h \
+    graphics/blushmaterial.h \
+    gui/nativesavedialog.h \
+    util/gameserializer.h
 
 SOURCES += \
     main.cpp \
@@ -172,7 +176,10 @@ SOURCES += \
     gui/gen/ui_toppanel.cpp \
     gui/unitlist.cpp \
     game/bullet.cpp \
-    game/gameobjectview.cpp
+    game/gameobjectview.cpp \
+    graphics/blushmaterial.cpp \
+    gui/nativesavedialog.cpp \
+    util/gameserializer.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

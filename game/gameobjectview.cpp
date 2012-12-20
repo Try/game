@@ -291,6 +291,15 @@ void GameObjectView::rotate( int delta ) {
     }
   }
 
+void GameObjectView::setRotation( int a ) {
+  for( size_t i=0; i<view.size(); ++i ){
+    m.intentDirX = 10000*cos( M_PI*a/180.0 );
+    m.intentDirY = 10000*sin( M_PI*a/180.0 );
+
+    view[i].setRotation( 0, a );
+    }
+  }
+
 void GameObjectView::setViewDirection(int lx, int ly) {
   if( lx==0 && ly==0 )
     return;

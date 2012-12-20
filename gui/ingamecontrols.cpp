@@ -83,6 +83,7 @@ InGameControls::InGameControls(Resource &res,
     p.setupUi( top, res );
     //p.fullScr->clicked.bind( toogleFullScreen );
     p.menu->clicked.bind( *this, &InGameControls::showMenu );
+    p.frmEdit->clicked.bind( *this, &InGameControls::showFormBuilder );
     gold = p.gold;
     lim  = p.lim;
 
@@ -93,9 +94,8 @@ InGameControls::InGameControls(Resource &res,
   top->setSizePolicy(p);
 
   cen->layout().add( createEditPanel() );
-  // cen->layout().add( new FormBuilder(res) );
-
   cen->useScissor( false );
+
   }
 
 Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
@@ -207,8 +207,15 @@ void InGameControls::setCurrPl(size_t i) {
   currPl = i;
   }
 
+void InGameControls::showFormBuilder() {
+  new FormBuilder(res, this);
+  }
+
 void InGameControls::showMenu() {
-  new InGameMenu(res, this);
+  InGameMenu *m = new InGameMenu(res, this);
+
+  m->save.bind( save );
+  m->load.bind( load );
   }
 
 void InGameControls::addEditorObject( const ProtoObject &p ) {

@@ -16,7 +16,8 @@ Serialize::Serialize( const std::string &s, OpenMode m ) {
   }
 
 Serialize::~Serialize() {
-  fclose(f);
+  if( isOpen() )
+    fclose(f);
   }
 
 void Serialize::write(unsigned int val) {
@@ -42,6 +43,17 @@ void Serialize::read(int &val) {
   val = std::numeric_limits<int>::min() + x;
   }
 
+void Serialize::write(bool val) {
+  write( unsigned(val) );
+  }
+
+void Serialize::read(bool &val) {
+  unsigned v;
+  read(v);
+
+  val = v;
+  }
+
 void Serialize::write( const std::string &val ) {
   write( val.size() );
   fwrite( val.data(), 1, val.size(), f );
@@ -65,6 +77,10 @@ void Serialize::read(char &val) {
 
 bool Serialize::isEof() const {
   return isReader() && feof(f);
+  }
+
+bool Serialize::isOpen() const {
+  return f;
   }
 
 bool Serialize::isReader() const {

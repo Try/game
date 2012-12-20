@@ -27,7 +27,9 @@ InGameMenu::InGameMenu(Resource & res , Widget * ow):ModalWindow(res,ow) {
   layout().add( new Widget() );
 
   menu.resume->clicked.bind( (Widget&)*this, &Widget::deleteLater );
-  menu.quit  ->clicked.bind( *findRoot(),    &Widget::deleteLater );
+  menu.quit  ->clicked.bind( quit );
+  menu.save  ->clicked.bind( save );
+  menu.load  ->clicked.bind( load );
   }
 
 void InGameMenu::mouseDownEvent(MyWidget::MouseEvent &e) {

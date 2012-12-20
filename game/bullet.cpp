@@ -4,6 +4,8 @@
 
 #include "util/math.h"
 
+#include <cmath>
+
 Bullet::Bullet( MyGL::Scene & s,
                 World       & wrld,
                 const ProtoObject &p,
@@ -22,7 +24,7 @@ Bullet::Bullet( MyGL::Scene & s,
   isFinished = 0;
   absDmg     = 0;
 
-  speed = 100;
+  speed = 150;
   }
 
 void Bullet::tick() {
@@ -35,6 +37,7 @@ void Bullet::tick() {
 
   if( l0==0 ){
     l0 = l;
+    view.setRotation( atan2(vecY, vecX)*180.0/M_PI );
     }
 
   view.setViewPosition( World::coordCast(x),

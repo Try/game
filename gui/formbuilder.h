@@ -4,14 +4,16 @@
 #include "panel.h"
 #include "propertyeditor.h"
 
+#include "modalwindow.h"
+
 class ScroolWidget;
 class Button;
 
 class TiXmlNode;
 
-class FormBuilder : public Panel {
+class FormBuilder : public ModalWindow  {
   public:
-    FormBuilder(Resource &res);
+    FormBuilder(Resource &res, MyWidget::Widget* ow );
 
   private:
     Resource &res;

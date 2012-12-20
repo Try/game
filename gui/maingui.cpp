@@ -17,6 +17,7 @@
 
 #include "algo/algo.h"
 #include "ingamecontrols.h"
+#include "nativesavedialog.h"
 
 MainGui::MainGui( MyGL::Device &,
                   int w, int h,
@@ -52,6 +53,9 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
 
   mainwidget->addObject.bind( addObject );
   mainwidget->toogleEditLandMode.bind( toogleEditLandMode );
+
+  mainwidget->save.bind( *this, &MainGui::saveGame );
+  mainwidget->load.bind( *this, &MainGui::loadGame );
 
   central.layout().add( mainwidget );
   }
@@ -138,6 +142,20 @@ void MainGui::removeHook(InputHookBase *h) {
 
 void MainGui::enableHooks(bool e) {
   mainwidget->enableHooks(e);
+  }
+
+void MainGui::saveGame() {
+  NativeSaveDialog dlg;
+
+  if( dlg.save() )
+    save( dlg.fileName() );
+  }
+
+void MainGui::loadGame() {
+  NativeSaveDialog dlg;
+
+  if( dlg.load() )
+    load( dlg.fileName() );
   }
 
 void MainGui::onUnitDied(GameObject &obj) {

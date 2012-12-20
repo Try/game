@@ -172,6 +172,10 @@ class GraphicsSystem {
     void fillShadowMap( MyGL::Texture2d &sm,
                         const MyGL::Scene &scene );
 
+    void fillShadowMap(MyGL::Texture2d &sm, MyGL::Texture2d &depth,
+                        const MyGL::Scene &scene,
+                       const MyGL::Scene::Objects &v, bool clr);
+
     void drawObjects( MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
                       const MyGL::Scene &scene,

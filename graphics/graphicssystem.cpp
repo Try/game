@@ -24,6 +24,8 @@
 #include "graphics/watermaterial.h"
 #include "graphics/mainmaterial.h"
 #include "graphics/omnimaterial.h"
+#include "graphics/blushmaterial.h"
+
 #include <resource.h>
 
 GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
@@ -201,6 +203,11 @@ void GraphicsSystem::render( const MyGL::Scene &scene ) {
   if( !device.startRender() )
     return;
 
+  static unsigned wind = 0;
+  wind = (wind+1)%1024;
+
+  BlushMaterial::wind = sin( 2.0*M_PI*wind/1024.0 );
+
   //scene.setCamera( camera );
   MyGL::DirectionLight light;
   if( scene.lights().direction().size() > 0 )
@@ -225,6 +232,7 @@ void GraphicsSystem::render( const MyGL::Scene &scene ) {
   MyGL::Texture2d shadowMap = localTex.create( 1024, 1024,
                                                MyGL::AbstractTexture::Format::Luminance16 );
   fillShadowMap( shadowMap, scene );
+
   fillGBuf( gbuffer, mainDepth, shadowMap, scene );
   drawOmni( gbuffer, mainDepth, scene );
 
@@ -299,18 +307,30 @@ void GraphicsSystem::render( const MyGL::Scene &scene ) {
   device.present();
   }
 
-void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
+void GraphicsSystem::fillShadowMap( MyGL::Texture2d& shadowMap,
                                     const MyGL::Scene & scene ) {
-  const MyGL::Scene::Objects &v = scene.objects<MyGL::ShadowMapPassBase::Material>();
+  MyGL::Texture2d depthSm = depth( shadowMap.width(), shadowMap.height() );
 
+  fillShadowMap( shadowMap, depthSm, scene,
+                 scene.objects<MyGL::ShadowMapPassBase::Material>(), 1 );
+  fillShadowMap( shadowMap, depthSm, scene,
+                 scene.objects<BlushShMaterial>(), 0 );
+  }
+
+void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
+                                    MyGL::Texture2d& depthSm,
+                                    const MyGL::Scene & scene,
+                                    const MyGL::Scene::Objects &v,
+                                    bool clr ) {
   MyGL::RenderState rstate;
   rstate.setCullFaceMode( MyGL::RenderState::CullMode::front );
 
-  MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
   MyGL::Render render( device,
                        sm, depthSm,
                        smap.vs, smap.fs );
-  render.clear( MyGL::Color(1.0), 1 );
+  if( clr )
+    render.clear( MyGL::Color(1.0), 1 );
+
   render.setRenderState( rstate );
 
   const MyGL::AbstractCamera & camera = scene.camera();
@@ -325,8 +345,12 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
 
   for( size_t i=0; i<v.size(); ++i ){
     const MyGL::AbstractGraphicObject& ptr = v[i].object();
+
     MyGL::Matrix4x4 m = matrix;
-    m.mul( ptr.transform() );
+
+    if( clr )
+      m.mul( ptr.transform() ); else
+      m.mul( BlushMaterial::animateObjMatrix( ptr.transform() ) );
 
     if( scene.viewTester().isVisible( ptr, m ) ){
       device.setUniform( smap.vs, m, "mvpMatrix" );
@@ -376,6 +400,9 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
 
   drawObjects( gbuffer, mainDepth,
                scene, scene.objects<MainMaterial>(), true );
+
+  drawObjects( gbuffer, mainDepth,
+               scene, scene.objects<BlushMaterial>(), false );
 
   drawObjects( transparentData.vsAdd, transparentData.fsAdd,
                gbuffer, mainDepth,

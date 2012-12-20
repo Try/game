@@ -18,6 +18,8 @@
 #include "util/serialize.h"
 #include "gui/inputhook.h"
 
+class GameSerializer;
+
 class Game {
   public:
     Game( void* hwnd, int w, int h, bool isFullScreen );
@@ -68,6 +70,9 @@ class Game {
                          const MyGL::Color &teamColor );
 
     MyGL::Matrix4x4& shadowMat();
+
+    void save(const std::wstring &str);
+    void load(const std::wstring &str);
   private:
     void* hwnd;
     bool isFullScreen;
@@ -106,6 +111,7 @@ class Game {
       int n, time;
       } fps;
 
+    void serialize( GameSerializer &s);
   };
 
 #endif // GAME_H

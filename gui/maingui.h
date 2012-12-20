@@ -54,6 +54,8 @@ class MainGui {
     MyWidget::signal<> toogleFullScreen;
     MyWidget::signal<> toogleEditLandMode;
 
+    MyWidget::signal< const std::wstring& > save, load;
+
     bool draw( GUIPass & pass );
     void resizeEvent( int w, int h );
 
@@ -86,6 +88,9 @@ class MainGui {
     CentralWidget central;
     Resource & res;
     PrototypesLoader & prototypes;
+
+    void saveGame();
+    void loadGame();
   };
 
 #endif // MAINGUI_H

@@ -24,13 +24,12 @@ class MainMaterial : public MyGL::AbstractMaterial {
 
   protected:
     const MyGL::Matrix4x4 * shadowMatrix;
-
-  private:
     bool bind( MyGL::RenderState & dev,
                const MyGL::Matrix4x4 & object,
                const MyGL::AbstractCamera & c,
                MyGL::UniformTable &  ) const ;
 
+  private:
     const MyGL::Color * teamColor;
 };
 

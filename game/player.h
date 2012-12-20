@@ -8,6 +8,8 @@
 class GameObject;
 class ProtoObject;
 
+class GameSerializer;
+
 class Player {
   public:
     Player( int num );
@@ -39,7 +41,9 @@ class Player {
 
     bool canBuild(const ProtoObject &p) const;
 
-    int  limMax()  const;
+    int  limMax()  const;    
+
+    void serialize( GameSerializer &s);
   private:
     struct {
       int num;

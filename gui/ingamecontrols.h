@@ -28,6 +28,8 @@ class InGameControls : public MyWidget::Widget {
     MyWidget::signal<const ProtoObject&, int> addObject;
     MyWidget::signal<> toogleEditLandMode;
 
+    MyWidget::signal<> save, load;
+
     MyWidget::Rect selection;
 
     void updateSelectUnits( const std::vector<GameObject*> &u );
@@ -69,6 +71,7 @@ class InGameControls : public MyWidget::Widget {
     struct AddUnitButton;
 
     void showMenu();
+    void showFormBuilder();
     void addEditorObject( const ProtoObject& );
 
     bool isHooksEnabled;

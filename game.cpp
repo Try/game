@@ -19,6 +19,9 @@
 #include "graphics/watermaterial.h"
 #include "graphics/mainmaterial.h"
 #include "graphics/omnimaterial.h"
+#include "graphics/blushmaterial.h"
+
+#include "util/gameserializer.h"
 
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   : graphics( ihwnd, iw, ih, isFS, isFS ? 2048:1024 ),
@@ -56,6 +59,9 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   gui.enableHooks( !serializator.isReader() );
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
   gui.addObject.bind( *this, &Game::createEditorObject );
+
+  gui.save.bind( *this, &Game::save );
+  gui.load.bind( *this, &Game::load );
 
   graphics.load( resource, gui, w, h );
 
@@ -474,7 +480,29 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     obj.setupMaterial( material );
     }
 
-  if( contains( src.materials, "shadow_cast" ) ){
+  if( contains( src.materials, "blush" )  ){
+    BlushMaterial material( c.shadow.matrix );
+    material.diffuseTexture   = r.texture( src.name+"/diff" );
+    smMaterial.diffuseTexture = material.diffuseTexture;
+
+    material.useAlphaTest = smMaterial.useAlphaTest = true;
+    material.specular     = src.specularFactor;
+
+    obj.setupMaterial( material );
+
+    if( contains( src.materials, "shadow_cast" ) ){
+      BlushShMaterial sm;
+      (MyGL::ShadowMapPassBase::Material&)sm = smMaterial;
+
+      if( r.findTexture(src.name+"/sm") )
+        sm.diffuseTexture = r.texture( src.name+"/sm" );
+
+      obj.setupMaterial( sm );
+      }
+    }
+
+  if( contains( src.materials, "shadow_cast" ) &&
+      !contains( src.materials, "blush" ) ){
     if( r.findTexture(src.name+"/sm") )
       smMaterial.diffuseTexture   = r.texture( src.name+"/sm" );
 
@@ -526,4 +554,59 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
 
 MyGL::Matrix4x4 &Game::shadowMat() {
   return graphics.closure.shadow.matrix;
+  }
+
+
+void Game::save( const std::wstring& f ) {
+  std::string str;
+  str.assign(f.begin(), f.end());
+
+  GameSerializer s( str, Serialize::Write );
+
+  if( s.isOpen() )
+    serialize(s);
+  }
+
+void Game::load( const std::wstring& f ) {
+  std::string str;
+  str.assign(f.begin(), f.end());
+
+  GameSerializer s( str, Serialize::Read );
+
+  if( s.isOpen() )
+    serialize(s);
+  }
+
+void Game::serialize( GameSerializer &s ) {
+  int plCount = players.size()-1;
+  s + plCount;
+  s + currentPlayer;
+
+  if( s.isReader() ){
+    setPlaylersCount( plCount );
+    }
+
+  for( size_t i=0; i<players.size(); ++i )
+    players[i]->serialize(s);
+
+  int wCount = worlds.size(), curWorld = 0;
+  s + wCount;
+
+  for( size_t i=0; i<worlds.size(); ++i )
+    if( worlds[i].get()==world )
+      curWorld = i;
+  s + curWorld;
+
+  if( s.isReader() ){
+    worlds.clear();
+
+    for( int i=0; i<wCount; ++i ){
+      worlds.push_back( std::unique_ptr<World>( new World(graphics, resource,
+                                                          proto,
+                                                          *this,
+                                                          128, 128) ) );
+      }
+    }
+
+  world = worlds[curWorld].get();
   }

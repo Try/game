@@ -41,6 +41,7 @@ class GameObjectView {
     void setVisible( bool v );
 
     void rotate(int delta);
+    void setRotation(int delta);
     void setViewDirection( int x, int y );
     void viewDirection( int &x, int &y ) const;
     double rAngle() const;
@@ -55,9 +56,8 @@ class GameObjectView {
     double radius() const;
     double rawRadius() const;
 
-
     Physics* physicEngine() const;
-  private:
+private:
     void setForm(const Physics::Sphere &f);
     void setForm(const Physics::Box &f);
     void setForm(const Physics::AnimatedSphere &f);

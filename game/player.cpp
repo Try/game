@@ -5,6 +5,8 @@
 
 #include "protoobject.h"
 
+#include "util/gameserializer.h"
+
 Player::Player(int num) {
   editObj  = 0;
 
@@ -112,4 +114,10 @@ bool Player::canBuild( const ProtoObject &p ) const {
 
 int Player::limMax() const {
   return m.limMax;
+  }
+
+void Player::serialize(GameSerializer &s) {
+  s + m.gold + m.team + m.htCtrl + m.num
+    ;
+
   }

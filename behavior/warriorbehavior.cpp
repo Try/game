@@ -146,7 +146,7 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
                         dobj.y() - obj.y() );
 
   if( obj.getClass().data.atk[0].range>0 ){
-    auto bul = dobj.reciveBulldet("worker");
+    auto bul = dobj.reciveBulldet("bullets/pike");
     Bullet& b = *bul;
 
     b.x = obj.x();
