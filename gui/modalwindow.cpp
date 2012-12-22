@@ -1,14 +1,15 @@
 #include "modalwindow.h"
 
 #include "overlaywidget.h"
+#include "centralwidget.h"
 
 ModalWindow::ModalWindow(Resource &res, Widget *owner) {
-  Widget* r = owner->findRoot();
-
-  while( r->layout().widgets().size()>1 ){
+  CentralWidget* r = (CentralWidget*)owner->findRoot();
+/*
+  while( r->layout().widgets().size()>0 ){
     r = r->layout().widgets().back();
     }
-
+*/
   OverlayWidget *w = new OverlayWidget(res);
   w->setLayout( MyWidget::Horizontal );
   r->layout().add(w);
@@ -17,6 +18,10 @@ ModalWindow::ModalWindow(Resource &res, Widget *owner) {
 
   w->layout().add( this );
   setFocus(1);
+}
+
+void ModalWindow::mouseDownEvent(MyWidget::MouseEvent &e)
+{
 }
 
 void ModalWindow::mouseWheelEvent(MyWidget::MouseEvent &)

@@ -2,6 +2,12 @@
 
 #include <windows.h>
 
+struct NativeSaveDialog::PImpl {
+  static HWND getHwnd(){
+    return FindWindow(L"game", L"game");
+    }
+  };
+
 NativeSaveDialog::NativeSaveDialog() {
 
   }
@@ -12,7 +18,7 @@ bool NativeSaveDialog::load() {
   ZeroMemory( &of, sizeof(of) );
 
   of.lStructSize       = sizeof(OPENFILENAME);
-  of.hwndOwner         = 0;
+  of.hwndOwner         = PImpl::getHwnd();
   of.hInstance         = 0;
   of.lpstrFilter       = L"All files (*.*)\0*.*\0";
   of.lpstrCustomFilter = NULL;
@@ -25,10 +31,16 @@ bool NativeSaveDialog::load() {
   of.lpstrInitialDir   = NULL;
   of.Flags             = OFN_PATHMUSTEXIST|OFN_FILEMUSTEXIST;
 
+  TCHAR dir[MAX_PATH];
+  GetCurrentDirectory(MAX_PATH, dir);
+
   if (GetOpenFileName(&of)) {
     fname = fileName;
+    SetCurrentDirectory(dir);
     return 1;
     }
+
+  SetCurrentDirectory(dir);
 
   return 0;
   }
@@ -43,7 +55,7 @@ bool NativeSaveDialog::save() {
   ZeroMemory( &of, sizeof(of) );
 
   of.lStructSize       = sizeof(OPENFILENAME);
-  of.hwndOwner         = 0;
+  of.hwndOwner         = PImpl::getHwnd();
   of.hInstance         = 0;
   of.lpstrFilter       = L"All files (*.*)\0*.*\0";
   of.lpstrCustomFilter = NULL;
@@ -56,10 +68,16 @@ bool NativeSaveDialog::save() {
   of.lpstrInitialDir   = NULL;
   of.Flags             = OFN_PATHMUSTEXIST|OFN_FILEMUSTEXIST;
 
+  TCHAR dir[MAX_PATH];
+  GetCurrentDirectory(MAX_PATH, dir);
+
   if (GetSaveFileName(&of)) {
     fname = fileName;
+    SetCurrentDirectory(dir);
     return 1;
     }
+
+  SetCurrentDirectory(dir);
 
   return 0;
   }

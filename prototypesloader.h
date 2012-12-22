@@ -25,6 +25,9 @@ class PrototypesLoader : public AbstractXMLReader {
                     TiXmlNode *node );
 
     std::unordered_map<std::string, PProtoObject> data;
+
+    static bool cmp( const std::shared_ptr<ProtoObject>& a,
+                     const std::shared_ptr<ProtoObject>& b );
   };
 
 #endif // PROTOTYPESLOADER_H

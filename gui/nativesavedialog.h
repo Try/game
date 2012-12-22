@@ -13,6 +13,8 @@ class NativeSaveDialog {
     const std::wstring fileName() const;
   private:
     std::wstring fname;
+
+    struct PImpl;
   };
 
 #endif // NATIVESAVEDIALOG_H

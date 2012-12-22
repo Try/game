@@ -108,6 +108,8 @@ class GameObject {
     int  hp() const;
 
     std::shared_ptr<Bullet> reciveBulldet( const std::string& view );
+
+    void serialize( GameSerializer &s );
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;

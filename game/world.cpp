@@ -15,12 +15,15 @@
 #include "util/weakworldptr.h"
 #include "behavior/buildingbehavior.h"
 
+#include "util/gameserializer.h"
+
 World::World( GraphicsSystem& g,
               Resource & r,
               PrototypesLoader &p,
               Game & gm,
               int w, int h )
-  : game(gm), physics(w,h), terr(w,h), graphics(g), resource(r), prototypes(p) {
+  : game(gm), physics(w,h), terr(w,h), graphics(g),
+    resource(r), prototypes(p) {
   tx = ty = 0;
   editLandMode = 0;
 
@@ -140,8 +143,11 @@ GameObject &World::addObject( const ProtoObject &p,
     eviObjects.push_back( PGameObject(obj) );   else
     gameObjects.push_back( PGameObject( obj ) );
 
-  if( !env )
-    obj->setPlayer( pl );
+  if( !env ){
+    if( p.data.isBackground )
+      obj->setPlayer( 0 ); else
+      obj->setPlayer( pl );
+    }
 
   return *obj;
   }
@@ -498,3 +504,40 @@ const MyGL::Scene &World::getScene() const {
   return scene;
   }
 
+void World::serialize(GameSerializer &s) {
+  terr.serialize(s);
+
+  if( s.isReader() ){
+    terrainView->loadView( terr.buildGeometry( graphics.vboHolder,
+                                               graphics.iboHolder ) );
+    waterView->loadView  ( terr.waterGeometry( graphics.vboHolder,
+                                               graphics.iboHolder ) );
+    physics.setTerrain( terr );
+    }
+
+  unsigned sz = gameObjects.size();
+  s + sz;
+
+  if( s.isReader() ){
+    gameObjects.clear();
+    eviObjects.clear();
+    warehouses.clear();
+    resouces.clear();
+    wptrs.clear();
+    }
+
+  for( size_t i=0; i<sz; ++i ){
+    if( s.isReader() ){
+      std::string str;
+      s + str;
+
+      addObject( str );
+      gameObjects[i]->serialize(s);
+      } else {
+      std::string str = gameObjects[i]->getClass().name;
+      s + str;
+      gameObjects[i]->serialize(s);
+      }
+
+    }
+  }

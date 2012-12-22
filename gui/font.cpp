@@ -68,9 +68,10 @@ const MyWidget::Bind::UserFont::Leter&
 
   FT_Face       face;
   FT_Vector     pen = {};
-  FT_New_Face( ft().library, key.name.c_str(), 0, &face );
+  FT_Error err = 0;
+  err = FT_New_Face( ft().library, key.name.c_str(), 0, &face );
 
-  FT_Set_Pixel_Sizes( face, key.size, key.size );
+  err = FT_Set_Pixel_Sizes( face, key.size, key.size );
   FT_Set_Transform( face, 0, &pen );
 
   Leter letter;

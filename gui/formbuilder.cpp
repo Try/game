@@ -548,9 +548,15 @@ void FormBuilder::save() {
 
   std::string fname = "./out.xml";
 
-  if( dlg.save() )
+  if( dlg.save() ){
     fname.assign( dlg.fileName().begin(),
                   dlg.fileName().end() );
+    } else {
+    return;
+    }
+
+  if( fname.find('.')==std::string::npos )
+    fname.push_back('.');
 
   while( fname.size() && fname[fname.size()-1]!='.' )
     fname.resize( fname.size()-1 );
@@ -563,18 +569,25 @@ void FormBuilder::save() {
   std::fstream xml( (fname+".xml").data(), std::ios::out );
 
   foutH << "#include <MyWidget/Widget>" << std::endl << std::endl
-        << "class Resource;" << std::endl << std::endl
+        << "class Resource;" << std::endl
+        << std::endl
+        << "class Button;" << std::endl
+        << "class Panel;" << std::endl
+        << "class LineEdit;" << std::endl
+        << "class ScroolWidget;" << std::endl
+        << std::endl
         << "namespace UI{ " << std::endl << std::endl
-        << "class Out { "   << std::endl
+        << "class " << "Out" << " { "   << std::endl
         << "  public: "   << std::endl
         << "    void setupUi( MyWidget::Widget*, Resource & res );" << std::endl;
 
-  foutCpp << "#include \"out.h\" " << std::endl
+  foutCpp << "#include \"" << fname << ".h\" " << std::endl
           << std::endl
           << "#include <MyWidget/Layout>" << std::endl
           << "#include \"gui/button.h\"" << std::endl
           << "#include \"gui/panel.h\"" << std::endl
           << "#include \"gui/scroolwidget.h\"" << std::endl
+          << "#include \"gui/lineedit.h\"" << std::endl
           << std::endl
           << "using namespace MyWidget;" << std::endl
           << std::endl
@@ -604,8 +617,8 @@ void FormBuilder::save( Widget &w,
                         std::ostream &xml,
                         bool root) {
   if( root ){
-    //foutCpp << "{ Widget* owner = w;" << std::endl;
-    foutCpp  << tab << "w = new Widget();" << std::endl;
+    //foutCpp << "{ MyWidget::Widget* owner = w;" << std::endl;
+    foutCpp  << tab << "w = new MyWidget::Widget();" << std::endl;
 
     xml << tab << "<Widget>" << std::endl;
 
@@ -614,7 +627,7 @@ void FormBuilder::save( Widget &w,
       xml << tab << "<objName string = \"" << s->name
           << "\"/>" << std::endl;
 
-      foutH << "    Widget * " << s->name <<";" << std::endl;
+      foutH << "    MyWidget::Widget * " << s->name <<";" << std::endl;
       foutCpp << tab << s->name <<" = w;" << std::endl;
       }
     }
@@ -651,11 +664,13 @@ void FormBuilder::save( Widget &w,
                     <<"\" y = \"" << w.sizePolicy().maxSize.h <<"\" />"
                     << std::endl;
 
-  if( LinearLayout* l = dynamic_cast<LinearLayout*>(&w.layout()) ) {
-    if( l->orientation()==Vertical )
-      foutCpp << tab << "w->setLayout( Vertical );"; else
-      foutCpp << tab << "w->setLayout( Horizontal );";
-    foutCpp << std::endl;
+  if( dynamic_cast<ScroolWidget*>(&w)==0 ){
+    if( LinearLayout* l = dynamic_cast<LinearLayout*>(&w.layout()) ) {
+      if( l->orientation()==Vertical )
+        foutCpp << tab << "w->setLayout( Vertical );"; else
+        foutCpp << tab << "w->setLayout( Horizontal );";
+      foutCpp << std::endl;
+      }
     }
 
   if( w.owner() && (dynamic_cast<LinearLayout*>(&w.owner()->layout())==0) ) {
@@ -678,7 +693,8 @@ void FormBuilder::save( Widget &w,
   Layout* lay = &w.layout();
   if( ScroolWidget *sw = dynamic_cast<ScroolWidget*>(&w) ){
     lay = &sw->centralWidget().layout();
-    foutCpp << tab << "w = &((ScrollWidget*)w)->centralWidget();" << std::endl;
+    foutCpp << tab << "MyWidget::Widget *pw = w;" << std::endl;
+    foutCpp << tab << "w = &((ScroolWidget*)w)->centralWidget();" << std::endl;
     }
 
   if( LinearLayout * l = dynamic_cast<LinearLayout*>(lay) ){
@@ -702,6 +718,11 @@ void FormBuilder::save( Widget &w,
     foutCpp << tab << "} " << std::endl;
     tab.resize( tab.size()-2 );
     }
+
+  if( dynamic_cast<ScroolWidget*>(&w) ){
+    foutCpp << tab << "w = pw;" << std::endl;
+    }
+
   xml << tab << "</Nested>" << std::endl;
 
   if( root ){
@@ -751,6 +772,51 @@ void FormBuilder::save( Button &w,
 
   if( root ){
     xml << tab << "</Button>" << std::endl << std::endl;
+    }
+  }
+
+void FormBuilder::save( LineEdit &w,
+                        std::ostream &foutH,
+                        std::ostream &foutCpp,
+                        std::ostream &xml,
+                        bool root) {
+  if( root ){
+    xml << tab << "<LineEdit>" << std::endl;
+
+    xml << tab << "<text string = \"";
+
+    for( size_t i=0; i<w.text().size(); ++i ){
+      xml << "\\x" << std::hex << int(w.text()[i]) << std::dec;
+      }
+
+    xml << "\"/>" << std::endl;
+    }
+
+  foutCpp << tab << "w = new LineEdit(res);" << std::endl;
+
+  if( root ){
+    Seriaziable* s = dynamic_cast<Seriaziable*>(&w);
+    if( s->name.size() ){
+      xml << tab << "<objName string = \"" << s->name
+          << "\"/>" << std::endl;
+
+      foutH << "    LineEdit * " << s->name <<";" << std::endl;
+      foutCpp << tab << s->name <<" = (LineEdit*)w;" << std::endl;
+      }
+    }
+
+  foutCpp << tab << "((LineEdit*)w)->setText( L\"";
+
+  for( size_t i=0; i<w.text().size(); ++i ){
+    foutCpp << "\\x" << std::hex << int(w.text()[i]) << std::dec;
+    }
+
+  foutCpp <<"\" ); "<< std::endl;
+
+  save( (Widget&)w, foutH, foutCpp, xml, false );
+
+  if( root ){
+    xml << tab << "</LineEdit>" << std::endl << std::endl;
     }
   }
 
@@ -807,9 +873,18 @@ void FormBuilder::save( ScroolWidget &w,
   }
 
 void FormBuilder::loadXML() {
-  centralWidget->layout().removeAll();
+  NativeSaveDialog dlg;
 
-  TiXmlDocument doc( "./out.xml" );
+  std::string fname;
+  if( dlg.load() ){
+    fname.assign( dlg.fileName().begin(),
+                  dlg.fileName().end() );
+    } else {
+    return;
+    }
+
+  TiXmlDocument doc( fname.data() );
+  centralWidget->layout().removeAll();
 
   if( !doc.LoadFile() ){
     return;
@@ -969,6 +1044,25 @@ void FormBuilder::loadWidget(Widget *w, TiXmlNode *root ) {
   }
 
 void FormBuilder::loadWidget(Button *w, TiXmlNode *root ) {
+  for( TiXmlNode* node = root->FirstChild(); node;
+       node = node->NextSibling() ){
+    if( std::string(node->Value())=="text" ){
+      TiXmlAttribute* attr = node->ToElement()->FirstAttribute();
+
+      while (attr) {
+        if( std::string(attr->Name())=="string" ){
+          w->setText( removeEscapeSym( attr->Value() ) );
+          }
+
+        attr = attr->Next();
+        }
+      }
+    }
+
+  loadWidget( (Widget*)w, root );
+  }
+
+void FormBuilder::loadWidget(LineEdit *w, TiXmlNode *root ) {
   for( TiXmlNode* node = root->FirstChild(); node;
        node = node->NextSibling() ){
     if( std::string(node->Value())=="text" ){

@@ -11,6 +11,7 @@ namespace MyGL{
   }
 
 class GameObject;
+class GameSerializer;
 
 class Terrain {
   public:
@@ -58,6 +59,8 @@ class Terrain {
     unsigned nextGroupMask() const;
 
     void editBuildingsMap( int x, int y, int w, int h, int dv );
+
+    void serialize( GameSerializer &s );
   private:
     array2d<int>  heightMap;
     array2d<int>  waterMap;

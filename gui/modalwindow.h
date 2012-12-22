@@ -10,6 +10,7 @@ class ModalWindow : public MyWidget::Widget {
     ModalWindow( Resource & res, MyWidget::Widget* owner );
 
   protected:
+    void mouseDownEvent(MyWidget::MouseEvent &e);
     void mouseWheelEvent(MyWidget::MouseEvent &e);
   };
 

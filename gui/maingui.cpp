@@ -18,6 +18,7 @@
 #include "algo/algo.h"
 #include "ingamecontrols.h"
 #include "nativesavedialog.h"
+#include "savedialog.h"
 
 MainGui::MainGui( MyGL::Device &,
                   int w, int h,
@@ -30,15 +31,17 @@ MainGui::MainGui( MyGL::Device &,
   Font f;
   std::wstring str;
 
-  for( wchar_t i='a'; i<'z'; ++i )
+  for( wchar_t i='a'; i<='z'; ++i )
     str.push_back(i);
-  for( wchar_t i='A'; i<'Z'; ++i )
-    str.push_back(i);
-
-  for( wchar_t i='0'; i<'9'; ++i )
+  for( wchar_t i='A'; i<='Z'; ++i )
     str.push_back(i);
 
-  f.fetch(res, str);
+  for( wchar_t i='0'; i<='9'; ++i )
+    str.push_back(i);
+
+  str += L"/\\|!@#$%^&*()_-=+";
+
+  f.fetch(res, str);  
   }
 
 MainGui::~MainGui() {
@@ -116,6 +119,7 @@ int MainGui::keyDownEvent(MyWidget::KeyEvent &e) {
   }
 
 int MainGui::keyUpEvent(MyWidget::KeyEvent &e) {
+  e.ignore();
   central.keyUpEvent(e);
   return e.isAccepted();
   }
@@ -145,17 +149,14 @@ void MainGui::enableHooks(bool e) {
   }
 
 void MainGui::saveGame() {
-  NativeSaveDialog dlg;
-
-  if( dlg.save() )
-    save( dlg.fileName() );
+  SaveDialog* dlg = new SaveDialog(res, mainwidget);
+  dlg->setSaveMode();
+  dlg->accept.bind( save );
   }
 
 void MainGui::loadGame() {
-  NativeSaveDialog dlg;
-
-  if( dlg.load() )
-    load( dlg.fileName() );
+  SaveDialog* dlg = new SaveDialog(res, mainwidget);
+  dlg->accept.bind( load );
   }
 
 void MainGui::onUnitDied(GameObject &obj) {

@@ -15,6 +15,7 @@ struct ProtoObject {
       int maxHp;
 
       int gold, lim, limInc, buildTime;
+      bool isBackground;
 
       struct Atack{
         int range;

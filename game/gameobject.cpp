@@ -16,6 +16,8 @@
 
 #include "bullet.h"
 
+#include "util/gameserializer.h"
+
 GameObject::GameObject( MyGL::Scene & s,
                         World &w,
                         const ProtoObject &p,
@@ -333,7 +335,6 @@ void GameObject::select() {
 void GameObject::unSelect() {
   if( m.isSelected ){
     m.isSelected  = false;
-    //selection.setVisible( m.isSelected );
     view.setSelectionVisible( m.isSelected );
 
     world().player( m.pl ).select( this, 0);
@@ -341,9 +342,7 @@ void GameObject::unSelect() {
   }
 
 void GameObject::updateSelection() {
-  //m.isSelected  = m.isMouseOwer;
-  //selection.setVisible( m.isMouseOwer );
-  view.setSelectionVisible( m.isMouseOwer );
+  view.setSelectionVisible( m.isMouseOwer && (!getClass().data.isBackground) );
   m.isMouseOwer = 0;
   }
 
@@ -370,7 +369,7 @@ bool GameObject::isMouseOwer() const {
 void GameObject::setMouseOverFlag(bool f) {
   m.isMouseOwer = f;
 //  selection.setVisible( m.isMouseOwer );
-  view.setSelectionVisible( m.isMouseOwer );
+  view.setSelectionVisible( m.isMouseOwer && (!getClass().data.isBackground) );
   }
 
 double GameObject::radius() const {
@@ -473,4 +472,24 @@ std::shared_ptr<Bullet> GameObject::reciveBulldet( const std::string &v ){
 
   bullets.push_back( std::shared_ptr<Bullet>(b) );
   return bullets.back();
+  }
+
+void GameObject::serialize( GameSerializer &s ) {
+  int x = m.x,
+      y = m.y,
+      z = m.z,
+      pl = m.pl;
+
+  s + m.hp +
+      pl +
+      x  +
+      y  +
+      z;
+
+  if( s.isReader() ){
+    setPosition( x, y, z );
+    setPlayer( pl );
+    }
+
+  view.serialize(s);
   }

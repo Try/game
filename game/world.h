@@ -13,6 +13,7 @@ class BehaviorMSGQueue;
 class PrototypesLoader;
 class Game;
 class Player;
+class GameSerializer;
 
 namespace MyWidget{
   class Painter;
@@ -85,6 +86,8 @@ class World {
 
     void toogleEditLandMode();
     Physics physics;
+
+    void serialize( GameSerializer &s);
   private:
     Terrain terr;
 

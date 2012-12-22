@@ -1,0 +1,107 @@
+<?xml version="1.0" ?>
+<Form>
+  <sizePolicy x = "Expanding" y = "Expanding" />
+  <minSize x = "20" y = "20" />
+  <maxSize x = "65536" y = "65536" />
+  <Nested layout = "Vertical" >
+    <Widget>
+    <objName string = "topWidget"/>
+    <sizePolicy x = "Preferred" y = "Preferred" />
+    <minSize x = "20" y = "20" />
+    <maxSize x = "65536" y = "65536" />
+    <Nested layout = "Horizontal" >
+      <Panel>
+      <objName string = "topPanel"/>
+      <sizePolicy x = "Preferred" y = "Preferred" />
+      <minSize x = "20" y = "20" />
+      <maxSize x = "65536" y = "65536" />
+      <Nested layout = "Horizontal" >
+        <Widget>
+        <sizePolicy x = "Preferred" y = "Preferred" />
+        <minSize x = "20" y = "20" />
+        <maxSize x = "65536" y = "65536" />
+        <Nested layout = "Horizontal" >
+        </Nested>
+        </Widget>
+
+        <LineEdit>
+        <text string = "\x66\x6e\x61\x6d\x65"/>
+        <objName string = "inputName"/>
+        <sizePolicy x = "Preferred" y = "Preferred" />
+        <minSize x = "20" y = "24" />
+        <maxSize x = "65536" y = "24" />
+        <Nested layout = "Vertical" >
+        </Nested>
+        </LineEdit>
+
+        <Widget>
+        <sizePolicy x = "Preferred" y = "Preferred" />
+        <minSize x = "20" y = "20" />
+        <maxSize x = "65536" y = "65536" />
+        <Nested layout = "Vertical" >
+        </Nested>
+        </Widget>
+
+      </Nested>
+      </Panel>
+
+    </Nested>
+    </Widget>
+
+    <Widget>
+    <objName string = "central"/>
+    <sizePolicy x = "Preferred" y = "Preferred" />
+    <minSize x = "20" y = "20" />
+    <maxSize x = "65536" y = "65536" />
+    <Nested layout = "Horizontal" >
+      <ScroolWidget>
+      <objName string = "items"/>
+      <sizePolicy x = "Preferred" y = "Preferred" />
+      <minSize x = "20" y = "20" />
+      <maxSize x = "65536" y = "65536" />
+      <Nested layout = "Vertical" >
+      </Nested>
+      </ScroolWidget>
+
+    </Nested>
+    </Widget>
+
+    <Widget>
+    <objName string = "bottom"/>
+    <sizePolicy x = "Preferred" y = "Preferred" />
+    <minSize x = "20" y = "20" />
+    <maxSize x = "65536" y = "65536" />
+    <Nested layout = "Horizontal" >
+      <Button>
+      <text string = "\x417\x430\x433\x440\x443\x437\x438\x442\x44c"/>
+      <objName string = "accept"/>
+      <sizePolicy x = "FixedMax" y = "FixedMax" />
+      <minSize x = "27" y = "27" />
+      <maxSize x = "128" y = "27" />
+      <Nested layout = "Vertical" >
+      </Nested>
+      </Button>
+
+      <Widget>
+      <sizePolicy x = "Preferred" y = "Preferred" />
+      <minSize x = "20" y = "20" />
+      <maxSize x = "65536" y = "65536" />
+      <Nested layout = "Vertical" >
+      </Nested>
+      </Widget>
+
+      <Button>
+      <text string = "\x41e\x442\x43c\x435\x43d\x430"/>
+      <objName string = "cancel"/>
+      <sizePolicy x = "FixedMax" y = "FixedMax" />
+      <minSize x = "27" y = "27" />
+      <maxSize x = "128" y = "27" />
+      <Nested layout = "Vertical" >
+      </Nested>
+      </Button>
+
+    </Nested>
+    </Widget>
+
+  </Nested>
+</Form>

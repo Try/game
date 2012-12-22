@@ -236,7 +236,7 @@ void GraphicsSystem::render( const MyGL::Scene &scene ) {
   fillGBuf( gbuffer, mainDepth, shadowMap, scene );
   drawOmni( gbuffer, mainDepth, scene );
 
-  if( 0 ){
+  if( 1 ){
     MyGL::Texture2d ssaoTex;
     ssao( ssaoTex, gbuffer[3], scene );
     //ssaoDetail( ssaoTexDet, gbuffer[2], ssaoTex );

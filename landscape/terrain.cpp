@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include "algo/algo.h"
+#include "util/gameserializer.h"
 #include <memory>
 
 const int Terrain::busyMapsCount = 4;
@@ -26,22 +27,6 @@ Terrain::Terrain(int w, int h) {
   std::fill( waterMap.begin(),     waterMap.end(),      0 );
   std::fill( buildingsMap.begin(), buildingsMap.end(),  0 );
   resetBusyMap();
-/*
-  for( int i=0; i<width(); ++i )
-    for( int r=0; r<height(); ++r ){
-      //int z = abs(16*(i-width()/2)*(r-height()/2)) - 16*w*h/4;
-      heightMap[i][r] = 0;
-      }*/
-/*
-  for( int i=0; i<w; ++i )
-    for( int r=0; r<h; ++r ){
-      int dz = -std::max( (5-abs( i-w/2 ))*100, (5-abs(r-h/2))*100 )
-          - std::max(0, ( 20 - abs(i-w/2) - abs(r-h/2) ))*200;
-      dz = std::min(dz, 0);
-
-      waterMap[i][r] = -dz;
-      }*/
-
   computeEnableMap();
   }
 
@@ -489,7 +474,7 @@ void Terrain::computeEnableMap() {
 
       int det = *std::max_element(h, h+4) - *std::min_element(h,h+4);
 
-      enableMap[i][r] = (det<150);
+      enableMap[i][r] = (det<50);
       }
   }
 
@@ -515,4 +500,30 @@ void Terrain::BusyMap::resize(int w, int h) {
 void Terrain::BusyMap::reset() {
   std::fill( count.begin(), count.end(), 0 );
   std::fill( owner.begin(), owner.end(), (GameObject*)0 );
+  }
+
+void Terrain::serialize( GameSerializer &s ) {
+  int w = heightMap.width()  - 1,
+      h = heightMap.height() - 1;
+
+  s + w + h;
+
+  heightMap.resize( w+1, h+1 );
+  waterMap .resize( w+1, h+1 );
+  buildingsMap.resize(w+1, h+1);
+
+  for( int i=0; i<busyMapsCount; ++i ){
+    int n = i+1;
+    busyMap[i].resize(w/n,h/n);
+    }
+
+  for( int i=0; i<w; ++i )
+    for( int r=0; r<h; ++r ){
+      s +  heightMap[i][r]
+        +  waterMap[i][r]
+        +  buildingsMap[i][r];
+      }
+
+  resetBusyMap();
+  computeEnableMap();
   }

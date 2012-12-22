@@ -5,6 +5,8 @@
 #include "world.h"
 #include "game.h"
 
+#include "util/gameserializer.h"
+
 #include <cmath>
 
 GameObjectView::GameObjectView( GameObject &obj,
@@ -425,4 +427,41 @@ const ProtoObject &GameObjectView::getClass() const {
 void GameObjectView::setupMaterials( MyGL::AbstractGraphicObject &obj,
                                      const ProtoObject::View &src ) {
   wrld.game.setupMaterials( obj, src, teamColor );
+  }
+
+void GameObjectView::serialize( GameSerializer &s ) {
+  bool v = selection.isVisible();
+  s + v;
+  selection.setVisible(v);
+
+  unsigned vsize = view.size();
+  s + vsize;
+
+  vsize = std::min( vsize, view.size() );
+
+  const int mulI = 10000;
+
+  for( unsigned i=0; i<vsize; ++i ){
+    MyGL::GraphicObject & g = view[i];
+    int x = World::coordCastD(g.x()),
+        y = World::coordCastD(g.y()),
+        z = World::coordCastD(g.z()),
+
+        az = g.angleZ()*mulI,
+        ax = g.angleX()*mulI;
+
+    s + x +
+        y +
+        z +
+        az +
+        ax +
+        m.intentDirX +
+        m.intentDirY;
+
+    g.setPosition( World::coordCast(x),
+                   World::coordCast(y),
+                   World::coordCast(z));
+
+    g.setRotation( ax/double(mulI), az/double(mulI) );
+    }
   }

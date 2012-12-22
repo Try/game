@@ -578,6 +578,16 @@ void Game::load( const std::wstring& f ) {
   }
 
 void Game::serialize( GameSerializer &s ) {
+  std::string magic = "SAV";
+  s + magic;
+
+  if( magic!="SAV")
+    return;
+
+  if( s.isReader() ){
+    worlds.clear();
+    }
+
   int plCount = players.size()-1;
   s + plCount;
   s + currentPlayer;
@@ -598,15 +608,23 @@ void Game::serialize( GameSerializer &s ) {
   s + curWorld;
 
   if( s.isReader() ){
-    worlds.clear();
-
     for( int i=0; i<wCount; ++i ){
       worlds.push_back( std::unique_ptr<World>( new World(graphics, resource,
                                                           proto,
                                                           *this,
                                                           128, 128) ) );
+      world = worlds.back().get();
+      world->camera.setPerespective( true, w, h );
+      world->camera.setPosition( 2, 3, 0 );
+      world->camera.setDistance( 4 );
       }
     }
 
   world = worlds[curWorld].get();
+
+  gui.toogleEditLandMode = MyWidget::signal<>();
+  gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
+
+  for( size_t i=0; i<worlds.size(); ++i )
+    worlds[i]->serialize(s);
   }

@@ -62,9 +62,12 @@ void Serialize::write( const std::string &val ) {
 void Serialize::read(std::string &val) {
   size_t s;
   read( s );
-  val.resize(s);
 
-  fread ( &val[0], 1, val.size(), f );
+  if( s<100000 ){
+    val.resize(s);
+
+    fread ( &val[0], 1, val.size(), f );
+    }
   }
 
 void Serialize::write(char val) {

@@ -8,6 +8,7 @@
 
 class ScroolWidget;
 class Button;
+class LineEdit;
 
 class TiXmlNode;
 
@@ -72,6 +73,12 @@ class FormBuilder : public ModalWindow  {
                std::ostream &xml,
                bool root );
 
+    void save( LineEdit& w,
+               std::ostream &outH,
+               std::ostream &outCpp,
+               std::ostream &xml,
+               bool root );
+
     void save( Panel& w,
                std::ostream &outH,
                std::ostream &outCpp,
@@ -87,6 +94,7 @@ class FormBuilder : public ModalWindow  {
     void loadXML();
     void loadWidget( Widget* w, TiXmlNode * node );
     void loadWidget( Button* w, TiXmlNode * node );
+    void loadWidget( LineEdit* w, TiXmlNode * node );
     void loadWidget( ScroolWidget* w, TiXmlNode * node );
 
     std::wstring removeEscapeSym( const std::string& str );

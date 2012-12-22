@@ -107,7 +107,9 @@ HEADERS += \
     game/gameobjectview.h \
     graphics/blushmaterial.h \
     gui/nativesavedialog.h \
-    util/gameserializer.h
+    util/gameserializer.h \
+    gui/gen/ui_loaddialog.h \
+    gui/savedialog.h
 
 SOURCES += \
     main.cpp \
@@ -179,7 +181,9 @@ SOURCES += \
     game/gameobjectview.cpp \
     graphics/blushmaterial.cpp \
     gui/nativesavedialog.cpp \
-    util/gameserializer.cpp
+    util/gameserializer.cpp \
+    gui/gen/ui_loaddialog.cpp \
+    gui/savedialog.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
@@ -192,5 +196,6 @@ OTHER_FILES += \
     ../game-build-desktop/data/game.xml \
     ../game-build-desktop/data/shaders.xml \
     ../game-build-desktop/data/pixmaps.xml \
-    ../game-build-desktop/data/icons.xml
+    ../game-build-desktop/data/icons.xml \
+    gui/gen/ui_loaddialog.xml
 

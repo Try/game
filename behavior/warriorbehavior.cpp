@@ -33,7 +33,7 @@ void WarriorBehavior::tick( const Terrain & ) {
   size_t id = -1, idA   = -1;
   int dist  = -1, distA = -1;
 
-  for( size_t i=0; i<obj.world().objectsCount(); ++i ){
+  for( size_t i=0; i<obj.world().objectsCount(); ++i ){//FIXME
     GameObject & tg = obj.world().object(i);
     int d = tg.distanceSQ( obj.x(), obj.y() );
 

@@ -4,6 +4,8 @@ ProtoObject::ProtoObject()
 {
   rotateSpeed = 5;
 
+  data.isBackground = 0;
+
   data.size  = 1;
   data.speed = 15;
   data.visionRange = 14;

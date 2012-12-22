@@ -27,6 +27,8 @@ std::vector< PrototypesLoader::PProtoObject>
   for( auto i = data.begin(); i!=data.end(); ++i )
     obj.push_back( i->second );
 
+  std::sort( obj.begin(), obj.end(), cmp );
+
   return obj;
   }
 
@@ -226,6 +228,8 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       readIf( e, "lim",       obj.data.lim       );
       readIf( e, "limInc",    obj.data.limInc    );
       readIf( e, "buildTime", obj.data.buildTime );
+
+      readIf( e, "isBackground", obj.data.isBackground );
       }
 
     if( type=="commands" )
@@ -334,4 +338,9 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &b,
     b.delay  = Lexical::cast<int>(str);
     }
 
+  }
+
+bool PrototypesLoader::cmp( const std::shared_ptr<ProtoObject> &a,
+                            const std::shared_ptr<ProtoObject> &b ) {
+  return (a->name < b->name );
   }

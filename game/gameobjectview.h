@@ -57,6 +57,7 @@ class GameObjectView {
     double rawRadius() const;
 
     Physics* physicEngine() const;
+    void serialize( GameSerializer &s);
 private:
     void setForm(const Physics::Sphere &f);
     void setForm(const Physics::Box &f);
