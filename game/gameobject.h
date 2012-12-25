@@ -143,6 +143,7 @@ class GameObject {
                          const ProtoObject::View &src );
 
     friend class GameObjectView;
+    friend class UnitView;
   };
 
 #endif // GAMEOBJECT_H

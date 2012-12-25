@@ -5,6 +5,8 @@
 #include <MyWidget/Shortcut>
 #include "graphics/paintergui.h"
 
+#include <ctime>
+
 class Resource;
 
 class Button : public MyWidget::Widget {
@@ -36,6 +38,10 @@ class Button : public MyWidget::Widget {
 
     MyWidget::Shortcut hotKey;
     Resource & res;
+
+    void onShortcut();
+
+    clock_t timePressed;
   };
 
 #endif // BUTTON_H

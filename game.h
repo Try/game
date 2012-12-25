@@ -25,7 +25,7 @@ class Game {
     Game( void* hwnd, int w, int h, bool isFullScreen );
 
     void tick();
-    void render(  );
+    void render(size_t dt);
     void resizeEvent( int w, int h );
 
     void mouseDownEvent( MyWidget::MouseEvent &e );

@@ -58,6 +58,8 @@ class GameObjectView {
 
     Physics* physicEngine() const;
     void serialize( GameSerializer &s);
+
+    const ProtoObject &getClass() const;
 private:
     void setForm(const Physics::Sphere &f);
     void setForm(const Physics::Box &f);
@@ -103,8 +105,6 @@ private:
     World       & wrld;
     const ProtoObject * cls;
     const PrototypesLoader & prototypes;
-
-    const ProtoObject &getClass() const;
 
     template< class Rigid >
     void updatePosRigid( Rigid & r );

@@ -2,22 +2,32 @@
 #define UNITLIST_H
 
 #include <MyWidget/Widget>
+#include "scroolwidget.h"
 
 class Resource;
 class GameObject;
 
-class UnitList : public MyWidget::Widget {
+class CommandsPanel;
+class UnitView;
+
+class UnitList : public ScroolWidget {
   public:
-    UnitList(Resource &res);
+    UnitList( CommandsPanel *panel, Resource &res,
+              UnitView *uview );
 
     void setup( const std::vector<GameObject *> &u );
     void onUnitDied(GameObject &obj);
   private:
+    struct View;
     struct Btn;
     struct Lay;
 
     std::vector<Btn*> btn;
     Resource &res;
+
+    View * view;
+    UnitView *uview;
+    CommandsPanel *cmd;
   };
 
 #endif // UNITLIST_H

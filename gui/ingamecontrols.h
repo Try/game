@@ -16,6 +16,12 @@ class Game;
 class Button;
 
 class UnitList;
+class MiniMapView;
+class World;
+
+namespace MyGL{
+  class Scene;
+  }
 
 class InGameControls : public MyWidget::Widget {
   public:
@@ -23,12 +29,16 @@ class InGameControls : public MyWidget::Widget {
                     BehaviorMSGQueue & q,
                     PrototypesLoader & prototypes,
                     Game &game );
+    ~InGameControls();
 
     MyWidget::signal< MyWidget::Painter&, int , int> paintObjectsHud;
     MyWidget::signal<const ProtoObject&, int> addObject;
     MyWidget::signal<> toogleEditLandMode;
 
     MyWidget::signal<> save, load;
+
+    MyWidget::signal< const MyGL::Scene &,
+                      MyGL::Texture2d & > renderScene;
 
     MyWidget::Rect selection;
 
@@ -39,6 +49,8 @@ class InGameControls : public MyWidget::Widget {
     void removeHook(InputHookBase *h);
     void enableHooks(bool e);
 
+    void updateValues();
+    void renderMinimap( World& w );
   protected:
     void paintEvent(MyWidget::PaintEvent &p);
 
@@ -62,6 +74,8 @@ class InGameControls : public MyWidget::Widget {
     CommandsPanel *commands;
     UnitList      *units;
     Button *gold, *lim;
+    MiniMapView * minimap;
+
     MyWidget::Bind::UserTexture frame;
     int currPl;
 

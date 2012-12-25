@@ -12,6 +12,7 @@ class ScroolWidget : public MyWidget::Widget {
 
     Widget& centralWidget();
 
+    void setScroolBarVisible( bool v );
   protected:
     void mouseWheelEvent(MyWidget::MouseEvent &e);
 

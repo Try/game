@@ -62,6 +62,7 @@ class BehaviorMSGQueue : public AbstractBehavior {
     void select( World & w, int pl, size_t b, size_t size  );
     void sysMSG( Game & game, World & w );
 
+    bool buyMsgRecv(Game & game, World & w, GameObject &obj, const MSG & m );
   };
 
 #endif // BEHAVIORMSGQUEUE_H

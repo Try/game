@@ -1,0 +1,71 @@
+<?xml version="1.0" ?>
+<Form>
+  <sizePolicy x = "Expanding" y = "Expanding" />
+  <minSize x = "20" y = "20" />
+  <maxSize x = "65536" y = "65536" />
+  <Nested layout = "Horizontal" >
+    <Widget>
+    <sizePolicy x = "Preferred" y = "Preferred" />
+    <minSize x = "20" y = "20" />
+    <maxSize x = "65536" y = "65536" />
+    <Nested layout = "Vertical" >
+      <Widget>
+      <objName string = "priview"/>
+      <sizePolicy x = "Preferred" y = "Preferred" />
+      <minSize x = "20" y = "20" />
+      <maxSize x = "65536" y = "65536" />
+      <Nested layout = "Horizontal" >
+      </Nested>
+      </Widget>
+
+      <Panel>
+      <objName string = "hpBox"/>
+      <sizePolicy x = "Preferred" y = "Preferred" />
+      <minSize x = "20" y = "20" />
+      <maxSize x = "65536" y = "65536" />
+      <Nested layout = "Horizontal" >
+        <LineEdit>
+        <text string = "\x31\x30\x30\x2f\x31\x30\x30"/>
+        <objName string = "hp"/>
+        <sizePolicy x = "Preferred" y = "Preferred" />
+        <minSize x = "20" y = "24" />
+        <maxSize x = "65536" y = "24" />
+        <Nested layout = "Vertical" >
+        </Nested>
+        </LineEdit>
+
+      </Nested>
+      </Panel>
+
+    </Nested>
+    </Widget>
+
+    <Widget>
+    <sizePolicy x = "Preferred" y = "Preferred" />
+    <minSize x = "20" y = "20" />
+    <maxSize x = "65536" y = "65536" />
+    <Nested layout = "Vertical" >
+      <LineEdit>
+      <text string = "\x55\x6e\x69\x74\x20\x4e\x61\x6d\x65"/>
+      <objName string = "caption"/>
+      <sizePolicy x = "Preferred" y = "Preferred" />
+      <minSize x = "20" y = "24" />
+      <maxSize x = "65536" y = "24" />
+      <Nested layout = "Horizontal" >
+      </Nested>
+      </LineEdit>
+
+      <Widget>
+      <objName string = "status"/>
+      <sizePolicy x = "Preferred" y = "Preferred" />
+      <minSize x = "20" y = "20" />
+      <maxSize x = "65536" y = "65536" />
+      <Nested layout = "Horizontal" >
+      </Nested>
+      </Widget>
+
+    </Nested>
+    </Widget>
+
+  </Nested>
+</Form>

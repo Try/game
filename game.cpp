@@ -64,6 +64,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   gui.load.bind( *this, &Game::load );
 
   graphics.load( resource, gui, w, h );
+  gui.renderScene.bind( graphics, &GraphicsSystem::renderSubScene );
 
   worlds.push_back( std::unique_ptr<World>( new World(graphics, resource,
                                                       proto,
@@ -108,13 +109,15 @@ void Game::tick() {
   fps.time += int(GetTickCount() - time);
   }
 
-void Game::render() {
+void Game::render( size_t dt ) {
   world->camera.setSpinX(spinX);
   world->camera.setSpinY(spinY);
 
   DWORD time = GetTickCount();
 
-  graphics.render( world->getScene() );
+  if( graphics.render( world->getScene(), dt ))
+    gui.renderMinimap(*world);
+
   ++fps.n;
   fps.time += int(GetTickCount() - time);
 
@@ -126,10 +129,7 @@ void Game::render() {
     fps.n    = 0;
     fps.time = 0;
     }
-  //std::cout << GetTickCount() - time << std::endl;
 
-
-  //moveCamera();
   }
 
 void Game::resizeEvent( int iw, int ih ){

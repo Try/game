@@ -26,6 +26,13 @@ MyWidget::Widget &ScroolWidget::centralWidget() {
   return *cen;
   }
 
+void ScroolWidget::setScroolBarVisible(bool v) {
+  layout().take( &sb );
+
+  if( v )
+    layout().add( &sb );
+  }
+
 void ScroolWidget::mouseWheelEvent(MyWidget::MouseEvent &e) {
   if( !rect().contains(e.x+x(), e.y+y()) ){
     e.ignore();

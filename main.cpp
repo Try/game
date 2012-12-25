@@ -139,7 +139,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
           DWORD ft = GetTickCount();
 
           if( isAppActive )
-            demo.render();
+            demo.render( GetTickCount() );
 
           gameTime += std::min<DWORD>((GetTickCount() - time), 5*frameTime);
           time = GetTickCount();

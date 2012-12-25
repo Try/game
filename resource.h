@@ -48,6 +48,8 @@ class Resource : public AbstractXMLReader {
 
     void flushPixmaps();
     using AbstractXMLReader::load;
+
+    MyGL::TextureHolder      &  texHolder;
 private:
     template< class T >
     struct Box{
@@ -109,7 +111,6 @@ private:
     Box<MyGL::FragmentShader> fs;
     Box<PixmapsPool::TexturePtr> px;
 
-    MyGL::TextureHolder      &  texHolder;
     MyGL::VertexBufferHolder &  vboHolder;
     MyGL::IndexBufferHolder  &  iboHolder;
 

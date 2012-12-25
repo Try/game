@@ -17,6 +17,21 @@ GameObjectView::GameObjectView( GameObject &obj,
     cls(&p),
     prototypes( obj.prototypes ){
   m.radius = 0;
+
+  m.x = 0;
+  m.y = 0;
+  m.z = 0;
+
+  for( int i=0; i<3; ++i )
+    m.selectionSize[i] = 0;
+
+  for( int i=0; i<3; ++i )
+    m.modelSize[i] = 0;
+
+  m.intentDirX = 0;
+  m.intentDirY = -1;
+
+
   loadView( obj.game().resources(), wrld.physics, 0 );
   }
 
@@ -26,6 +41,19 @@ GameObjectView::GameObjectView( MyGL::Scene & s,
                                 const PrototypesLoader & pl )
   : selection(s), scene(s), wrld(wrld), cls(&p), prototypes(pl) {
   m.radius = 0;
+
+  m.x = 0;
+  m.y = 0;
+  m.z = 0;
+
+  for( int i=0; i<3; ++i )
+    m.selectionSize[i] = 0;
+
+  for( int i=0; i<3; ++i )
+    m.modelSize[i] = 0;
+
+  m.intentDirX = 0;
+  m.intentDirY = -1;
   }
 
 GameObjectView::~GameObjectView() {

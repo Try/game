@@ -51,13 +51,6 @@ CommandsPanel::CommandsPanel( Resource & r, BehaviorMSGQueue &q )
   setLayout( new Layout() );
   layout().setMargin( 8 );
   u0 = 0;
-
-  for( int i=0; i<25; ++i ){
-    Button * b = new Button(res);
-    b->setMaximumSize( MyWidget::SizePolicy::maxWidgetSize() );
-
-    layout().add( b  );
-    }
   }
 
 void CommandsPanel::Layout::applyLayout() {
@@ -65,11 +58,11 @@ void CommandsPanel::Layout::applyLayout() {
   if( wc==0 )
     return;
 
-  size_t wcx = sqrt(wc),
-         wcy = wcx;
+  size_t wcx = 5,//sqrt(wc),
+         wcy = 4;//wcx;
 
-  int w = owner()->w() - margin().xMargin(),
-      h = owner()->h() - margin().yMargin();
+  //int w = owner()->w() - margin().xMargin(),
+  //    h = owner()->h() - margin().yMargin();
 
   array2d<BtnBase*> p;
   p.resize(wcx, wcy);
@@ -102,26 +95,29 @@ void CommandsPanel::Layout::applyLayout() {
     for( size_t r=0; r<wcx; ++r ){
       //size_t id = i*wcx+r;
       if( p[r][i]/*id < widgets().size()*/ ){
-        int x0 = r*w/wcx, x1 = (r+1)*w/wcx,
-            y0 = i*h/wcy, y1 = (i+1)*h/wcy;
+        //int x0 = r*w/wcx, x1 = (r+1)*w/wcx,
+        //    y0 = i*h/wcy, y1 = (i+1)*h/wcy;
+        int sz = 50;
+        int x0 = r*sz+2,
+            y0 = i*sz+2;
 
         placeIn( p[r][i],//widgets()[id],
                  x0+margin().left,
                  y0+margin().top,
-                 x1-x0, y1-y0 );
+                 sz, sz );
         }
       }
   }
 
 
-void CommandsPanel::bind( const std::vector<GameObject*> &u ) {
+void CommandsPanel::bind(GameObject *u ) {
   for( size_t i=0; i<layout().widgets().size(); ++i )
     layout().widgets()[i]->deleteLater();
 
-  if( u.size()==0 )
+  if( u==0 )
     return;
 
-  u0 = u[0];
+  u0 = u;
   setPage(0);
   }
 

@@ -6,6 +6,8 @@
 #include "util/serialize.h"
 #include "game.h"
 
+#include "recruterbehavior.h"
+
 BehaviorMSGQueue::BehaviorMSGQueue() {
   }
 
@@ -103,7 +105,7 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
       if( obj.isSelected() ){
         bool a = 0;
         if( m.msg==Buy ){
-          a = obj.behavior.message( m.msg, m.str, m.modifers );
+          a = buyMsgRecv( game, w, obj, m );
           } else {
           a = obj.behavior.message( m.msg, m.x, m.y, m.modifers );
           }
@@ -114,11 +116,6 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
           break;
         }
       }
-/*
-    if( m.msg==Buy ){
-      GameObject & obj = w.addObjectEnv( m.str );
-      obj.setPosition( m.x, m.y, 10 );
-      }*/
 
     if( m.msg==MoveGroup ){
       computeWay(w,m);
@@ -173,6 +170,31 @@ void BehaviorMSGQueue::sysMSG( Game &game, World &w ){
 
     }
   remove_if( data, isSystemMSG );
+  }
+
+bool BehaviorMSGQueue::buyMsgRecv( Game &game,
+                                   World &w,
+                                   GameObject& obj,
+                                   const BehaviorMSGQueue::MSG &m) {
+  std::vector<GameObject*> & v = obj.player().selected();
+
+  size_t id = v.size();
+  int t = 0;
+
+  for( size_t i=0; i<v.size(); ++i ){
+    GameObject & obj = *v[i];
+    if( RecruterBehavior *r = obj.behavior.find<RecruterBehavior>() ){
+      int t2 = r->qtime();
+      if( id>=v.size() || t2<t ){
+        id = i;
+        t = t2;
+        }
+      }
+    }
+
+  if( id<v.size() )
+    return v[id]->behavior.message( m.msg, m.str, m.modifers ); else
+    return obj.behavior.message( m.msg, m.str, m.modifers );
   }
 
 void BehaviorMSGQueue::serialize( Serialize &s ) {

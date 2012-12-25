@@ -109,7 +109,14 @@ HEADERS += \
     gui/nativesavedialog.h \
     util/gameserializer.h \
     gui/gen/ui_loaddialog.h \
-    gui/savedialog.h
+    gui/savedialog.h \
+    gui/unitinfo.h \
+    gui/gen/ui_unitinfo.h \
+    gui/textureview.h \
+    gui/unitview.h \
+    gui/minimapview.h \
+    graphics/particlesystem.h \
+    graphics/particlesystemengine.h
 
 SOURCES += \
     main.cpp \
@@ -183,7 +190,14 @@ SOURCES += \
     gui/nativesavedialog.cpp \
     util/gameserializer.cpp \
     gui/gen/ui_loaddialog.cpp \
-    gui/savedialog.cpp
+    gui/savedialog.cpp \
+    gui/unitinfo.cpp \
+    gui/gen/ui_unitinfo.cpp \
+    gui/textureview.cpp \
+    gui/unitview.cpp \
+    gui/minimapview.cpp \
+    graphics/particlesystem.cpp \
+    graphics/particlesystemengine.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

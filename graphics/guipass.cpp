@@ -21,6 +21,8 @@ GUIPass::GUIPass( const MyGL::VertexShader   & vsh,
   guiRawData.reserve( 4*2048 );
   geometryBlocks.reserve( 512 );
 
+  texSize = MyWidget::Size(2048);
+
   //noTexture = res.texture("gui/noTexture");
   //testTex   = res.texture("gui/frame");
   }
@@ -46,8 +48,10 @@ void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
   for( size_t i=0; i<geometryBlocks.size(); ++i ){
     const GeometryBlock& b = geometryBlocks[i];
 
-    if( b.size && b.texture.tex ){
-      device.setUniform( fs, b.texture.pageRawData(),  "texture" );
+    if( b.size && (b.texture.tex || b.texture.nonPool) ){
+      if( b.texture.nonPool )
+        device.setUniform( fs, *b.texture.nonPool,  "texture" ); else
+        device.setUniform( fs, b.texture.pageRawData(),  "texture" );
 
       if( currntRS!=b.state ){
         currntRS = b.state;
@@ -95,8 +99,8 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
     v[i].x = -1 + 2.0*(v[i].x/size.w);
     v[i].y =  1 - 2.0*(v[i].y/size.h);
 
-    v[i].u /= 2048.0;
-    v[i].v /= 2048.0;
+    v[i].u /= texSize.w;
+    v[i].v /= texSize.h;
     }
 
   guiRawData.push_back( v[0] );
@@ -114,10 +118,21 @@ void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
   texRect = t.rect;
 
   if( geometryBlocks.size() &&
-      geometryBlocks.back().texture.tex==t.tex &&
-      geometryBlocks.back().texture.id ==t.id ){
+      geometryBlocks.back().texture.tex     == t.tex &&
+      geometryBlocks.back().texture.id      == t.id  &&
+      geometryBlocks.back().texture.nonPool == t.nonPool ){
 
     return;
+    }
+
+  if( t.nonPool ){
+    texRect = MyWidget::Rect(0,0, t.nonPool->width(), t.nonPool->height() );
+    texSize = texRect.size();
+    } else {
+    if( t.tex ){
+      MyGL::Texture2d &tx = (*t.tex)[ t.id ].t;
+      texSize = MyWidget::Size(tx.width(), tx.height());
+      }
     }
 
   GeometryBlock b;

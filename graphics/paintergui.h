@@ -18,7 +18,6 @@ namespace MyWidget{
         data.tex = 0;
         }
       PixmapsPool::TexturePtr data;
-      // MyGL::Texture2d data;
       };
     }
   }

@@ -26,6 +26,8 @@ struct ProtoObject {
       } data;
 
     struct View{
+      View();
+
       std::string name;
       std::vector< std::string > materials;
 

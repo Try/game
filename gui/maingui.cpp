@@ -45,6 +45,7 @@ MainGui::MainGui( MyGL::Device &,
   }
 
 MainGui::~MainGui() {
+  delete mainwidget;
   }
 
 void MainGui::setFocus() {
@@ -53,6 +54,7 @@ void MainGui::setFocus() {
 
 void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   mainwidget = new InGameControls(res, msg, prototypes, game);
+  mainwidget->renderScene.bind( renderScene );
 
   mainwidget->addObject.bind( addObject );
   mainwidget->toogleEditLandMode.bind( toogleEditLandMode );
@@ -65,6 +67,9 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
 
 bool MainGui::draw(GUIPass &pass) {
   res.flushPixmaps();
+
+  if( mainwidget )
+    mainwidget->updateValues();
 
   if( central.needToUpdate() ){
     PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
@@ -146,6 +151,10 @@ void MainGui::removeHook(InputHookBase *h) {
 
 void MainGui::enableHooks(bool e) {
   mainwidget->enableHooks(e);
+  }
+
+void MainGui::renderMinimap(World &w) {
+  mainwidget->renderMinimap(w);
   }
 
 void MainGui::saveGame() {

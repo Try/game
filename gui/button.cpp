@@ -23,6 +23,7 @@ Button::Button(Resource &res):hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res
   presAnim = false;
 
   onFocusChange.bind( *this, &Button::focusChange );
+  timePressed = clock();
   }
 
 void Button::setBackTexture(const Button::Texture &t) {
@@ -33,6 +34,7 @@ void Button::setBackTexture(const Button::Texture &t) {
 void Button::setShortcut(const MyWidget::Shortcut &sc) {
   hotKey = sc;
   hotKey.activated.bind( clicked );
+  hotKey.activated.bind(*this, &Button::onShortcut);
   }
 
 const std::wstring Button::text() const {
@@ -40,20 +42,25 @@ const std::wstring Button::text() const {
   }
 
 void Button::setText(const std::wstring &t) {
-  txt = t;
-  Font f;
-  f.fetch(res, txt);
+  if( txt!=t ){
+    txt = t;
+    Font f;
+    f.fetch(res, txt);
+    update();
+    }
   }
 
 void Button::setText(const std::string &t) {
+  std::wstring txt;
   txt.assign( t.begin(), t.end() );
-  Font f;
-  f.fetch(res, txt);
+
+  setText( txt );
   }
 
 void Button::mouseDownEvent(MyWidget::MouseEvent &) {
   pressed  = true;
   presAnim = true;
+  timePressed = clock();
 
   update();
   }
@@ -89,17 +96,13 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
     pw2 = pw-s;
     ph2 = ph-s;
     }
+
   int bw = std::min(20, pw2/2);
   int bh = std::min(20, ph2/2);
 
-  if( hasFocus() )
-    ;//fx += 50;
-
-  if( presAnim )
-    ;//ty += backRect.w;
-
   if( pw2==27 )
     pw2 = 27;
+
   Texture bk = back[ (hasFocus() || presAnim) ? 1:0 ];
   p.setTexture( bk );
   p.drawRectTailed( px, py, pw2, ph2,
@@ -153,7 +156,9 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
               MyWidget::AlignHCenter | MyWidget::AlignVCenter );
 
   if( presAnim != pressed ){
-    presAnim = pressed;
+    if( clock() > timePressed+CLOCKS_PER_SEC/8 )
+      presAnim = pressed;
+
     update();
     }
   }
@@ -169,5 +174,11 @@ void Button::keyPressEvent(MyWidget::KeyEvent &e) {
   }
 
 void Button::focusChange( bool ) {
+  update();
+  }
+
+void Button::onShortcut() {
+  presAnim = true;
+  timePressed = clock();
   update();
   }

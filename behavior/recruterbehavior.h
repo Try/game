@@ -4,6 +4,8 @@
 #include "abstractbehavior.h"
 #include "behavior.h"
 
+#include "game/gameobjectview.h"
+
 class WorkerBehavior;
 
 class RecruterBehavior : public AbstractBehavior  {
@@ -17,8 +19,7 @@ class RecruterBehavior : public AbstractBehavior  {
     bool message(Message msg, const std::string &cls, Modifers md);
     bool message(Message msg, int x, int y, Modifers md);
 
-    WorkerBehavior* isBusy;
-
+    int  qtime();
   private:
     GameObject & obj;
     int time, rallyX, rallyY;
@@ -26,6 +27,8 @@ class RecruterBehavior : public AbstractBehavior  {
 
     bool queueLim;
     bool create( const std::string& s, const Terrain & terrain );
+
+    GameObjectView light, flag;
   };
 
 #endif // RECRUTERBEHAVIOR_H

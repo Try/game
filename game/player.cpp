@@ -30,9 +30,10 @@ Player::Player(int num) {
     };
 
   m.color = cl[ std::min(7, m.num) ];
+  /*
   m.color = MyGL::Color( 255*m.color.r(),
                          255*m.color.g(),
-                         255*m.color.b() );
+                         255*m.color.b() );*/
   }
 
 void Player::addUnit(GameObject *u) {
@@ -74,6 +75,10 @@ void Player::select(GameObject *obj, bool s ) {
   if( s )
     m.selected.push_back(obj); else
     remove( m.selected, obj);
+
+  std::sort( m.selected.begin(),
+             m.selected.end(),
+             Player::compare );
 
   onUnitSelected( selected() );
   }
@@ -120,4 +125,8 @@ void Player::serialize(GameSerializer &s) {
   s + m.gold + m.team + m.htCtrl + m.num
     ;
 
+  }
+
+bool Player::compare(const GameObject *a, const GameObject *b) {
+  return a->getClass().name < b->getClass().name;
   }

@@ -39,11 +39,14 @@ class GraphicsSystem {
   public:
     GraphicsSystem( void *hwnd, int w, int h, bool isFullScreen, int smSize );
 
-    void render(const MyGL::Scene &scene);
+    bool render( const MyGL::Scene &scene,
+                 size_t dt );
     void resizeEvent( int w, int h, bool isFullScreen );
 
     void load( Resource & r, MainGui & gui, int w, int h );
 
+    void renderSubScene( const MyGL::Scene &scene,
+                         MyGL::Texture2d & out );
   private:
     MyGL::DirectX9 directx;
 
@@ -143,7 +146,7 @@ class GraphicsSystem {
     struct Final{
       MyGL::Uniform< MyGL::Texture2d > scene, bloom, glow;
       MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      MyGL::FragmentShader fs, avatar;
       } finalData;
 
     struct SSAO{
@@ -204,8 +207,8 @@ class GraphicsSystem {
                     const MyGL::Scene &scene,
                     const MyGL::Scene::Objects &v ) ;
 
-    void drawGlow( MyGL::Texture2d &out,
-                   MyGL::Texture2d &depth, const MyGL::Scene &scene );
+    void drawGlow(MyGL::Texture2d &out,
+                   MyGL::Texture2d &depth, const MyGL::Scene &scene , int size);
 
     void copy( MyGL::Texture2d &out,
                const MyGL::Texture2d& in );
@@ -240,6 +243,13 @@ class GraphicsSystem {
 
     MyGL::Texture2d depth( int w, int h );
     MyGL::Texture2d depth( const MyGL::Size& sz );
+
+
+    void renderScene(const MyGL::Scene &scene,
+                      MyGL::Texture2d gbuffer[4],
+                      MyGL::Texture2d & depthBuffer , int shadowMapSize, bool useAO);
+
+    unsigned int time;
 
     friend class DisplaceMaterial;
     friend class GlowMaterial;

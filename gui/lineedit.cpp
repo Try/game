@@ -29,13 +29,16 @@ LineEdit::LineEdit(Resource &res):res(res) {
   }
 
 void LineEdit::setText(const std::wstring &t) {
-  font.fetch(res, t);
-  txt = t;
+  if( txt!=t ){
+    font.fetch(res, t);
+    txt = t;
 
-  sedit = std::max<size_t>(0, std::min(sedit, txt.size() ));
-  eedit = std::max<size_t>(0, std::min(eedit, txt.size() ));
+    sedit = std::max<size_t>(0, std::min(sedit, txt.size() ));
+    eedit = std::max<size_t>(0, std::min(eedit, txt.size() ));
 
-  onTextChanged(txt);
+    onTextChanged(txt);
+    update();
+    }
   }
 
 const std::wstring &LineEdit::text() const {

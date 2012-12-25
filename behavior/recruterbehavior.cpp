@@ -9,9 +9,17 @@
 #include <iostream>
 
 RecruterBehavior::RecruterBehavior( GameObject & o,
-                                    Behavior::Closure & c ):obj(o) {
+                                    Behavior::Closure &  )
+                 :obj(o),
+                   light( obj, obj.game().prototype("ycube") ),
+                   flag ( obj, obj.game().prototype("flag" ) )  {
   time     = 0;
   queueLim = 0;
+
+  light.setSelectionVisible(0);
+  flag .setSelectionVisible(0);
+
+  flag.setRotation( 180 );
   }
 
 RecruterBehavior::~RecruterBehavior() {
@@ -19,6 +27,24 @@ RecruterBehavior::~RecruterBehavior() {
   }
 
 void RecruterBehavior::tick( const Terrain &terrain ) {
+  int x = obj.x(), y = obj.y();
+
+  light.setPosition( x, y );
+  light.setViewPosition( World::coordCast(x),
+                         World::coordCast(y),
+                         0 );
+  light.setVisible( queue.size()>0 );
+  light.tick();
+
+  flag.setPosition( rallyX, rallyY );
+  flag.setViewPosition( World::coordCast(rallyX),
+                        World::coordCast(rallyY),
+                        0 );
+  flag.setVisible( obj.isSelected() &&
+                   obj.hasHostCtrl() &&
+                   !(rallyX==obj.x() && rallyY==obj.y() ) );
+  flag.tick();
+
   if( queue.size()==0 )
     return;
 
@@ -80,6 +106,16 @@ bool RecruterBehavior::message( AbstractBehavior::Message msg,
     }
 
   return 0;
+  }
+
+int RecruterBehavior::qtime() {
+  int r = time;
+  for( size_t i=1; i<queue.size(); ++i ){
+    const ProtoObject& p = obj.world().game.prototype( queue[i] );
+    r += p.data.buildTime;
+    }
+
+  return r;
   }
 
 bool RecruterBehavior::create(const std::string &s, const Terrain &terrain) {

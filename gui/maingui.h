@@ -35,6 +35,10 @@ class Game;
 
 class InGameControls;
 
+namespace MyGL{
+  class Scene;
+  }
+
 class MainGui {
   public:
     MainGui( MyGL::Device &dev,
@@ -54,7 +58,10 @@ class MainGui {
     MyWidget::signal<> toogleFullScreen;
     MyWidget::signal<> toogleEditLandMode;
 
-    MyWidget::signal< const std::wstring& > save, load;
+    MyWidget::signal< const std::wstring& > save, load;    
+
+    MyWidget::signal< const MyGL::Scene &,
+                      MyGL::Texture2d & > renderScene;
 
     bool draw( GUIPass & pass );
     void resizeEvent( int w, int h );
@@ -77,6 +84,7 @@ class MainGui {
 
     void enableHooks( bool e );
 
+    void renderMinimap( World& w );
   private:
     typedef MyWidget::PainterDevice Painter;
     typedef MyWidget::Widget  Widget;

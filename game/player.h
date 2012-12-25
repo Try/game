@@ -55,6 +55,9 @@ class Player {
 
       MyGL::Color color;
       } m;
+
+    static bool compare( const GameObject* a,
+                         const GameObject* b );
   };
 
 #endif // PLAYER_H

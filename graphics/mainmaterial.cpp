@@ -37,9 +37,9 @@ bool MainMaterial::bind( MyGL::RenderState &rs,
   table.add( specular, "specularFactor", MyGL::UniformTable::Fragment );
 
   if( teamColor ){// FIXME
-    float cl[3] = { teamColor->r()/255.0f,
-                    teamColor->g()/255.0f,
-                    teamColor->b()/255.0f };
+    float cl[3] = { teamColor->r(),
+                    teamColor->g(),
+                    teamColor->b() };
     table.add( cl, 3, "tmColor", MyGL::UniformTable::Fragment );
     } else {
     float cl[3] = {};

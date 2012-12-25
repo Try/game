@@ -45,6 +45,7 @@ GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
          vboHolder,
          screenSize  ) {
   widget = 0;
+  time = 0;
   }
 
 void GraphicsSystem::makeRenderAlgo( Resource &res,
@@ -95,7 +96,9 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
     water.fs = fsHolder.load("./data/sh/htonorm.frag");
 
     finalData.vs = gaussData.vs;
-    finalData.fs = fsHolder.load("./data/sh/final.frag");
+    finalData.fs     = fsHolder.load("./data/sh/final.frag");
+    finalData.avatar = fsHolder.load("./data/sh/avatar_final.frag");
+
     finalData.scene.setName("scene");
     finalData.bloom.setName("bloom");
     finalData.glow .setName("glow");
@@ -144,15 +147,7 @@ MyGL::Matrix4x4 GraphicsSystem::makeShadowMatrix( const MyGL::Scene & scene,
     x = view.x();
     y = view.y();
     s /= std::max( view.distance(), 1.0 )/3.0;
-/*
-    MyGL::DirectionLight light;
-    if( scene.lights().direction().size() > 0 )
-      light = scene.lights().direction()[0];
 
-    double dir[3] = { light.xDirection(),
-                      light.yDirection(),
-                      light.zDirection() };
-*/
     double l = sqrt( dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] );
 
     for( int i=0; i<3; ++i )
@@ -199,25 +194,14 @@ MyGL::Texture2d GraphicsSystem::depth( const MyGL::Size & sz ) {
   return localTex.create( sz.w, sz.h, MyGL::AbstractTexture::Format::Depth24 );
   }
 
-void GraphicsSystem::render( const MyGL::Scene &scene ) {
+bool GraphicsSystem::render(const MyGL::Scene &scene, size_t dt) {
   if( !device.startRender() )
-    return;
+    return false;
 
-  static unsigned wind = 0;
-  wind = (wind+1)%1024;
+  time = dt;//(time+dt);
+  unsigned tx = time%(16*1024);
 
-  BlushMaterial::wind = sin( 2.0*M_PI*wind/1024.0 );
-
-  //scene.setCamera( camera );
-  MyGL::DirectionLight light;
-  if( scene.lights().direction().size() > 0 )
-    light = scene.lights().direction()[0];
-
-  double dir[3] = { light.xDirection(),
-                    light.yDirection(),
-                    light.zDirection() };
-
-  closure.shadow.matrix = makeShadowMatrix( scene, dir );
+  BlushMaterial::wind = sin( 2.0*M_PI*tx/(16*1024.0) );
 
   MyGL::Texture2d gbuffer[4];
   MyGL::Texture2d mainDepth = depth( screenSize );
@@ -229,41 +213,14 @@ void GraphicsSystem::render( const MyGL::Scene &scene ) {
   gbuffer[3] = localTex.create( screenSize.w, screenSize.h,
                                 MyGL::Texture2d::Format::RG16 );
 
-  MyGL::Texture2d shadowMap = localTex.create( 1024, 1024,
-                                               MyGL::AbstractTexture::Format::Luminance16 );
-  fillShadowMap( shadowMap, scene );
-
-  fillGBuf( gbuffer, mainDepth, shadowMap, scene );
-  drawOmni( gbuffer, mainDepth, scene );
-
-  if( 1 ){
-    MyGL::Texture2d ssaoTex;
-    ssao( ssaoTex, gbuffer[3], scene );
-    //ssaoDetail( ssaoTexDet, gbuffer[2], ssaoTex );
-
-    MyGL::Texture2d aoAcepted;
-    aceptSsao( scene, aoAcepted, gbuffer[0], gbuffer[1], ssaoTex );
-    gbuffer[0] = aoAcepted;
-    }
-
-  //blt( shadowMap );
-  MyGL::Texture2d sceneCopy;
-  copy( sceneCopy, gbuffer[0] );
-
-  drawTranscurent( gbuffer[0], mainDepth, sceneCopy,
-                   scene,
-                   scene.objects<DisplaceMaterial>());
-
-  drawWater( gbuffer[0], mainDepth,
-             sceneCopy, shadowMap, gbuffer[3],
-             scene,
-             scene.objects<WaterMaterial>());
+  renderScene( scene, gbuffer, mainDepth,
+               1024, 1 );
 
   if( widget )
     gui.exec( *widget, gbuffer[0], mainDepth, device );
 
   MyGL::Texture2d glow, bloomTex;
-  drawGlow( glow, mainDepth, scene );
+  drawGlow( glow, mainDepth, scene, 512 );
 
   bloom( bloomTex, gbuffer[0] );
   //blt( glow );
@@ -305,6 +262,7 @@ void GraphicsSystem::render( const MyGL::Scene &scene ) {
   //blt( gbuffer[3] );
 
   device.present();
+  return 1;
   }
 
 void GraphicsSystem::fillShadowMap( MyGL::Texture2d& shadowMap,
@@ -572,7 +530,8 @@ void GraphicsSystem::drawWater( MyGL::Texture2d& screen,
 
 void GraphicsSystem::drawGlow (MyGL::Texture2d &out,
                                MyGL::Texture2d &depth,
-                               const MyGL::Scene &scene) {
+                               const MyGL::Scene &scene,
+                               int size ) {
   MyGL::Texture2d buffer = localTex.create( depth.width(),
                                             depth.height(),
                                             MyGL::Texture2d::Format::RGBA );
@@ -598,7 +557,7 @@ void GraphicsSystem::drawGlow (MyGL::Texture2d &out,
       }
     }
 
-  int size = 512;
+  //int size = 512;
   MyGL::Texture2d tmp;
   copy ( tmp, buffer,  size, size );
   gauss( buffer, tmp,  size, size, 1.0, 0.0 );
@@ -783,9 +742,10 @@ void GraphicsSystem::waves( MyGL::Texture2d &out,
 
   device.setUniform( water.fs, bltData.texture );
 
-  static unsigned time = 0;
-  ++time;
-  float t = time/10.0;
+  //sin( 2.0*M_PI*time/(4*1024.0) )
+  //static unsigned time = 0;
+  //++time;
+  float t = 2*M_PI*float(time%2048)/2048.0f;
 
   device.setUniform ( water.fs, &t, 1, "time" );
 
@@ -864,44 +824,6 @@ void GraphicsSystem::ssao( MyGL::Texture2d &out,
   device.setUniform( ssaoData.fs, &scaleSize, 1, "scaleSize" );
 
   ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.fs );
-  /*
-  int w = 256, h = w;
-
-  MyGL::Texture2d depthX;
-  copyDepth( depthX, in, w, h );
-
-  out = localTex.create( w, h, MyGL::Texture2d::Format::Luminance16 );
-  out.setSampler( reflect );
-
-  MyGL::Texture2d depth = this->depth( w,h );
-
-  MyGL::Render render( device,
-                       out, depth,
-                       ssaoData.vs, ssaoData.fs );
-
-  render.setRenderState( MyGL::RenderState::PostProcess );
-
-  ssaoData.texture.set( &depthX );
-  cpyOffset.set( 1.0f/screenSize.w, 1.0f/screenSize.h );
-  device.setUniform( ssaoData.vs, cpyOffset );
-  device.setUniform( ssaoData.fs, ssaoData.texture );
-
-  for( int i=0; i<14; ++i ){
-      float y = i;
-      //float x = r;
-      device.setUniform ( ssaoData.fs, &y, 1, "y" );
-      //device.setUniform ( ssaoData.fs, &x, 1, "x" );
-
-      ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.fs );
-
-      if( i==0 ){
-        MyGL::RenderState rs( MyGL::RenderState::PostProcess );
-        rs.setBlend(1);
-        rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::one,
-                         MyGL::RenderState::AlphaBlendMode::one );
-        device.setRenderState( rs );
-        }
-    }*/
   }
 
 void GraphicsSystem::aceptSsao( const MyGL::Scene & s,
@@ -977,4 +899,96 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
       }
     }
 
+  }
+
+void GraphicsSystem::renderScene( const MyGL::Scene &scene,
+                                  MyGL::Texture2d gbuffer[4],
+                                  MyGL::Texture2d &mainDepth,
+                                  int shadowMapSize,
+                                  bool useAO ) {
+  MyGL::DirectionLight light;
+  if( scene.lights().direction().size() > 0 )
+    light = scene.lights().direction()[0];
+
+  double dir[3] = { light.xDirection(),
+                    light.yDirection(),
+                    light.zDirection() };
+
+  closure.shadow.matrix = makeShadowMatrix( scene, dir );
+
+  MyGL::Texture2d shadowMap = localTex.create( shadowMapSize,
+                                               shadowMapSize,
+                                               MyGL::AbstractTexture::Format::Luminance16 );
+  fillShadowMap( shadowMap, scene );
+
+  fillGBuf( gbuffer, mainDepth, shadowMap, scene );
+
+  drawOmni( gbuffer, mainDepth, scene );
+
+  if( useAO ){
+    MyGL::Texture2d ssaoTex;
+    ssao( ssaoTex, gbuffer[3], scene );
+    //ssaoDetail( ssaoTexDet, gbuffer[2], ssaoTex );
+
+    MyGL::Texture2d aoAcepted;
+    aceptSsao( scene, aoAcepted, gbuffer[0], gbuffer[1], ssaoTex );
+    gbuffer[0] = aoAcepted;
+    }
+
+  //blt( shadowMap );
+  MyGL::Texture2d sceneCopy;
+  copy( sceneCopy, gbuffer[0] );
+
+  drawTranscurent( gbuffer[0], mainDepth, sceneCopy,
+                   scene,
+                   scene.objects<DisplaceMaterial>());
+
+  drawWater( gbuffer[0], mainDepth,
+             sceneCopy, shadowMap, gbuffer[3],
+             scene,
+             scene.objects<WaterMaterial>());
+  }
+
+void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,
+                                     MyGL::Texture2d &out  ) {
+  int w = out.width(),
+      h = out.height();
+
+  MyGL::Texture2d gbuffer[4];
+  MyGL::Texture2d mainDepth = this->depth(w,h);
+
+  for( int i=0; i<3; ++i ){
+    gbuffer[i] = localTex.create( w, h,
+                                  MyGL::Texture2d::Format::RGBA );
+    }
+  gbuffer[3] = localTex.create( w, h,
+                                MyGL::Texture2d::Format::RG16 );
+
+  renderScene( scene, gbuffer, mainDepth, 256, 0 );
+  MyGL::Texture2d glow;
+  drawGlow( glow, mainDepth, scene, 128 );
+
+  { MyGL::Texture2d depth = this->depth( out.width(),
+                                         out.height() );
+
+    MyGL::Render render( device,
+                         out, depth,
+                         bloomData.vs, bloomData.brightPass );
+
+    render.setRenderState( MyGL::RenderState::PostProcess );
+
+    cpyOffset.set( 1.0/out.width(), 1.0/out.height() );
+    device.setUniform( bloomData.vs, cpyOffset );
+
+    finalData.scene.set( &gbuffer[0] );
+    finalData.glow .set( &glow );
+
+    //device.setUniform( finalData.fs, finalData.bloom );
+    device.setUniform( finalData.avatar, finalData.scene );
+    device.setUniform( finalData.avatar, finalData.glow );
+
+    ppHelper.drawFullScreenQuad( device, finalData.vs, finalData.avatar );
+    }
+
+  //copy( out, glow );
   }

@@ -21,6 +21,10 @@
 
 #include "unitlist.h"
 
+#include "gui/textureview.h"
+#include "gui/unitview.h"
+#include "gui/minimapview.h"
+
 #include <sstream>
 
 using namespace MyWidget;
@@ -95,7 +99,9 @@ InGameControls::InGameControls(Resource &res,
 
   cen->layout().add( createEditPanel() );
   cen->useScissor( false );
+  }
 
+InGameControls::~InGameControls() {
   }
 
 Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
@@ -113,6 +119,13 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   Panel * img = new Panel( res );
   img->setSizePolicy(p);
 
+  minimap = new MiniMapView(res);
+  minimap->setTexture( res.texture("grass/diff") );
+
+  img->setLayout( Vertical );
+  img->layout().add( minimap );
+  img->layout().setMargin(8);
+
   console->layout().add( img );
 
   Widget * cen = new Widget();
@@ -121,8 +134,14 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   Panel * cenp = new Panel( res );
   cenp->setMaximumSize( SizePolicy::maxWidgetSize().w, 220 );
   cenp->layout().setMargin(7);
-  units = new UnitList(res);
+
+  commands = new CommandsPanel(res, q);
+  UnitView *uview = new UnitView(res);
+  units = new UnitList(commands,res, uview);
+
+  cenp->layout().add( new MyWidget::Widget() );
   cenp->layout().add( units );
+  cenp->layout().add( new MyWidget::Widget() );
 
   cen->setSizePolicy( MyWidget::Expanding );
 
@@ -138,15 +157,21 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
     pa.minSize.w = 120;
     avatar->setSizePolicy( pa );
 
+    uview->renderScene.bind( renderScene );
+
+    avatar->layout().add( uview );
+    avatar->layout().setMargin(8);
+
     cen->layout().add( avatar );
     }
 
   console->layout().add( cen );
 
-  commands = new CommandsPanel(res, q);
   commands->onPageCanged.bind( *this, &InGameControls::removeAllHooks );
 
   commands->setSizePolicy( img->sizePolicy() );
+  commands->setMinimumSize(270, 200);
+  commands->setMaximumSize(270, 200);
   console->layout().add( commands );
 
   return console;
@@ -222,12 +247,18 @@ void InGameControls::addEditorObject( const ProtoObject &p ) {
   addObject( p, currPl );
   }
 
-void InGameControls::paintEvent(PaintEvent &e) {
+void InGameControls::updateValues() {
   gold->setText( Lexical::upcast( game.player().gold() ) );
   int freeLim = game.player().limMax()-game.player().lim();
   lim-> setText( Lexical::upcast( freeLim ) +"/" +
                  Lexical::upcast( game.player().limMax() ) );
+  }
 
+void InGameControls::renderMinimap(World &w) {
+  minimap->render(w);
+  }
+
+void InGameControls::paintEvent(PaintEvent &e) {
   Widget::paintEvent(e);
 
   MyWidget::Painter p(e);
@@ -320,8 +351,6 @@ void InGameControls::enableHooks(bool e) {
 
 void InGameControls::updateSelectUnits( const std::vector<GameObject *> &u ){
   removeAllHooks();
-  commands->bind( u );
-
   units->setup( u );
   }
 

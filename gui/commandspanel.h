@@ -14,7 +14,7 @@ class CommandsPanel : public Panel {
   public:
     CommandsPanel(Resource &res, BehaviorMSGQueue & q );
 
-    void bind( const std::vector<GameObject*> &u );
+    void bind(GameObject *u );
 
     class Layout: public MyWidget::Layout{
       void applyLayout();
