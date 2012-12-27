@@ -14,19 +14,30 @@ UnitView::UnitView( Resource &res )
   light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
   light.setAblimient( MyGL::Color( 0.33, 0.33,  0.35) );
   scene.lights().direction()[0] = light;
+
+  folowMode = 0;
+  curUnit   = 0;
   }
 
 UnitView::~UnitView() {
   }
 
 void UnitView::setupUnit(GameObject *obj) {
+  curUnit = obj;
+
   view.reset(0);
 
   if( obj ){
+    if( !pEng ){
+      pEng.reset( new ParticleSystemEngine(scene, obj->prototypes, res) );
+      pEng->setupMaterial.bind( obj->game(), &Game::setupMaterials );
+      }
+
     const ProtoObject & p = obj->game().prototype( obj->getClass().name );
 
     view.reset( new GameObjectView( scene,
                                     obj->world(),
+                                    *pEng,
                                     p,
                                     obj->prototypes ) );
     view->loadView( obj->game().resources(), obj->world().physics, 0 );
@@ -36,14 +47,28 @@ void UnitView::setupUnit(GameObject *obj) {
     }
   }
 
-void UnitView::paintEvent(MyWidget::PaintEvent &e) {
+void UnitView::updateView() {
+  if( curUnit && folowMode ){
+    setCameraPos(*curUnit);
+    }
+
   if( texture.width()!=w() || texture.height()!=h() ){
     texture = res.texHolder.create( w(), h() );
     setupCamera();
     }
 
+  if( pEng )
+    pEng->exec();
+
   renderScene( scene, texture );
-  TextureView::paintEvent(e);
+  }
+
+void UnitView::mouseDownEvent(MyWidget::MouseEvent &) {
+  folowMode = (1);
+  }
+
+void UnitView::mouseUpEvent(MyWidget::MouseEvent &) {
+  folowMode = (0);
   }
 
 void UnitView::setupCamera() {

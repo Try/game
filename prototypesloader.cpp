@@ -125,6 +125,12 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
         } else
         v.alignSize = 0.5;
 
+      if( find( e, "isParticle", tmp) ){
+        v.isParticle =  !(tmp=="false" || tmp=="0");
+        } else {
+        v.isParticle = false;
+        }
+
       if( find( e, "specular", tmp) ){
         v.specularFactor = Lexical::cast<double>(tmp);
         } else {

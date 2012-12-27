@@ -106,6 +106,7 @@ class Game {
     F3 project( float x, float y, float z );
 
     void moveCamera();
+    void setCameraPos( GameObject& obj );
 
     struct Fps{
       int n, time;

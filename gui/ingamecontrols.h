@@ -36,6 +36,8 @@ class InGameControls : public MyWidget::Widget {
     MyWidget::signal<> toogleEditLandMode;
 
     MyWidget::signal<> save, load;
+    MyWidget::signal<> updateView;
+    MyWidget::signal<GameObject&> setCameraPos;
 
     MyWidget::signal< const MyGL::Scene &,
                       MyGL::Texture2d & > renderScene;

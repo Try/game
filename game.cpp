@@ -59,6 +59,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   gui.enableHooks( !serializator.isReader() );
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
   gui.addObject.bind( *this, &Game::createEditorObject );
+  gui.setCameraPos.bind(*this, &Game::setCameraPos );
 
   gui.save.bind( *this, &Game::save );
   gui.load.bind( *this, &Game::load );
@@ -72,6 +73,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
                                                       128, 128) ) );
 
   world = worlds[0].get();
+  world->setupMaterial.bind(*this, &Game::setupMaterials );
+
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
 
   world->camera.setPerespective( true, w, h );
@@ -115,7 +118,8 @@ void Game::render( size_t dt ) {
 
   DWORD time = GetTickCount();
 
-  if( graphics.render( world->getScene(), dt ))
+  if( graphics.render( world->getScene(),
+                       world->getParticles(), dt ))
     gui.renderMinimap(*world);
 
   ++fps.n;
@@ -447,6 +451,12 @@ void Game::moveCamera() {
     }
   }
 
+void Game::setCameraPos(GameObject &obj) {
+  world->camera.setPosition( World::coordCast(obj.x()),
+                             World::coordCast(obj.y()),
+                             World::coordCast(obj.z()) );
+  }
+
 void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
                            const ProtoObject::View &src,
                            const MyGL::Color & teamColor ) {
@@ -536,6 +546,13 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     obj.setupMaterial( material );
     }
 
+  if( contains( src.materials, "transparent_no_zw" ) ){
+    TransparentMaterialNoZW   material(c.shadow.matrix);
+    material.texture = r.texture( src.name+"/diff" );
+
+    obj.setupMaterial( material );
+    }
+
   if( contains( src.materials, "transparent" ) ){
     TransparentMaterialZPass zpass;
     TransparentMaterial      material(c.shadow.matrix);
@@ -617,6 +634,7 @@ void Game::serialize( GameSerializer &s ) {
       world->camera.setPerespective( true, w, h );
       world->camera.setPosition( 2, 3, 0 );
       world->camera.setDistance( 4 );
+      world->setupMaterial.bind(*this, &Game::setupMaterials );
       }
     }
 

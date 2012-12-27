@@ -138,6 +138,7 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   commands = new CommandsPanel(res, q);
   UnitView *uview = new UnitView(res);
   units = new UnitList(commands,res, uview);
+  units->setCameraPos.bind( setCameraPos );
 
   cenp->layout().add( new MyWidget::Widget() );
   cenp->layout().add( units );
@@ -158,6 +159,7 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
     avatar->setSizePolicy( pa );
 
     uview->renderScene.bind( renderScene );
+    updateView.bind( *uview, &UnitView::updateView );
 
     avatar->layout().add( uview );
     avatar->layout().setMargin(8);

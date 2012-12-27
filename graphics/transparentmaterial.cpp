@@ -28,7 +28,7 @@ bool TransparentMaterial::bind( MyGL::RenderState &rs,
 
   rs.setBlend(1);
   rs.setAlphaTestRef(0.01);
-  rs.setZTestMode( MyGL::RenderState::ZTestMode::Equal );
+  rs.setZTestMode( MyGL::RenderState::ZTestMode::LEqual );
   rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_alpha,
                    MyGL::RenderState::AlphaBlendMode::one_minus_src_alpha );
 
@@ -48,6 +48,22 @@ bool TransparentMaterialZPass::bind( MyGL::RenderState &rs,
 
   rs.setAlphaTestRef(0.01);
   rs.setColorMask(0,0,0,0);
+
+  return 1;
+  }
+
+
+TransparentMaterialNoZW::TransparentMaterialNoZW(const MyGL::Matrix4x4 &s)
+                        :TransparentMaterial(s){
+
+  }
+
+bool TransparentMaterialNoZW::bind( MyGL::RenderState &rs,
+                                    const MyGL::Matrix4x4 &object,
+                                    const MyGL::AbstractCamera &c,
+                                    MyGL::UniformTable & u ) const {
+  TransparentMaterial::bind( rs, object, c, u );
+  rs.setZWriting(0);
 
   return 1;
   }

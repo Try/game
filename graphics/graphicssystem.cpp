@@ -26,6 +26,8 @@
 #include "graphics/omnimaterial.h"
 #include "graphics/blushmaterial.h"
 
+#include "graphics/particlesystemengine.h"
+
 #include <resource.h>
 
 GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
@@ -194,7 +196,9 @@ MyGL::Texture2d GraphicsSystem::depth( const MyGL::Size & sz ) {
   return localTex.create( sz.w, sz.h, MyGL::AbstractTexture::Format::Depth24 );
   }
 
-bool GraphicsSystem::render(const MyGL::Scene &scene, size_t dt) {
+bool GraphicsSystem::render( const MyGL::Scene &scene,
+                             ParticleSystemEngine & particles,
+                             size_t dt) {
   if( !device.startRender() )
     return false;
 
@@ -202,6 +206,8 @@ bool GraphicsSystem::render(const MyGL::Scene &scene, size_t dt) {
   unsigned tx = time%(16*1024);
 
   BlushMaterial::wind = sin( 2.0*M_PI*tx/(16*1024.0) );
+
+  particles.exec();
 
   MyGL::Texture2d gbuffer[4];
   MyGL::Texture2d mainDepth = depth( screenSize );
@@ -214,7 +220,7 @@ bool GraphicsSystem::render(const MyGL::Scene &scene, size_t dt) {
                                 MyGL::Texture2d::Format::RG16 );
 
   renderScene( scene, gbuffer, mainDepth,
-               1024, 1 );
+               1024, true );
 
   if( widget )
     gui.exec( *widget, gbuffer[0], mainDepth, device );
@@ -520,6 +526,13 @@ void GraphicsSystem::drawWater( MyGL::Texture2d& screen,
 
   for( size_t i=0; i<v.size(); ++i ){
     const MyGL::AbstractGraphicObject& ptr = v[i].object();
+
+    MyGL::Matrix4x4 mat = camera.projective();
+    mat.mul( camera.view() );
+    mat.mul( ptr.transform() );
+    mat.inverse();
+
+    device.setUniform( displaceData.fsWater, mat, "invMatrix");
 
     if( scene.viewTester().isVisible( ptr, camera ) ){
       render.draw( v[i].material(), ptr,
@@ -947,6 +960,13 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
              sceneCopy, shadowMap, gbuffer[3],
              scene,
              scene.objects<WaterMaterial>());
+
+  if(1){
+    setupLight( scene, transparentData.fs, shadowMap );
+    drawObjects( transparentData.vs, transparentData.fs,
+                 gbuffer, mainDepth,
+                 scene, scene.objects<TransparentMaterialNoZW>() );
+    }
   }
 
 void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,

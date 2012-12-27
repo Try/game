@@ -22,10 +22,14 @@ World::World( GraphicsSystem& g,
               PrototypesLoader &p,
               Game & gm,
               int w, int h )
-  : game(gm), physics(w,h), terr(w,h), graphics(g),
-    resource(r), prototypes(p) {
+  : game(gm), physics(w,h),
+    terr(w,h), graphics(g),
+    resource(r), prototypes(p),
+    particles(scene, p, r) {
   tx = ty = 0;
   editLandMode = 0;
+
+  particles.setupMaterial.bind( setupMaterial );
 
   initTerrain();
   createTestMap();
@@ -502,6 +506,10 @@ void World::tick() {
 
 const MyGL::Scene &World::getScene() const {
   return scene;
+  }
+
+ParticleSystemEngine &World::getParticles() {
+  return particles;
   }
 
 void World::serialize(GameSerializer &s) {

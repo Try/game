@@ -114,7 +114,7 @@ Resource::Resource( MyGL::TextureHolder      &  tx,
     fsHolder(fsh),
     pixmaps( texHolder ){
 
-  MyGL::Model<> model;
+  Model model;
   model.load( vboHolder, iboHolder, "./data/models/model.mx" );
 
   models  .add("null", model);
@@ -124,8 +124,21 @@ Resource::Resource( MyGL::TextureHolder      &  tx,
   fs.add("null", fsHolder.load("./data/sh/main_material.frag") );
   }
 
-const MyGL::Model<>& Resource::model(const std::string &key) const {
+const Model& Resource::model(const std::string &key) const {
   return models.get(key);
+  }
+
+Model Resource::model( const MyGL::Model<MVertex>::Raw &r ) const {
+  Model m;
+
+  MyGL::VertexDeclaration::Declarator decl;
+  decl.add( MyGL::Decl::float3, MyGL::Usage::Position )
+      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
+      .add( MyGL::Decl::float3, MyGL::Usage::Normal   );
+
+  m.load( vboHolder, iboHolder, r, decl );
+
+  return m;
   }
 
 const MyGL::Texture2d &Resource::texture(const std::string &key) const {
@@ -167,10 +180,10 @@ void Resource::flushPixmaps() {
   pixmaps.flush();
   }
 
-void Resource::load(Box<MyGL::Model<> >& m,
+void Resource::load(Box<Model> &m,
                     const std::string &k,
                     const std::string &f){
-  MyGL::Model<> model;
+  Model model;
   model.load( vboHolder, iboHolder, f );
 
   m.add(k, model );

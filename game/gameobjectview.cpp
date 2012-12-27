@@ -13,9 +13,10 @@ GameObjectView::GameObjectView( GameObject &obj,
                                 const ProtoObject &p )
   : selection(obj.getScene()),
     scene( obj.getScene() ),
-    wrld( obj.world() ),
+    wrld( obj.world() ),    
+    psysEngine( wrld.getParticles() ),
     cls(&p),
-    prototypes( obj.prototypes ){
+    prototypes( obj.prototypes ) {
   m.radius = 0;
 
   m.x = 0;
@@ -39,7 +40,31 @@ GameObjectView::GameObjectView( MyGL::Scene & s,
                                 World       & wrld,
                                 const ProtoObject &p,
                                 const PrototypesLoader & pl )
-  : selection(s), scene(s), wrld(wrld), cls(&p), prototypes(pl) {
+  : selection(s), scene(s), wrld(wrld),
+    psysEngine( wrld.getParticles() ), cls(&p), prototypes(pl) {
+  m.radius = 0;
+
+  m.x = 0;
+  m.y = 0;
+  m.z = 0;
+
+  for( int i=0; i<3; ++i )
+    m.selectionSize[i] = 0;
+
+  for( int i=0; i<3; ++i )
+    m.modelSize[i] = 0;
+
+  m.intentDirX = 0;
+  m.intentDirY = -1;
+  }
+
+GameObjectView::GameObjectView( MyGL::Scene & s,
+                                World       & wrld,
+                                ParticleSystemEngine & psysEngine,
+                                const ProtoObject &p,
+                                const PrototypesLoader & pl )
+  : selection(s), scene(s), wrld(wrld),
+    psysEngine(psysEngine), cls(&p), prototypes(pl) {
   m.radius = 0;
 
   m.x = 0;
@@ -112,7 +137,7 @@ void GameObjectView::loadView( const Resource &r, Physics & p, bool env ) {
 void GameObjectView::loadView( const Resource & r,
                                const ProtoObject::View &src,
                                bool isEnv ) {
-  const MyGL::Model<> & model = r.model( src.name+"/model" );
+  const Model & model = r.model( src.name+"/model" );
 
   for( int i=0; i<3; ++i )
     m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
@@ -120,23 +145,35 @@ void GameObjectView::loadView( const Resource & r,
   MyGL::AbstractGraphicObject * obj = 0;
 
   if( isEnv ){
-    EnvObject object( scene );
-    object.setModel( model );
+    if( !src.isParticle ){
+      EnvObject object( scene );
+      object.setModel( model );
 
-    env.push_back( object );
-    obj = &env.back();
+      env.push_back( object );
+      obj = &env.back();
+      }else {
+      ParticleSystem sys( psysEngine, src );
+      particles.push_back( sys );
+      }
+
     } else {
-    MyGL::GraphicObject object( scene );
-    object.setModel( model );
+    if( !src.isParticle ){
+      MyGL::GraphicObject object( scene );
+      object.setModel( model );
 
-    view.push_back( object );
-    obj = &view.back();
+      view.push_back( object );
+      obj = &view.back();
 
-    if( src.randRotate )
-      view.back().setRotation(0, rand()%360 );
+      if( src.randRotate )
+        view.back().setRotation(0, rand()%360 );
+      } else {
+      ParticleSystem sys( psysEngine, src );
+      particles.push_back( sys );
+      }
     }
 
-  setupMaterials(*obj, src );
+  if( !src.isParticle )
+    setupMaterials(*obj, src );
 
   m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
   }
@@ -172,6 +209,10 @@ void GameObjectView::loadView( const MyGL::Model<Terrain::WVertex> &model ){
 void GameObjectView::setViewPosition(float x, float y, float z) {
   for( size_t i=0; i<view.size(); ++i ){
     setViewPosition( view[i], getClass().view[i], x, y, z );
+    }
+
+  for( size_t i=0; i<particles.size(); ++i ){
+    particles[i].setPosition( x, y, z );
     }
 
   float zland = World::coordCast( wrld.terrain().heightAt( x, y ) );

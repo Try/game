@@ -23,6 +23,14 @@ namespace MyGL{
   class FragmentShaderHolder;
   }
 
+struct MVertex {
+  float x,y,z;
+  float u,v;
+  float normal[3];
+  };
+
+typedef MyGL::Model<MVertex> Model;
+
 class Resource : public AbstractXMLReader {
   public:
     Resource(
@@ -33,7 +41,8 @@ class Resource : public AbstractXMLReader {
         MyGL::VertexShaderHolder &  vsHolder,
         MyGL::FragmentShaderHolder& fsHolder );
 
-    const MyGL::Model<>& model( const std::string & key ) const;
+    const Model& model( const std::string & key ) const;
+    Model model(const MyGL::Model<MVertex>::Raw& r) const;
 
     const MyGL::Texture2d &texture( const std::string & key ) const;
           MyGL::Texture2d &texture( const std::string & key );
@@ -101,11 +110,11 @@ private:
                const std::string &k, const std::string & f,
                const std::string &def  );
 
-    void load( Box<MyGL::Model<> >& m,
+    void load( Box<Model >& m,
                const std::string &k, const std::string & f );
     void load( PixmapsPool::TexturePtr p, const std::string & f );
 
-    Box<MyGL::Model<> > models;
+    Box<Model > models;
     Box<MyGL::Texture2d> textures;
     Box<MyGL::VertexShader>   vs;
     Box<MyGL::FragmentShader> fs;

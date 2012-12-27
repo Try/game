@@ -29,4 +29,6 @@ ProtoObject::View::View() {
   sphereDiameter = 0;
   specularFactor = 0;
   alignSize = 0;
+
+  isParticle = 0;
   }

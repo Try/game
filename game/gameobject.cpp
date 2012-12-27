@@ -51,8 +51,8 @@ GameObject::GameObject( MyGL::Scene & s,
   }
 
 GameObject::~GameObject() {
-  if( behavior.size() )
-    wrld.player( m.pl ).delUnit(this);
+  //if( behavior.size() )
+  wrld.player( m.pl ).delUnit(this);
   }
 
 int GameObject::distanceSQ(const GameObject &other) const {

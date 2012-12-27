@@ -4,6 +4,7 @@
 #include "landscape/terrain.h"
 #include "physics/physics.h"
 #include "game/gameobject.h"
+#include "graphics/particlesystemengine.h"
 
 #include <MyWidget/Event>
 
@@ -31,6 +32,10 @@ class World {
            Game & game,
            int w, int h );
 
+    MyWidget::signal< MyGL::AbstractGraphicObject &,
+                      const ProtoObject::View &,
+                      const MyGL::Color & > setupMaterial;
+
     void clickEvent( int x, int y, const MyWidget::MouseEvent &e );
 
     static double coordCast( int icoord );
@@ -43,6 +48,7 @@ class World {
 
     MyGL::Camera   camera;
     const MyGL::Scene& getScene() const;
+    ParticleSystemEngine & getParticles();
 
     GameObject& addObject( const std::string & proto,
                            int pl = 0 );
@@ -111,6 +117,8 @@ class World {
     GraphicsSystem& graphics;
     Resource      & resource;
     PrototypesLoader &prototypes;
+
+    ParticleSystemEngine particles;
 
     void initTerrain();
     void createTestMap();

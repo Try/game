@@ -104,7 +104,7 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
     taget = s;
     proto = &obj.game().prototype(taget);
 
-    MyGL::Model<> m = obj.game().resources().model( proto->view[0].name+"/model" );
+    Model m = obj.game().resources().model( proto->view[0].name+"/model" );
     hud.setModel( m );
 
     obj.game().setupMaterials( hud,       proto->view[0], obj.teamColor() );
@@ -210,7 +210,7 @@ void BuilderBehavior::mouseUp(MyWidget::MouseEvent & e ) {
                         obj.world().mouseX(),
                         obj.world().mouseY() );    
 
-    MyGL::Model<>m = obj.game().resources().model(proto->view[0].name+"/model");
+    Model m = obj.game().resources().model(proto->view[0].name+"/model");
     hudIntent.setModel( m );
 
     GameObject::setViewPosition( hudIntent,

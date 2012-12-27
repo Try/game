@@ -5,11 +5,11 @@
 EnvObject::EnvObject(MyGL::Scene &s):MyGL::AbstractGraphicObject(s){
 }
 
-void EnvObject::setModel(const MyGL::Model<> &m){
+void EnvObject::setModel(const Model &m){
   m_model = m;
   }
 
-const MyGL::Model<> &EnvObject::model() const {
+const Model &EnvObject::model() const {
   return m_model;
   }
 

@@ -5,6 +5,7 @@
 #include <MyGL/GraphicObject>
 #include "envobject.h"
 #include "game/protoobject.h"
+#include "graphics/particlesystem.h"
 
 class Resource;
 class World;
@@ -19,6 +20,14 @@ class GameObjectView {
                     World       & wrld,
                     const ProtoObject &p,
                     const PrototypesLoader & pl );
+
+
+    GameObjectView( MyGL::Scene & s,
+                    World       & wrld,
+                    ParticleSystemEngine & psysEngine,
+                    const ProtoObject &p,
+                    const PrototypesLoader & pl );
+
     ~GameObjectView();
 
     MyGL::Color teamColor;
@@ -97,12 +106,14 @@ private:
 
     std::vector<EnvObject> env;
     std::vector<MyGL::GraphicObject> view;
+    std::vector<ParticleSystem>      particles;
 
     Physics * physic;
 
     MyGL::GraphicObject selection;
     MyGL::Scene & scene;
     World       & wrld;
+    ParticleSystemEngine & psysEngine;
     const ProtoObject * cls;
     const PrototypesLoader & prototypes;
 

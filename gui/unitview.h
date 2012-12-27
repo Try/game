@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "game/gameobjectview.h"
+#include "graphics/particlesystemengine.h"
 
 class UnitView : public TextureView {
   public:
@@ -19,12 +20,20 @@ class UnitView : public TextureView {
                       MyGL::Texture2d & > renderScene;
 
     void setupUnit( GameObject * obj );
+    void updateView();
+
+    MyWidget::signal<GameObject&> setCameraPos;
   protected:
-    void paintEvent(MyWidget::PaintEvent &e);
+    void mouseDownEvent(MyWidget::MouseEvent &e);
+    void mouseUpEvent(MyWidget::MouseEvent &e);
 
     MyGL::Scene   scene;
     Resource    & res;
 
+    bool folowMode;
+    GameObject * curUnit;
+
+    std::unique_ptr<ParticleSystemEngine> pEng;
     std::unique_ptr<GameObjectView> view;
 
     void setupCamera();

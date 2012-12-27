@@ -55,6 +55,9 @@ void MainGui::setFocus() {
 void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   mainwidget = new InGameControls(res, msg, prototypes, game);
   mainwidget->renderScene.bind( renderScene );
+  mainwidget->setCameraPos.bind( setCameraPos );
+
+  updateView.bind( mainwidget->updateView );
 
   mainwidget->addObject.bind( addObject );
   mainwidget->toogleEditLandMode.bind( toogleEditLandMode );
@@ -68,8 +71,10 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
 bool MainGui::draw(GUIPass &pass) {
   res.flushPixmaps();
 
-  if( mainwidget )
+  if( mainwidget ){
     mainwidget->updateValues();
+    mainwidget->updateView();
+    }
 
   if( central.needToUpdate() ){
     PainterGUI painter( pass, res, 0,0, central.w(), central.h() );

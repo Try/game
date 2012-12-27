@@ -57,6 +57,8 @@ class MainGui {
     MyWidget::signal< MyWidget::Painter&, int, int> paintObjectsHud;
     MyWidget::signal<> toogleFullScreen;
     MyWidget::signal<> toogleEditLandMode;
+    MyWidget::signal<> updateView;
+    MyWidget::signal<GameObject&> setCameraPos;
 
     MyWidget::signal< const std::wstring& > save, load;    
 

@@ -30,7 +30,9 @@ struct UnitList::View: public MyWidget::Widget{
 
 UnitList::UnitList(CommandsPanel *panel, Resource & res , UnitView *uview)
   :ScroolWidget(res), res(res), uview(uview), cmd(panel) {
-  //setLayout( new Lay() );
+
+  uview->setCameraPos.bind( setCameraPos );
+
   setScroolBarVisible(0);
   const int sz = 40;
 

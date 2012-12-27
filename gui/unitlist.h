@@ -17,6 +17,8 @@ class UnitList : public ScroolWidget {
 
     void setup( const std::vector<GameObject *> &u );
     void onUnitDied(GameObject &obj);
+
+    MyWidget::signal<GameObject&> setCameraPos;
   private:
     struct View;
     struct Btn;

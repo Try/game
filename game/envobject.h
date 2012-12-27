@@ -4,12 +4,14 @@
 #include <MyGL/AbstractGraphicObject>
 #include <MyGL/Matrix4x4>
 
+#include "resource.h"
+
 class EnvObject : public MyGL::AbstractGraphicObject {
   public:
     EnvObject( MyGL::Scene & s );
 
-    void setModel( const MyGL::Model<> & m );
-    const MyGL::Model<>& model() const;
+    void setModel( const Model & m );
+    const Model& model() const;
 
     MyGL::Matrix4x4 transform() const;
     void setTransform( const MyGL::Matrix4x4 & m );
@@ -21,7 +23,7 @@ class EnvObject : public MyGL::AbstractGraphicObject {
                 const MyGL::AbstractCamera &camera) const;
 
   private:
-    MyGL::Model<> m_model;
+    Model m_model;
     MyGL::Matrix4x4 mat;
   };
 

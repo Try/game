@@ -34,12 +34,13 @@ namespace MyGL{
 
 class Resource;
 class MainGui;
+class ParticleSystemEngine;
 
 class GraphicsSystem {
   public:
     GraphicsSystem( void *hwnd, int w, int h, bool isFullScreen, int smSize );
 
-    bool render( const MyGL::Scene &scene,
+    bool render(const MyGL::Scene &scene, ParticleSystemEngine &e,
                  size_t dt );
     void resizeEvent( int w, int h, bool isFullScreen );
 

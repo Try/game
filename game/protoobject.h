@@ -43,7 +43,7 @@ struct ProtoObject {
       double sphereDiameter, specularFactor;
       double boxSize[3];
 
-      bool randRotate;
+      bool randRotate, isParticle;
       };
 
     std::vector<View>        view;
