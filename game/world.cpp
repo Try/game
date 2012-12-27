@@ -452,9 +452,9 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
       }
 
     terrainView->loadView( terr.buildGeometry( graphics.vboHolder,
-                                                  graphics.iboHolder ) );
+                                               graphics.iboHolder ) );
     waterView->loadView  ( terr.waterGeometry( graphics.vboHolder,
-                                                  graphics.iboHolder ) );
+                                               graphics.iboHolder ) );
     physics.setTerrain( terr );
     }
   }

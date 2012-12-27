@@ -30,11 +30,11 @@ Terrain::Terrain(int w, int h) {
   computeEnableMap();
   }
 
-MyGL::Model<> Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                                      MyGL::IndexBufferHolder  & iboHolder ) const {
-  MyGL::Model<> model;
-  MyGL::Model<>::Vertex v = {0,0,0, 0,0, {0,0,1}};
-  std::vector< MyGL::Model<>::Vertex > land;
+Model Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
+                              MyGL::IndexBufferHolder  & iboHolder ) const {
+  Model model;
+  Model::Vertex v = {0,0,0, 0,0, {0,0,1}};
+  std::vector< Model::Vertex > land;
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
 

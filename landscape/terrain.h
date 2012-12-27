@@ -4,6 +4,7 @@
 #include "util/array2d.h"
 
 #include <MyGL/Model>
+#include "resource.h"
 
 namespace MyGL{
   class VertexBufferHolder;
@@ -17,7 +18,7 @@ class Terrain {
   public:
     Terrain( int w = 128, int h = 128 );
 
-    MyGL::Model<> buildGeometry( MyGL::VertexBufferHolder & vboHolder,
+    Model buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                                  MyGL::IndexBufferHolder  & iboHolder) const;
 
     struct WVertex: MyGL::DefaultVertex{

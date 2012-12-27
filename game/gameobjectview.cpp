@@ -178,7 +178,7 @@ void GameObjectView::loadView( const Resource & r,
   m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
   }
 
-void GameObjectView::loadView( const MyGL::Model<> &model ){
+void GameObjectView::loadView(const Model &model ){
   view.clear();
 
   for( int i=0; i<3; ++i )

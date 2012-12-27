@@ -39,7 +39,7 @@ class GameObject {
 
     void loadView(const Resource &r, Physics &p,
                    bool env );
-    void loadView( const MyGL::Model<> & model );
+    void loadView(const Model &model );
 
     void loadView( const MyGL::Model<Terrain::WVertex> & model );
 
