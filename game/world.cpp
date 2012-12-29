@@ -22,12 +22,12 @@ World::World( GraphicsSystem& g,
               PrototypesLoader &p,
               Game & gm,
               int w, int h )
-  : game(gm), physics(w,h),
-    terr(w,h), graphics(g),
+  : game(gm), physics(w,h), graphics(g),
     resource(r), prototypes(p),
     particles(scene, p, r) {
   tx = ty = 0;
-  editLandMode = 0;
+
+  terr.reset( new Terrain(w,h, scene, *this, p) );
 
   particles.setupMaterial.bind( setupMaterial );
 
@@ -43,21 +43,21 @@ World::World( GraphicsSystem& g,
   }
 
 void World::createTestMap() {
-  int s = terr.width() * Terrain::quadSize;
+  int s = terr->width() * Terrain::quadSize;
 
   for( int q=0; q<5; ++q )
     for( int i=0; i<5; ++i ){
       GameObject& obj = addObjectEnv( "worker" );
       obj.setPosition( 4000+i*1000, 4000+(q)*1000, 100 );
       }
-
+/*
   for( int i=0; i*500<s; ++i ){
     addObject( "tree0" ).setPosition( 0, i*500, 1 );
     addObject( "tree0" ).setPosition( s, i*500, 1 );
 
     addObject( "tree0" ).setPosition( i*500, 0, 1 );
     addObject( "tree0" ).setPosition( i*500, s, 1 );
-    }
+    }*/
 
   createResp( 1, 2000, 2000, -1, -1 );
   createResp( 2, s-2000, 2000, 1, -1 );
@@ -120,11 +120,19 @@ void World::moveCamera(double x, double y) {
                       camera.y() + x*sin( a) + y*cos( a),
                       camera.z() );
 
-  camera.setPosition( std::min( terr.viewWidth(),
+  camera.setPosition( std::min( terr->viewWidth(),
                                 std::max(0.0, camera.x() )),
-                      std::min( terr.viewWidth(),
+                      std::min( terr->viewHeight(),
                                 std::max(0.0, camera.y() )),
-                      camera.z() );
+                      0);
+                      //terr.heightAt((float)camera.x(), (float)camera.y()));
+                      //camera.z() );
+  float cx = World::coordCastD( camera.x() )/Terrain::quadSizef;
+  float cy = World::coordCastD( camera.y() )/Terrain::quadSizef;
+  float  z = World::coordCast( terr->atF(cx,cy) );
+  camera.setPosition( camera.x(),
+                      camera.y(),
+                      z );
   }
 
 GameObject &World::addObject( const std::string &proto, int pl ) {
@@ -201,11 +209,11 @@ WeakWorldPtr World::objectWPtr(GameObject *x) {
   }
 
 const Terrain &World::terrain() const {
-  return terr;
+  return *terr;
   }
 
 Terrain &World::terrain() {
-  return terr;
+  return *terr;
   }
 
 void World::updateMouseOverFlag( double x0, double y0,
@@ -284,7 +292,7 @@ void World::updateSelectionFlag( BehaviorMSGQueue & msg, int pl ) {
 void World::paintHUD( MyWidget::Painter & p,
                       int w, int h ) {
   return;
-
+/*
   MyGL::Matrix4x4 mat;// = camera.projective();
   mat.mul( camera.view() );
 
@@ -334,10 +342,11 @@ void World::paintHUD( MyWidget::Painter & p,
     p.drawRect( 0.5*(1+data1[0])*w, 0.5*(1-data1[1])*h, 10, 10 );
     p.drawRect( 0.5*(1+data2[0])*w, 0.5*(1-data2[1])*h, 10, 10 );
 
-    if(!(data2[0]<data1[0] /*&& data2[1]<data1[1]*/ )){
+    if(!(data2[0]<data1[0]  )){
       std::cout << "FBF";
       }
     }
+    */
   }
 
 Player &World::player(int id) {
@@ -403,20 +412,22 @@ int World::mouseY() const {
   return mpos[1];
   }
 
-void World::toogleEditLandMode() {
-  editLandMode = !editLandMode;
+void World::toogleEditLandMode(const Terrain::EditMode &m) {
+  editLandMode = m;
   }
 
 void World::initTerrain() {
+  terr->buildGeometry( graphics.vboHolder,
+                       graphics.iboHolder );
+  /*
   GameObject *obj = new GameObject( scene,
                                     *this,
                                     prototypes.get("land"),
                                     prototypes );
   obj->setPosition(0,0,0);
-  obj->loadView( terr.buildGeometry( graphics.vboHolder,
-                                     graphics.iboHolder ) );
+  obj->loadView( terr->buildGeometry( graphics.vboHolder,
+                                      graphics.iboHolder ) );
 
-  physics.setTerrain( terrain() );
   terrainView =  PGameObject(obj);
 
   obj = new GameObject( scene,
@@ -425,9 +436,10 @@ void World::initTerrain() {
                         prototypes );
   obj->setPosition(0,0,0);
 
-  obj->loadView( terr.waterGeometry( graphics.vboHolder,
-                                     graphics.iboHolder ) );
-  waterView  = PGameObject(obj);
+  obj->loadView( terr->waterGeometry( graphics.vboHolder,
+                                      graphics.iboHolder ) );
+  waterView  = PGameObject(obj);*/
+  physics.setTerrain( terrain() );
   }
 
 void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
@@ -436,12 +448,12 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
     ty = y;
     }
 
-  if( editLandMode ){
+  if( editLandMode.isEnable ){
     if( e.button==MyWidget::MouseEvent::ButtonRight )
-      terrain().brushHeight( x, y, -200, 5 );
+      terrain().brushHeight( x, y, editLandMode, true );//-200, 5 );
 
     if( e.button==MyWidget::MouseEvent::ButtonLeft )
-      terrain().brushHeight( x, y, 200, 5 );
+      terrain().brushHeight( x, y, editLandMode, false );//200, 5 );
 
     for( size_t i=0; i<objectsCount(); ++i ){
       GameObject & obj = object(i);
@@ -451,24 +463,28 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
       obj.setPosition( obj.x(), obj.y(), terrain().heightAt(wx,wy) );
       }
 
-    terrainView->loadView( terr.buildGeometry( graphics.vboHolder,
-                                               graphics.iboHolder ) );
-    waterView->loadView  ( terr.waterGeometry( graphics.vboHolder,
-                                               graphics.iboHolder ) );
-    physics.setTerrain( terr );
+    terr->buildGeometry( graphics.vboHolder,
+                         graphics.iboHolder );
+    /*
+    terrainView->loadView( terr->buildGeometry( graphics.vboHolder,
+                                                graphics.iboHolder ) );
+    waterView->loadView  ( terr->waterGeometry( graphics.vboHolder,
+                                                graphics.iboHolder ) );
+                                                */
+    physics.setTerrain( *terr );
     }
   }
 
 void World::tick() {
   scene.setCamera( camera );
 
-  terr.resetBusyMap();
+  terr->resetBusyMap();
   for( size_t i=0; i<gameObjects.size(); ++i ){
     GameObject & obj = *gameObjects[ gameObjects.size()-i-1 ];
     int wx = obj.x()/Terrain::quadSize,
         wy = obj.y()/Terrain::quadSize;
 
-    terr.incBusyAt(wx,wy, obj);
+    terr->incBusyAt(wx,wy, obj);
     }
 
   for( size_t i=0; i<gameObjects.size(); ++i ){
@@ -513,14 +529,18 @@ ParticleSystemEngine &World::getParticles() {
   }
 
 void World::serialize(GameSerializer &s) {
-  terr.serialize(s);
+  terr->serialize(s);
 
   if( s.isReader() ){
-    terrainView->loadView( terr.buildGeometry( graphics.vboHolder,
+    terr->buildGeometry( graphics.vboHolder,
+                         graphics.iboHolder );
+    /*
+    terrainView->loadView( terr->buildGeometry( graphics.vboHolder,
                                                graphics.iboHolder ) );
-    waterView->loadView  ( terr.waterGeometry( graphics.vboHolder,
+    waterView->loadView  ( terr->waterGeometry( graphics.vboHolder,
                                                graphics.iboHolder ) );
-    physics.setTerrain( terr );
+                                               */
+    physics.setTerrain( *terr );
     }
 
   unsigned sz = gameObjects.size();

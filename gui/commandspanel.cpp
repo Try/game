@@ -10,6 +10,7 @@
 #include "util/lexicalcast.h"
 
 #include <array>
+#include "util/array2d.h"
 
 struct CommandsPanel::BtnBase: public Button{
   BtnBase( Resource& r ):Button(r), x(0), y(0) { }

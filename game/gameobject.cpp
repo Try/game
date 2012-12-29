@@ -106,11 +106,12 @@ void GameObject::loadView( Resource & r,
   view.loadView( r, src, isEnv );
   }
 
-void GameObject::loadView( const Model &model ){
-  view.loadView( model );
+void GameObject::loadView( const Model &model,
+                           const ProtoObject::View & pview ){
+  view.loadView( model, pview );
   }
 
-void GameObject::loadView( const MyGL::Model<Terrain::WVertex> &model ){
+void GameObject::loadView(const MyGL::Model<WaterVertex> &model ){
   view.loadView( model );
   }
 

@@ -93,6 +93,9 @@ class GraphicsSystem {
       MyGL::VertexShader   vs;
       MyGL::FragmentShader fs;
 
+      MyGL::VertexShader   terrainVs;
+      MyGL::FragmentShader terrainFs;
+
       MyGL::Uniform<float[3]> lightDirection, lightColor, lightAblimient,
                               view;
       } gbuf;

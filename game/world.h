@@ -90,16 +90,16 @@ class World {
     int mouseX() const;
     int mouseY() const;
 
-    void toogleEditLandMode();
+    void toogleEditLandMode( const Terrain::EditMode & m );
     Physics physics;
 
     void serialize( GameSerializer &s);
   private:
-    Terrain terr;
-
     MyGL::Scene scene;
+    std::unique_ptr<Terrain> terr;
+
     int mpos[2];
-    bool editLandMode;
+    Terrain::EditMode editLandMode;
 
     std::vector< PGameObject > gameObjects, eviObjects;
     // std::vector< PGameObject > selected;
@@ -112,7 +112,7 @@ class World {
 
     int tx, ty;
 
-    PGameObject terrainView, waterView;
+    // PGameObject terrainView, waterView;
 
     GraphicsSystem& graphics;
     Resource      & resource;

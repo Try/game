@@ -86,7 +86,6 @@ HEADERS += \
     gui/inputhook.h \
     behavior/incompletebuilding.h \
     graphics/mainmaterial.h \
-    graphics/mainpass.h \
     behavior/warriorbehavior.h \
     gui/overlaywidget.h \
     gui/centralwidget.h \
@@ -116,7 +115,10 @@ HEADERS += \
     gui/unitview.h \
     gui/minimapview.h \
     graphics/particlesystem.h \
-    graphics/particlesystemengine.h
+    graphics/particlesystemengine.h \
+    gui/tabwidget.h \
+    gui/editterrainpanel.h \
+    graphics/terrainminormaterial.h
 
 SOURCES += \
     main.cpp \
@@ -167,7 +169,6 @@ SOURCES += \
     gui/inputhook.cpp \
     behavior/incompletebuilding.cpp \
     graphics/mainmaterial.cpp \
-    graphics/mainpass.cpp \
     behavior/warriorbehavior.cpp \
     gui/overlaywidget.cpp \
     gui/centralwidget.cpp \
@@ -197,7 +198,10 @@ SOURCES += \
     gui/unitview.cpp \
     gui/minimapview.cpp \
     graphics/particlesystem.cpp \
-    graphics/particlesystemengine.cpp
+    graphics/particlesystemengine.cpp \
+    gui/tabwidget.cpp \
+    gui/editterrainpanel.cpp \
+    graphics/terrainminormaterial.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

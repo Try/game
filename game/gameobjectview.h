@@ -10,6 +10,10 @@
 class Resource;
 class World;
 class PrototypesLoader;
+class GameObject;
+class GameSerializer;
+
+class WaterVertex;
 
 class GameObjectView {
   public:
@@ -36,8 +40,8 @@ class GameObjectView {
 
     void loadView(const Resource &r, Physics &p, bool env );
     void loadView(const Resource &r, const ProtoObject::View &src, bool isEnv ) ;
-    void loadView(const Model &model);
-    void loadView(const MyGL::Model<Terrain::WVertex> &model);
+    void loadView(const Model &model, const ProtoObject::View &view);
+    void loadView(const MyGL::Model<WaterVertex> &model);
 
     void setViewPosition(float x, float y, float z);
 

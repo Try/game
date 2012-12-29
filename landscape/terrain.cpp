@@ -11,8 +11,14 @@
 
 const int Terrain::busyMapsCount = 4;
 
-Terrain::Terrain(int w, int h) {
+Terrain::Terrain(int w, int h,
+                 MyGL::Scene &s,
+                 World &wrld,
+                 const PrototypesLoader &pl)
+        :scene(s), world(wrld), prototype(pl) {
   groupMask = 0;
+
+  tileset.resize( w+1, h+1 );
 
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
@@ -30,18 +36,40 @@ Terrain::Terrain(int w, int h) {
   computeEnableMap();
   }
 
-Model Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                              MyGL::IndexBufferHolder  & iboHolder ) const {
+void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
+                             MyGL::IndexBufferHolder  & iboHolder){
+  computePlanes();
+
+  landView.clear();
+
+  buildGeometry( vboHolder, iboHolder, 2, "land.grass" );
+  buildGeometry( vboHolder, iboHolder, 1, "land.rock"  );
+  buildGeometry( vboHolder, iboHolder, 0, "land.rock"  );
+
+  View view;
+  view.view.reset( new GameObjectView( scene,
+                                       world,
+                                       prototype.get( "water" ),
+                                       prototype) );
+  view.view->loadView( waterGeometry(vboHolder, iboHolder) );
+
+  landView.push_back( view );
+  }
+
+void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
+                             MyGL::IndexBufferHolder  & iboHolder,
+                             int plane,
+                             const std::string & proto  ) {
   Model model;
-  Model::Vertex v = {0,0,0, 0,0, {0,0,1}};
-  std::vector< Model::Vertex > land;
+  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1} };
+  std::vector< Model::Vertex > land, minor;
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
 
   const double texCoordScale = 0.1;
 
   for( int i=0; i+1<heightMap.width(); ++i )
-    for( int r=0; r+1<heightMap.height(); ++r )
+    for( int r=0; r+1<heightMap.height(); ++r ){
       for( int q=0; q<6; ++q ){
         int x = (i+dx[q]),
             y = (r+dy[q]);
@@ -49,44 +77,135 @@ Model Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
         v.y = World::coordCast( y*quadSize );
 
         int dz = waterMap[ i+dx[q] ][ r+dy[q] ];
+        float z  = -(heightMap[ i+dx[q] ][ r+dy[q] ]-dz)/quadSizef;
+
         v.z = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q] ]-dz );
 
-        v.u = x*texCoordScale;
-        v.v = y*texCoordScale;
+        //int plane = tileset[ i+dx[q] ][ r+dy[q] ].plane;
 
-        v.normal[0] = heightAt(i+dx[q]-1,r+dy[q]) - heightAt(i+dx[q]+1,r+dy[q]);
-        v.normal[1] = heightAt(i+dx[q],r+dy[q]-1) - heightAt(i+dx[q],r+dy[q]+1);
-        v.normal[2] = 1;
+        if( plane==2 ){
+          v.u = x*texCoordScale;
+          v.v = y*texCoordScale;
+          }
+        if( plane==1 ){
+          v.u = x*texCoordScale;
+          v.v = z*texCoordScale;
+          }
+        if( plane==0 ){
+          v.u = z*texCoordScale;
+          v.v = y*texCoordScale;
+          }
 
-        v.normal[0] /= quadSize;
-        v.normal[1] /= quadSize;
-        double l = sqrt(v.normal[0]*v.normal[0] + v.normal[1]*v.normal[1] + 1);
-
-        for( int t=0; t<3; ++t )
-          v.normal[t] /= l;
+        float *n = tileset[ i+dx[q] ][ r+dy[q] ].normal;
+        std::copy( n, n+3, v.normal );
 
         land.push_back(v);
         }
+
+      //int nplane = tileset[ i ][ r ].plane;
+      int k = 0;
+      for( int q=0; q<6; ++q )
+        if( plane == tileset[i+dx[q]][r+dy[q]].plane )
+          ++k;
+
+      if( k>0 && k<6 ){
+        for( int q=0; q<6; ++q ){
+          minor.push_back( land[ land.size()-6+q] );
+          Model::Vertex & v = minor.back();
+
+          if( plane!=tileset[i+dx[q]][r+dy[q]].plane )
+            std::fill(v.color+0, v.color+4, 0); else
+            std::fill(v.color+0, v.color+4, 1);
+          }
+        }
+
+      if( k!=6 )
+        land.resize( land.size()-6 );
+      }
+
   MyGL::VertexDeclaration::Declarator decl;
   decl.add( MyGL::Decl::float3, MyGL::Usage::Position )
       .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
-      .add( MyGL::Decl::float3, MyGL::Usage::Normal   );
+      .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
+      .add( MyGL::Decl::float4, MyGL::Usage::Color    );
 
-  model.load( vboHolder, iboHolder, land, decl );
+  if( land.size() ){
+    model.load( vboHolder, iboHolder, land, decl );
 
-  return model;
+    View view;
+    view.view.reset( new GameObjectView( scene,
+                                         world,
+                                         prototype.get( proto ),
+                                         prototype) );
+    view.view->loadView( model, prototype.get( proto ).view[0] );
+
+    landView.push_back( view );
+    }
+
+  if( minor.size() ){
+    model.load( vboHolder, iboHolder, minor, decl );
+
+    View view;
+    ProtoObject obj = prototype.get( proto );
+    for( size_t i=0; i<obj.view.size(); ++i )
+      for( size_t r=0; r<obj.view[i].materials.size(); ++r )
+        if( obj.view[i].materials[r]=="phong" )
+          obj.view[i].materials[r] = "terrain.minor";
+
+    view.view.reset( new GameObjectView( scene,
+                                         world,
+                                         obj,
+                                         prototype) );
+    view.view->loadView( model, obj.view[0] );
+
+    landView.push_back( view );
+    }
   }
 
-MyGL::Model<Terrain::WVertex>
+void Terrain::computePlanes() {
+  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1} };
+
+  for( int i=0; i+1<heightMap.width(); ++i )
+    for( int r=0; r+1<heightMap.height(); ++r ){
+      v.normal[0] = heightAt(i-1,r) - heightAt(i+1,r);
+      v.normal[1] = heightAt(i,r-1) - heightAt(i,r+1);
+      v.normal[2] = 1;
+
+      v.normal[0] /= quadSize;
+      v.normal[1] /= quadSize;
+      double l = sqrt(v.normal[0]*v.normal[0] + v.normal[1]*v.normal[1] + 1);
+
+      for( int t=0; t<3; ++t )
+        v.normal[t] /= l;
+
+      float n[3] = {};
+      std::copy( v.normal, v.normal+3, n );
+      for( int q=0; q<3; ++q )
+        n[q] = fabs(n[q]);
+
+      int nplane = 2;
+      if( n[1]>=n[2] && n[1]>=n[0] )
+        nplane = 1;
+      if( n[0]>=n[1] && n[0]>=n[2] )
+        nplane = 0;
+
+      tileset[i][r].plane = nplane;
+      std::copy( v.normal, v.normal+3, tileset[i][r].normal );
+      }
+  }
+
+MyGL::Model<WaterVertex>
       Terrain::waterGeometry( MyGL::VertexBufferHolder & vboHolder,
                               MyGL::IndexBufferHolder  & iboHolder) const {
-  MyGL::Model<Terrain::WVertex> model;
-  WVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
+  MyGL::Model<WaterVertex> model;
+  WaterVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
   v.h = 0;
   v.dir[0] = 1;
   v.dir[1] = 1;
 
-  std::vector< WVertex > land;
+  std::fill( v.color, v.color+4, 1 );
+
+  std::vector< WaterVertex > land;
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
 
@@ -168,6 +287,7 @@ MyGL::Model<Terrain::WVertex>
   decl.add( MyGL::Decl::float3, MyGL::Usage::Position )
       .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
       .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
+      .add( MyGL::Decl::float4, MyGL::Usage::Color    )
       .add( MyGL::Decl::float1, MyGL::Usage::Depth    )
       .add( MyGL::Decl::float2, MyGL::Usage::TexCoord, 1 );
 
@@ -192,9 +312,15 @@ double Terrain::viewHeight() const {
   return World::coordCast( quadSize*height() );
   }
 
-void Terrain::brushHeight(int x, int y, double dh, double R ) {
+void Terrain::brushHeight( int x, int y,
+                           const Terrain::EditMode &m,
+                           bool alternative ) {
   x/=quadSize;
   y/=quadSize;
+
+  double R = m.R, dh = 200;
+  if( alternative )
+    dh = -dh;
 
   for( int i=0; i<width(); ++i )
     for( int r=0; r<height(); ++r ){
@@ -202,14 +328,45 @@ void Terrain::brushHeight(int x, int y, double dh, double R ) {
                                (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
       factor = 1.0-(1.0-factor)*(1.0-factor);
 
-      waterMap[i][r] -= dh*factor;
+      if( m.wmap ){
+        heightMap[i][r] += dh*factor;
+        } else {
+        waterMap[i][r] -= dh*factor;
+        }
       }
 
   computeEnableMap();
   }
 
 int Terrain::at(int x, int y) const {
+  x = std::max(0, std::min(x, width()-1) );
+  y = std::max(0, std::min(y, height()-1) );
+
   return heightMap[x][y];
+  }
+
+int Terrain::atF(float fx, float fy) const {
+  int x = fx, y = fy;
+  float lx = fx-x, ly = fy-y;
+
+  int   h00 = at(x,   y  ),
+        h10 = at(x+1, y  ),
+        h01 = at(x,   y+1),
+        h11 = at(x+1, y+1);
+
+  float mid = h00+lx*(h11-h00);
+
+  if( ly < lx ){
+    float m2 = h00 + lx*(h10-h00);
+    if( lx>0 )
+      return m2 +(ly/lx)*(mid-m2); else
+      return m2;
+    } else {
+    float m2 = h01 + lx*(h11-h01);
+    if( lx<1 )
+      return mid + ((ly-lx)/(1-lx))*(m2-mid); else
+      return m2;
+    }
   }
 
 int Terrain::heightAt(int x, int y) const {
@@ -526,4 +683,13 @@ void Terrain::serialize( GameSerializer &s ) {
 
   resetBusyMap();
   computeEnableMap();
+}
+
+
+Terrain::EditMode::EditMode() {
+  map  = None;
+  wmap = None;
+
+  R = 5;
+  isEnable = false;
   }

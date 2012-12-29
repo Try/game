@@ -16,11 +16,13 @@ namespace MyGL{
 #include "game/protoobject.h"
 #include "game/gameobjectview.h"
 
+class WaterVertex;
 class Resource;
 class ProtoObject;
 class PrototypesLoader;
 class World;
 class Player;
+class GameSerializer;
 
 class Bullet;
 
@@ -39,9 +41,9 @@ class GameObject {
 
     void loadView(const Resource &r, Physics &p,
                    bool env );
-    void loadView(const Model &model );
+    void loadView(const Model &model , const ProtoObject::View &pview);
 
-    void loadView( const MyGL::Model<Terrain::WVertex> & model );
+    void loadView( const MyGL::Model<WaterVertex> & model );
 
     void setPosition( int x, int y, int z );
 

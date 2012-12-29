@@ -25,6 +25,7 @@
 #include "graphics/mainmaterial.h"
 #include "graphics/omnimaterial.h"
 #include "graphics/blushmaterial.h"
+#include "graphics/terrainminormaterial.h"
 
 #include "graphics/particlesystemengine.h"
 
@@ -61,6 +62,9 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
 
     gbuf.vs     = res.vshader("unit_main_material");
     gbuf.fs     = res.fshader("unit_main_material");
+
+    gbuf.terrainVs = res.vshader("terrain_minor_main_material");
+    gbuf.terrainFs = res.fshader("terrain_minor_main_material");
 
     gbuf.lightDirection.setName("lightDirection");
     gbuf.lightColor    .setName("lightColor");
@@ -220,7 +224,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
                                 MyGL::Texture2d::Format::RG16 );
 
   renderScene( scene, gbuffer, mainDepth,
-               1024, true );
+               1024, false );
 
   if( widget )
     gui.exec( *widget, gbuffer[0], mainDepth, device );
@@ -265,7 +269,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
   blt( final );
   //blt( gao );
   //blt( ssaoTexDet );
-  //blt( gbuffer[3] );
+  //blt( gbuffer[2] );
 
   device.present();
   return 1;
@@ -360,10 +364,29 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                                MyGL::Texture2d& mainDepth,
                                const MyGL::Texture2d& sm,
                                const MyGL::Scene & scene ) {
-  setupLight( scene, gbuf.fs, sm );
+  setupLight( scene, gbuf.terrainFs, sm );
 
+  drawObjects( gbuf.terrainVs,
+               gbuf.terrainFs,
+               gbuffer, mainDepth,
+               scene, scene.objects<TerrainZPass>(), true );
+  {
+    MyGL::Texture2d d = depth( mainDepth.width(), mainDepth.height() );
+    MyGL::Render render( device,
+                         gbuffer, 4,
+                         d,
+                         gbuf.terrainVs, gbuf.terrainFs );
+    render.clear( MyGL::Color(0) );
+  }
+
+  drawObjects( gbuf.terrainVs,
+               gbuf.terrainFs,
+               gbuffer, mainDepth,
+               scene, scene.objects<TerrainMinorMaterial>(), false );
+
+  setupLight( scene, gbuf.fs, sm );
   drawObjects( gbuffer, mainDepth,
-               scene, scene.objects<MainMaterial>(), true );
+               scene, scene.objects<MainMaterial>(), false );
 
   drawObjects( gbuffer, mainDepth,
                scene, scene.objects<BlushMaterial>(), false );

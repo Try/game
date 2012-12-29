@@ -25,6 +25,9 @@
 #include "gui/unitview.h"
 #include "gui/minimapview.h"
 
+#include "gui/tabwidget.h"
+#include "editterrainpanel.h"
+
 #include <sstream>
 
 using namespace MyWidget;
@@ -180,14 +183,18 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   }
 
 Widget *InGameControls::createEditPanel() {
-  Panel *p = new Panel(res);
-  p->setDragable(1);
-  p->layout().setMargin( 6, 6, 20, 6 );
-  p->setLayout( MyWidget::Vertical );
+  TabWidget *tabs = new TabWidget(res);
+  tabs->resize( 200, 400 );
 
-  Button *btn = new Button(res);
-  btn->clicked.bind( toogleEditLandMode );
-  p->layout().add( btn );
+  Widget *p = new Widget();
+  tabs->addTab(p);
+  EditTerrainPanel *eterr = createLandEdit();
+  tabs->onTabChanged.bind( *eterr, &EditTerrainPanel::disableEdit );
+  tabs->addTab( eterr );
+
+  tabs->setDragable(1);
+  p->layout().setMargin( 6 );
+  p->setLayout( MyWidget::Vertical );
 
   ScroolWidget *w = new ScroolWidget(res);
   //w->useScissor(0);
@@ -226,6 +233,13 @@ Widget *InGameControls::createEditPanel() {
   lbox->setCurrentItem(currPl);
 
   p->layout().add( lbox );
+
+  return tabs;
+  }
+
+EditTerrainPanel *InGameControls::createLandEdit() {
+  EditTerrainPanel* p = new EditTerrainPanel(res);
+  p->toogleEditLandMode.bind( toogleEditLandMode );
 
   return p;
   }

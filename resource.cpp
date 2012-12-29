@@ -113,9 +113,26 @@ Resource::Resource( MyGL::TextureHolder      &  tx,
     vsHolder(vsh),
     fsHolder(fsh),
     pixmaps( texHolder ){
-
   Model model;
-  model.load( vboHolder, iboHolder, "./data/models/model.mx" );
+  MyGL::VertexDeclaration::Declarator decl;
+  decl.add( MyGL::Decl::float3, MyGL::Usage::Position )
+      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
+      .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
+      .add( MyGL::Decl::float4, MyGL::Usage::Color    );
+
+  MyGL::Model<>::Raw raw = MyGL::Model<>::loadRawData("./data/models/model.mx");
+
+  Model::Raw rawN;
+  rawN.vertex.resize( raw.vertex.size() );
+  for( size_t i=0; i<rawN.vertex.size(); ++i ){
+    MVertex             &v = rawN.vertex[i];
+    MyGL::DefaultVertex &d = raw.vertex[i];
+
+    memcpy( &v, &d, sizeof(d) );
+    std::fill( v.color, v.color+4, 1) ;
+    }
+  model.load( vboHolder, iboHolder, rawN, decl );
+  //model.load( vboHolder, iboHolder, "./data/models/model.mx" );
 
   models  .add("null", model);
   textures.add("null", texHolder.load("./data/textures/w.png") );
@@ -134,7 +151,8 @@ Model Resource::model( const MyGL::Model<MVertex>::Raw &r ) const {
   MyGL::VertexDeclaration::Declarator decl;
   decl.add( MyGL::Decl::float3, MyGL::Usage::Position )
       .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
-      .add( MyGL::Decl::float3, MyGL::Usage::Normal   );
+      .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
+      .add( MyGL::Decl::float4, MyGL::Usage::Color    );
 
   m.load( vboHolder, iboHolder, r, decl );
 
@@ -184,7 +202,27 @@ void Resource::load(Box<Model> &m,
                     const std::string &k,
                     const std::string &f){
   Model model;
-  model.load( vboHolder, iboHolder, f );
+  MyGL::VertexDeclaration::Declarator decl;
+  decl.add( MyGL::Decl::float3, MyGL::Usage::Position )
+      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
+      .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
+      .add( MyGL::Decl::float4, MyGL::Usage::Color    );
+
+  MyGL::Model<>::Raw raw = MyGL::Model<>::loadRawData( f );
+
+  Model::Raw rawN;
+  rawN.vertex.resize( raw.vertex.size() );
+  for( size_t i=0; i<rawN.vertex.size(); ++i ){
+    MVertex             &v = rawN.vertex[i];
+    MyGL::DefaultVertex &d = raw.vertex[i];
+
+    memcpy( &v, &d, sizeof(d) );
+    std::fill( v.color, v.color+4, 1) ;
+    }
+  model.load( vboHolder, iboHolder, rawN, decl );
+  /*
+  Model model;
+  model.load( vboHolder, iboHolder, f );*/
 
   m.add(k, model );
   }

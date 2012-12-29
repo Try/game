@@ -5,6 +5,8 @@
 #include "graphics/paintergui.h"
 #include "inputhook.h"
 
+#include "landscape/terrain.h"
+
 class Resource;
 class BehaviorMSGQueue;
 class CommandsPanel;
@@ -18,6 +20,8 @@ class Button;
 class UnitList;
 class MiniMapView;
 class World;
+
+class EditTerrainPanel;
 
 namespace MyGL{
   class Scene;
@@ -33,7 +37,7 @@ class InGameControls : public MyWidget::Widget {
 
     MyWidget::signal< MyWidget::Painter&, int , int> paintObjectsHud;
     MyWidget::signal<const ProtoObject&, int> addObject;
-    MyWidget::signal<> toogleEditLandMode;
+    MyWidget::signal<const Terrain::EditMode&> toogleEditLandMode;
 
     MyWidget::signal<> save, load;
     MyWidget::signal<> updateView;
@@ -68,6 +72,7 @@ class InGameControls : public MyWidget::Widget {
   private:
     Widget* createConsole( BehaviorMSGQueue & q );
     Widget* createEditPanel();
+    EditTerrainPanel* createLandEdit();
 
     Resource & res;
     Game &game;

@@ -2,7 +2,9 @@
 #define PHYSICS_H
 
 #include <MyGL/Matrix4x4>
-#include "landscape/terrain.h"
+//#include "landscape/terrain.h"
+
+class Terrain;
 
 class Physics {
   struct RigidBody;

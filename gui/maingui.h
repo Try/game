@@ -2,6 +2,7 @@
 #define MAINGUI_H
 
 #include "graphics/paintergui.h"
+#include "landscape/terrain.h"
 
 #include <MyWidget/Widget>
 #include <MyWidget/Image>
@@ -56,7 +57,7 @@ class MainGui {
     MyWidget::signal<const ProtoObject&, int> addObject;
     MyWidget::signal< MyWidget::Painter&, int, int> paintObjectsHud;
     MyWidget::signal<> toogleFullScreen;
-    MyWidget::signal<> toogleEditLandMode;
+    MyWidget::signal<const Terrain::EditMode&> toogleEditLandMode;
     MyWidget::signal<> updateView;
     MyWidget::signal<GameObject&> setCameraPos;
 

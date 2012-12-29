@@ -20,6 +20,7 @@
 #include "graphics/mainmaterial.h"
 #include "graphics/omnimaterial.h"
 #include "graphics/blushmaterial.h"
+#include "graphics/terrainminormaterial.h"
 
 #include "util/gameserializer.h"
 
@@ -478,6 +479,20 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     obj.setupMaterial( material );
     }
 
+  if( contains( src.materials, "terrain.minor" )  ){
+    TerrainMinorMaterial mat( c.shadow.matrix );
+    mat.diffuseTexture = material.diffuseTexture;
+    mat.useAlphaTest   = false;
+
+    mat.specular = src.specularFactor;
+    mat.alphaTrestRef = 0;
+    obj.setupMaterial( mat );
+
+    TerrainZPass tz;
+    tz.texture = mat.diffuseTexture;
+    obj.setupMaterial( tz );
+    }
+
   if( contains( src.materials, "unit" )  ){
     MainMaterial material( c.shadow.matrix,
                            teamColor );
@@ -515,6 +530,10 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
       !contains( src.materials, "blush" ) ){
     if( r.findTexture(src.name+"/sm") )
       smMaterial.diffuseTexture   = r.texture( src.name+"/sm" );
+
+    if( contains( src.materials, "transparent_no_zw" ) ||
+        contains( src.materials, "transparent" ))
+      smMaterial.alphaTrestRef = 1.0f/255.0f;
 
     obj.setupMaterial( smMaterial );
     }
@@ -640,7 +659,7 @@ void Game::serialize( GameSerializer &s ) {
 
   world = worlds[curWorld].get();
 
-  gui.toogleEditLandMode = MyWidget::signal<>();
+  gui.toogleEditLandMode = MyWidget::signal<const Terrain::EditMode&>();
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
 
   for( size_t i=0; i<worlds.size(); ++i )

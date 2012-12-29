@@ -178,7 +178,8 @@ void GameObjectView::loadView( const Resource & r,
   m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
   }
 
-void GameObjectView::loadView(const Model &model ){
+void GameObjectView::loadView( const Model &model,
+                               const ProtoObject::View & pview ){
   view.clear();
 
   for( int i=0; i<3; ++i )
@@ -188,11 +189,11 @@ void GameObjectView::loadView(const Model &model ){
   object.setModel( model );
   m.radius = model.bounds().radius();
 
-  setupMaterials( object, getClass().view[0] );
+  setupMaterials( object, pview );
   view.push_back( object );
   }
 
-void GameObjectView::loadView( const MyGL::Model<Terrain::WVertex> &model ){
+void GameObjectView::loadView(const MyGL::Model<WaterVertex> &model ){
   view.clear();
 
   for( int i=0; i<3; ++i )

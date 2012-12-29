@@ -6,6 +6,8 @@
 #include <MyGL/Model>
 #include "resource.h"
 
+#include <memory>
+
 namespace MyGL{
   class VertexBufferHolder;
   class IndexBufferHolder;
@@ -14,19 +16,43 @@ namespace MyGL{
 class GameObject;
 class GameSerializer;
 
+struct WaterVertex: MVertex{
+  float h;
+  float dir[2];
+  };
+
+#include "game/gameobjectview.h"
+
 class Terrain {
   public:
-    Terrain( int w = 128, int h = 128 );
+    Terrain( int w, int h,
+             MyGL::Scene & s,
+             World       & wrld,
+             const PrototypesLoader & pl );
 
-    Model buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                                 MyGL::IndexBufferHolder  & iboHolder) const;
+    struct EditMode{
+      EditMode();
 
-    struct WVertex: MyGL::DefaultVertex{
-      float h;
-      float dir[2];
+      enum EHeight{
+        None,
+        Up,
+        Down
+        };
+      EHeight map, wmap;
+      double R;
+
+      bool isEnable;
       };
-    MyGL::Model<WVertex> waterGeometry( MyGL::VertexBufferHolder & vboHolder,
-                                        MyGL::IndexBufferHolder  & iboHolder) const;
+
+    void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
+                        MyGL::IndexBufferHolder  & iboHolder );
+    /*
+    Model buildGeometry( MyGL::VertexBufferHolder & vboHolder,
+                         MyGL::IndexBufferHolder  & iboHolder) const;
+                         */
+
+    MyGL::Model<WaterVertex> waterGeometry( MyGL::VertexBufferHolder & vboHolder,
+                                            MyGL::IndexBufferHolder  & iboHolder) const;
 
     int width() const;
     int height() const;
@@ -34,8 +60,9 @@ class Terrain {
     double viewWidth() const;
     double viewHeight() const;
 
-    void brushHeight( int x, int y, double dh, double r );
+    void brushHeight(int x, int y, const EditMode &m, bool alternative);
     int  at( int x, int y ) const;
+    int  atF( float x, float y ) const;
     int  heightAt( int x, int y ) const;
     int  heightAt( float x, float y ) const;
 
@@ -63,6 +90,22 @@ class Terrain {
 
     void serialize( GameSerializer &s );
   private:
+    MyGL::Scene            & scene;
+    World                  & world;
+    const PrototypesLoader & prototype;
+
+    struct View{
+      std::shared_ptr<GameObjectView> view;
+      };
+    std::vector<View> landView;
+
+    std::vector< std::string > aviableTiles;
+    struct Tile {
+      int plane, textureID[2];
+      float normal[3];
+      };
+    array2d<Tile> tileset;
+
     array2d<int>  heightMap;
     array2d<int>  waterMap;
     array2d<int>  buildingsMap;
@@ -86,6 +129,13 @@ class Terrain {
 
     int heightAtNoDepth( int x, int y ) const;
     int  depthAt( int x, int y ) const;
+
+    void buildGeometry(MyGL::VertexBufferHolder & vboHolder,
+                        MyGL::IndexBufferHolder  & iboHolder,
+                        int plane,
+                        const std::string & proto );
+
+    void computePlanes();
   };
 
 #endif // TERRAIN_H

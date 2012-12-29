@@ -100,7 +100,8 @@ void ParticleSystemEngine::exec() {
 
 void ParticleSystemEngine::emitParticle( Model::Raw &raw,
                                          float x, float y, float z,
-                                         float sz ) {
+                                         float sz,
+                                         MyGL::Color & color ) {
   MVertex v;
   v.u = 0.5;
   v.v = 0.5;
@@ -108,15 +109,28 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
   v.normal[1] = -norm[1];
   v.normal[2] = -norm[2];
 
+  v.color[0] = color.r();
+  v.color[1] = color.g();
+  v.color[2] = color.b();
+  v.color[3] = color.a();
+
   double mul[2] = {-1, 1};
 
   size_t iSz = raw.vertex.size();
 
   for( int i=0; i<2; ++i )
     for( int r=0; r<2; ++r ){
-      v.x = x + sz*( mul[i]*left[0] + mul[r]*top[0] );
-      v.y = y + sz*( mul[i]*left[1] + mul[r]*top[1] );
-      v.z = z + sz*( mul[i]*left[2] + mul[r]*top[2] );
+      double dx = mul[i]*left[0] + mul[r]*top[0];
+      double dy = mul[i]*left[1] + mul[r]*top[1];
+      double dz = mul[i]*left[2] + mul[r]*top[2];
+
+      v.x = x + sz*dx;
+      v.y = y + sz*dy;
+      v.z = z + sz*dz;
+
+      v.normal[0] += 0.25*dx;
+      v.normal[1] += 0.25*dy;
+      v.normal[2] += 0.25*dz;
 
       v.x += 0.5*sz*v.normal[0];
       v.y += 0.5*sz*v.normal[1];
@@ -135,8 +149,9 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
   }
 
 void ParticleSystemEngine::emitParticle( float x, float y, float z,
-                                         float sz ) {
-  emitParticle(raw, x, y, z, sz );
+                                         float sz,
+                                         MyGL::Color & color ) {
+  emitParticle(raw, x, y, z, sz, color );
   }
 
 bool ParticleSystemEngine::cmpMat( const ParticleSystem *a,

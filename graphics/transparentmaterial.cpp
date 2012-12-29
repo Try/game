@@ -5,7 +5,7 @@
 
 TransparentMaterial::TransparentMaterial(const MyGL::Matrix4x4 &sm)
                     :shadowMatrix(&sm) {
-
+  specular = 1;
   }
 
 bool TransparentMaterial::bind( MyGL::RenderState &rs,
@@ -23,8 +23,8 @@ bool TransparentMaterial::bind( MyGL::RenderState &rs,
   u.add( object,  "objectMatrix", MyGL::UniformTable::Vertex );
   u.add( sh,      "shadowMatrix", MyGL::UniformTable::Vertex );
 
-  u.add( texture, "texture",      MyGL::UniformTable::Fragment );
-  u.add( 0.1, "specularFactor", MyGL::UniformTable::Fragment );
+  u.add( texture,  "texture",      MyGL::UniformTable::Fragment );
+  u.add( specular, "specularFactor", MyGL::UniformTable::Fragment );
 
   rs.setBlend(1);
   rs.setAlphaTestRef(0.01);

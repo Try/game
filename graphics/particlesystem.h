@@ -4,6 +4,8 @@
 #include <vector>
 #include "game/protoobject.h"
 
+#include <MyGL/Color>
+
 class ParticleSystemEngine;
 
 class ParticleSystem {
@@ -32,6 +34,8 @@ class ParticleSystem {
       Point3( float x, float y, float z );
       float x,y,z;
       float size;
+
+      MyGL::Color color;
       };
 
     std::vector<Point3> par;

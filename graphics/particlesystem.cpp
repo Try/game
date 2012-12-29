@@ -2,6 +2,8 @@
 
 #include "particlesystemengine.h"
 
+#include <cmath>
+
 ParticleSystem::ParticleSystem(ParticleSystemEngine & e,
                                 const ProtoObject::View &p ):engine(&e){
   setPosition(0,0,0);
@@ -36,7 +38,9 @@ void ParticleSystem::exec() {
     engine->emitParticle( par[i].x,
                           par[i].y,
                           par[i].z,
-                          par[i].size );
+                          par[i].size,
+
+                          par[i].color );
     }
 
   if( viewInfo().name=="fire" ){
@@ -62,7 +66,7 @@ void ParticleSystem::exec() {
     }
 
   if( viewInfo().name=="smoke" ){
-    if( rand()%3==0 ){
+    if( rand()%6==0 ){
       par.push_back( Point3( x(), y(), z() ) );
       par.back().size = 0.05;
       }
@@ -73,10 +77,15 @@ void ParticleSystem::exec() {
 
       par[i].x += 0.01*( rand()/float(RAND_MAX) - 0.5);
       par[i].y += 0.01*( rand()/float(RAND_MAX) - 0.5);
+
+      par[i].color.set( par[i].color.r(),
+                        par[i].color.g(),
+                        par[i].color.b(),
+                        1.0 - pow(par[i].size/0.15, 4.0) );
       }
 
     for( size_t i=0; i<par.size(); ){
-      if( par[i].size>0.1 ){
+      if( par[i].size>0.15 ){
         par[i] = par.back();
         par.pop_back();
         } else {

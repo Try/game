@@ -27,6 +27,7 @@ struct MVertex {
   float x,y,z;
   float u,v;
   float normal[3];
+  float color[4];
   };
 
 typedef MyGL::Model<MVertex> Model;

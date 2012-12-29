@@ -189,6 +189,8 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
         Base::mouseUpEvent(e);
         e.accept();
         }
+
+      this->update();
       }
 
     void paintEvent( MyWidget::PaintEvent &e ){
