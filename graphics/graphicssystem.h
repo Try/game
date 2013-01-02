@@ -114,7 +114,7 @@ class GraphicsSystem {
       MyGL::VertexShader   vs;
       MyGL::FragmentShader fs;
 
-      MyGL::Texture2d      waterHeightMap;
+      MyGL::Texture2d      waterHeightMap, envMap;
       } water;
 
     struct Glow{

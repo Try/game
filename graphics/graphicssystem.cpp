@@ -98,6 +98,8 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
     bloomData.b[2].setName("b2");
 
     water.waterHeightMap = texHolder.load("./data/textures/water/hmap.png");
+    water.envMap = res.texture("sky0/diff");
+
     water.vs = vsHolder.load("./data/sh/htonorm.vert");
     water.fs = fsHolder.load("./data/sh/htonorm.frag");
 
@@ -224,7 +226,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
                                 MyGL::Texture2d::Format::RG16 );
 
   renderScene( scene, gbuffer, mainDepth,
-               1024, false );
+               1024, true );
 
   if( widget )
     gui.exec( *widget, gbuffer[0], mainDepth, device );
@@ -537,6 +539,10 @@ void GraphicsSystem::drawWater( MyGL::Texture2d& screen,
   device.setUniform( displaceData.fsWater,
                      sceneCopy,
                      "scene" );
+  device.setUniform( displaceData.fsWater,
+                     water.envMap,
+                     "envMap" );
+
   float tc[] = { 1.0f/sceneCopy.width(), 1.0f/sceneCopy.height() };
   device.setUniform( displaceData.fsWater, tc, 2, "dTexCoord");
   device.setUniform( displaceData.fsWater, waterWaves, "normalMap");

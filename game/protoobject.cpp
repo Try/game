@@ -17,6 +17,20 @@ ProtoObject::ProtoObject()
   data.buildTime = 25;
   }
 
+bool ProtoObject::isLandTile() const {
+  const char* txpat = "land.";
+
+  bool ok = false;
+  if( name.size()>=5 ){
+    ok = true;
+    for( int r=0; r<5; ++r )
+      if( name[r]!=txpat[r] )
+        ok = false;
+    }
+
+  return ok;
+  }
+
 
 ProtoObject::View::View() {
   for( int i=0; i<3; ++i ){

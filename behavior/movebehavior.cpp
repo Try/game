@@ -20,6 +20,9 @@ MoveBehavior::MoveBehavior( GameObject &object,
 
   curentSpeed = 0;
 
+  clos.colisionDisp[0] = 0;
+  clos.colisionDisp[1] = 0;
+
   clos.isMoviable = true;
   mask = -1;
   }
@@ -52,6 +55,7 @@ void MoveBehavior::moveEvent( MoveEvent &m ) {
 
 void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
   clos.isReposMove = 0;
+  isMWalk    = 0;
 
   calcWayAndMove( m.x, m.y, obj.world().terrain() );
   }
@@ -75,7 +79,7 @@ void MoveBehavior::stopEvent(StopEvent &) {
   clos.isReposMove = 0;
 
   way.clear();
-  isMWalk = 1;
+  isMWalk = 0;
 
   tx = obj.x();
   ty = obj.y();
@@ -152,16 +156,40 @@ void MoveBehavior::tick(const Terrain &terrain) {
   int x = obj.x()/qs,
       y = obj.y()/qs;
 
-  int sz = obj.getClass().data.size;
+  int sz = 1;//obj.getClass().data.size;
 
   int bm = 1;
-  bm = terrain.busyAt(x,y, sz);
+
+  if( !(clos.colisionDisp[0]==0 && clos.colisionDisp[1]==0) ){
+    if( !clos.isOnMove && !clos.isReposMove ){
+      bm = 2;
+
+      int l = Math::distance( clos.colisionDisp[0], clos.colisionDisp[1],
+                              0, 0 );
+      l = std::max(l, 1);
+      int s = obj.getClass().data.size*Terrain::quadSize/2;
+
+      tx = obj.x() + clos.colisionDisp[0]*s/l;
+      ty = obj.y() + clos.colisionDisp[1]*s/l;
+      clos.colisionDisp[0] = 0;
+      clos.colisionDisp[1] = 0;
+      clos.isOnMove = true;
+      clos.isReposMove = true;
+
+      if( curentSpeed < obj.getClass().data.speed*Terrain::quadSize )
+        curentSpeed = obj.getClass().data.speed*Terrain::quadSize;
+      }
+    }
 
   if( terrain.isEnableQuad( x, y, sz ) && ( clos.isReposMove || bm<=1 ) ){
     if( clos.isOnMove || clos.isReposMove ){
       step(terrain, sz, false);
       }
     } else {
+    //if( bm==2 )
+      step(terrain, sz, true);
+
+    /*
     bool ch = false;
 
     if( terrain.unitAt(x,y)!=&obj ){
@@ -185,7 +213,7 @@ void MoveBehavior::tick(const Terrain &terrain) {
         if( obj  ){
           MoveBehavior * b = obj->behavior.find<MoveBehavior>();
           if( b && !b->clos.isReposMove/* &&
-              (mask!=b->mask || mask<0)*/ ){
+              (mask!=b->mask || mask<0) * / ){
             b->message( Reposition, lx*qs + qs/2, ly*qs + qs/2 );
             if( !b->clos.isOnMove )
               b->step( terrain, sz, false );
@@ -197,6 +225,7 @@ void MoveBehavior::tick(const Terrain &terrain) {
 
     if( !ch || isMWalk )
       step(terrain, sz, true);
+*/
     }
 
   }
@@ -204,14 +233,26 @@ void MoveBehavior::tick(const Terrain &terrain) {
 void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
   int acseleration = 2;
 
+  int tx = this->tx,
+      ty = this->ty;
+
+  if( !clos.isReposMove ){
+    tx = this->tx + clos.colisionDisp[0];
+    ty = this->ty + clos.colisionDisp[1];
+    }
+
   if( curentSpeed+acseleration < obj.getClass().data.speed )
     curentSpeed+=acseleration; else
     curentSpeed = obj.getClass().data.speed;
 
-  int l = Math::distance( obj.x(), obj.y(),
-                          tx, ty )/curentSpeed;
+  int realL = Math::distance( obj.x(), obj.y(),
+                              tx, ty );
+  int l = realL/std::max(curentSpeed,1);
 
-  if( l>2 ){
+  if( ( ( 2*realL > obj.getClass().data.size*Terrain::quadSize ||
+          way.size()>0 ) ||
+        clos.isReposMove) &&
+      l > 2 ){
     int x = obj.x()+(tx-obj.x())/l,
         y = obj.y()+(ty-obj.y())/l;
 
@@ -248,21 +289,21 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
     if( (terrain.isEnable( iwx, iwy) ) ||
         !terrain.isEnable( pwx, pwy) ){
       if( isBusy ){
-        int ltx = tx, lty = ty;
+        int ltx = this->tx, lty = this->ty;
 
         obj.setPosition( x, y, terrain.heightAt(wx,wy) );
         obj.setViewDirection( ltx-obj.x(), lty-obj.y() );
 
-        tx = ltx;
-        ty = lty;
+        this->tx = ltx;
+        this->ty = lty;
         isLocked = 0;
         } else {
         isLocked += 1;
         }
       } else {
       if( way.size() ){
-        tx = way[0].x;
-        ty = way[0].y;
+        this->tx = way[0].x;
+        this->ty = way[0].y;
         }
 
       if( !clos.isReposMove/* && !isMWalk*/ ){

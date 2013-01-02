@@ -22,7 +22,9 @@ World::World( GraphicsSystem& g,
               PrototypesLoader &p,
               Game & gm,
               int w, int h )
-  : game(gm), physics(w,h), graphics(g),
+  : game(gm), physics(w,h),
+    spatialId(w,h),
+    graphics(g),
     resource(r), prototypes(p),
     particles(scene, p, r) {
   tx = ty = 0;
@@ -35,21 +37,33 @@ World::World( GraphicsSystem& g,
   createTestMap();
 
   scene.lights().direction().resize(1);
+
   MyGL::DirectionLight light;
   light.setDirection( -2, -1, -2.0 );
   light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
   light.setAblimient( MyGL::Color( 0.33, 0.33,  0.35) );
   scene.lights().direction()[0] = light;
+
+  /*
+  MyGL::DirectionLight light;
+  light.setDirection( -2, 1, -2.0 );
+  light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
+  light.setAblimient( MyGL::Color( 0.23, 0.23,  0.35) );
+  scene.lights().direction()[0] = light;
+  */
   }
 
 void World::createTestMap() {
-  int s = terr->width() * Terrain::quadSize;
+  return;
 
+  int s = terr->width() * Terrain::quadSize;
+/*
   for( int q=0; q<5; ++q )
     for( int i=0; i<5; ++i ){
       GameObject& obj = addObjectEnv( "worker" );
       obj.setPosition( 4000+i*1000, 4000+(q)*1000, 100 );
       }
+      */
 /*
   for( int i=0; i*500<s; ++i ){
     addObject( "tree0" ).setPosition( 0, i*500, 1 );
@@ -129,7 +143,11 @@ void World::moveCamera(double x, double y) {
                       //camera.z() );
   float cx = World::coordCastD( camera.x() )/Terrain::quadSizef;
   float cy = World::coordCastD( camera.y() )/Terrain::quadSizef;
-  float  z = World::coordCast( terr->atF(cx,cy) );
+
+  float  z = std::max( World::coordCast( terr->heightAt(cx,cy) ),
+                       World::coordCast( terr->atF(cx,cy) ) );
+  z = std::max(z,0.0f);
+
   camera.setPosition( camera.x(),
                       camera.y(),
                       z );
@@ -419,26 +437,6 @@ void World::toogleEditLandMode(const Terrain::EditMode &m) {
 void World::initTerrain() {
   terr->buildGeometry( graphics.vboHolder,
                        graphics.iboHolder );
-  /*
-  GameObject *obj = new GameObject( scene,
-                                    *this,
-                                    prototypes.get("land"),
-                                    prototypes );
-  obj->setPosition(0,0,0);
-  obj->loadView( terr->buildGeometry( graphics.vboHolder,
-                                      graphics.iboHolder ) );
-
-  terrainView =  PGameObject(obj);
-
-  obj = new GameObject( scene,
-                        *this,
-                        prototypes.get("water"),
-                        prototypes );
-  obj->setPosition(0,0,0);
-
-  obj->loadView( terr->waterGeometry( graphics.vboHolder,
-                                      graphics.iboHolder ) );
-  waterView  = PGameObject(obj);*/
   physics.setTerrain( terrain() );
   }
 
@@ -479,6 +477,8 @@ void World::tick() {
   scene.setCamera( camera );
 
   terr->resetBusyMap();
+  spatialId.fill( gameObjects );
+
   for( size_t i=0; i<gameObjects.size(); ++i ){
     GameObject & obj = *gameObjects[ gameObjects.size()-i-1 ];
     int wx = obj.x()/Terrain::quadSize,
@@ -487,10 +487,14 @@ void World::tick() {
     terr->incBusyAt(wx,wy, obj);
     }
 
+  spatialId.solveColisions();
+
   for( size_t i=0; i<gameObjects.size(); ++i ){
     GameObject & obj = *gameObjects[i];
     obj.tick( terrain() );
     }
+
+  spatialId.clear();
 
   physics.tick();
 
@@ -500,6 +504,10 @@ void World::tick() {
       GameObject & obj = addObjectEnv( gameObjects[i]->getClass().name );
 
       obj.setPlayer( src.playerNum() );
+      MyGL::Color cl = obj.teamColor();
+      float k = 0.7;
+      cl.set( cl.r()*k, cl.g()*k, cl.b()*k, cl.a() );
+      obj.setTeamColor( cl );
 
       obj.setPosition( src.x(), src.y(), src.z()+100 );
       //obj.rotate();

@@ -31,6 +31,9 @@ GameObject::GameObject( MyGL::Scene & s,
   m.y = 0;
   m.z = 0;
 
+  bclos.colisionDisp[0] = 0;
+  bclos.colisionDisp[1] = 0;
+
   m.hp = p.data.maxHp;
 
   m.pl = 0;
@@ -152,6 +155,10 @@ double GameObject::viewHeight() const {
 
 const MyGL::Color& GameObject::teamColor() const {
   return view.teamColor;
+  }
+
+void GameObject::setTeamColor(const MyGL::Color &cl) {
+  view.teamColor = cl;
   }
 
 void GameObject::setPosition(int x, int y, int z) {
@@ -493,4 +500,14 @@ void GameObject::serialize( GameSerializer &s ) {
     }
 
   view.serialize(s);
+  }
+
+void GameObject::setColisionDisp(int dx, int dy) {
+  bclos.colisionDisp[0] = dx;
+  bclos.colisionDisp[1] = dy;
+  }
+
+void GameObject::incColisionDisp(int dx, int dy) {
+  bclos.colisionDisp[0] += dx;
+  bclos.colisionDisp[1] += dy;
   }

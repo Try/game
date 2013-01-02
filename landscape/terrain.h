@@ -41,7 +41,8 @@ class Terrain {
       EHeight map, wmap;
       double R;
 
-      bool isEnable;
+      bool isEnable, isSecondaryTexturing;
+      std::string texture;
       };
 
     void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
@@ -101,10 +102,12 @@ class Terrain {
 
     std::vector< std::string > aviableTiles;
     struct Tile {
-      int plane, textureID[2];
+      int plane;
+      size_t textureID[2];
       float normal[3];
       };
     array2d<Tile> tileset;
+    std::vector< Model::Vertex > land, minor;
 
     array2d<int>  heightMap;
     array2d<int>  waterMap;
@@ -133,7 +136,7 @@ class Terrain {
     void buildGeometry(MyGL::VertexBufferHolder & vboHolder,
                         MyGL::IndexBufferHolder  & iboHolder,
                         int plane,
-                        const std::string & proto );
+                        size_t texture );
 
     void computePlanes();
   };

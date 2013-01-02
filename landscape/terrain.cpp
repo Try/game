@@ -8,6 +8,7 @@
 #include "algo/algo.h"
 #include "util/gameserializer.h"
 #include <memory>
+#include <algorithm>
 
 const int Terrain::busyMapsCount = 4;
 
@@ -18,7 +19,20 @@ Terrain::Terrain(int w, int h,
         :scene(s), world(wrld), prototype(pl) {
   groupMask = 0;
 
+  land. reserve( w*h*6 );
+  minor.reserve( w*h*6 );
+
+  aviableTiles.push_back("land.grass");
+  aviableTiles.push_back("land.rock" );
+  aviableTiles.push_back("land.sand" );
+
   tileset.resize( w+1, h+1 );
+
+  for( int i=0; i<=w; ++i )
+    for( int r=0; r<=h; ++r ){
+      tileset[i][r].textureID[0] = 0;
+      tileset[i][r].textureID[1] = 1;
+      }
 
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
@@ -42,9 +56,22 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
 
   landView.clear();
 
-  buildGeometry( vboHolder, iboHolder, 2, "land.grass" );
-  buildGeometry( vboHolder, iboHolder, 1, "land.rock"  );
-  buildGeometry( vboHolder, iboHolder, 0, "land.rock"  );
+  std::vector<size_t> texIDS[2];
+  for( int i=0; i<tileset.width(); ++i )
+    for( int r=0; r<tileset.height(); ++r ){
+      for( int q=0; q<2; ++q ){
+        if( std::find( texIDS[q].begin(), texIDS[q].end(),
+                       tileset[i][r].textureID[q] )
+            == texIDS[q].end() )
+          texIDS[q].push_back( tileset[i][r].textureID[q] );
+        }
+      }
+
+  for( int i=0; i<3; ++i ){
+    const std::vector<size_t> & ids = texIDS[ i==2? 0:1 ];
+    for( size_t r=0; r<ids.size(); ++r )
+      buildGeometry( vboHolder, iboHolder, i, ids[r] );
+    }
 
   View view;
   view.view.reset( new GameObjectView( scene,
@@ -59,10 +86,12 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
 void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                              MyGL::IndexBufferHolder  & iboHolder,
                              int plane,
-                             const std::string & proto  ) {
+                             size_t texture  ) {
   Model model;
   Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1} };
-  std::vector< Model::Vertex > land, minor;
+  land.clear();
+  minor.clear();
+
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
 
@@ -70,57 +99,64 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
 
   for( int i=0; i+1<heightMap.width(); ++i )
     for( int r=0; r+1<heightMap.height(); ++r ){
+      int k = 0, tk = 0, tid = (plane==2 ? 0:1);
       for( int q=0; q<6; ++q ){
-        int x = (i+dx[q]),
-            y = (r+dy[q]);
-        v.x = World::coordCast( x*quadSize );
-        v.y = World::coordCast( y*quadSize );
-
-        int dz = waterMap[ i+dx[q] ][ r+dy[q] ];
-        float z  = -(heightMap[ i+dx[q] ][ r+dy[q] ]-dz)/quadSizef;
-
-        v.z = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q] ]-dz );
-
-        //int plane = tileset[ i+dx[q] ][ r+dy[q] ].plane;
-
-        if( plane==2 ){
-          v.u = x*texCoordScale;
-          v.v = y*texCoordScale;
-          }
-        if( plane==1 ){
-          v.u = x*texCoordScale;
-          v.v = z*texCoordScale;
-          }
-        if( plane==0 ){
-          v.u = z*texCoordScale;
-          v.v = y*texCoordScale;
-          }
-
-        float *n = tileset[ i+dx[q] ][ r+dy[q] ].normal;
-        std::copy( n, n+3, v.normal );
-
-        land.push_back(v);
-        }
-
-      //int nplane = tileset[ i ][ r ].plane;
-      int k = 0;
-      for( int q=0; q<6; ++q )
         if( plane == tileset[i+dx[q]][r+dy[q]].plane )
           ++k;
-
-      if( k>0 && k<6 ){
-        for( int q=0; q<6; ++q ){
-          minor.push_back( land[ land.size()-6+q] );
-          Model::Vertex & v = minor.back();
-
-          if( plane!=tileset[i+dx[q]][r+dy[q]].plane )
-            std::fill(v.color+0, v.color+4, 0); else
-            std::fill(v.color+0, v.color+4, 1);
-          }
+        if( texture == tileset[i+dx[q]][r+dy[q]].textureID[tid] )
+          ++tk;
         }
 
-      if( k!=6 )
-        land.resize( land.size()-6 );
+      if( k!=0 && tk!=0 ){
+        for( int q=0; q<6; ++q ){
+          int x = (i+dx[q]),
+              y = (r+dy[q]);
+          v.x = World::coordCast( x*quadSize );
+          v.y = World::coordCast( y*quadSize );
+
+          int dz = waterMap[ i+dx[q] ][ r+dy[q] ];
+          float z  = -(heightMap[ i+dx[q] ][ r+dy[q] ]-dz)/quadSizef;
+
+          v.z = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q] ]-dz );
+
+          //int plane = tileset[ i+dx[q] ][ r+dy[q] ].plane;
+
+          if( plane==2 ){
+            v.u = x*texCoordScale;
+            v.v = y*texCoordScale;
+            }
+          if( plane==1 ){
+            v.u = x*texCoordScale;
+            v.v = z*texCoordScale;
+            }
+          if( plane==0 ){
+            v.u = z*texCoordScale;
+            v.v = y*texCoordScale;
+            }
+
+          float *n = tileset[ i+dx[q] ][ r+dy[q] ].normal;
+          std::copy( n, n+3, v.normal );
+
+          land.push_back(v);
+          }
+
+        //int nplane = tileset[ i ][ r ].plane;
+
+        if( ( k>0 && (k<6 || tk<6) ) && ( tk>0 && (k<6 || tk<6) ) ){
+          for( int q=0; q<6; ++q ){
+            minor.push_back( land[ land.size()-6+q] );
+            Model::Vertex & v = minor.back();
+
+            if( plane  !=tileset[i+dx[q]][r+dy[q]].plane ||
+                texture!=tileset[i+dx[q]][r+dy[q]].textureID[tid] )
+              std::fill(v.color+0, v.color+4, 0); else
+              std::fill(v.color+0, v.color+4, 1);
+            }
+          }
+
+        if( k!=6 || tk!=6 )
+          land.resize( land.size()-6 );
+        }
       }
 
   MyGL::VertexDeclaration::Declarator decl;
@@ -135,9 +171,10 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
     View view;
     view.view.reset( new GameObjectView( scene,
                                          world,
-                                         prototype.get( proto ),
+                                         prototype.get( aviableTiles[texture] ),
                                          prototype) );
-    view.view->loadView( model, prototype.get( proto ).view[0] );
+    view.view->loadView( model,
+                         prototype.get( aviableTiles[texture] ).view[0] );
 
     landView.push_back( view );
     }
@@ -146,7 +183,7 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
     model.load( vboHolder, iboHolder, minor, decl );
 
     View view;
-    ProtoObject obj = prototype.get( proto );
+    ProtoObject obj = prototype.get( aviableTiles[texture] );
     for( size_t i=0; i<obj.view.size(); ++i )
       for( size_t r=0; r<obj.view[i].materials.size(); ++r )
         if( obj.view[i].materials[r]=="phong" )
@@ -252,33 +289,6 @@ MyGL::Model<WaterVertex>
 
           { v.dir[0] = 1;//0.5*(x-width()/2);//double(width());
             v.dir[1] = 1;//0.5*(y-height()/2);//double(height());
-/*
-            if( fabs(v.dir[0]) > fabs(v.dir[1]) ){
-              v.dir[0] = sgn(v.dir[0]);
-              v.dir[1] = 0;
-              } else {
-              v.dir[0] = 0;
-              v.dir[1] = sgn(v.dir[1]);
-              }
-
-            float l = sqrt( v.dir[0]*v.dir[0] + v.dir[1]*v.dir[1] );
-            v.dir[0] /= l;
-            v.dir[1] /= l;
-
-            float k = clamp( (World::coordCast( depthAt(i+dx[q], r+dy[q]) )-0.2)*0.75,
-                             0.0, 1.0 );
-            v.dir[0] *= (1-k);
-            v.dir[1] *= (1-k);
-*/
-            /*
-            if( x*2>width() )
-              v.dir[0] =  1; else
-              v.dir[0] = -1;
-
-            if( y*2>height() )
-              v.dir[1] =  1; else
-              v.dir[1] = -1;
-              */
             }
           land.push_back(v);
           }
@@ -322,18 +332,39 @@ void Terrain::brushHeight( int x, int y,
   if( alternative )
     dh = -dh;
 
-  for( int i=0; i<width(); ++i )
-    for( int r=0; r<height(); ++r ){
-      double factor = std::max(0.0,
-                               (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
-      factor = 1.0-(1.0-factor)*(1.0-factor);
+  if( m.wmap!= EditMode::None || m.map!=EditMode::None ){
+    for( int i=0; i<width(); ++i )
+      for( int r=0; r<height(); ++r ){
+        double factor = std::max(0.0,
+                                 (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
+        factor = 1.0-(1.0-factor)*(1.0-factor);
 
-      if( m.wmap ){
-        heightMap[i][r] += dh*factor;
-        } else {
-        waterMap[i][r] -= dh*factor;
+        if( m.wmap ){
+          heightMap[i][r] += dh*factor;
+          } else {
+          waterMap[i][r] -= dh*factor;
+          }
         }
+    }
+
+  int texID = m.isSecondaryTexturing ? 1:0;
+  if( m.texture.size() ){
+    int id = std::find( aviableTiles.begin(), aviableTiles.end(), m.texture )
+              - aviableTiles.begin();
+    if( size_t(id)==aviableTiles.size() ){
+      aviableTiles.push_back( m.texture );
       }
+
+    for( int i=0; i<width(); ++i )
+      for( int r=0; r<height(); ++r ){
+        double factor = std::max(0.0,
+                                 (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
+        factor = 1.0-(1.0-factor)*(1.0-factor);
+
+        if( factor>0 )
+          tileset[i][r].textureID[texID] = id;
+        }
+    }
 
   computeEnableMap();
   }
@@ -487,6 +518,8 @@ bool Terrain::isEnableQuad( int x, int y, int size ) const {
   }
 
 void Terrain::incBusyAt(int x, int y, GameObject &owner) {
+  return;//!
+
   if( !owner.isMoviable() || owner.isMineralMove() )
     return;
 
@@ -681,9 +714,33 @@ void Terrain::serialize( GameSerializer &s ) {
         +  buildingsMap[i][r];
       }
 
+  if( s.version()>0 ){
+    for( int i=w; i<=w; ++i )
+      for( int r=h; r<=h; ++r ){
+        s +  heightMap[i][r]
+          +  waterMap[i][r]
+          +  buildingsMap[i][r];
+        }
+
+    size_t ts = aviableTiles.size();
+    s + ts;
+    aviableTiles.resize(ts);
+
+    for( size_t i=0; i<aviableTiles.size(); ++i )
+      s + aviableTiles[i];
+
+    for( int i=0; i<=w; ++i )
+      for( int r=0; r<=h; ++r ){
+        Tile & t = tileset[i][r];
+        s   + t.plane
+            + t.textureID[0]
+            + t.textureID[1];
+        }
+    }
+
   resetBusyMap();
   computeEnableMap();
-}
+  }
 
 
 Terrain::EditMode::EditMode() {
@@ -692,4 +749,5 @@ Terrain::EditMode::EditMode() {
 
   R = 5;
   isEnable = false;
+  isSecondaryTexturing = false;
   }

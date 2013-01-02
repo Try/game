@@ -122,9 +122,15 @@ int Player::limMax() const {
   }
 
 void Player::serialize(GameSerializer &s) {
-  s + m.gold + m.team + m.htCtrl + m.num
-    ;
+  s + m.gold + m.team + m.htCtrl + m.num;  
+  }
 
+size_t Player::unitsCount() const {
+  return m.objects.size();
+  }
+
+GameObject &Player::unit(size_t id) {
+  return *m.objects[id];
   }
 
 bool Player::compare(const GameObject *a, const GameObject *b) {

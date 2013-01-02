@@ -216,7 +216,7 @@ void GameObjectView::setViewPosition(float x, float y, float z) {
     particles[i].setPosition( x, y, z );
     }
 
-  float zland = World::coordCast( wrld.terrain().heightAt( x, y ) );
+  float zland = z;//World::coordCast( wrld.terrain().heightAt( x, y ) );
   selection.setPosition( x, y, std::max(zland, z)+0.01 );
 
   if( form.sphere.isValid() )
@@ -405,6 +405,8 @@ void GameObjectView::tick() {
       if( sin( M_PI*da/180.0 ) > 0 )
         view[i].setRotation(0, az+at); else
         view[i].setRotation(0, az-at);
+      } else {
+      view[i].setRotation(0, a);
       }
 
   }

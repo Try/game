@@ -101,6 +101,7 @@ class GameObject {
     double viewHeight() const;
 
     const MyGL::Color& teamColor() const;
+    void setTeamColor( const MyGL::Color& cl );
 
     static void setViewPosition( MyGL::GraphicObject& obj,
                                  const ProtoObject::View &v,
@@ -112,6 +113,8 @@ class GameObject {
     std::shared_ptr<Bullet> reciveBulldet( const std::string& view );
 
     void serialize( GameSerializer &s );
+    void setColisionDisp( int dx, int dy );
+    void incColisionDisp( int dx, int dy );
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;

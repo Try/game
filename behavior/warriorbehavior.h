@@ -29,6 +29,8 @@ class WarriorBehavior : public AbstractBehavior  {
 
     bool mvLock;
     int lkX, lkY;
+
+    void positionChangeEvent(PositionChangeEvent &m);
   };
 
 #endif // WARRIORBEHAVIOR_H

@@ -44,6 +44,8 @@ class Player {
     int  limMax()  const;    
 
     void serialize( GameSerializer &s);
+    size_t unitsCount() const;
+    GameObject& unit( size_t id );
   private:
     struct {
       int num;

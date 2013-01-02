@@ -30,32 +30,40 @@ void WarriorBehavior::tick( const Terrain & ) {
   if( dAtkTime )
     return;
 
-  size_t id = -1, idA   = -1;
+  if( obj.isOnMove() && !isAtk )
+    return;
+
+  dAtkTime = 10;
+
+  GameObject* id = 0, *idA = 0;
   int dist  = -1, distA = -1;
 
-  for( size_t i=0; i<obj.world().objectsCount(); ++i ){//FIXME
-    GameObject & tg = obj.world().object(i);
-    int d = tg.distanceSQ( obj.x(), obj.y() );
+  for( size_t pl=0; pl<obj.game().plCount(); ++pl ){
+    if( int(pl)!=obj.playerNum() )
+      for( size_t i=0; i<obj.game().player(pl).unitsCount(); ++i ){//FIXME
+        GameObject & tg = obj.game().player(pl).unit(i);
+        int d = tg.distanceSQ( obj.x(), obj.y() );
 
-    int dd = dist;
-    bool w = ( tg.behavior.find<WarriorBehavior>() );
-    if( w )
-      dd = distA;
+        int dd = dist;
+        bool w = ( tg.behavior.find<WarriorBehavior>() );
+        if( w )
+          dd = distA;
 
-    if( tg.team()!=obj.team() &&
-        tg.team()!=0 &&
-        (dd < 0 || d<dd) ){
-      if( w ){
-        idA   = i;
-        distA = d;
-        } else{
-        id   = i;
-        dist = d;
+        if( tg.team()!=obj.team() &&
+            tg.team()!=0 &&
+            (dd < 0 || d<dd) ){
+          if( w ){
+            idA   = &tg;
+            distA = d;
+            } else{
+            id    = &tg;
+            dist  = d;
+            }
+          }
         }
-      }
     }
 
-  if( idA!=size_t(-1) ){
+  if( idA!=0 ){
     int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
     vrange = vrange*vrange;
 
@@ -67,7 +75,7 @@ void WarriorBehavior::tick( const Terrain & ) {
     }
 
   if( !obj.isOnMove() || isAtk || (obj.distanceQL(lastX, lastY)>1) ){
-    if( id!=size_t(-1) )
+    if( id!=0 )
       taget = obj.world().objectWPtr(id);
 
     if( taget ){
@@ -107,8 +115,8 @@ void WarriorBehavior::tick( const Terrain & ) {
   }
 
 bool WarriorBehavior::message( AbstractBehavior::Message msg,
-                               int /*x*/, int /*y*/,
-                               AbstractBehavior::Modifers /*md*/) {
+                               int x, int y,
+                               AbstractBehavior::Modifers md) {
   if( msg==Move ||
       msg==MoveGroup ||
       msg==MineralMove ||
@@ -121,7 +129,7 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
       }
     }
 
-  return false;
+  return AbstractBehavior::message(msg, x, y, md);
   }
 
 void WarriorBehavior::move(int x, int y) {
@@ -133,7 +141,12 @@ void WarriorBehavior::move(int x, int y) {
 
   isAtk = true;
 
-  dAtkTime = 40;
+  dAtkTime = 10;
+  for( size_t i=0; i<obj.getClass().data.atk.size(); ++i ){
+    if( obj.getClass().data.atk[i].range>0 )
+      dAtkTime = 40;
+    }
+
   lastX = obj.x();
   lastY = obj.y();
   }
@@ -164,4 +177,11 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     }
 
   obj.behavior.message( StopMove, 0,0 );
+}
+
+void WarriorBehavior::positionChangeEvent(PositionChangeEvent &) {
+  if( mvLock ){
+    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
+    mvLock = 0;
+    }
   }

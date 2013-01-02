@@ -9,6 +9,8 @@ struct ProtoObject {
   public:
     ProtoObject();
 
+    bool isLandTile() const;
+
     struct GameSpecific{
       int size, speed;
       int visionRange;

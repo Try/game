@@ -118,7 +118,8 @@ HEADERS += \
     graphics/particlesystemengine.h \
     gui/tabwidget.h \
     gui/editterrainpanel.h \
-    graphics/terrainminormaterial.h
+    graphics/terrainminormaterial.h \
+    game/spatialindex.h
 
 SOURCES += \
     main.cpp \
@@ -201,7 +202,8 @@ SOURCES += \
     graphics/particlesystemengine.cpp \
     gui/tabwidget.cpp \
     gui/editterrainpanel.cpp \
-    graphics/terrainminormaterial.cpp
+    graphics/terrainminormaterial.cpp \
+    game/spatialindex.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

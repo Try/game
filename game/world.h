@@ -6,6 +6,8 @@
 #include "game/gameobject.h"
 #include "graphics/particlesystemengine.h"
 
+#include "spatialindex.h"
+
 #include <MyWidget/Event>
 
 #include <memory>
@@ -102,6 +104,7 @@ class World {
     Terrain::EditMode editLandMode;
 
     std::vector< PGameObject > gameObjects, eviObjects;
+    SpatialIndex spatialId;
     // std::vector< PGameObject > selected;
     std::vector< WeakWorldPtr* > wptrs;
 

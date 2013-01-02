@@ -4,7 +4,24 @@
 #include "button.h"
 #include "scroolbar.h"
 
-EditTerrainPanel::EditTerrainPanel(Resource &res) {
+#include "scroolwidget.h"
+#include "prototypesloader.h"
+
+struct EditTerrainPanel::TileBtn: public Button{
+  TileBtn( Resource & res,
+           const std::string& tile ):Button(res), tile(tile){
+    clicked.bind( *this, &TileBtn::beep );
+    }
+
+  void beep(){
+    clickedEx( tile );
+    }
+
+  MyWidget::signal< const std::string& > clickedEx;
+  std::string tile;
+  };
+
+EditTerrainPanel::EditTerrainPanel(Resource &res , PrototypesLoader &prototypes) {
   layout().setMargin( 6 );
   setLayout( MyWidget::Vertical );
 
@@ -24,7 +41,46 @@ EditTerrainPanel::EditTerrainPanel(Resource &res) {
   sb->setRange(0, 20);
   layout().add( sb );
 
-  layout().add( new Widget() );
+  Widget* w = new Widget();
+  w->setLayout( MyWidget::Horizontal );
+
+  btn = new Button(res);
+  btn->setText("Main");
+  btn->clicked.bind(*this, &EditTerrainPanel::setTexID<0> );
+  MyWidget::SizePolicy policy = btn->sizePolicy();
+  policy.typeH = MyWidget::Preferred;
+  btn->setSizePolicy( policy );
+  w->layout().add( btn );
+
+  btn = new Button(res);
+  btn->setText("Secondary");
+  btn->clicked.bind(*this, &EditTerrainPanel::setTexID<1> );
+  btn->setSizePolicy( policy );
+  w->layout().add( btn );
+
+  policy = w->sizePolicy();
+  policy.minSize.h = 30;
+  policy.typeV = MyWidget::FixedMin;
+  //w->setSizePolicy( btn->sizePolicy() );
+  w->setSizePolicy( policy );
+  w->layout().setMargin(0);
+
+  layout().add( w );
+
+  ScroolWidget *sw = new ScroolWidget(res);
+  auto p = prototypes.allClasses();
+
+  for( size_t i=0; i<p.size(); ++i ){
+    if( p[i]->isLandTile() ) {
+      TileBtn *b = new TileBtn(res, p[i]->name);
+      b->setText( p[i]->name );
+      b->clickedEx.bind( *this, &EditTerrainPanel::setTexture );
+
+      sw->centralWidget().layout().add( b );
+      }
+    }
+
+  layout().add( sw );
   }
 
 void EditTerrainPanel::disableEdit(int) {
@@ -33,6 +89,9 @@ void EditTerrainPanel::disableEdit(int) {
   }
 
 void EditTerrainPanel::setupEHeight() {
+  int  r  = m.R;
+  m = Terrain::EditMode();
+  m.R = r;
   m.map  = Terrain::EditMode::Up;
   m.wmap = Terrain::EditMode::None;
 
@@ -41,10 +100,28 @@ void EditTerrainPanel::setupEHeight() {
   }
 
 void EditTerrainPanel::setupCombo() {
+  int  r  = m.R;
+  m = Terrain::EditMode();
+  m.R = r;
   m.map  = Terrain::EditMode::Up;
   m.wmap = Terrain::EditMode::Up;
 
   m.isEnable = true;
+  toogleEditLandMode(m);
+  }
+
+void EditTerrainPanel::setTexture(const std::string &str) {
+  bool mt = m.isSecondaryTexturing;
+  int  r  = m.R;
+  m = Terrain::EditMode();
+  m.R = r;
+
+  m.isSecondaryTexturing = mt;
+  m.map  = Terrain::EditMode::None;
+  m.wmap = Terrain::EditMode::None;
+
+  m.isEnable = true;
+  m.texture  = str;
   toogleEditLandMode(m);
   }
 

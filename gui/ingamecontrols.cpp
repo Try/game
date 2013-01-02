@@ -204,7 +204,7 @@ Widget *InGameControls::createEditPanel() {
   for( auto i=proto.begin(); i!=proto.end(); ++i ){
     bool ok = false;
     for( size_t r=0; !ok && r<(**i).view.size(); ++r )
-      if( (**i).view[r].name.size() )
+      if( (**i).view[r].name.size() && !(**i).isLandTile() )
         ok = true;
 
     if( ok ){
@@ -238,7 +238,7 @@ Widget *InGameControls::createEditPanel() {
   }
 
 EditTerrainPanel *InGameControls::createLandEdit() {
-  EditTerrainPanel* p = new EditTerrainPanel(res);
+  EditTerrainPanel* p = new EditTerrainPanel(res, prototypes);
   p->toogleEditLandMode.bind( toogleEditLandMode );
 
   return p;
