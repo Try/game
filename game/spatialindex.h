@@ -22,6 +22,7 @@ class SpatialIndex {
     int w,h, sizeMax;
 
     void solveColisions(GameObject* , size_t id);
+    bool hasEffect( GameObject* tg, GameObject* obj );
   };
 
 #endif // SPATIALINDEX_H

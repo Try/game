@@ -100,7 +100,7 @@ void SpatialIndex::solveColisions( GameObject * m, size_t id ) {
                    obj2->getClass().data.size *Terrain::quadSize)/2;
       maxD = maxD*maxD;
 
-      if( d <= maxD && m!=obj2 ){
+      if( d <= maxD && m!=obj2 && hasEffect(m,obj2) ){
         int dx = m->x() - obj2->x();
         int dy = m->y() - obj2->y();
 
@@ -120,4 +120,24 @@ void SpatialIndex::solveColisions( GameObject * m, size_t id ) {
         }
       }
     }
+  }
+
+bool SpatialIndex::hasEffect(GameObject *tg, GameObject *obj) {
+  if( tg->playerNum()!=obj->playerNum() )
+    return 1;
+
+  if( !tg->isOnMove() ){
+    return 1;
+    }
+
+  if( !obj->isOnMove() ){
+    return 0;
+    }
+
+  if( MoveBehavior *b1 = tg->behavior.find<MoveBehavior>() )
+    if( MoveBehavior *b2 = obj->behavior.find<MoveBehavior>() ){
+      return b1->isSameDirection(*b2);
+      }
+
+  return 0;
   }

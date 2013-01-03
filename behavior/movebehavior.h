@@ -25,6 +25,8 @@ class MoveBehavior : public AbstractBehavior {
 
     void setWay( const std::vector<Point> & v );
     int mask;
+
+    bool isSameDirection( const MoveBehavior& other );
   private:
     GameObject & obj;
     Behavior::Closure & clos;

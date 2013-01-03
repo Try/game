@@ -183,7 +183,7 @@ void MoveBehavior::tick(const Terrain &terrain) {
 
   if( terrain.isEnableQuad( x, y, sz ) && ( clos.isReposMove || bm<=1 ) ){
     if( clos.isOnMove || clos.isReposMove ){
-      step(terrain, sz, false);
+      step(terrain, sz, true);
       }
     } else {
     //if( bm==2 )
@@ -236,7 +236,7 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
   int tx = this->tx,
       ty = this->ty;
 
-  if( !clos.isOnMove && !clos.isReposMove ){
+  if( !clos.isReposMove ){
     tx = this->tx + clos.colisionDisp[0];
     ty = this->ty + clos.colisionDisp[1];
 
@@ -258,7 +258,7 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
   if( ( ( 2*realL > obj.getClass().data.size*Terrain::quadSize ||
           way.size()>0 ) ||
         clos.isReposMove) &&
-      l > 2 ){
+      l > 0 ){
     int x = obj.x()+(tx-obj.x())/l,
         y = obj.y()+(ty-obj.y())/l;
 
@@ -313,7 +313,7 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
         }
 
       if( !clos.isReposMove/* && !isMWalk*/ ){
-        calcWayAndMove( tx, ty, terrain );
+        calcWayAndMove( this->tx, this->ty, terrain );
         }
       }
 
@@ -389,4 +389,14 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
   way.back().y = ty;*/
 
   nextPoint();
+  }
+
+bool MoveBehavior::isSameDirection( const MoveBehavior &other ) {
+  int dx1 = obj.x() - tx,
+      dy1 = obj.y() - ty;
+
+  int dx2 = other.obj.x() - other.tx,
+      dy2 = other.obj.y() - other.ty;
+
+  return ( dx1*dx2 + dy1*dy2 ) > 0;
   }

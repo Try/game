@@ -45,7 +45,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   currentPlayer = 1;
 
   spinX =  0;
-  spinY = -150;
+  spinY =  -150;
   mouseTracking         = 0;
   selectionRectTracking = 0;
 
