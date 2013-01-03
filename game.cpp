@@ -27,7 +27,9 @@
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   : graphics( ihwnd, iw, ih, isFS, isFS ? 2048:1024 ),
     resource( graphics.texHolder,
+              graphics.localTex,
               graphics.vboHolder,
+              graphics.lvboHolder,
               graphics.iboHolder,
               graphics.vsHolder,
               graphics.fsHolder ),
@@ -71,7 +73,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   worlds.push_back( std::unique_ptr<World>( new World(graphics, resource,
                                                       proto,
                                                       *this,
-                                                      128, 128) ) );
+                                                      256, 256) ) );
 
   world = worlds[0].get();
   world->setupMaterial.bind(*this, &Game::setupMaterials );
@@ -469,6 +471,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
   MyGL::ShadowMapPassBase::Material smMaterial;
 
   material.diffuseTexture   = r.texture( src.name+"/diff" );
+  material.normalMap        = r.texture( src.name+"/norm" );
   smMaterial.diffuseTexture = material.diffuseTexture;
 
   material.useAlphaTest = smMaterial.useAlphaTest = true;
@@ -482,6 +485,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
   if( contains( src.materials, "terrain.minor" )  ){
     TerrainMinorMaterial mat( c.shadow.matrix );
     mat.diffuseTexture = material.diffuseTexture;
+    mat.normalMap      = material.normalMap;
     mat.useAlphaTest   = false;
 
     mat.specular = src.specularFactor;
@@ -497,6 +501,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     MainMaterial material( c.shadow.matrix,
                            teamColor );
     material.diffuseTexture   = r.texture( src.name+"/diff" );
+    material.normalMap        = r.texture( src.name+"/norm" );
     smMaterial.diffuseTexture = material.diffuseTexture;
 
     material.useAlphaTest = smMaterial.useAlphaTest = true;
@@ -508,6 +513,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
   if( contains( src.materials, "blush" )  ){
     BlushMaterial material( c.shadow.matrix );
     material.diffuseTexture   = r.texture( src.name+"/diff" );
+    material.normalMap        = r.texture( src.name+"/norm" );
     smMaterial.diffuseTexture = material.diffuseTexture;
 
     material.useAlphaTest = smMaterial.useAlphaTest = true;
@@ -567,7 +573,8 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
 
   if( contains( src.materials, "transparent_no_zw" ) ){
     TransparentMaterialNoZW   material(c.shadow.matrix);
-    material.texture = r.texture( src.name+"/diff" );
+    material.texture   = r.texture( src.name+"/diff" );
+    material.normalMap = r.texture( src.name+"/norm" );
 
     obj.setupMaterial( material );
     }

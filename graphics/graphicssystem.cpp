@@ -35,20 +35,22 @@ GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
                                 bool isFullScreen,
                                 int smSize = 1024 )
   : device(directx, makeOpt(isFullScreen), hwnd ),
-    texHolder( device ),
-    localTex ( device ),
-    vboHolder( device ),
-    iboHolder( device ),
-    vsHolder ( device ),
-    fsHolder ( device ),
+    texHolder ( device ),
+    localTex  ( device ),
+    vboHolder ( device ),
+    lvboHolder( device ),
+    iboHolder ( device ),
+    vsHolder  ( device ),
+    fsHolder  ( device ),
 
     ppHelper( vboHolder, iboHolder ),
     gui( vsHolder.load("./data/sh/gui.vert"),
          fsHolder.load("./data/sh/gui.frag"),
-         vboHolder,
+         lvboHolder,
          screenSize  ) {
-  widget = 0;
-  time = 0;
+  widget    = 0;
+  time      = 0;
+  particles = 0;
   }
 
 void GraphicsSystem::makeRenderAlgo( Resource &res,
@@ -89,6 +91,12 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
     gaussData.texture.setName("texture");
     gaussData.vs = vsHolder.load("./data/sh/postProcess.vert");
     gaussData.fs = fsHolder.load("./data/sh/gauss.frag");
+
+    gaussData.vsGB = res.vshader("gauss_gb");
+    gaussData.fsGB = res.fshader("gauss_gb");
+
+    gaussData.vsB = res.vshader("gauss_b");
+    gaussData.fsB = res.fshader("gauss_b");
 
     bloomData.vs = gaussData.vs;
     bloomData.brightPass = fsHolder.load("./data/sh/brightPass.frag");
@@ -203,7 +211,7 @@ MyGL::Texture2d GraphicsSystem::depth( const MyGL::Size & sz ) {
   }
 
 bool GraphicsSystem::render( const MyGL::Scene &scene,
-                             ParticleSystemEngine & particles,
+                             ParticleSystemEngine & par,
                              size_t dt) {
   if( !device.startRender() )
     return false;
@@ -213,7 +221,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
 
   BlushMaterial::wind = sin( 2.0*M_PI*tx/(16*1024.0) );
 
-  particles.exec();
+  particles = &par;
 
   MyGL::Texture2d gbuffer[4];
   MyGL::Texture2d mainDepth = depth( screenSize );
@@ -295,15 +303,6 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
   MyGL::RenderState rstate;
   rstate.setCullFaceMode( MyGL::RenderState::CullMode::front );
 
-  MyGL::Render render( device,
-                       sm, depthSm,
-                       smap.vs, smap.fs );
-  if( clr )
-    render.clear( MyGL::Color(1.0), 1 );
-
-  render.setRenderState( rstate );
-
-  const MyGL::AbstractCamera & camera = scene.camera();
   MyGL::DirectionLight light;
   if( scene.lights().direction().size() > 0 )
     light = scene.lights().direction()[0];
@@ -312,6 +311,21 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
                     light.yDirection(),
                     light.zDirection() };
   MyGL::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
+
+  MyGL::Render render( device,
+                       sm, depthSm,
+                       smap.vs, smap.fs );
+  if( clr ){
+    render.clear( MyGL::Color(1.0), 1 );
+    MyGL::Matrix4x4 proj;
+    proj.identity();
+
+    particles->exec( matrix, proj, 0, true );
+    }
+
+  render.setRenderState( rstate );
+
+  const MyGL::AbstractCamera & camera = scene.camera();
 
   for( size_t i=0; i<v.size(); ++i ){
     const MyGL::AbstractGraphicObject& ptr = v[i].object();
@@ -367,6 +381,9 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                                const MyGL::Texture2d& sm,
                                const MyGL::Scene & scene ) {
   setupLight( scene, gbuf.terrainFs, sm );
+  particles->exec( scene.camera().view(),
+                   scene.camera().projective(),
+                   1 );
 
   drawObjects( gbuf.terrainVs,
                gbuf.terrainFs,
@@ -697,6 +714,58 @@ void GraphicsSystem::gauss( MyGL::Texture2d &out,
   ppHelper.drawFullScreenQuad( device, gaussData.vs, gaussData.fs );
   }
 
+void GraphicsSystem::gauss_gb( MyGL::Texture2d &out,
+                               const MyGL::Texture2d& in,
+                               int w, int h,
+                               float dx, float dy ) {
+  out = localTex.create( w,h );
+  out.setSampler( reflect );
+
+  MyGL::Texture2d depth = this->depth( w,h );
+
+  MyGL::Render render( device,
+                       out, depth,
+                       gaussData.vsGB, gaussData.fsGB );
+
+  render.setRenderState( MyGL::RenderState::PostProcess );
+
+  bltData.texture.set( &in );
+  cpyOffset.set( 1.0f/w, 1.0f/h );
+  device.setUniform( gaussData.vsGB, cpyOffset );
+
+  cpyOffset.set( dx/w, dy/h );
+  device.setUniform( gaussData.fsGB, cpyOffset );
+  device.setUniform( gaussData.fsGB, bltData.texture );
+
+  ppHelper.drawFullScreenQuad( device, gaussData.vsGB, gaussData.fsGB );
+  }
+
+void GraphicsSystem::gauss_b( MyGL::Texture2d &out,
+                               const MyGL::Texture2d& in,
+                               int w, int h,
+                               float dx, float dy ) {
+  out = localTex.create( w,h );
+  out.setSampler( reflect );
+
+  MyGL::Texture2d depth = this->depth( w,h );
+
+  MyGL::Render render( device,
+                       out, depth,
+                       gaussData.vsB, gaussData.fsB );
+
+  render.setRenderState( MyGL::RenderState::PostProcess );
+
+  bltData.texture.set( &in );
+  cpyOffset.set( 1.0f/w, 1.0f/h );
+  device.setUniform( gaussData.vsB, cpyOffset );
+
+  cpyOffset.set( dx/w, dy/h );
+  device.setUniform( gaussData.fsB, cpyOffset );
+  device.setUniform( gaussData.fsB, bltData.texture );
+
+  ppHelper.drawFullScreenQuad( device, gaussData.vsB, gaussData.fsB );
+  }
+
 void GraphicsSystem::bloom( MyGL::Texture2d &result,
                             const MyGL::Texture2d &in ) {
   //bloomData
@@ -711,6 +780,7 @@ void GraphicsSystem::bloom( MyGL::Texture2d &result,
 
   {
     tmp[0] = localTex.create( w,h );
+    tmp[0].setSampler( reflect );
     MyGL::Texture2d depth = this->depth( w,h );
 
     MyGL::Render render( device,
@@ -845,7 +915,7 @@ void GraphicsSystem::ssao( MyGL::Texture2d &out,
       reinterpret_cast<const MyGL::Camera&>( scene.camera() );
   float scaleSize = 0.3/std::max( view.distance(), 1.0 )/3.0;
 
-  out = localTex.create( w, h, MyGL::Texture2d::Format::Luminance16 );
+  out = localTex.create( w, h, MyGL::Texture2d::Format::Luminance8 );
   out.setSampler( reflect );
 
   MyGL::Texture2d depth = this->depth( w,h );
@@ -910,37 +980,73 @@ void GraphicsSystem::aceptSsao( const MyGL::Scene & s,
 void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
                                MyGL::Texture2d &sm  ) {
   sm = localTex.create( 128, 128,
-                        MyGL::AbstractTexture::Format::Luminance16 );
+                        MyGL::AbstractTexture::Format::RGB10_A2 );
 
-  const MyGL::Scene::Objects &v = scene.objects<MyGL::ShadowMapPassBase::Material>();
+  MyGL::Texture2d tmp = localTex.create( sm.width(), sm.height(),
+                        MyGL::AbstractTexture::Format::RGB10_A2 );
 
   MyGL::RenderState rstate;
   rstate.setCullFaceMode( MyGL::RenderState::CullMode::front );
 
-  MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
-  MyGL::Render render( device,
-                       sm, depthSm,
-                       smap.vs, smap.fs );
-  render.clear( MyGL::Color(1.0), 1 );
-  render.setRenderState( rstate );
+  { const MyGL::Scene::Objects &v = scene.objects<MyGL::ShadowMapPassBase::Material>();
+    MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
+    MyGL::Render render( device,
+                         sm, depthSm,
+                         smap.vs, smap.fs );
+    render.clear( MyGL::Color(1.0), 1 );
+    render.setRenderState( rstate );
 
-  const MyGL::AbstractCamera & camera = scene.camera();
+    const MyGL::AbstractCamera & camera = scene.camera();
 
-  double dir[] = {0,0, -1};
-  MyGL::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
+    double dir[] = {0,0, -1};
+    MyGL::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
 
-  for( size_t i=0; i<v.size(); ++i ){
-    const MyGL::AbstractGraphicObject& ptr = v[i].object();
-    MyGL::Matrix4x4 m = matrix;
-    m.mul( ptr.transform() );
+    for( size_t i=0; i<v.size(); ++i ){
+      const MyGL::AbstractGraphicObject& ptr = v[i].object();
+      MyGL::Matrix4x4 m = matrix;
+      m.mul( ptr.transform() );
 
-    if( scene.viewTester().isVisible( ptr, m ) ){
-      device.setUniform( smap.vs, m, "mvpMatrix" );
-      render.draw( v[i].material(), ptr,
-                   ptr.transform(), camera );
+      if( scene.viewTester().isVisible( ptr, m ) ){
+        device.setUniform( smap.vs, m, "mvpMatrix" );
+        render.draw( v[i].material(), ptr,
+                     ptr.transform(), camera );
+        }
       }
     }
 
+  { const MyGL::Scene::Objects &v = scene.objects<BlushShMaterial>();
+    MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
+    MyGL::Render render( device,
+                         sm, depthSm,
+                         smap.vs, smap.fs );
+    render.setRenderState( rstate );
+
+    const MyGL::AbstractCamera & camera = scene.camera();
+
+    double dir[] = {0,0, -1};
+    MyGL::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
+
+    for( size_t i=0; i<v.size(); ++i ){
+      const MyGL::AbstractGraphicObject& ptr = v[i].object();
+      MyGL::Matrix4x4 m = matrix;
+      m.mul( ptr.transform() );
+
+      if( scene.viewTester().isVisible( ptr, m ) ){
+        device.setUniform( smap.vs, m, "mvpMatrix" );
+        render.draw( v[i].material(), ptr,
+                     ptr.transform(), camera );
+        }
+      }
+    }
+
+  gauss( tmp,  sm, sm.width(), sm.height(), 1, 0 );
+  gauss(  sm, tmp, sm.width(), sm.height(), 0, 1 );
+
+  gauss_gb( tmp,  sm, sm.width(), sm.height(), 2, 0 );
+  gauss_gb(  sm, tmp, sm.width(), sm.height(), 0, 2 );
+
+  gauss_b( tmp,  sm, sm.width(), sm.height(),  3, 0 );
+  gauss_b(  sm, tmp, sm.width(), sm.height(),  0, 3 );
   }
 
 void GraphicsSystem::renderScene( const MyGL::Scene &scene,
@@ -999,7 +1105,10 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
   }
 
 void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,
+                                     ParticleSystemEngine &e,
                                      MyGL::Texture2d &out  ) {
+  particles = &e;
+
   int w = out.width(),
       h = out.height();
 

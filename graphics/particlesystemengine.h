@@ -23,7 +23,12 @@ class ParticleSystemEngine {
                           const PrototypesLoader & p,
                           Resource & r );
 
-    void exec();
+    void exec( const MyGL::Matrix4x4 &view,
+               const MyGL::Matrix4x4 &proj,
+               int dt,
+               bool invCullMode = false );
+    void update();
+
     MyWidget::signal< MyGL::AbstractGraphicObject &,
                       const ProtoObject::View &,
                       const MyGL::Color & > setupMaterial;

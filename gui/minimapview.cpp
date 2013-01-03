@@ -12,10 +12,10 @@ void MiniMapView::render(World &wx) {
   if( renderTo.width() != w() ||
       renderTo.height()!= h() ){
     renderTo = MyGL::Pixmap(w(), h(), false);
-    rtime = clock() - CLOCKS_PER_SEC;
+    rtime = clock() - CLOCKS_PER_SEC/2;
     }
 
-  if( clock() >= rtime+CLOCKS_PER_SEC ){
+  if( clock() >= rtime+CLOCKS_PER_SEC/2 ){
     rtime = clock();
 
     MyGL::Pixmap::Pixel pix;
@@ -88,6 +88,6 @@ void MiniMapView::render(World &wx) {
           }
       }
 
-    setTexture( res.texHolder.create( renderTo, 0) );
+    setTexture( res.ltexHolder.create( renderTo, 0) );
     }
   }

@@ -23,7 +23,8 @@ bool TransparentMaterial::bind( MyGL::RenderState &rs,
   u.add( object,  "objectMatrix", MyGL::UniformTable::Vertex );
   u.add( sh,      "shadowMatrix", MyGL::UniformTable::Vertex );
 
-  u.add( texture,  "texture",      MyGL::UniformTable::Fragment );
+  u.add( texture,   "texture",       MyGL::UniformTable::Fragment );
+  u.add( normalMap, "normalMap",     MyGL::UniformTable::Fragment );
   u.add( specular, "specularFactor", MyGL::UniformTable::Fragment );
 
   rs.setBlend(1);

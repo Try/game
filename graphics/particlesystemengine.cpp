@@ -11,15 +11,18 @@ ParticleSystemEngine::ParticleSystemEngine(MyGL::Scene &s,
                                             const PrototypesLoader &p,
                                             Resource & r )
   :scene(s), proto(p), res(r) {
-  raw.vertex.reserve(2048);
+  raw.vertex.reserve(1024*32);
   visible.reserve( 128 );
   }
 
-void ParticleSystemEngine::exec() {
+void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
+                                 const MyGL::Matrix4x4 &mproj,
+                                 int dt,
+                                 bool invCullMode ) {
   view.clear();
 
-  MyGL::Matrix4x4 mvp = scene.camera().projective();
-  MyGL::Matrix4x4 vmat = scene.camera().view();
+  MyGL::Matrix4x4 mvp  = mproj;
+  MyGL::Matrix4x4 vmat = mview;
   mvp.mul( vmat );
 
   double ileft[3] = { vmat.data()[0], vmat.data()[4], vmat.data()[8] };
@@ -37,6 +40,9 @@ void ParticleSystemEngine::exec() {
   ll = 0.5*sqrt(ll);
   lt = 0.5*sqrt(lt);
   ln = sqrt(ln);
+
+  if( invCullMode )
+    ll = -ll;
 
   for( int i=0; i<3; ++i ){
     left[i] /= ll;
@@ -87,7 +93,7 @@ void ParticleSystemEngine::exec() {
       currView = &p.viewInfo();
       }
 
-    p.exec();
+    p.exec( dt );
     }
 
   if( currView && raw.vertex.size() ){
@@ -96,6 +102,10 @@ void ParticleSystemEngine::exec() {
     setupMaterial( obj, *currView, MyGL::Color() );
     view.push_back( obj );
     }
+  }
+
+void ParticleSystemEngine::update() {
+
   }
 
 void ParticleSystemEngine::emitParticle( Model::Raw &raw,

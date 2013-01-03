@@ -33,7 +33,7 @@ ParticleSystem::~ParticleSystem() {
       }
   }
 
-void ParticleSystem::exec() {
+void ParticleSystem::exec( int dt ) {
   for( size_t i=0; i<par.size(); ++i ){
     engine->emitParticle( par[i].x,
                           par[i].y,
@@ -42,6 +42,9 @@ void ParticleSystem::exec() {
 
                           par[i].color );
     }
+
+  if( dt==0 )
+    return;
 
   if( viewInfo().name=="fire" ){
     par.push_back( Point3( x(), y(), z() ) );

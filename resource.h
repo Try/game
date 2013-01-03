@@ -15,9 +15,11 @@
 
 namespace MyGL{
   class TextureHolder;
+  class LocalTexturesHolder;
 
   class VertexBufferHolder;
   class IndexBufferHolder;
+  class LocalVertexBufferHolder;
 
   class VertexShaderHolder;
   class FragmentShaderHolder;
@@ -28,6 +30,10 @@ struct MVertex {
   float u,v;
   float normal[3];
   float color[4];
+
+  float bnormal[4];
+
+  static MyGL::VertexDeclaration::Declarator decl();
   };
 
 typedef MyGL::Model<MVertex> Model;
@@ -35,8 +41,11 @@ typedef MyGL::Model<MVertex> Model;
 class Resource : public AbstractXMLReader {
   public:
     Resource(
-        MyGL::TextureHolder      &  texHolder,
+        MyGL::TextureHolder       &  texHolder,
+        MyGL::LocalTexturesHolder &  ltexHolder,
+
         MyGL::VertexBufferHolder &  vboHolder,
+        MyGL::LocalVertexBufferHolder &lvboHolder,
         MyGL::IndexBufferHolder  &  iboHolder,
 
         MyGL::VertexShaderHolder &  vsHolder,
@@ -59,7 +68,8 @@ class Resource : public AbstractXMLReader {
     void flushPixmaps();
     using AbstractXMLReader::load;
 
-    MyGL::TextureHolder      &  texHolder;
+    MyGL::TextureHolder       &  texHolder;
+    MyGL::LocalTexturesHolder &  ltexHolder;
 private:
     template< class T >
     struct Box{
@@ -85,6 +95,16 @@ private:
         return data["null"];
         }
 
+      T& get( const std::string & s, T& def ){
+        typename std::unordered_map< std::string, T >::iterator i;
+        i = data.find(s);
+
+        if( i!=data.end() )
+          return i->second;
+
+        return def;
+        }
+
       const T& get( const std::string & s ) const {
         typename std::unordered_map< std::string, T >::const_iterator i;
         i = data.find(s);
@@ -95,9 +115,21 @@ private:
         return data.find("null")->second;
         }
 
+      const T& get( const std::string & s, const T& def ) const {
+        typename std::unordered_map< std::string, T >::const_iterator i;
+        i = data.find(s);
+
+        if( i!=data.end() )
+          return i->second;
+
+        return def;
+        }
+
       void add( const std::string & key, const T& v ){
         data.insert( std::make_pair(key, v) );
         }
+
+      std::unordered_map< std::string, std::string > loaded;
       };
 
     void load( Box<MyGL::Texture2d>& textures,
@@ -121,8 +153,9 @@ private:
     Box<MyGL::FragmentShader> fs;
     Box<PixmapsPool::TexturePtr> px;
 
-    MyGL::VertexBufferHolder &  vboHolder;
-    MyGL::IndexBufferHolder  &  iboHolder;
+    MyGL::VertexBufferHolder      & vboHolder;
+    MyGL::LocalVertexBufferHolder & lvboHolder;
+    MyGL::IndexBufferHolder       & iboHolder;
 
     MyGL::VertexShaderHolder &  vsHolder;
     MyGL::FragmentShaderHolder& fsHolder;
@@ -132,6 +165,10 @@ private:
     struct XML;
     PixmapsPool pixmaps;
     std::string loadSrc( const std::string & f );
+
+    static void computeBiNormal( MVertex & a,
+                                 MVertex & b,
+                                 MVertex & c );
   };
 
 #endif // RESOURCE_H

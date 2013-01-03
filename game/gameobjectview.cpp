@@ -51,8 +51,10 @@ GameObjectView::GameObjectView( MyGL::Scene & s,
   for( int i=0; i<3; ++i )
     m.selectionSize[i] = 0;
 
-  for( int i=0; i<3; ++i )
+  for( int i=0; i<3; ++i ){
     m.modelSize[i] = 0;
+    m.rndSize[i] = 1;
+    }
 
   m.intentDirX = 0;
   m.intentDirY = -1;
@@ -100,6 +102,14 @@ void GameObjectView::loadView( const Resource &r, Physics & p, bool env ) {
   view.clear();
   m.radius = 0;
 
+  float ksize = rand()/float(RAND_MAX);//getClass().sizeBounds;
+  double *sz = m.rndSize;
+
+  for( int i=0; i<3; ++i ){
+    double diff = getClass().sizeBounds.max[i]-getClass().sizeBounds.min[i];
+    sz[i] = getClass().sizeBounds.min[i]+diff*ksize;
+    }
+
   for( size_t i=0; i<getClass().view.size(); ++i ){
     const ProtoObject::View &v = getClass().view[i];
 
@@ -139,9 +149,6 @@ void GameObjectView::loadView( const Resource & r,
                                bool isEnv ) {
   const Model & model = r.model( src.name+"/model" );
 
-  for( int i=0; i<3; ++i )
-    m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
-
   MyGL::AbstractGraphicObject * obj = 0;
 
   if( isEnv ){
@@ -164,16 +171,20 @@ void GameObjectView::loadView( const Resource & r,
       view.push_back( object );
       obj = &view.back();
 
-      if( src.randRotate )
+      if( src.randRotate ){
         view.back().setRotation(0, rand()%360 );
+        }
+
+      //view.back().setSize( sz[0], sz[1], sz[2] );
       } else {
       ParticleSystem sys( psysEngine, src );
       particles.push_back( sys );
       }
     }
 
-  if( !src.isParticle )
+  if( !src.isParticle ){
     setupMaterials(*obj, src );
+    }
 
   m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
   }
@@ -298,8 +309,11 @@ void GameObjectView::setViewSize( float x, float y, float z ) {
 void GameObjectView::setViewSize( MyGL::GraphicObject &obj,
                                   const ProtoObject::View & v,
                                   float x, float y, float z ) {
-  const double *s = v.size;
-  obj.setSize(s[0]*x, s[1]*y, s[2]*z);
+  const double *s = v.size;  
+
+  obj.setSize( s[0]*x*m.rndSize[0],
+               s[1]*y*m.rndSize[1],
+               s[2]*z*m.rndSize[2] );
   }
 
 void GameObjectView::setForm(const Physics::Sphere &f) {
@@ -511,6 +525,21 @@ void GameObjectView::serialize( GameSerializer &s ) {
 
   vsize = std::min( vsize, view.size() );
 
+  if( s.version()>=2 ){
+    int rndS[3];
+    for( int i=0; i<3; ++i )
+      rndS[i] = m.rndSize[i]*10000;
+
+    for( int i=0; i<3; ++i )
+      s + rndS[i];
+
+    for( int i=0; i<3; ++i )
+      m.rndSize[i] = rndS[i]/10000.0;
+    } else {
+    for( int i=0; i<3; ++i )
+      m.rndSize[i] = 1;
+    }
+
   const int mulI = 10000;
 
   for( unsigned i=0; i<vsize; ++i ){
@@ -535,5 +564,17 @@ void GameObjectView::serialize( GameSerializer &s ) {
                    World::coordCast(z));
 
     g.setRotation( ax/double(mulI), az/double(mulI) );
+
+    if( s.version()>=2 ){
+      int sz[3];
+      sz[0] = g.sizeX()*10000;
+      sz[1] = g.sizeY()*10000;
+      sz[2] = g.sizeZ()*10000;
+
+      for( int i=0; i<3; ++i )
+        s + sz[i];
+
+      g.setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
+      }
     }
   }

@@ -44,13 +44,13 @@ World::World( GraphicsSystem& g,
   light.setAblimient( MyGL::Color( 0.33, 0.33,  0.35) );
   scene.lights().direction()[0] = light;
 
-  /*
-  MyGL::DirectionLight light;
+
+  //MyGL::DirectionLight light;
   light.setDirection( -2, 1, -2.0 );
   light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
   light.setAblimient( MyGL::Color( 0.23, 0.23,  0.35) );
-  scene.lights().direction()[0] = light;
-  */
+  //scene.lights().direction()[0] = light;
+
   }
 
 void World::createTestMap() {
@@ -435,7 +435,7 @@ void World::toogleEditLandMode(const Terrain::EditMode &m) {
   }
 
 void World::initTerrain() {
-  terr->buildGeometry( graphics.vboHolder,
+  terr->buildGeometry( graphics.lvboHolder,
                        graphics.iboHolder );
   physics.setTerrain( terrain() );
   }

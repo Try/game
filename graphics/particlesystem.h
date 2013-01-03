@@ -17,7 +17,7 @@ class ParticleSystem {
 
     ParticleSystem& operator = ( const ParticleSystem& );
 
-    void exec();
+    void exec(int dt);
 
     void setPosition( float x, float y, float z );
     float x() const;

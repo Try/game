@@ -88,7 +88,7 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                              int plane,
                              size_t texture  ) {
   Model model;
-  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1} };
+  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1}, {-1,0,0,0} };
   land.clear();
   minor.clear();
 
@@ -159,14 +159,8 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
         }
       }
 
-  MyGL::VertexDeclaration::Declarator decl;
-  decl.add( MyGL::Decl::float3, MyGL::Usage::Position )
-      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
-      .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
-      .add( MyGL::Decl::float4, MyGL::Usage::Color    );
-
   if( land.size() ){
-    model.load( vboHolder, iboHolder, land, decl );
+    model.load( vboHolder, iboHolder, land, MVertex::decl() );
 
     View view;
     view.view.reset( new GameObjectView( scene,
@@ -180,7 +174,7 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
     }
 
   if( minor.size() ){
-    model.load( vboHolder, iboHolder, minor, decl );
+    model.load( vboHolder, iboHolder, minor, MVertex::decl() );
 
     View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
@@ -200,7 +194,7 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
   }
 
 void Terrain::computePlanes() {
-  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1} };
+  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1}, {-1,0,0,0} };
 
   for( int i=0; i+1<heightMap.width(); ++i )
     for( int r=0; r+1<heightMap.height(); ++r ){
@@ -216,6 +210,7 @@ void Terrain::computePlanes() {
         v.normal[t] /= l;
 
       float n[3] = {};
+
       std::copy( v.normal, v.normal+3, n );
       for( int q=0; q<3; ++q )
         n[q] = fabs(n[q]);
@@ -228,6 +223,17 @@ void Terrain::computePlanes() {
 
       tileset[i][r].plane = nplane;
       std::copy( v.normal, v.normal+3, tileset[i][r].normal );
+      }
+
+  for( int i=1; i+1<heightMap.width(); ++i )
+    for( int r=1; r+1<heightMap.height(); ++r ){
+      if( tileset[i][r].normal[2]>0.5 ){
+        tileset[i-1][r].plane = 2;
+        tileset[i][r-1].plane = 2;
+
+        tileset[i+1][r].plane = 2;
+        tileset[i][r+1].plane = 2;
+        }
       }
   }
 
@@ -293,12 +299,8 @@ MyGL::Model<WaterVertex>
           land.push_back(v);
           }
 
-  MyGL::VertexDeclaration::Declarator decl;
-  decl.add( MyGL::Decl::float3, MyGL::Usage::Position )
-      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
-      .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
-      .add( MyGL::Decl::float4, MyGL::Usage::Color    )
-      .add( MyGL::Decl::float1, MyGL::Usage::Depth    )
+  MyGL::VertexDeclaration::Declarator decl = MVertex::decl();
+  decl.add( MyGL::Decl::float1, MyGL::Usage::Depth    )
       .add( MyGL::Decl::float2, MyGL::Usage::TexCoord, 1 );
 
   model.load( vboHolder, iboHolder, land, decl );
@@ -701,6 +703,7 @@ void Terrain::serialize( GameSerializer &s ) {
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
+  tileset.resize( w+1, h+1 );
 
   for( int i=0; i<busyMapsCount; ++i ){
     int n = i+1;

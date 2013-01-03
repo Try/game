@@ -58,9 +58,7 @@ void UnitView::updateView() {
     }
 
   if( pEng )
-    pEng->exec();
-
-  renderScene( scene, texture );
+    renderScene( scene, *pEng, texture );
   }
 
 void UnitView::mouseDownEvent(MyWidget::MouseEvent &) {

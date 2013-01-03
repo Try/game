@@ -17,6 +17,7 @@ class UnitView : public TextureView {
     ~UnitView();
 
     MyWidget::signal< const MyGL::Scene &,
+                      ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
 
     void setupUnit( GameObject * obj );

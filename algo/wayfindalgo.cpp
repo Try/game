@@ -26,10 +26,14 @@ void WayFindAlgo::fillClasrerMap( const std::vector< GameObject* > &objects ) {
     GameObject & obj = *objects[i];
 
     int x = obj.x()/Terrain::quadSize,
-        y = obj.y()/Terrain::quadSize;
+        y = obj.y()/Terrain::quadSize,
+        sz = obj.getClass().data.size,
+        szd2 = sz/2;
 
-    if( clasterMap.validate(x,y) )
-      clasterMap[x][y] = -1;
+    for( int ix=0; ix<sz; ++ix )
+      for( int iy=0; iy<sz; ++iy )
+        if( clasterMap.validate( x-szd2+ix, y-szd2+iy ) )
+          clasterMap[x-szd2+ix][y-szd2+iy] = -1;
     }
 
   clasterNum = 1;

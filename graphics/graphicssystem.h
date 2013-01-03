@@ -7,6 +7,7 @@
 #include <MyGL/Device>
 
 #include <MyGL/VertexBufferHolder>
+#include <MyGL/LocalVertexBufferHolder>
 
 #include <MyGL/IndexBufferHolder>
 
@@ -40,14 +41,16 @@ class GraphicsSystem {
   public:
     GraphicsSystem( void *hwnd, int w, int h, bool isFullScreen, int smSize );
 
-    bool render(const MyGL::Scene &scene, ParticleSystemEngine &e,
+    bool render( const MyGL::Scene &scene,
+                 ParticleSystemEngine &e,
                  size_t dt );
     void resizeEvent( int w, int h, bool isFullScreen );
 
     void load( Resource & r, MainGui & gui, int w, int h );
 
     void renderSubScene( const MyGL::Scene &scene,
-                         MyGL::Texture2d & out );
+                         ParticleSystemEngine &e,
+                         MyGL::Texture2d & out   );
   private:
     MyGL::DirectX9 directx;
 
@@ -55,10 +58,11 @@ class GraphicsSystem {
   public:
     MyGL::Device   device;
 
-    MyGL::TextureHolder        texHolder;
-    MyGL::LocalTexturesHolder  localTex;
-    MyGL::VertexBufferHolder   vboHolder;
-    MyGL::IndexBufferHolder    iboHolder;
+    MyGL::TextureHolder           texHolder;
+    MyGL::LocalTexturesHolder     localTex;
+    MyGL::VertexBufferHolder      vboHolder;
+    MyGL::LocalVertexBufferHolder lvboHolder;
+    MyGL::IndexBufferHolder       iboHolder;
 
     MyGL::VertexShaderHolder   vsHolder;
     MyGL::FragmentShaderHolder fsHolder;
@@ -75,6 +79,7 @@ class GraphicsSystem {
   private:
     GUIPass gui;
     MainGui * widget;
+    ParticleSystemEngine * particles;
 
     MyGL::Size  screenSize;
     static  MyGL::Matrix4x4 makeShadowMatrix(const MyGL::Scene & s , double *dxyz);
@@ -137,8 +142,8 @@ class GraphicsSystem {
 
     struct Gauss{
       MyGL::Uniform< MyGL::Texture2d > texture;
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      MyGL::VertexShader   vs, vsGB, vsB;
+      MyGL::FragmentShader fs, fsGB, fsB;
       } gaussData;
 
     struct Omni{
@@ -221,7 +226,14 @@ class GraphicsSystem {
     void copy( MyGL::Texture2d &out,
                const MyGL::Texture2d& in, int w, int h );
     void gauss( MyGL::Texture2d &out,
-                const MyGL::Texture2d& in, int w, int h, float dx, float dy );
+                const MyGL::Texture2d& in,
+                int w, int h, float dx, float dy );
+    void gauss_gb( MyGL::Texture2d &out,
+                   const MyGL::Texture2d& in,
+                   int w, int h, float dx, float dy );
+    void gauss_b( MyGL::Texture2d &out,
+                  const MyGL::Texture2d& in,
+                  int w, int h, float dx, float dy );
 
     void bloom( MyGL::Texture2d &out,
                 const MyGL::Texture2d& in );

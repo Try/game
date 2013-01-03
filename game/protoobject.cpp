@@ -15,6 +15,11 @@ ProtoObject::ProtoObject()
   data.lim       = 0;
   data.limInc    = 0;
   data.buildTime = 25;
+
+  for( int i=0; i<3; ++i ){
+    sizeBounds.min[i] = 1;
+    sizeBounds.max[i] = 1;
+    }
   }
 
 bool ProtoObject::isLandTile() const {

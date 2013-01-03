@@ -238,6 +238,21 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       readIf( e, "isBackground", obj.data.isBackground );
       }
 
+    if( type=="view_size" ){
+      for( int i=0; i<3; ++i ){
+        readIf( e, "min",      obj.sizeBounds.min[i] );
+        readIf( e, "max",      obj.sizeBounds.max[i] );
+        }
+
+      readIf( e, "minX",      obj.sizeBounds.min[0] );
+      readIf( e, "minY",      obj.sizeBounds.min[1] );
+      readIf( e, "minZ",      obj.sizeBounds.min[2] );
+
+      readIf( e, "maxX",      obj.sizeBounds.max[0] );
+      readIf( e, "maxY",      obj.sizeBounds.max[1] );
+      readIf( e, "maxZ",      obj.sizeBounds.max[2] );
+      }
+
     if( type=="commands" )
       readCommands(obj, e);
 

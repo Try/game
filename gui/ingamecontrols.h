@@ -44,6 +44,7 @@ class InGameControls : public MyWidget::Widget {
     MyWidget::signal<GameObject&> setCameraPos;
 
     MyWidget::signal< const MyGL::Scene &,
+                      ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
 
     MyWidget::Rect selection;

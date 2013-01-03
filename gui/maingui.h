@@ -64,6 +64,7 @@ class MainGui {
     MyWidget::signal< const std::wstring& > save, load;    
 
     MyWidget::signal< const MyGL::Scene &,
+                      ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
 
     bool draw( GUIPass & pass );

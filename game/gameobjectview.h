@@ -93,7 +93,7 @@ private:
     struct M{
       int x, y, z;
       double selectionSize[3], radius;
-      double modelSize[3];
+      double modelSize[3], rndSize[3];
 
       int intentDirX, intentDirY;
       } m;

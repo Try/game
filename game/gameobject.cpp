@@ -416,14 +416,12 @@ void GameObject::setPlayer(int pl) {
   if( m.pl==pl )
     return;
 
-  if( behavior.size() )
-    wrld.player( m.pl ).delUnit(this);
+  wrld.player( m.pl ).delUnit(this);
 
   m.pl = pl;
   view.teamColor = wrld.player( m.pl ).color();
 
-  if( behavior.size() )
-    wrld.player( m.pl ).addUnit(this);
+  wrld.player( m.pl ).addUnit(this);
   }
 
 int GameObject::playerNum() const {

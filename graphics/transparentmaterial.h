@@ -18,7 +18,7 @@ class TransparentMaterial : public MyGL::AbstractMaterial {
                const MyGL::AbstractCamera &c,
                MyGL::UniformTable &) const;
 
-    MyGL::Texture2d texture;
+    MyGL::Texture2d texture, normalMap;
     float specular;
   private:
     const MyGL::Matrix4x4 * shadowMatrix;

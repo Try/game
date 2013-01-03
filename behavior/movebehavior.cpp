@@ -236,9 +236,15 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
   int tx = this->tx,
       ty = this->ty;
 
-  if( !clos.isReposMove ){
+  if( !clos.isOnMove && !clos.isReposMove ){
     tx = this->tx + clos.colisionDisp[0];
     ty = this->ty + clos.colisionDisp[1];
+
+    if( !terrain.isEnableQuad( tx/Terrain::quadSize,
+                               ty/Terrain::quadSize, 1 ) ){
+      tx = this->tx;
+      ty = this->ty;
+      }
     }
 
   if( curentSpeed+acseleration < obj.getClass().data.speed )
@@ -286,7 +292,7 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
                     clos.isReposMove )
                   || busyIgnoreFlag;
 
-    if( (terrain.isEnable( iwx, iwy) ) ||
+    if(  terrain.isEnable( iwx, iwy) ||
         !terrain.isEnable( pwx, pwy) ){
       if( isBusy ){
         int ltx = this->tx, lty = this->ty;
@@ -315,7 +321,6 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
     if( !nextPoint() ){
       clos.isOnMove     = false;
       clos.isReposMove  = false;
-      //isMWalk = 0;
       mask = -1;
       curentSpeed = 0;
       }

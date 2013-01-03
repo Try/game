@@ -48,6 +48,10 @@ struct ProtoObject {
       bool randRotate, isParticle;
       };
 
+    struct SizeBounds{
+      double min[3], max[3];
+      } sizeBounds;
+
     std::vector<View>        view;
     std::vector<std::string> behaviors;
     double rotateSpeed;
