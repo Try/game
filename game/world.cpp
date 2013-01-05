@@ -53,6 +53,28 @@ World::World( GraphicsSystem& g,
 
   }
 
+void World::emitHudAnim( const std::string &s,
+                         float x, float y, float z ) {
+  HudAnim *a = new HudAnim( scene, *this, prototypes.get(s),
+                            prototypes,
+                            resource, physics );
+
+  a->setPosition( x, y, z+zAt(x,y) );
+
+  hudAnims.push_back( std::unique_ptr<HudAnim>(a) );
+  }
+
+float World::zAt(float x, float y) const {
+  float cx = World::coordCastD( x )/Terrain::quadSizef;
+  float cy = World::coordCastD( y )/Terrain::quadSizef;
+
+  float cz = std::max( World::coordCast( terr->heightAt(cx,cy) ),
+                       World::coordCast( terr->atF(cx,cy) ) );
+  cz = std::max(cz,0.0f);
+
+  return cz;
+  }
+
 void World::createTestMap() {
   return;
 
@@ -169,12 +191,13 @@ GameObject &World::addObject( const ProtoObject &p,
   obj->loadView( resource, physics, env );
   obj->setPosition(0,0,0);
 
-  if( env )
-    eviObjects.push_back( PGameObject(obj) );   else
+  if( env ){
+    eviObjects.push_back( PGameObject(obj) );
+    } else
     gameObjects.push_back( PGameObject( obj ) );
 
   if( !env ){
-    if( p.data.isBackground )
+    if( p.data.isBackground || env )
       obj->setPlayer( 0 ); else
       obj->setPlayer( pl );
     }
@@ -417,9 +440,10 @@ const std::vector<GameObject*> &World::resouce() const {
   return resouces;
 }
 
-void World::setMousePos(int x, int y) {
+void World::setMousePos(int x, int y, int z) {
   mpos[0] = x;
   mpos[1] = y;
+  mpos[2] = z;
   }
 
 int World::mouseX() const {
@@ -428,6 +452,10 @@ int World::mouseX() const {
 
 int World::mouseY() const {
   return mpos[1];
+  }
+
+int World::mouseZ() const {
+  return mpos[2];
   }
 
 void World::toogleEditLandMode(const Terrain::EditMode &m) {
@@ -498,12 +526,24 @@ void World::tick() {
 
   physics.tick();
 
+  for( size_t i=0; i<hudAnims.size(); ++i )
+    hudAnims[i]->tick();
+
+  for( size_t i=0; i<hudAnims.size();  ){
+    if( hudAnims[i]->isEnd() ){
+      std::swap( hudAnims[i], hudAnims.back() );
+      hudAnims.pop_back();
+      } else {
+      ++i;
+      }
+    }
+
   for( size_t i=0; i<gameObjects.size(); ++i )
     if( gameObjects[i]->hp() <= 0 ) {
       GameObject & src = *gameObjects[i];
       GameObject & obj = addObjectEnv( gameObjects[i]->getClass().name );
 
-      obj.setPlayer( src.playerNum() );
+      obj.setTeamColor( src.teamColor() );
       MyGL::Color cl = obj.teamColor();
       float k = 0.7;
       cl.set( cl.r()*k, cl.g()*k, cl.b()*k, cl.a() );
@@ -576,4 +616,8 @@ void World::serialize(GameSerializer &s) {
       }
 
     }
+  }
+
+const SpatialIndex &World::spatial() const {
+  return spatialId;
   }

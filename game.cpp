@@ -24,6 +24,8 @@
 
 #include "util/gameserializer.h"
 
+#include <cmath>
+
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   : graphics( ihwnd, iw, ih, isFS, isFS ? 2048:1024 ),
     resource( graphics.texHolder,
@@ -95,10 +97,12 @@ void Game::tick() {
 
   DWORD time = GetTickCount();
 
-  F3 v = unProject( curMPos.x, curMPos.y, 0 );
+  F3 v = unProject( curMPos.x, curMPos.y );
   int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
       vy = World::coordCastD(v.data[1])/Terrain::quadSize;
-  world->setMousePos( vx*Terrain::quadSize, vy*Terrain::quadSize );
+  world->setMousePos( vx*Terrain::quadSize,
+                      vy*Terrain::quadSize,
+                      World::coordCastD(v.data[2]) );
 
   if( player().editObj ){
     msg.message( currentPlayer,
@@ -183,7 +187,7 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
   gui.selectionRect() = MyWidget::Rect(-1, -1, 0, 0);
   gui.update();
 
-  F3 v = unProject( e.x, e.y, 0 );
+  F3 v = unProject( e.x, e.y );
 
   if( e.button==MyWidget::MouseEvent::ButtonLeft ){    
     world->updateSelectionFlag( msg, currentPlayer );
@@ -195,6 +199,7 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
                  AbstractBehavior::Move,
                  World::coordCastD(v.data[0]),
                  World::coordCastD(v.data[1]) );
+    //world->emitHudAnim( "hud/move", v.data[0], v.data[1], v.data[2]+0.01 );
     }
 
   world->clickEvent( World::coordCastD(v.data[0]),
@@ -404,7 +409,7 @@ Game::F3 Game::unProject( int x, int y, float destZ ) {
     vec2[i] -= vec1[i];
     }
 
-  double k = vec1[2]/vec2[2];
+  double k = (vec1[2]-destZ)/vec2[2];
   for( int i=0; i<4; ++i ){
     vec1[i] -= k*vec2[i];
     }
@@ -413,6 +418,25 @@ Game::F3 Game::unProject( int x, int y, float destZ ) {
   F3 r;
   std::copy( vec1, vec1+3, r.data );
   return r;
+  }
+
+Game::F3 Game::unProject(int x, int y) {
+  float min = -2 + world->camera.z(),
+        max =  2 + world->camera.z();
+  F3 ret = unProject( x, y, 0 );
+  float err = fabs( world->zAt(ret.data[0], ret.data[1]) - ret.data[2] );
+
+  for( int i=0; i<20; ++i ){
+    F3 v = unProject( x, y, min+(max-min)*i/20.0 );
+    float err2 = fabs( world->zAt(v.data[0], v.data[1]) - v.data[2] );
+
+    if( err2<err ){
+      err = err2;
+      ret = v;
+      }
+    }
+
+  return ret;
   }
 
 Game::F3 Game::project(float x, float y, float z) {

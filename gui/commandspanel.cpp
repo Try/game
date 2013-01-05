@@ -7,6 +7,10 @@
 #include "game/gameobject.h"
 #include "resource.h"
 #include "behavior/behaviormsgqueue.h"
+#include "behavior/movebehavior.h"
+#include "behavior/warriorbehavior.h"
+#include "game.h"
+
 #include "util/lexicalcast.h"
 
 #include <array>
@@ -122,12 +126,7 @@ void CommandsPanel::bind(GameObject *u ) {
   setPage(0);
   }
 
-void CommandsPanel::bind(const ProtoObject::Commans::Page &p) {
-  onPageCanged();
-
-  for( size_t i=0; i<layout().widgets().size(); ++i )
-    layout().widgets()[i]->deleteLater();
-
+void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
   for( size_t i=0; i<p.btn.size(); ++i ){
     BtnBase * b = 0;//new Button(res);
 
@@ -168,6 +167,15 @@ void CommandsPanel::bind(const ProtoObject::Commans::Page &p) {
     }
   }
 
+void CommandsPanel::bind( const ProtoObject::Commans::Page &p ) {
+  onPageCanged();
+
+  for( size_t i=0; i<layout().widgets().size(); ++i )
+    layout().widgets()[i]->deleteLater();
+
+  bindPage(p);
+  }
+
 void CommandsPanel::buyEvent(const std::string &unit) {
   msg.message( pl, Behavior::Buy,
                u0->x(), u0->y(),
@@ -175,14 +183,95 @@ void CommandsPanel::buyEvent(const std::string &unit) {
                pl );
   }
 
+void CommandsPanel::moveClick() {
+  if( MoveBehavior * m = u0->behavior.find<MoveBehavior>() ){
+    m->setupMoveHook();
+    }
+  }
+
+void CommandsPanel::stopClick() {
+  u0->game().message( u0->playerNum(),
+                      AbstractBehavior::Cancel,
+                      0, 0 );
+  }
+
+void CommandsPanel::atkClick() {
+  if( WarriorBehavior * m = u0->behavior.find<WarriorBehavior>() ){
+    m->aClick();
+    }
+  }
+
 void CommandsPanel::setPage(int page) {
   GameObject & obj = *u0;
   pl = obj.playerNum();
 
-  if( obj.getClass().commands.pages.size()==0 )
+  if( obj.getClass().commands.pages.size()==0 ){
+    bindStartPage(0);
     return;
+    }
 
   page = std::max(0, std::min<int>(page, obj.getClass().commands.pages.size() ));
   const ProtoObject::Commans::Page & p = obj.getClass().commands.pages[page];
-  bind(p);
+
+  if( page==0 ){
+    bindStartPage(&p);
+    } else {
+    bind(p);
+    }
+  }
+
+void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
+  onPageCanged();
+
+  for( size_t i=0; i<layout().widgets().size(); ++i )
+    layout().widgets()[i]->deleteLater();
+
+  GameObject & obj = *u0;
+
+  const char k[] = {'m', 's', 'h', 'p', 'a'};
+  const char* icon[] = {
+    "gui/icon/move",
+    "gui/icon/stop",
+    "gui/icon/hold",
+    "gui/icon/patrul",
+    "gui/icon/atack"
+    };
+
+  BtnBase* btn[5] = {};
+
+  for( int i=0; i<5; ++i ){
+    BtnBase * b = new BuyBtn(res);
+    btn[i] = b;
+
+    b->x = i;
+    b->y = 0;
+    b->icon.data = res.pixmap( icon[i] );
+    MyWidget::KeyEvent::KeyType t = MyWidget::Event::K_A;
+    t = MyWidget::KeyEvent::KeyType( int(t) + k[i] - 'a' );
+
+    b->setShortcut( MyWidget::Shortcut(b, t) );
+
+    b->setMaximumSize( MyWidget::SizePolicy::maxWidgetSize() );
+    layout().add( b  );
+    }
+
+  btn[0]->clicked.bind(*this, &CommandsPanel::moveClick );
+  btn[1]->clicked.bind(*this, &CommandsPanel::stopClick );
+
+  btn[4]->clicked.bind(*this, &CommandsPanel::atkClick  );
+
+  if( obj.behavior.find<WarriorBehavior>()==0 ){
+    btn[4]->deleteLater();
+    if( obj.behavior.find<MoveBehavior>()==0 )
+      btn[1]->deleteLater();
+    }
+
+  if( obj.behavior.find<MoveBehavior>()==0 ){
+    btn[0]->deleteLater();
+    btn[2]->deleteLater();
+    btn[3]->deleteLater();
+    }
+
+  if( p )
+    bindPage(*p);
   }

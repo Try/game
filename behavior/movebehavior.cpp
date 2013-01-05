@@ -25,25 +25,33 @@ MoveBehavior::MoveBehavior( GameObject &object,
 
   clos.isMoviable = true;
   mask = -1;
+
+  instaled = 0;
+  hook.mouseDown.bind( *this, &MoveBehavior::mouseDown    );
+  hook.mouseUp  .bind( *this, &MoveBehavior::mouseUp      );
+  hook.onRemove .bind( *this, &MoveBehavior::onRemoveHook );
   }
 
 MoveBehavior::~MoveBehavior() {
   clos.isMoviable  = false;
   clos.isOnMove    = false;
   clos.isReposMove = false;
+
+  if( instaled )
+    obj.game().removeHook( &hook );
   }
-/*
-bool MoveBehavior::message( Message msg, int x, int y, Modifers md ) {
+
+void MoveBehavior::atackMoveEvent( MoveSingleEvent &m ) {
   clos.isReposMove = 0;
 
-  if( msg==Cancel || msg==Hold ){
-    tx = obj.x();
-    ty = obj.y();
-    isLocked = 0;
-    }
+  isWayAcept = 1;
+  isMWalk    = 0;
+  obj.world().game.message( obj.playerNum(), AtackMoveGroup, m.x, m.y, m.modif );
+  }
 
-  return AbstractBehavior::message(msg, x, y, md);
-  }*/
+void MoveBehavior::atackContinueEvent(MoveSingleEvent &m) {
+  moveEvent(m);
+  }
 
 void MoveBehavior::moveEvent( MoveEvent &m ) {
   clos.isReposMove = 0;
@@ -90,6 +98,21 @@ void MoveBehavior::stopEvent(StopEvent &) {
   clos.isReposMove = false;
   }
 
+void MoveBehavior::cancelEvent(CancelEvent &) {
+  clos.isReposMove = 0;
+
+  way.clear();
+  isMWalk = 0;
+
+  tx = obj.x();
+  ty = obj.y();
+  mask = -1;
+  isLocked = 0;
+
+  clos.isOnMove    = false;
+  clos.isReposMove = false;
+  }
+
 void MoveBehavior::repositionEvent(RepositionEvent &m) {
   clos.isReposMove = 0;
 
@@ -112,27 +135,6 @@ void MoveBehavior::positionChangeEvent( PositionChangeEvent & ) {
   isLocked = 0;
   }
 
-GameObject *MoveBehavior::isCollide( int x, int y,
-                                     int sz,
-                                     const Terrain &terrain ) {
-  int qs = Terrain::quadSize;
-
-  GameObject * a = terrain.unitAt(x, y);
-
-  if( a && a!=&this->obj ){
-    int dx = obj.x()/qs-x,
-        dy = obj.y()/qs-y;
-
-    int sz1 = a ->getClass().data.size,
-        sz2 = obj.getClass().data.size;
-
-    if((dx*dx + dy*dy) < (sz1*sz1 + sz2*sz2))
-      return a;
-    }
-
-  return 0;
-  }
-
 void MoveBehavior::calcWayAndMove(int tx, int ty, const Terrain & terrain ) {
   WayFindAlgo algo(terrain);
   algo.findWay( obj,
@@ -142,13 +144,27 @@ void MoveBehavior::calcWayAndMove(int tx, int ty, const Terrain & terrain ) {
                 ty/Terrain::quadSize );
   isWayAcept = 1;
   setWay( algo.way );
+  }
 
-  /*
-  if( way.size() ){
-    way.push_back( Point() );
-    way.back().x = tx;
-    way.back().y = ty;
-    }*/
+void MoveBehavior::mouseDown(MyWidget::MouseEvent &e) {
+  e.accept();
+  }
+
+void MoveBehavior::mouseUp( MyWidget::MouseEvent &e ) {
+  if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+    obj.game().message( obj.playerNum(),
+                        Move,
+                        obj.world().mouseX(),
+                        obj.world().mouseY()
+                        );
+    }
+
+  onRemoveHook();
+  obj.game().removeHook( &hook );
+  }
+
+void MoveBehavior::onRemoveHook() {
+  instaled = 0;
   }
 
 void MoveBehavior::tick(const Terrain &terrain) {
@@ -188,44 +204,6 @@ void MoveBehavior::tick(const Terrain &terrain) {
     } else {
     //if( bm==2 )
       step(terrain, sz, true);
-
-    /*
-    bool ch = false;
-
-    if( terrain.unitAt(x,y)!=&obj ){
-      auto p = terrain.nearestEnable( x, y, sz );
-      int nx = p.first,
-          ny = p.second;
-
-      while( nx!=x || ny!=y ){
-        int lx = nx, ly = ny;
-        if( abs(nx-x) > abs(ny-y) ){
-          if( nx>x )
-            nx -= 1; else
-            nx += 1;
-          } else {
-          if( ny>y )
-            ny -= 1; else
-            ny += 1;
-          }
-
-        GameObject * obj = terrain.unitAt(nx, ny);
-        if( obj  ){
-          MoveBehavior * b = obj->behavior.find<MoveBehavior>();
-          if( b && !b->clos.isReposMove/* &&
-              (mask!=b->mask || mask<0) * / ){
-            b->message( Reposition, lx*qs + qs/2, ly*qs + qs/2 );
-            if( !b->clos.isOnMove )
-              b->step( terrain, sz, false );
-            }
-          ch = (b!=0 &&(mask!=b->mask || mask<0) );
-          }
-        }
-      }
-
-    if( !ch || isMWalk )
-      step(terrain, sz, true);
-*/
     }
 
   }
@@ -355,7 +333,21 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
     return;
   isWayAcept = 0;
 
+  int qs = Terrain::quadSize, hqs = qs/2;
+
   mask = -1;
+  int mx = tx/qs,
+      my = ty/qs;
+
+  size_t id = v.size()-1;
+  while( id<v.size() && id>0 && v[id].x==obj.x()/qs && v[id].y==obj.y()/qs ){
+    --id;
+    }
+
+  bool isContinue = ( way.size() &&
+                      id <  v.size() &&
+                      mx == v[id].x &&
+                      my == v[id].y );
   way  = v;
 
   if( v.size()==0 ){
@@ -366,8 +358,6 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
     clos.isOnMove    = false;
     return;
     }
-
-  int qs = Terrain::quadSize, hqs = qs/2;
 
   int dx = v.back().x*qs + hqs - obj.x(),
       dy = v.back().y*qs + hqs - obj.y();
@@ -388,7 +378,15 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
   way.back().x = tx;
   way.back().y = ty;*/
 
-  nextPoint();
+  if( isContinue ){
+    while( way.size() && way.back().x==obj.x()/qs && way.back().y==obj.y()/qs )
+      way.pop_back();
+
+    while( way.size() && way.back().x==mx && way.back().y==my)
+      way.pop_back();
+    } else {
+    nextPoint();
+    }
   }
 
 bool MoveBehavior::isSameDirection( const MoveBehavior &other ) {
@@ -398,5 +396,27 @@ bool MoveBehavior::isSameDirection( const MoveBehavior &other ) {
   int dx2 = other.obj.x() - other.tx,
       dy2 = other.obj.y() - other.ty;
 
-  return ( dx1*dx2 + dy1*dy2 ) > 0;
+  //int l1 = Math::sqrt( dx1*dx1 + dy1*dy1 );
+  //int l2 = Math::sqrt( dx2*dx2 + dy2*dy2 );
+
+  return ( dx1*dx2 + dy1*dy2 ) > 0;//l1*l2/8;
+  }
+
+void MoveBehavior::setupMoveHook() {
+  if( !instaled ){
+    instaled = obj.game().instalHook( &hook );
+    }
+  }
+
+bool MoveBehavior::isCloseEnough( int x1, int y1,
+                                  int x2, int y2,
+                                  int unitSize ) {
+  //int realL = Math::distance( x1, y1, x2, y2 );
+  x1 -= x2;
+  y1 -= y2;
+
+  int realL = x1*x1 + y1*y1;
+  int lc = unitSize*Terrain::quadSize;
+
+  return 2*2*realL <= lc*lc;
   }

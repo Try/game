@@ -22,6 +22,8 @@ struct ProtoObject {
       struct Atack{
         int range;
         int damage, delay;
+
+        std::string bullet;
         };
 
       std::vector<Atack> atk;

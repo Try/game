@@ -359,6 +359,12 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &b,
     b.delay  = Lexical::cast<int>(str);
     }
 
+  if( find(e, "bullet", str ) ){
+    b.bullet = str;
+    } else {
+    b.bullet = "bullets/pike";
+    }
+
   }
 
 bool PrototypesLoader::cmp( const std::shared_ptr<ProtoObject> &a,

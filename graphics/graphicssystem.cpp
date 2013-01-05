@@ -151,6 +151,17 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
     bufSampler.vClamp = bufSampler.uClamp;
     }
 
+float GraphicsSystem::smMatSize(const MyGL::Scene &scene) {
+    float s = 0.3;
+
+    const MyGL::Camera &view =
+        reinterpret_cast<const MyGL::Camera&>( scene.camera() );
+
+    s /= std::max( view.distance(), 1.0 )/3.0;
+
+    return s;
+    }
+
 MyGL::Matrix4x4 GraphicsSystem::makeShadowMatrix( const MyGL::Scene & scene,
                                                   double * dir ){
     MyGL::Matrix4x4 mat;
@@ -162,7 +173,7 @@ MyGL::Matrix4x4 GraphicsSystem::makeShadowMatrix( const MyGL::Scene & scene,
 
     x = view.x();
     y = view.y();
-    s /= std::max( view.distance(), 1.0 )/3.0;
+    s = smMatSize(scene);
 
     double l = sqrt( dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] );
 
@@ -194,7 +205,7 @@ MyGL::Device::Options GraphicsSystem::makeOpt(bool isFullScreen) {
   opt.vSync    = !opt.windowed;
 
   return opt;
-  }
+}
 
 void GraphicsSystem::load( Resource &res, MainGui &gui, int w, int h ) {
   widget = &gui;
@@ -1039,14 +1050,15 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
       }
     }
 
-  gauss( tmp,  sm, sm.width(), sm.height(), 1, 0 );
-  gauss(  sm, tmp, sm.width(), sm.height(), 0, 1 );
+  float s = 2*smMatSize(scene);
+  gauss( tmp,  sm, sm.width(), sm.height(), s, 0 );
+  gauss(  sm, tmp, sm.width(), sm.height(), 0, s );
 
-  gauss_gb( tmp,  sm, sm.width(), sm.height(), 2, 0 );
-  gauss_gb(  sm, tmp, sm.width(), sm.height(), 0, 2 );
+  gauss_gb( tmp,  sm, sm.width(), sm.height(), s*2, 0 );
+  gauss_gb(  sm, tmp, sm.width(), sm.height(), 0, s*2 );
 
-  gauss_b( tmp,  sm, sm.width(), sm.height(),  3, 0 );
-  gauss_b(  sm, tmp, sm.width(), sm.height(),  0, 3 );
+  gauss_b( tmp,  sm, sm.width(), sm.height(),  s*3, 0 );
+  gauss_b(  sm, tmp, sm.width(), sm.height(),  0, s*3 );
   }
 
 void GraphicsSystem::renderScene( const MyGL::Scene &scene,

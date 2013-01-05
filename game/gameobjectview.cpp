@@ -149,6 +149,11 @@ void GameObjectView::loadView( const Resource & r,
                                bool isEnv ) {
   const Model & model = r.model( src.name+"/model" );
 
+  if( view.size()==0 ){
+    for( int i=0; i<3; ++i )
+      m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
+    }
+
   MyGL::AbstractGraphicObject * obj = 0;
 
   if( isEnv ){
@@ -219,6 +224,10 @@ void GameObjectView::loadView(const MyGL::Model<WaterVertex> &model ){
   }
 
 void GameObjectView::setViewPosition(float x, float y, float z) {
+  for( size_t i=0; i<env.size(); ++i ){
+    //setViewPosition( env[i], getClass().view[i], x, y, z );
+    }
+
   for( size_t i=0; i<view.size(); ++i ){
     setViewPosition( view[i], getClass().view[i], x, y, z );
     }
@@ -227,8 +236,12 @@ void GameObjectView::setViewPosition(float x, float y, float z) {
     particles[i].setPosition( x, y, z );
     }
 
-  float zland = z;//World::coordCast( wrld.terrain().heightAt( x, y ) );
-  selection.setPosition( x, y, std::max(zland, z)+0.01 );
+  float wx = World::coordCastD(x)/Terrain::quadSizef,
+        wy = World::coordCastD(y)/Terrain::quadSizef;
+  //float zland = World::coordCast( std::max( wrld.terrain().heightAt(wx,wy),
+  //                                          wrld.terrain().atF(wx,wy) ) );
+  float zland = World::coordCast( wrld.terrain().heightAt(wx,wy) );
+  selection.setPosition( x, y, zland+0.01 );
 
   if( form.sphere.isValid() )
     form.sphere.setPosition(x,y,z);

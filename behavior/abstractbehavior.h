@@ -48,6 +48,9 @@ struct PositionChangeEvent : BehaviorEvent{
 struct StopEvent : BehaviorEvent{
   };
 
+struct CancelEvent : BehaviorEvent{
+  };
+
 class AbstractBehavior {
   public:
     virtual ~AbstractBehavior();
@@ -60,6 +63,9 @@ class AbstractBehavior {
       MoveGroup,
       MineralMove,
       Hold,
+      AtackMove,
+      AtackMoveContinue,
+      AtackMoveGroup,
       Atack,
       Buy,
       BuildAt,
@@ -89,10 +95,15 @@ class AbstractBehavior {
 
     typedef BehaviorEvent::Modifers Modifers;
 
-    virtual void moveEvent( MoveEvent & m );
-    virtual void moveEvent( MoveSingleEvent &m );
-    virtual void moveEvent( MineralMoveEvent &m );
-    virtual void stopEvent( StopEvent &m );
+    virtual void atackMoveEvent    ( MoveEvent & m       );
+    virtual void atackMoveEvent    ( MoveSingleEvent & m );
+    virtual void atackContinueEvent( MoveSingleEvent & m );
+
+    virtual void moveEvent  ( MoveEvent & m );
+    virtual void moveEvent  ( MoveSingleEvent &m );
+    virtual void moveEvent  ( MineralMoveEvent &m );
+    virtual void stopEvent  ( StopEvent &m );
+    virtual void cancelEvent( CancelEvent &m );
 
     virtual void repositionEvent( RepositionEvent &m );
     virtual void positionChangeEvent(PositionChangeEvent &m );

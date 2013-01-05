@@ -3,6 +3,7 @@
 #include "game.h"
 
 #include "game/bullet.h"
+#include "movebehavior.h"
 
 WarriorBehavior::WarriorBehavior( GameObject &obj,
                                   Behavior::Closure &c ):obj(obj) {
@@ -12,6 +13,15 @@ WarriorBehavior::WarriorBehavior( GameObject &obj,
 
   lastX = obj.x();
   lastY = obj.y();
+
+  isAClick = 0;
+  acX = 0;
+  acY = 0;
+
+  instaled = 0;
+  hook.mouseDown.bind( *this, &WarriorBehavior::mouseDown    );
+  hook.mouseUp  .bind( *this, &WarriorBehavior::mouseUp      );
+  hook.onRemove .bind( *this, &WarriorBehavior::onRemoveHook );
   }
 
 WarriorBehavior::~WarriorBehavior() {
@@ -30,86 +40,89 @@ void WarriorBehavior::tick( const Terrain & ) {
   if( dAtkTime )
     return;
 
-  if( obj.isOnMove() && !isAtk )
+  if( obj.isOnMove() && !( isAtk || isAClick ) )
     return;
 
-  dAtkTime = 10;
-
-  GameObject* id = 0, *idA = 0;
-  int dist  = -1, distA = -1;
-
-  for( size_t pl=0; pl<obj.game().plCount(); ++pl ){
-    if( int(pl)!=obj.playerNum() )
-      for( size_t i=0; i<obj.game().player(pl).unitsCount(); ++i ){//FIXME
-        GameObject & tg = obj.game().player(pl).unit(i);
-        int d = tg.distanceSQ( obj.x(), obj.y() );
-
-        int dd = dist;
-        bool w = ( tg.behavior.find<WarriorBehavior>() );
-        if( w )
-          dd = distA;
-
-        if( tg.team()!=obj.team() &&
-            tg.team()!=0 &&
-            (dd < 0 || d<dd) ){
-          if( w ){
-            idA   = &tg;
-            distA = d;
-            } else{
-            id    = &tg;
-            dist  = d;
-            }
-          }
-        }
+  if( !obj.isOnMove() && isAClick && !taget ){
+    obj.behavior.message( AtackMoveContinue, acX, acY );
     }
 
-  if( idA!=0 ){
-    int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
-    vrange = vrange*vrange;
-
-    if( obj.world().objectWPtr(idA).value().distanceSQ(obj.x(), obj.y())
-        < vrange ){
-      id = idA;
-      dist = distA;
-      }
+  if( isAClick &&
+      MoveBehavior::isCloseEnough( obj.x(), obj.y(),
+                                   acX, acY, obj.getClass().data.size ) ){
+    isAClick = false;
     }
+
+  dAtkTime = 5;
+
+  GameObject * rawTg      = 0;
+  GameObject * rawTgBuild = 0;
+  int dTg = 0, dBuild = 0;
+
+  obj.world().spatial().visit( obj.x()/Terrain::quadSize,
+                               obj.y()/Terrain::quadSize,
+                               obj.getClass().data.visionRange,
+                               &lookOn,
+                               obj,
+                               this,
+                               rawTg,
+                               rawTgBuild,
+                               dTg,
+                               dBuild );
+
+  GameObject * tg = rawTgBuild;
+  takeTaget( tg, rawTgBuild, dBuild );
+  takeTaget( tg, rawTg,      dTg    );
 
   if( !obj.isOnMove() || isAtk || (obj.distanceQL(lastX, lastY)>1) ){
-    if( id!=0 )
-      taget = obj.world().objectWPtr(id);
+    if( tg )
+      taget = obj.world().objectWPtr( tg );
 
-    if( taget ){
-      int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
-      int arange = (  obj.getClass().data.atk[0].range +
-                     (obj.getClass().data.size + 1 +
-                      taget.value().getClass().data.size)/2 )*Terrain::quadSize;
-
-      vrange = vrange*vrange;
-      arange = arange*arange;
-      int d = taget.value().distanceSQ(obj.x(), obj.y());
-
-      if( d <= arange ){
-        damageTo( taget.value() );
-        if( !mvLock ){
-          lkX = obj.x()/Terrain::quadSize;
-          lkY = obj.y()/Terrain::quadSize;
-
-          obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, +1 );
-          mvLock = 1;
-          }
-        } else
-      if( d <= vrange )
-        move( taget.value().x(), taget.value().y() );
-      } else {
-      if( mvLock ){
-        obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
-        mvLock = 0;
-        }
-      }
+    tickAtack();
     } else {
     if( mvLock ){
       obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
       mvLock = 0;
+      }
+    }
+  }
+
+void WarriorBehavior::lookOn( GameObject &tg,
+                              GameObject &obj,
+                              WarriorBehavior * /*wb*/,
+                              GameObject *& rawTg,
+                              GameObject *& rawTgBuild,
+                              int & dTg,
+                              int & dBuld ) {
+  if( tg.playerNum()==0 )
+    return;
+
+  if( tg.team()==obj.team() )
+    return;
+
+  int d  = tg.distanceSQ( obj.x(), obj.y() );
+
+  if( tg.behavior.find<WarriorBehavior>() ){
+    if( rawTg==0 || d<dTg ){
+      dTg = d;
+      rawTg = &tg;
+      }
+    } else {
+    if( rawTgBuild==0 || d<dBuld ){
+      dBuld = d;
+      rawTgBuild = &tg;
+      }
+    }
+  }
+
+void WarriorBehavior::takeTaget( GameObject *&out, GameObject *tg, int d ) {
+  if( tg!=0 ){
+    int vrange = (obj.getClass().data.visionRange +
+                  tg->getClass().data.size )*Terrain::quadSize;
+    vrange = vrange*vrange;
+
+    if( tg->distanceSQ(obj.x(), obj.y()) < vrange ){
+      out = tg;
       }
     }
   }
@@ -121,7 +134,8 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
       msg==MoveGroup ||
       msg==MineralMove ||
       msg==MoveSingle ){
-    isAtk = false;
+    isAtk    = false;
+    isAClick = false;
 
     if( mvLock ){
       obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
@@ -129,7 +143,20 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
       }
     }
 
+  if( msg==AtackMove ||
+      msg==AtackMoveGroup ){
+    isAClick = true;
+    acX = x;
+    acY = y;
+    }
+
   return AbstractBehavior::message(msg, x, y, md);
+  }
+
+void WarriorBehavior::aClick() {
+  if( !instaled ){
+    instaled = obj.game().instalHook( &hook );
+    }
   }
 
 void WarriorBehavior::move(int x, int y) {
@@ -137,14 +164,17 @@ void WarriorBehavior::move(int x, int y) {
 
   x /= qs;
   y /= qs;
-  obj.behavior.message( MoveSingle, x*qs + qs/2, y*qs + qs/2 );
+
+  bool isAClickP = isAClick;
+  obj.behavior.message( AtackMoveContinue, x*qs + qs/2, y*qs + qs/2 );
+  isAClick = isAClickP;
 
   isAtk = true;
 
-  dAtkTime = 10;
+  dAtkTime = 40;
   for( size_t i=0; i<obj.getClass().data.atk.size(); ++i ){
     if( obj.getClass().data.atk[i].range>0 )
-      dAtkTime = 40;
+      dAtkTime = 10;
     }
 
   lastX = obj.x();
@@ -159,7 +189,7 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
                         dobj.y() - obj.y() );
 
   if( obj.getClass().data.atk[0].range>0 ){
-    auto bul = dobj.reciveBulldet("bullets/pike");
+    auto bul = dobj.reciveBulldet( obj.getClass().data.atk[0].bullet );
     Bullet& b = *bul;
 
     b.x = obj.x();
@@ -177,11 +207,63 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     }
 
   obj.behavior.message( StopMove, 0,0 );
-}
+  }
 
 void WarriorBehavior::positionChangeEvent(PositionChangeEvent &) {
   if( mvLock ){
     obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
     mvLock = 0;
     }
+  }
+
+void WarriorBehavior::tickAtack() {
+  if( taget ){
+    int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
+    int arange = (  obj.getClass().data.atk[0].range +
+                   (obj.getClass().data.size + 1 +
+                    taget.value().getClass().data.size)/2 )*Terrain::quadSize;
+
+    vrange = vrange*vrange;
+    arange = arange*arange;
+    int d = taget.value().distanceSQ(obj.x(), obj.y());
+
+    if( d <= arange ){
+      damageTo( taget.value() );
+      if( !mvLock ){
+        lkX = obj.x()/Terrain::quadSize;
+        lkY = obj.y()/Terrain::quadSize;
+
+        obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, +1 );
+        mvLock = 1;
+        }
+      } else
+    if( d <= vrange )
+      move( taget.value().x(), taget.value().y() );
+    } else {
+    if( mvLock ){
+      obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
+      mvLock = 0;
+      }
+    }
+  }
+
+void WarriorBehavior::mouseDown(MyWidget::MouseEvent &e) {
+  e.accept();
+  }
+
+void WarriorBehavior::mouseUp( MyWidget::MouseEvent &e ) {
+  if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+    obj.game().message( obj.playerNum(),
+                        AtackMove,
+                        obj.world().mouseX(),
+                        obj.world().mouseY()
+                        );
+    }
+
+  onRemoveHook();
+  obj.game().removeHook( &hook );
+  }
+
+void WarriorBehavior::onRemoveHook() {
+  instaled = 0;
   }

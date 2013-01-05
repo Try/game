@@ -4,6 +4,18 @@ AbstractBehavior::~AbstractBehavior()
 {
 }
 
+void AbstractBehavior::atackMoveEvent(MoveEvent &m) {
+  m.ignore();
+  }
+
+void AbstractBehavior::atackMoveEvent(MoveSingleEvent &m) {
+  m.ignore();
+  }
+
+void AbstractBehavior::atackContinueEvent(MoveSingleEvent &m) {
+  m.ignore();
+  }
+
 void AbstractBehavior::moveEvent(MoveEvent &m) {
   m.ignore();
   }
@@ -17,6 +29,10 @@ void AbstractBehavior::moveEvent(MineralMoveEvent &m) {
   }
 
 void AbstractBehavior::stopEvent(StopEvent &m) {
+  m.ignore();
+  }
+
+void AbstractBehavior::cancelEvent(CancelEvent &m) {
   m.ignore();
   }
 
@@ -38,6 +54,36 @@ bool AbstractBehavior::message( AbstractBehavior::Message m,
     mm.y = y;
 
     moveEvent(mm);
+    return mm.isAccepted();
+    }
+
+  if( m==AtackMove ){
+    MoveSingleEvent mm;
+    mm.modif = md;
+    mm.x = x;
+    mm.y = y;
+
+    atackMoveEvent(mm);
+    return mm.isAccepted();
+    }
+
+  if( m==AtackMoveContinue ){
+    MoveSingleEvent mm;
+    mm.modif = md;
+    mm.x = x;
+    mm.y = y;
+
+    atackContinueEvent(mm);
+    return mm.isAccepted();
+    }
+
+  if( m==AtackMoveGroup ){
+    MoveEvent mm;
+    mm.modif = md;
+    mm.x = x;
+    mm.y = y;
+
+    atackMoveEvent(mm);
     return mm.isAccepted();
     }
 
@@ -84,6 +130,12 @@ bool AbstractBehavior::message( AbstractBehavior::Message m,
   if( m==StopMove ){
     StopEvent mm;
     stopEvent(mm);
+    return mm.isAccepted();
+    }
+
+  if( m==Cancel ){
+    CancelEvent mm;
+    cancelEvent(mm);
     return mm.isAccepted();
     }
 

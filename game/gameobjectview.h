@@ -82,10 +82,11 @@ private:
     void setupMaterials( MyGL::AbstractGraphicObject &obj,
                          const ProtoObject::View &src );
 
-    void setViewPosition( MyGL::GraphicObject& obj,
+    void setViewPosition( MyGL::GraphicObject &obj,
                           const ProtoObject::View & v,
                           float x,
                           float y, float z);
+
     void setViewSize( MyGL::GraphicObject &obj,
                       const ProtoObject::View & v,
                       float x, float y, float z );

@@ -41,8 +41,9 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
   lt = 0.5*sqrt(lt);
   ln = sqrt(ln);
 
-  if( invCullMode )
+  if( invCullMode ){
     ll = -ll;
+    }
 
   for( int i=0; i<3; ++i ){
     left[i] /= ll;

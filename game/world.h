@@ -5,6 +5,7 @@
 #include "physics/physics.h"
 #include "game/gameobject.h"
 #include "graphics/particlesystemengine.h"
+#include "graphics/hudanim.h"
 
 #include "spatialindex.h"
 
@@ -88,25 +89,34 @@ class World {
     void delResouce( GameObject * ptr );
     const std::vector< GameObject* >& resouce() const;
 
-    void setMousePos( int x, int y );
+    void setMousePos( int x, int y, int z );
     int mouseX() const;
     int mouseY() const;
+    int mouseZ() const;
 
     void toogleEditLandMode( const Terrain::EditMode & m );
     Physics physics;
 
     void serialize( GameSerializer &s);
+
+    const SpatialIndex& spatial() const;
+    void emitHudAnim( const std::string& s,
+                      float x, float y, float z );
+
+    float zAt( float x, float y ) const;
   private:
     MyGL::Scene scene;
     std::unique_ptr<Terrain> terr;
 
-    int mpos[2];
+    int mpos[3];
     Terrain::EditMode editLandMode;
 
     std::vector< PGameObject > gameObjects, eviObjects;
     SpatialIndex spatialId;
     // std::vector< PGameObject > selected;
     std::vector< WeakWorldPtr* > wptrs;
+
+    std::vector< std::unique_ptr<HudAnim> > hudAnims;
 
     std::vector< GameObject* > warehouses, resouces;
 

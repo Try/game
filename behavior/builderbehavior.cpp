@@ -152,7 +152,8 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
                                AbstractBehavior::Modifers /*md*/) {
   if( msg==Move ||
       msg==MoveGroup ||
-      msg==MineralMove ){
+      msg==MineralMove ||
+      msg==Cancel ){
     if( tasks.size() ){
       obj.player().addGold( proto->data.gold );
       obj.player().addLim ( proto->data.lim );
@@ -217,7 +218,7 @@ void BuilderBehavior::mouseUp(MyWidget::MouseEvent & e ) {
                                  proto->view[0],
                                  World::coordCast(obj.world().mouseX()),
                                  World::coordCast(obj.world().mouseY()),
-                                 0);
+                                 World::coordCast(obj.world().mouseZ()) );
     }
 
   if( e.button==MyWidget::Event::ButtonRight ){
@@ -234,7 +235,7 @@ void BuilderBehavior::mouseMove(MyWidget::MouseEvent &e) {
                                proto->view[0],
                                World::coordCast(obj.world().mouseX()),
                                World::coordCast(obj.world().mouseY()),
-                               0);
+                               World::coordCast(obj.world().mouseZ()) );
 
   bool cl =  BuildingBehavior::canBuild( obj.world().terrain(),
                                          obj.game().prototype(taget),

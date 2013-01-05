@@ -91,13 +91,17 @@ void UnitList::onUnitDied(GameObject &obj) {
       btn[i] = 0;
 
       for( size_t r=0; r<btn.size(); ++r )
-        if( btn[i] ){
-          cmd->bind(btn[i]->owner);
-          uview->setupUnit( btn[i]->owner );
+        if( btn[r] && btn[r]->owner ){
+          cmd->bind(btn[r]->owner);
+          uview->setupUnit( btn[r]->owner );
           return;
           }
       }
     }
+
+  for( size_t i=0; i<btn.size(); ++i )
+    if( btn[i] )
+      return;
 
   cmd->bind(0);
   uview->setupUnit( 0 );

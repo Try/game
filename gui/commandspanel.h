@@ -21,7 +21,7 @@ class CommandsPanel : public Panel {
       };
 
     MyWidget::signal<> onPageCanged;
-  private:
+private:
     Resource & res;
     BehaviorMSGQueue & msg;
 
@@ -34,7 +34,14 @@ class CommandsPanel : public Panel {
 
     void bind( const ProtoObject::Commans::Page &u );
     void buyEvent( const std::string& unit );
+    void moveClick();
+    void stopClick();
+    void atkClick();
+
     void setPage( int p );
+
+    void bindStartPage(const ProtoObject::Commans::Page *p );
+    void bindPage( const ProtoObject::Commans::Page &p );
   };
 
 #endif // COMMANDSPANEL_H

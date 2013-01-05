@@ -25,7 +25,11 @@ void IncompleteBuilding::tick(const Terrain &t) {
   if( time>0 )
     --time;
 
+  float wx = obj.x()/Terrain::quadSizef,
+        wy = obj.y()/Terrain::quadSizef;
+
   obj.setPosition( obj.x(), obj.y(),
+                   obj.world().terrain().heightAt(wx,wy) +
                    World::coordCastD(-time * obj.viewHeight()/tmax) );
   if( time<=0 ){
     GameObject & ptr = obj;

@@ -103,6 +103,7 @@ class Game {
       float data[3];
       };
     F3 unProject( int x, int y, float destZ );
+    F3 unProject( int x, int y );
     F3 project( float x, float y, float z );
 
     void moveCamera();

@@ -119,6 +119,12 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
 
           v.z = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q] ]-dz );
 
+          if( r+dy[q]+1 < heightMap.height() ){
+            v.bnormal[2] = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q]+1 ]
+                                             - waterMap[ i+dx[q] ][ r+dy[q]+1 ] )
+                            - v.z;
+            }
+
           //int plane = tileset[ i+dx[q] ][ r+dy[q] ].plane;
 
           if( plane==2 ){
@@ -739,6 +745,10 @@ void Terrain::serialize( GameSerializer &s ) {
             + t.textureID[0]
             + t.textureID[1];
         }
+    }
+
+  if( s.isReader() ){
+    std::fill( buildingsMap.begin(), buildingsMap.end(),  0 );
     }
 
   resetBusyMap();

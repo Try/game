@@ -71,7 +71,7 @@ void BehaviorMSGQueue::computeWay( World &w, const MSG& m ) {
   }
 
 bool BehaviorMSGQueue::isMoveMSG(const BehaviorMSGQueue::MSG &m) {
-  return m.msg==MoveGroup;
+  return m.msg==MoveGroup || m.msg==AtackMoveGroup;
   }
 
 bool BehaviorMSGQueue::isSystemMSG(const BehaviorMSGQueue::MSG &m) {
@@ -117,8 +117,22 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
         }
       }
 
-    if( m.msg==MoveGroup ){
+    if( m.msg==MoveGroup || m.msg==AtackMoveGroup ){
       computeWay(w,m);
+
+      if( m.msg==MoveGroup ){
+        w.emitHudAnim( "hud/move",
+                       World::coordCast(m.x),
+                       World::coordCast(m.y),
+                       0.01 );
+        }
+
+      if( m.msg==AtackMoveGroup ){
+        w.emitHudAnim( "hud/atack",
+                       World::coordCast(m.x),
+                       World::coordCast(m.y),
+                       0.01 );
+        }
       }
     }
 

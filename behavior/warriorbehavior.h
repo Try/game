@@ -4,6 +4,7 @@
 #include "abstractbehavior.h"
 #include "behavior.h"
 #include "util/weakworldptr.h"
+#include "gui/inputhook.h"
 
 class WorkerBehavior;
 
@@ -16,9 +17,14 @@ class WarriorBehavior : public AbstractBehavior  {
 
     void tick( const Terrain &  );
     bool message(Message msg, int x, int y, Modifers md);
+
+    void aClick();
   private:
     GameObject & obj;
     WeakWorldPtr taget;
+
+    InputHook hook;
+    bool instaled;
 
     void move(int, int);
 
@@ -27,10 +33,27 @@ class WarriorBehavior : public AbstractBehavior  {
     bool isAtk; int lastX, lastY;
     int  dAtkTime;
 
+    bool isAClick; int acX, acY;
+
     bool mvLock;
     int lkX, lkY;
 
     void positionChangeEvent(PositionChangeEvent &m);
+
+    void tickAtack();
+
+    static void lookOn(GameObject& tg ,
+                       GameObject &obj,
+                       WarriorBehavior *wb,
+                       GameObject *&rawTg,
+                       GameObject *&rawTgBuild,
+                       int &dTg, int &dBuld);
+
+    void takeTaget(GameObject *&out, GameObject * tg, int d );
+
+    void mouseDown(MyWidget::MouseEvent &e);
+    void mouseUp  ( MyWidget::MouseEvent& e );
+    void onRemoveHook();
   };
 
 #endif // WARRIORBEHAVIOR_H

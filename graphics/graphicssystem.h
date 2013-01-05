@@ -82,6 +82,7 @@ class GraphicsSystem {
     ParticleSystemEngine * particles;
 
     MyGL::Size  screenSize;
+    static  float smMatSize( const MyGL::Scene & s );
     static  MyGL::Matrix4x4 makeShadowMatrix(const MyGL::Scene & s , double *dxyz);
 
     MyGL::Texture2d::Sampler reflect, bufSampler;
