@@ -73,6 +73,7 @@ class GameObjectView {
     void serialize( GameSerializer &s);
 
     const ProtoObject &getClass() const;
+    MyGL::Matrix4x4 _transform() const;
 private:
     void setForm(const Physics::Sphere &f);
     void setForm(const Physics::Box &f);

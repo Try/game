@@ -72,6 +72,7 @@ class World {
 
     void updateMouseOverFlag(double x0, double y0, double x1, double y1);
     void updateSelectionFlag( BehaviorMSGQueue & msg, int pl );
+    void updateSelectionClick(BehaviorMSGQueue & msg, int pl , int mx, int my, int w, int h);
     void paintHUD( MyWidget::Painter &, int w, int h );
 
     Player& player( int id );

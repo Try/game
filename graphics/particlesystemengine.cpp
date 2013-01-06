@@ -43,6 +43,7 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
 
   if( invCullMode ){
     ll = -ll;
+    ln *= -0.5;
     }
 
   for( int i=0; i<3; ++i ){
@@ -124,6 +125,11 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
   v.color[1] = color.g();
   v.color[2] = color.b();
   v.color[3] = color.a();
+
+  v.bnormal[0] = -left[0];
+  v.bnormal[1] = -left[1];
+  v.bnormal[2] = -left[2];
+  v.bnormal[3] = 0;
 
   double mul[2] = {-1, 1};
 

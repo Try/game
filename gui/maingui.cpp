@@ -80,6 +80,9 @@ bool MainGui::draw(GUIPass &pass) {
     PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
     MyWidget::PaintEvent event(painter);
     central.paintEvent( event );
+
+    MyWidget::Painter p( event );
+    paintObjectsHud( p, central.w(), central.h() );
     return 1;
     }
 

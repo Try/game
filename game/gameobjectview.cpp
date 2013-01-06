@@ -523,6 +523,13 @@ const ProtoObject &GameObjectView::getClass() const {
   return *cls;
   }
 
+MyGL::Matrix4x4 GameObjectView::_transform() const {
+  if( view.size()==0 )
+    return MyGL::Matrix4x4();
+
+  return view[0].transform();
+  }
+
 void GameObjectView::setupMaterials( MyGL::AbstractGraphicObject &obj,
                                      const ProtoObject::View &src ) {
   wrld.game.setupMaterials( obj, src, teamColor );

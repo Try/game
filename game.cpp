@@ -161,7 +161,8 @@ void Game::mouseDownEvent( MyWidget::MouseEvent &e) {
 
   gui.setFocus();
   mouseTracking         = (e.button==MyWidget::MouseEvent::ButtonRight);
-  selectionRectTracking = (e.button==MyWidget::MouseEvent::ButtonLeft);
+  if(e.button==MyWidget::MouseEvent::ButtonLeft)
+    selectionRectTracking = 1;
 
   gui.selectionRect() = MyWidget::Rect(e.x, e.y, 0, 0);
 
@@ -183,14 +184,16 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
   gui.setFocus();
 
   mouseTracking         = false;
-  selectionRectTracking = false;
   gui.selectionRect() = MyWidget::Rect(-1, -1, 0, 0);
   gui.update();
 
   F3 v = unProject( e.x, e.y );
 
-  if( e.button==MyWidget::MouseEvent::ButtonLeft ){    
-    world->updateSelectionFlag( msg, currentPlayer );
+  if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+    if( selectionRectTracking==2 )
+      world->updateSelectionFlag( msg, currentPlayer ); else
+      world->updateSelectionClick( msg, currentPlayer, e.x, e.y,
+                                   w, h );
     //gui.updateSelectUnits( *world );
     }
 
@@ -202,6 +205,7 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
     //world->emitHudAnim( "hud/move", v.data[0], v.data[1], v.data[2]+0.01 );
     }
 
+  selectionRectTracking = false;
   world->clickEvent( World::coordCastD(v.data[0]),
                      World::coordCastD(v.data[1]),
                      e );
@@ -222,6 +226,8 @@ void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
     }
 
   if( selectionRectTracking ){
+    selectionRectTracking = 2;
+
     MyWidget::Rect & r = gui.selectionRect();
     r.w = e.x - gui.selectionRect().x;
     r.h = e.y - gui.selectionRect().y;
@@ -692,6 +698,9 @@ void Game::serialize( GameSerializer &s ) {
 
   gui.toogleEditLandMode = MyWidget::signal<const Terrain::EditMode&>();
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
+
+  gui.paintObjectsHud = MyWidget::signal< MyWidget::Painter&, int, int>();
+  gui.paintObjectsHud.bind( *world, &World::paintHUD );
 
   for( size_t i=0; i<worlds.size(); ++i )
     worlds[i]->serialize(s);

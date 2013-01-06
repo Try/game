@@ -94,7 +94,8 @@ class Game {
 
     double spinX, spinY;
     int w, h;
-    bool mouseTracking, selectionRectTracking;
+    bool mouseTracking;
+    int  selectionRectTracking;
 
     MyWidget::Point lastMPos,curMPos;
     MyWidget::KeyEvent::KeyType   lastKEvent;

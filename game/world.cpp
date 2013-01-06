@@ -306,8 +306,6 @@ void World::updateMouseOverFlag( double x0, double y0,
   }
 
 void World::updateSelectionFlag( BehaviorMSGQueue & msg, int pl ) {
-  msg.message( pl, Behavior::UnSelect );
-
   size_t ibegin = -1, isize = 0;
 
   for( size_t i=0; i<gameObjects.size(); ++i ){
@@ -317,6 +315,9 @@ void World::updateSelectionFlag( BehaviorMSGQueue & msg, int pl ) {
       if( ibegin==size_t(-1) || (ibegin+isize != i) ){
         if( ibegin!=size_t(-1) )
           msg.message_st( pl, Behavior::SelectAdd, ibegin, isize );
+        if( ibegin==size_t(-1) )
+          msg.message( pl, Behavior::UnSelect );
+
         ibegin = i;
         isize  = 1;
         } else {
@@ -330,24 +331,25 @@ void World::updateSelectionFlag( BehaviorMSGQueue & msg, int pl ) {
     }
   }
 
-void World::paintHUD( MyWidget::Painter & p,
-                      int w, int h ) {
-  return;
-/*
-  MyGL::Matrix4x4 mat;// = camera.projective();
-  mat.mul( camera.view() );
+void World::updateSelectionClick( BehaviorMSGQueue &msg,
+                                  int pl,
+                                  int mx, int my,
+                                  int w, int h ) {
+  MyGL::Matrix4x4 gmMat = camera.projective();
+  gmMat.mul( camera.view() );
 
   double data1[4], data2[4];
 
-  for( size_t i=0; i<1; ++i ){
-    MyGL::Matrix4x4 m = mat;
+  for( size_t i=0; i<objectsCount(); ++i ){
+    MyGL::Matrix4x4 m = gmMat;
 
-    GameObject & obj = *terrainView;
+    GameObject & obj = object(i);
     m.mul( obj._transform() );
-    //m.transpose();
 
-    double left[4] = { m.at(0,0), m.at(1,0), m.at(2,0), 0 };
-    double  top[4] = { m.at(0,1), m.at(1,1), m.at(2,1), 0 };
+    MyGL::Matrix4x4 mat = obj._transform();
+
+    double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
+    double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
 
     for( int r=0; r<3; ++r ){
       left[3] += left[r]*left[r];
@@ -363,11 +365,82 @@ void World::paintHUD( MyWidget::Painter & p,
       left[r] += top[r];
       }
 
-    double x = 9.60000038,
-           y = 9.60000038,
-           z = -0.449999988;
+    double x = 0,
+           y = 0,
+           z = 0;//0.5*obj.rawRadius();
 
-    double r = obj.rawRadius();
+    double r = 0.8*obj.rawRadius();
+
+    m.project( x+r*left[0], y+r*left[1], z+r*left[2], 1,
+               data1[0], data1[1], data1[2], data1[3] );
+    for( int r=0; r<3; ++r )
+      data1[r] /= data1[3];
+
+    m.project( x-r*left[0], y-r*left[1], z-r*left[2], 1,
+               data2[0], data2[1], data2[2], data2[3] );
+    for( int r=0; r<3; ++r )
+      data2[r] /= data2[3];
+
+    data1[0] = 0.5*(1+data1[0])*w;
+    data1[1] = 0.5*(1-data1[1])*h;
+
+    data2[0] = 0.5*(1+data2[0])*w;
+    data2[1] = 0.5*(1-data2[1])*h;
+
+    if( data2[0] <= mx && mx <= data1[0] &&
+        data2[1] <= my && my <= data1[1] ){
+      msg.message( pl, Behavior::UnSelect );
+      msg.message_st( pl, Behavior::SelectAdd, i, 1 );
+      return;
+      }
+    }
+
+  }
+
+void World::paintHUD( MyWidget::Painter & p,
+                      int w, int h ) {
+  return;
+
+  MyGL::Matrix4x4 gmMat = camera.projective();
+  gmMat.mul( camera.view() );
+
+  MyWidget::Bind::UserTexture t;
+  t.data = resource.pixmap("gui/buttonBack");
+  p.setTexture( t );
+
+  double data1[4], data2[4];
+
+  for( size_t i=0; i<objectsCount(); ++i ){
+    MyGL::Matrix4x4 m = gmMat;
+
+    GameObject & obj = object(i);
+    m.mul( obj._transform() );
+    //m.transpose();
+
+    MyGL::Matrix4x4 mat = obj._transform();
+
+    double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
+    double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
+
+    for( int r=0; r<3; ++r ){
+      left[3] += left[r]*left[r];
+      top [3] += top [r]*top [r];
+      }
+    left[3] = sqrt(left[3]);
+    top [3] = sqrt( top[3]);
+
+    for( int r=0; r<3; ++r ){
+      left[r] /= left[3];
+      top [r] /=  top[3];
+
+      left[r] += top[r];
+      }
+
+    double x = 0,//obj.x(),
+           y = 0,//obj.y(),
+           z = 0;//obj.z();
+
+    double r = 0.5*obj.rawRadius();
 
     m.project( x+r*left[0], y+r*left[1], z+r*left[2], 1,
                data1[0], data1[1], data1[2], data1[3] );
@@ -387,7 +460,7 @@ void World::paintHUD( MyWidget::Painter & p,
       std::cout << "FBF";
       }
     }
-    */
+
   }
 
 Player &World::player(int id) {

@@ -389,7 +389,7 @@ double GameObject::rawRadius() const {
   }
 
 MyGL::Matrix4x4 GameObject::_transform() const {
-  return MyGL::Matrix4x4();//view[0].transform();
+  return view._transform();
   }
 
 bool GameObject::isOnMove() const {
