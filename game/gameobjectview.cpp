@@ -223,13 +223,18 @@ void GameObjectView::loadView(const MyGL::Model<WaterVertex> &model ){
   view.push_back( object );
   }
 
-void GameObjectView::setViewPosition(float x, float y, float z) {
+void GameObjectView::setViewPosition( float x, float y, float z ) {
+  setViewPosition(x,y,z,1);
+  }
+
+void GameObjectView::setViewPosition( float x, float y, float z,
+                                      float interp ) {
   for( size_t i=0; i<env.size(); ++i ){
     //setViewPosition( env[i], getClass().view[i], x, y, z );
     }
 
   for( size_t i=0; i<view.size(); ++i ){
-    setViewPosition( view[i], getClass().view[i], x, y, z );
+    setViewPosition( view[i], getClass().view[i], x, y, z, interp );
     }
 
   for( size_t i=0; i<particles.size(); ++i ){
@@ -270,7 +275,9 @@ void GameObjectView::setViewPosition(float x, float y, float z) {
 void GameObjectView::setViewPosition( MyGL::GraphicObject& obj,
                                       const ProtoObject::View & v,
                                       float x,
-                                      float y, float z) {
+                                      float y,
+                                      float z,
+                                      float interp ) {
   float dx = 0, dy = 0, dz = 0;
   double modelSize[3] = { obj.bounds().max[0] - obj.bounds().min[0],
                           obj.bounds().max[1] - obj.bounds().min[1],
@@ -283,7 +290,11 @@ void GameObjectView::setViewPosition( MyGL::GraphicObject& obj,
   dy = modelSize[1]*obj.sizeY()*align[1]*alignSize;
   dz = modelSize[2]*obj.sizeZ()*align[2]*alignSize;
 
-  obj.setPosition( x+dx, y+dy, z+dz );
+  float lx = obj.x() + (x+dx - obj.x())*interp;
+  float ly = obj.y() + (y+dy - obj.y())*interp;
+  float lz = obj.z() + (z+dz - obj.z())*interp;
+
+  obj.setPosition( lx,ly,lz );
   }
 
 double GameObjectView::viewHeight() const {

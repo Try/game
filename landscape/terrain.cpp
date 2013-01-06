@@ -37,6 +37,7 @@ Terrain::Terrain(int w, int h,
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
+  chunks.resize( w/64, h/64 );
 
   for( int i=0; i<busyMapsCount; ++i ){
     int n = i+1;
@@ -56,6 +57,11 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
 
   landView.clear();
 
+  for( int i=0; i<chunks.width(); ++i )
+    for( int r=0; r<chunks.height(); ++r )
+      if( chunks[i][r].needToUpdate )
+        chunks[i][r].landView.clear();
+
   std::vector<size_t> texIDS[2];
   for( int i=0; i<tileset.width(); ++i )
     for( int r=0; r<tileset.height(); ++r ){
@@ -69,8 +75,9 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
 
   for( int i=0; i<3; ++i ){
     const std::vector<size_t> & ids = texIDS[ i==2? 0:1 ];
-    for( size_t r=0; r<ids.size(); ++r )
+    for( size_t r=0; r<ids.size(); ++r ){
       buildGeometry( vboHolder, iboHolder, i, ids[r] );
+      }
     }
 
   View view;
@@ -81,12 +88,30 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
   view.view->loadView( waterGeometry(vboHolder, iboHolder) );
 
   landView.push_back( view );
+
+  for( int i=0; i<chunks.width(); ++i )
+    for( int r=0; r<chunks.height(); ++r )
+      chunks[i][r].needToUpdate  = false;
   }
 
 void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                              MyGL::IndexBufferHolder  & iboHolder,
                              int plane,
-                             size_t texture  ) {
+                             size_t texture,
+                             int cX, int cY ) {
+  TerrainChunk & chunk = chunks[cX][cY];
+  if( !chunk.needToUpdate )
+    return;
+
+  int lx = (heightMap.width()* cX   )/chunks.width(),
+      rx = (heightMap.width()*(cX+1))/chunks.width()+1;
+
+  int ly = (heightMap.height()* cY   )/chunks.height(),
+      ry = (heightMap.height()*(cY+1))/chunks.height()+1;
+
+  rx = std::min(rx, heightMap.width() );
+  ry = std::min(ry, heightMap.height());
+
   Model model;
   Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1}, {-1,0,0,0} };
   land.clear();
@@ -97,8 +122,8 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
 
   const double texCoordScale = 0.1;
 
-  for( int i=0; i+1<heightMap.width(); ++i )
-    for( int r=0; r+1<heightMap.height(); ++r ){
+  for( int i=lx; i+1<rx; ++i )
+    for( int r=ly; r+1<ry; ++r ){
       int k = 0, tk = 0, tid = (plane==2 ? 0:1);
       for( int q=0; q<6; ++q ){
         if( plane == tileset[i+dx[q]][r+dy[q]].plane )
@@ -168,7 +193,7 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
   if( land.size() ){
     model.load( vboHolder, iboHolder, land, MVertex::decl() );
 
-    View view;
+    TerrainChunk::View view;
     view.view.reset( new GameObjectView( scene,
                                          world,
                                          prototype.get( aviableTiles[texture] ),
@@ -176,13 +201,13 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
     view.view->loadView( model,
                          prototype.get( aviableTiles[texture] ).view[0] );
 
-    landView.push_back( view );
+    chunk.landView.push_back( view );
     }
 
   if( minor.size() ){
     model.load( vboHolder, iboHolder, minor, MVertex::decl() );
 
-    View view;
+    TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
     for( size_t i=0; i<obj.view.size(); ++i )
       for( size_t r=0; r<obj.view[i].materials.size(); ++r )
@@ -195,8 +220,18 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                                          prototype) );
     view.view->loadView( model, obj.view[0] );
 
-    landView.push_back( view );
+    chunk.landView.push_back( view );
     }
+  }
+
+void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
+                             MyGL::IndexBufferHolder  & iboHolder,
+                             int plane,
+                             size_t texture  ) {
+  for( int i=0; i<chunks.width(); ++i )
+    for( int r=0; r<chunks.height(); ++r )
+      buildGeometry( vboHolder, iboHolder, plane, texture,
+                     i, r );
   }
 
 void Terrain::computePlanes() {
@@ -337,15 +372,22 @@ void Terrain::brushHeight( int x, int y,
   y/=quadSize;
 
   double R = m.R, dh = 200;
+
+  int iR = int(R+2);
+  int lx = std::max(0, x-iR), rx = std::min(width(), x+iR);
+  int ly = std::max(0, y-iR), ry = std::min(width(), y+iR);
+
   if( alternative )
     dh = -dh;
 
   if( m.wmap!= EditMode::None || m.map!=EditMode::None ){
-    for( int i=0; i<width(); ++i )
-      for( int r=0; r<height(); ++r ){
+    for( int i=lx; i<rx; ++i )
+      for( int r=ly; r<ry; ++r ){
         double factor = std::max(0.0,
                                  (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
         factor = 1.0-(1.0-factor)*(1.0-factor);
+
+        chunks[i/64][r/64].needToUpdate = true;
 
         if( m.wmap ){
           heightMap[i][r] += dh*factor;
@@ -363,14 +405,16 @@ void Terrain::brushHeight( int x, int y,
       aviableTiles.push_back( m.texture );
       }
 
-    for( int i=0; i<width(); ++i )
-      for( int r=0; r<height(); ++r ){
+    for( int i=lx; i<rx; ++i )
+      for( int r=ly; r<ry; ++r ){
         double factor = std::max(0.0,
                                  (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
         factor = 1.0-(1.0-factor)*(1.0-factor);
 
-        if( factor>0 )
+        if( factor>0 ){
           tileset[i][r].textureID[texID] = id;
+          }
+        chunks[i/64][r/64].needToUpdate = true;
         }
     }
 
@@ -710,6 +754,11 @@ void Terrain::serialize( GameSerializer &s ) {
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
   tileset.resize( w+1, h+1 );
+  chunks. resize( w/64, h/64 );
+
+  for( int i=0; i<chunks.width(); ++i )
+    for( int r=0; r<chunks.height(); ++r )
+      chunks[i][r].needToUpdate  = true;
 
   for( int i=0; i<busyMapsCount; ++i ){
     int n = i+1;

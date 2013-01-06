@@ -990,7 +990,7 @@ void GraphicsSystem::aceptSsao( const MyGL::Scene & s,
 
 void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
                                MyGL::Texture2d &sm  ) {
-  sm = localTex.create( 128, 128,
+  sm = localTex.create( 256, 256,
                         MyGL::AbstractTexture::Format::RGB10_A2 );
 
   MyGL::Texture2d tmp = localTex.create( sm.width(), sm.height(),
@@ -1050,7 +1050,7 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
       }
     }
 
-  float s = 2*smMatSize(scene);
+  float s = 4*smMatSize(scene);
   gauss( tmp,  sm, sm.width(), sm.height(), s, 0 );
   gauss(  sm, tmp, sm.width(), sm.height(), 0, s );
 

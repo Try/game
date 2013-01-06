@@ -22,6 +22,7 @@ struct WaterVertex: MVertex{
   };
 
 #include "game/gameobjectview.h"
+#include "terrainchunk.h"
 
 class Terrain {
   public:
@@ -47,10 +48,6 @@ class Terrain {
 
     void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                         MyGL::IndexBufferHolder  & iboHolder );
-    /*
-    Model buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                         MyGL::IndexBufferHolder  & iboHolder) const;
-                         */
 
     MyGL::Model<WaterVertex> waterGeometry( MyGL::VertexBufferHolder & vboHolder,
                                             MyGL::IndexBufferHolder  & iboHolder) const;
@@ -90,6 +87,7 @@ class Terrain {
     void editBuildingsMap( int x, int y, int w, int h, int dv );
 
     void serialize( GameSerializer &s );
+
   private:
     MyGL::Scene            & scene;
     World                  & world;
@@ -107,6 +105,8 @@ class Terrain {
       float normal[3];
       };
     array2d<Tile> tileset;
+    array2d<TerrainChunk> chunks;
+
     std::vector< Model::Vertex > land, minor;
 
     array2d<int>  heightMap;
@@ -133,10 +133,16 @@ class Terrain {
     int heightAtNoDepth( int x, int y ) const;
     int  depthAt( int x, int y ) const;
 
-    void buildGeometry(MyGL::VertexBufferHolder & vboHolder,
+    void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                         MyGL::IndexBufferHolder  & iboHolder,
                         int plane,
                         size_t texture );
+
+    void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
+                        MyGL::IndexBufferHolder  & iboHolder,
+                        int plane,
+                        size_t texture,
+                        int cX, int cy );
 
     void computePlanes();
   };

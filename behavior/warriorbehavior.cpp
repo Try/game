@@ -220,7 +220,7 @@ void WarriorBehavior::tickAtack() {
   if( taget ){
     int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
     int arange = (  obj.getClass().data.atk[0].range +
-                   (obj.getClass().data.size + 1 +
+                   (obj.getClass().data.size + 2 +
                     taget.value().getClass().data.size)/2 )*Terrain::quadSize;
 
     vrange = vrange*vrange;

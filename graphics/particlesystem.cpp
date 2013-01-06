@@ -47,11 +47,13 @@ void ParticleSystem::exec( int dt ) {
     return;
 
   if( viewInfo().name=="fire" ){
-    par.push_back( Point3( x(), y(), z() ) );
-    par.back().size = 0.03+0.03*( rand()/float(RAND_MAX) );
+    if( rand()%4==0 ){
+      par.push_back( Point3( x(), y(), z() ) );
+      par.back().size = 0.06+0.03*( rand()/float(RAND_MAX) );
 
-    par.back().x += 0.1*( rand()/float(RAND_MAX) - 0.5);
-    par.back().y += 0.1*( rand()/float(RAND_MAX) - 0.5);
+      par.back().x += 0.1*( rand()/float(RAND_MAX) - 0.5);
+      par.back().y += 0.1*( rand()/float(RAND_MAX) - 0.5);
+      }
 
     for( size_t i=0; i<par.size(); ++i ){
       par[i].z    += 0.015;

@@ -391,6 +391,8 @@ void World::updateSelectionClick( BehaviorMSGQueue &msg,
         data2[1] <= my && my <= data1[1] ){
       msg.message( pl, Behavior::UnSelect );
       msg.message_st( pl, Behavior::SelectAdd, i, 1 );
+
+      obj.setMouseOverFlag(1);
       return;
       }
     }
@@ -399,67 +401,86 @@ void World::updateSelectionClick( BehaviorMSGQueue &msg,
 
 void World::paintHUD( MyWidget::Painter & p,
                       int w, int h ) {
-  return;
+  //return;
 
   MyGL::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
 
-  MyWidget::Bind::UserTexture t;
-  t.data = resource.pixmap("gui/buttonBack");
-  p.setTexture( t );
+  MyWidget::Bind::UserTexture green, bar, gray;
+  green.data = resource.pixmap("gui/hp");
+  bar.data   = resource.pixmap("gui/bar");
+  gray.data  = resource.pixmap("gui/gray");
 
   double data1[4], data2[4];
 
-  for( size_t i=0; i<objectsCount(); ++i ){
-    MyGL::Matrix4x4 m = gmMat;
+  for( size_t plN = 1; plN<game.plCount(); ++plN )
+    for( size_t i=0; i<game.player(plN).unitsCount(); ++i ){
+      MyGL::Matrix4x4 m = gmMat;
 
-    GameObject & obj = object(i);
-    m.mul( obj._transform() );
-    //m.transpose();
+      GameObject & obj = game.player(plN).unit(i);
+      m.mul( obj._transform() );
+      //m.transpose();
 
-    MyGL::Matrix4x4 mat = obj._transform();
+      MyGL::Matrix4x4 mat = obj._transform();
 
-    double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
-    double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
+      double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
+      double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
 
-    for( int r=0; r<3; ++r ){
-      left[3] += left[r]*left[r];
-      top [3] += top [r]*top [r];
+      for( int r=0; r<3; ++r ){
+        left[3] += left[r]*left[r];
+        top [3] += top [r]*top [r];
+        }
+      left[3] = sqrt(left[3]);
+      top [3] = sqrt( top[3]);
+
+      for( int r=0; r<3; ++r ){
+        left[r] /= left[3];
+        top [r] /=  top[3];
+
+        left[r] += top[r];
+        }
+
+      double x = 0,//obj.x(),
+             y = 0,//obj.y(),
+             z = 0.5*obj.rawRadius();//obj.z();
+
+      double r = 0.5*obj.rawRadius();
+
+      m.project( x+r*left[0], y+r*left[1], z+r*left[2], 1,
+                 data1[0], data1[1], data1[2], data1[3] );
+      for( int i=0; i<3; ++i )
+        data1[i] /= data1[3];
+
+      m.project( x-r*left[0], y-r*left[1], z-r*left[2], 1,
+                 data2[0], data2[1], data2[2], data2[3] );
+      for( int i=0; i<3; ++i )
+        data2[i] /= data2[3];
+
+      int y0 = 0.5*(1-data2[1])*h;
+      int x0 = 0.5*(1+data2[0])*w;
+      int x1 = 0.5*(1+data1[0])*w;
+
+      int sz = ( int(20*obj.getClass().data.size)/4 )*4+1;
+
+      int bx = (sz*obj.hp())/obj.getClass().data.maxHp;
+
+      p.setTexture( green );
+      p.drawRect( (x0+x1-sz)/2, y0, bx, 5,
+                  0,0, 65, 5 );
+
+      p.setTexture( gray );
+      p.drawRect( (x0+x1-sz)/2+bx, y0, sz-bx, 5,
+                  0,0, 65, 5 );
+
+      p.setTexture( bar );
+      p.drawRectTailed( (x0+x1-sz)/2, y0, sz, 5,
+                        0,0, 65, 5 );
+      p.drawRect( (x0+x1-sz)/2+sz-1, y0, 1, 5,
+                  64,0, 1, 5 );
+
+      //p.drawRect( 0.5*(1+data1[0])*w, 0.5*(1-data1[1])*h, 10, 10 );
+      //p.drawRect( 0.5*(1+data2[0])*w, 0.5*(1-data2[1])*h, 10, 10 );
       }
-    left[3] = sqrt(left[3]);
-    top [3] = sqrt( top[3]);
-
-    for( int r=0; r<3; ++r ){
-      left[r] /= left[3];
-      top [r] /=  top[3];
-
-      left[r] += top[r];
-      }
-
-    double x = 0,//obj.x(),
-           y = 0,//obj.y(),
-           z = 0;//obj.z();
-
-    double r = 0.5*obj.rawRadius();
-
-    m.project( x+r*left[0], y+r*left[1], z+r*left[2], 1,
-               data1[0], data1[1], data1[2], data1[3] );
-    for( int i=0; i<3; ++i )
-      data1[i] /= data1[3];
-
-    m.project( x-r*left[0], y-r*left[1], z-r*left[2], 1,
-               data2[0], data2[1], data2[2], data2[3] );
-    for( int i=0; i<3; ++i )
-      data2[i] /= data2[3];
-
-
-    p.drawRect( 0.5*(1+data1[0])*w, 0.5*(1-data1[1])*h, 10, 10 );
-    p.drawRect( 0.5*(1+data2[0])*w, 0.5*(1-data2[1])*h, 10, 10 );
-
-    if(!(data2[0]<data1[0]  )){
-      std::cout << "FBF";
-      }
-    }
 
   }
 

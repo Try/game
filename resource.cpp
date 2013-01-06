@@ -140,18 +140,18 @@ void Resource::computeBiNormal( MVertex &va, MVertex &vb, MVertex &vc ) {
       */
 
     for( int i=0; i<4; ++i ){
-      va.bnormal[i] = u[i];
-      vb.bnormal[i] = u[i];
-      vc.bnormal[i] = u[i];
+      va.bnormal[i] = -u[i];
+      vb.bnormal[i] = -u[i];
+      vc.bnormal[i] = -u[i];
       }
     //float v[3] = {};
     } else {
     float u[4] = { b[0]/t2[0], b[1]/t2[0], b[2]/t2[0], 0 };
 
     for( int i=0; i<4; ++i ){
-      va.bnormal[i] = u[i];
-      vb.bnormal[i] = u[i];
-      vc.bnormal[i] = u[i];
+      va.bnormal[i] = -u[i];
+      vb.bnormal[i] = -u[i];
+      vc.bnormal[i] = -u[i];
       }
     }
   }

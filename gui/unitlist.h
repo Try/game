@@ -30,6 +30,8 @@ class UnitList : public ScroolWidget {
     View * view;
     UnitView *uview;
     CommandsPanel *cmd;
+
+    std::vector<GameObject*> units;
   };
 
 #endif // UNITLIST_H

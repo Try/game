@@ -145,8 +145,8 @@ int GameObject::hp() const {
   return m.hp;
   }
 
-void GameObject::setViewPosition(float x, float y, float z) {
-  view.setViewPosition(x,y,z);
+void GameObject::setViewPosition(float x, float y, float z, float s) {
+  view.setViewPosition(x,y,z, s);
   }
 
 double GameObject::viewHeight() const {
@@ -164,7 +164,21 @@ void GameObject::setTeamColor(const MyGL::Color &cl) {
 void GameObject::setPosition(int x, int y, int z) {
   setViewPosition( World::coordCast(x),
                    World::coordCast(y),
-                   World::coordCast(z) );
+                   World::coordCast(z),
+                   1 );
+  m.x = x;
+  m.y = y;
+  m.z = z;//world.terrain().heightAt(x, y);
+  view.setPosition(x,y);
+
+  behavior.message( Behavior::onPositionChange, x, y );
+  }
+
+void GameObject::setPositionSmooth(int x, int y, int z) {
+  setViewPosition( World::coordCast(x),
+                   World::coordCast(y),
+                   World::coordCast(z),
+                   0.3 );
   m.x = x;
   m.y = y;
   m.z = z;//world.terrain().heightAt(x, y);
@@ -449,6 +463,11 @@ bool GameObject::isMineralMove() const {
   }
 
 void GameObject::tick( const Terrain &terrain ) {
+  setViewPosition( World::coordCast(m.x),
+                   World::coordCast(m.y),
+                   World::coordCast(m.z),
+                   0.3 );
+
   view.tick();
   behavior.tick( terrain );
 

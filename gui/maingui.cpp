@@ -61,6 +61,7 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
 
   mainwidget->addObject.bind( addObject );
   mainwidget->toogleEditLandMode.bind( toogleEditLandMode );
+  mainwidget->paintObjectsHud.bind( paintObjectsHud );
 
   mainwidget->save.bind( *this, &MainGui::saveGame );
   mainwidget->load.bind( *this, &MainGui::loadGame );
@@ -81,8 +82,8 @@ bool MainGui::draw(GUIPass &pass) {
     MyWidget::PaintEvent event(painter);
     central.paintEvent( event );
 
-    MyWidget::Painter p( event );
-    paintObjectsHud( p, central.w(), central.h() );
+    //MyWidget::Painter p( event );
+    //paintObjectsHud( p, central.w(), central.h() );
     return 1;
     }
 

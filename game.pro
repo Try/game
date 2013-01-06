@@ -120,7 +120,8 @@ HEADERS += \
     gui/editterrainpanel.h \
     graphics/terrainminormaterial.h \
     game/spatialindex.h \
-    graphics/hudanim.h
+    graphics/hudanim.h \
+    landscape/terrainchunk.h
 
 SOURCES += \
     main.cpp \
@@ -205,7 +206,8 @@ SOURCES += \
     gui/editterrainpanel.cpp \
     graphics/terrainminormaterial.cpp \
     game/spatialindex.cpp \
-    graphics/hudanim.cpp
+    graphics/hudanim.cpp \
+    landscape/terrainchunk.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

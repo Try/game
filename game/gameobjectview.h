@@ -43,7 +43,9 @@ class GameObjectView {
     void loadView(const Model &model, const ProtoObject::View &view);
     void loadView(const MyGL::Model<WaterVertex> &model);
 
-    void setViewPosition(float x, float y, float z);
+    void setViewPosition(float x, float y, float z );
+    void setViewPosition(float x, float y, float z,
+                         float interp );
 
     double viewHeight() const;
 
@@ -83,10 +85,11 @@ private:
     void setupMaterials( MyGL::AbstractGraphicObject &obj,
                          const ProtoObject::View &src );
 
-    void setViewPosition( MyGL::GraphicObject &obj,
+    void setViewPosition(MyGL::GraphicObject &obj,
                           const ProtoObject::View & v,
                           float x,
-                          float y, float z);
+                          float y, float z,
+                          float interp);
 
     void setViewSize( MyGL::GraphicObject &obj,
                       const ProtoObject::View & v,

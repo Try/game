@@ -46,6 +46,7 @@ class GameObject {
     void loadView( const MyGL::Model<WaterVertex> & model );
 
     void setPosition( int x, int y, int z );
+    void setPositionSmooth( int x, int y, int z );
 
     void setViewSize( float x, float y, float z );
     void setViewSize( float s );
@@ -119,7 +120,7 @@ class GameObject {
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;
 
-    void setViewPosition( float x, float y, float z );
+    void setViewPosition(float x, float y, float z , float s);
 
     void loadView( Resource & r, const ProtoObject::View &src,
                    bool isEnv );

@@ -275,7 +275,7 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
       if( isBusy ){
         int ltx = this->tx, lty = this->ty;
 
-        obj.setPosition( x, y, terrain.heightAt(wx,wy) );
+        obj.setPositionSmooth( x, y, terrain.heightAt(wx,wy) );
         obj.setViewDirection( ltx-obj.x(), lty-obj.y() );
 
         this->tx = ltx;

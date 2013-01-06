@@ -24,6 +24,8 @@
 
 #include "util/gameserializer.h"
 
+#include "behavior/buildingbehavior.h"
+
 #include <cmath>
 
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
@@ -105,10 +107,18 @@ void Game::tick() {
                       World::coordCastD(v.data[2]) );
 
   if( player().editObj ){
+    int x = World::coordCastD(v.data[0]),
+        y = World::coordCastD(v.data[1]);
+
+    if( player().editObj &&
+        player().editObj->behavior.find<BuildingBehavior>() ){
+      x = (x/Terrain::quadSize)*Terrain::quadSize;
+      y = (y/Terrain::quadSize)*Terrain::quadSize;
+      }
+
     msg.message( currentPlayer,
                  Behavior::EditMove,
-                 vx*Terrain::quadSize,
-                 vy*Terrain::quadSize );
+                 x, y );
     }
 
   msg.serialize( serializator );
@@ -485,9 +495,16 @@ void Game::moveCamera() {
   }
 
 void Game::setCameraPos(GameObject &obj) {
-  world->camera.setPosition( World::coordCast(obj.x()),
-                             World::coordCast(obj.y()),
-                             World::coordCast(obj.z()) );
+  float x1 = World::coordCast(obj.x()),
+        y1 = World::coordCast(obj.y()),
+        z1 = World::coordCast(obj.z());
+
+  float k = 0.3;
+  float x = world->camera.x(),
+        y = world->camera.y(),
+        z = world->camera.z();
+
+  world->camera.setPosition( x+(x1-x)*k, y+(y1-y)*k, z+(z1-z)*k );
   }
 
 void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,

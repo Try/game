@@ -47,10 +47,12 @@ UnitList::UnitList(CommandsPanel *panel, Resource & res , UnitView *uview)
   setSizePolicy( MyWidget::FixedMin, MyWidget::Preferred );
   }
 
-void UnitList::setup(const std::vector<GameObject*> &u ) {
-  if( u.size() ){
-    cmd->bind(u[0]);
-    uview->setupUnit( u[0] );
+void UnitList::setup(const std::vector<GameObject*> &ux ) {
+  units = ux;
+
+  if( units.size() ){
+    cmd->bind( units[0]);
+    uview->setupUnit( units[0] );
     } else {
     cmd->bind(0);
     uview->setupUnit( 0 );
@@ -58,25 +60,25 @@ void UnitList::setup(const std::vector<GameObject*> &u ) {
 
   view->layout().removeAll();
   btn.clear();
-  setScroolBarVisible( u.size()>30 );
+  setScroolBarVisible( units.size()>30 );
 
   const int sz = 40;
 
-  view->setMinimumSize( sz*10, sz*(u.size()/10+1) );
+  view->setMinimumSize( sz*10, sz*(units.size()/10+1) );
 
-  if( u.size()==1 ){
+  if( units.size()==1 ){
     view->setMinimumSize( sz*10, h() );
-    UnitInfo *ux = new UnitInfo( *u[0], res );
+    UnitInfo *ux = new UnitInfo( *units[0], res );
     ux->resize( sz*10, view->h() );
 
     view->layout().add( ux );
     return;
     }
 
-  for( size_t i=0; i<u.size(); ++i ){
+  for( size_t i=0; i<units.size(); ++i ){
     Btn *b = new Btn(res);
-    b->icon.data = res.pixmap("gui/icon/"+u[i]->getClass().name);
-    b->owner = u[i];
+    b->icon.data = res.pixmap("gui/icon/"+units[i]->getClass().name);
+    b->owner = units[i];
     b->setGeometry( sz*(i%10), sz*(i/10), sz, sz );
 
     view->layout().add( b );
@@ -85,6 +87,13 @@ void UnitList::setup(const std::vector<GameObject*> &u ) {
   }
 
 void UnitList::onUnitDied(GameObject &obj) {
+  units.resize( std::remove( units.begin(), units.end(), &obj ) - units.begin() );
+
+  if( units.size()==1 ){
+    setup( units );
+    return;
+    }
+
   for( size_t i=0; i<btn.size(); ++i ){
     if( btn[i] && btn[i]->owner==&obj ){
       btn[i]->deleteLater();
@@ -99,9 +108,8 @@ void UnitList::onUnitDied(GameObject &obj) {
       }
     }
 
-  for( size_t i=0; i<btn.size(); ++i )
-    if( btn[i] )
-      return;
+  if( units.size() )
+    return;
 
   cmd->bind(0);
   uview->setupUnit( 0 );
