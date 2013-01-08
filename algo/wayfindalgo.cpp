@@ -123,7 +123,6 @@ void WayFindAlgo::findWay(std::vector<GameObject*> &objs,
     return;
 
   findWay( obj, x, y, rx, ry );
-  int gf = terrain.nextGroupMask();
 
   for( size_t i=0; i<objs.size(); ++i ){
     GameObject & obj = *objs[i];
@@ -135,7 +134,6 @@ void WayFindAlgo::findWay(std::vector<GameObject*> &objs,
 
     if( b && clasterMap.validate(x,y) && clasterMap[x][y]==cls ){
       b->setWay( way );
-      b->mask = gf;
       }
     }
   }

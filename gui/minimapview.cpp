@@ -87,7 +87,93 @@ void MiniMapView::render(World &wx) {
               }
           }
       }
+    cashed = renderTo;
+    }
 
-    setTexture( res.ltexHolder.create( renderTo, 0) );
+
+  renderTo = cashed;
+  MyGL::Pixmap::Pixel pix;
+  pix.r = 255;
+  pix.g = 255;
+  pix.b = 255;
+  pix.a = 255;
+
+  World::CameraViewBounds b = wx.cameraBounds();
+  int sx = wx.terrain().width()*Terrain::quadSize,
+      sy = wx.terrain().width()*Terrain::quadSize;
+
+  for( int i=0; i<4; ++i ){
+    b.x[i] = (b.x[i]*renderTo.width()) /sx;
+    b.y[i] = (b.y[i]*renderTo.height())/sy;
+    }
+
+  lineTo( renderTo, b.x[0], b.y[0], b.x[1], b.y[1] );
+  lineTo( renderTo, b.x[0], b.y[0], b.x[2], b.y[2] );
+  lineTo( renderTo, b.x[1], b.y[1], b.x[3], b.y[3] );
+  lineTo( renderTo, b.x[3], b.y[3], b.x[2], b.y[2] );
+
+  setTexture( MyGL::Texture2d() );
+  setTexture( res.ltexHolder.create( renderTo, 0) );
+  }
+
+void MiniMapView::lineTo( MyGL::Pixmap &renderTo,
+                          int x0, int y0,
+                          int x1, int y1) {
+  MyGL::Pixmap::Pixel pix;
+  pix.r = 255;
+  pix.g = 255;
+  pix.b = 255;
+  pix.a = 255;
+
+  if( x0==x1 && 0<=x1 && x1<renderTo.width() ){
+    if( y0>y1 )
+      std::swap(y0,y1);
+
+    y0 = std::max(0,y0);
+    y1 = std::min(renderTo.height()-1,y1+1);
+    for( int i=y0; i<y1; ++i )
+      renderTo.set(x0, i, pix);
+
+    return;
+    }
+
+  if( y0==y1 && 0<=y1 && y1<renderTo.height() ){
+    if( x0>x1 )
+      std::swap(x0,x1);
+
+    x0 = std::max(0,x0);
+    x1 = std::min(renderTo.width()-1,x1+1);
+    for( int i=x0; i<x1; ++i )
+      renderTo.set(i, y0, pix);
+
+    return;
+    }
+
+  const int deltaX = abs(x1 - x0);
+  const int deltaY = abs(y1 - y0);
+  const int signX = x0 < x1 ? 1 : -1;
+  const int signY = y0 < y1 ? 1 : -1;
+
+  int error = deltaX - deltaY;
+
+  if( 0<=x1 && x1<renderTo.width() &&
+      0<=y1 && y1<renderTo.height() )
+    renderTo.set(x1, y1, pix);
+
+  while(x0 != x1 || y0 != y1) {
+    if( 0<=x0 && x0<renderTo.width() &&
+        0<=y0 && y0<renderTo.height() )
+      renderTo.set(x0, y0, pix);
+
+    const int error2 = error * 2;
+
+    if(error2 > -deltaY) {
+      error -= deltaY;
+      x0 += signX;
+      }
+    if(error2 < deltaX) {
+      error += deltaX;
+      y0 += signY;
+      }
     }
   }

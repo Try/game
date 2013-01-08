@@ -118,6 +118,7 @@ void CommandsPanel::Layout::applyLayout() {
 void CommandsPanel::bind(GameObject *u ) {
   if( u0==u )
     return;
+  u0 = u;
 
   for( size_t i=0; i<layout().widgets().size(); ++i )
     layout().widgets()[i]->deleteLater();
@@ -125,7 +126,6 @@ void CommandsPanel::bind(GameObject *u ) {
   if( u==0 )
     return;
 
-  u0 = u;
   setPage(0);
   }
 

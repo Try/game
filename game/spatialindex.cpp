@@ -11,6 +11,7 @@
 
 SpatialIndex::SpatialIndex(int w, int h):w(w), h(h) {
   psum.resize( w*h );
+  obj.reserve(w*h);
   }
 
 void SpatialIndex::fill(std::vector<PGameObject> &xobj ) {

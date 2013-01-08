@@ -201,129 +201,16 @@ void GameObject::setViewSize( MyGL::GraphicObject &obj,
 void GameObject::setViewSize(float x, float y, float z) {
   view.setViewSize(x,y,z);
   view.setSelectionVisible( m.isMouseOwer );
-  /*
-  for( size_t i=0; i<view.size(); ++i ){
-    setViewSize( view[i], getClass().view[i], x, y, z );
-    }
-
-  double ss[3] = { m.radius*x, m.radius*y, z };
-
-  m.selectionSize[2] = ss[2];
-  if( view.size() ){
-    for( int i=0; i<2; ++i )
-      m.selectionSize[i] = ss[i]*getClass().view[0].size[i]/1.44;
-    }
-
-  selection.setVisible( m.isMouseOwer );
-
-  double s = m.selectionSize[0];
-  for( int i=0; i<2; ++i )
-    s = std::min(s, m.selectionSize[i] );
-
-  selection.setSize( s );
-  */
-  }
-/*
-void GameObject::setForm(const Physics::Sphere &f) {
-  form.sphere = f;
-  //animForm = Physics::AnimatedSphere();
   }
 
-void GameObject::setForm(const Physics::Box &f) {
-  form.box = f;
-  //animForm = Physics::AnimatedSphere();
-  }
-
-void GameObject::setForm(const Physics::AnimatedSphere &f) {
-  anim.sphere = f;
-  //form = Physics::Sphere();
-  }
-
-void GameObject::setForm(const Physics::AnimatedBox &f) {
-  anim.box = f;
-  //form = Physics::Sphere();
-  }
-*/
 void GameObject::updatePos() {
   view.updatePos();
-  /*
-  //anim bodyes
-  if( anim.sphere.isValid() && view.size() ){
-    MyGL::GraphicObject & g = view[0];
-    anim.sphere.setPosition( g.x(), g.y(), g.z() );
-    }
-
-  if( anim.box.isValid() && view.size() ){
-    MyGL::GraphicObject & g = view[0];
-    anim.box.setPosition( g.x(), g.y(), g.z() );
-    }
-
-  //rigid bodyes
-  if( form.sphere.isValid() ){
-    updatePosRigid(form.sphere);
-    }
-
-  if( form.box.isValid() ){
-    updatePosRigid(form.box);
-    }
-    */
-  }
-/*
-template< class Rigid >
-void GameObject::updatePosRigid( Rigid &rigid ){
-  // rigid.activate();
-  setViewPosition( rigid.x(), rigid.y(), rigid.z() );
-
-  for( size_t i=0; i<env.size(); ++i ){
-    updatePosRigid(rigid, i);
-    }
   }
 
-void GameObject::updatePosRigid( Physics::Sphere &rigid, size_t i ) {
-  MyGL::Matrix4x4 m;
-  m.identity();
-
-  m.mul  ( rigid.transform() );
-  m.scale( rigid.diameter()  );
-
-  if( i<getClass().view.size() ){
-    double sphereDiameter = getClass().view[i].sphereDiameter;
-
-    m.scale( getClass().view[i].size[0]/sphereDiameter,
-             getClass().view[i].size[1]/sphereDiameter,
-             getClass().view[i].size[2]/sphereDiameter );
-
-    //if( getClass().view[i].align[2] )
-      //m.translate( 0, 0, -getClass().view[i].size[2]/sphereDiameter );
-    }
-  //m.translate( 0, 0, -0.8 );
-
-  env[i].setTransform( m );
+void GameObject::updateSmallObjects() {
+  view.updateSmallObjects();
   }
 
-void GameObject::updatePosRigid( Physics::Box &rigid, size_t i ) {
-  MyGL::Matrix4x4 m;
-  m.identity();
-
-  m.mul  ( rigid.transform() );
-  const double * bs = getClass().view[i].boxSize;
-  m.scale( bs[0], bs[1], bs[2] );
-
-  if( i<getClass().view.size() ){
-    const double * lbs = getClass().view[i].boxSize;
-
-    m.scale( getClass().view[i].size[0]/lbs[0],
-             getClass().view[i].size[1]/lbs[1],
-             getClass().view[i].size[2]/lbs[2] );
-
-    //if( getClass().view[i].align[2] )
-      //m.translate( 0, 0, -getClass().view[i].size[2]/sphereDiameter );
-    }
-  //m.translate( 0, 0, -0.8 );
-
-  env[i].setTransform( m );
-  }
-*/
 const ProtoObject &GameObject::getClass() const {
   return *myClass;
   }

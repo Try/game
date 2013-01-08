@@ -2,6 +2,7 @@
 
 #include <MyGL/VertexShaderHolder>
 #include <MyGL/LocalVertexBufferHolder>
+#include <MyGL/LocalTexturesHolder>
 
 #include <tinyxml.h>
 #include <iostream>
@@ -172,7 +173,7 @@ Resource::Resource( MyGL::TextureHolder       & tx,
     iboHolder(ih),
     vsHolder(vsh),
     fsHolder(fsh),
-    pixmaps( texHolder ){
+    pixmaps( ltexHolder ){
   Model model;
   MyGL::Model<>::Raw raw = MyGL::Model<>::loadRawData("./data/models/model.mx");
 

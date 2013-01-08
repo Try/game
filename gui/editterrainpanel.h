@@ -21,6 +21,7 @@ class EditTerrainPanel : public MyWidget::Widget {
 
     void setupEHeight();
     void setupCombo();
+    void setupAlign();
 
     void setTexture( const std::string& str );
 

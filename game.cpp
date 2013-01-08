@@ -99,6 +99,20 @@ void Game::tick() {
 
   DWORD time = GetTickCount();
 
+  World::CameraViewBounds b;
+  F3 vb[4];
+  vb[0] = unProject( 0, 0 );
+  vb[1] = unProject( w, 0 );
+  vb[2] = unProject( 0, h );
+  vb[3] = unProject( w, h );
+
+  for( int i=0; i<4; ++i ){
+    b.x[i] = World::coordCastD(vb[i].data[0]);
+    b.y[i] = World::coordCastD(vb[i].data[1]);
+    }
+
+  world->setCameraBounds(b);
+
   F3 v = unProject( curMPos.x, curMPos.y );
   int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
       vy = World::coordCastD(v.data[1])/Terrain::quadSize;
@@ -136,8 +150,10 @@ void Game::render( size_t dt ) {
   DWORD time = GetTickCount();
 
   if( graphics.render( world->getScene(),
-                       world->getParticles(), dt ))
+                       world->getParticles(), dt )){
     gui.renderMinimap(*world);
+    world->onRender();
+    }
 
   ++fps.n;
   fps.time += int(GetTickCount() - time);

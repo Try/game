@@ -55,6 +55,7 @@ class GameObject {
                              float x, float y, float z);
 
     void updatePos();
+    void updateSmallObjects();
     void tick( const Terrain & terrain );
 
     const ProtoObject & getClass() const;

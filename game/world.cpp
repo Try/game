@@ -29,7 +29,7 @@ World::World( GraphicsSystem& g,
     particles(scene, p, r) {
   tx = ty = 0;
 
-  terr.reset( new Terrain(w,h, scene, *this, p) );
+  terr.reset( new Terrain( w,h, r, scene, *this, p) );
 
   particles.setupMaterial.bind( setupMaterial );
 
@@ -73,6 +73,14 @@ float World::zAt(float x, float y) const {
   cz = std::max(cz,0.0f);
 
   return cz;
+  }
+
+const World::CameraViewBounds &World::cameraBounds() const {
+  return cameraVBounds;
+  }
+
+void World::setCameraBounds( const CameraViewBounds &c ) {
+  cameraVBounds = c;
   }
 
 void World::createTestMap() {
@@ -191,15 +199,20 @@ GameObject &World::addObject( const ProtoObject &p,
   obj->loadView( resource, physics, env );
   obj->setPosition(0,0,0);
 
+  PGameObject pobj = PGameObject(obj);
   if( env ){
-    eviObjects.push_back( PGameObject(obj) );
-    } else
-    gameObjects.push_back( PGameObject( obj ) );
+    eviObjects.push_back( pobj );
+    } else {
+    gameObjects.push_back( pobj );
+    }
 
   if( !env ){
-    if( p.data.isBackground || env )
-      obj->setPlayer( 0 ); else
+    if( p.data.isBackground ){
+      obj->setPlayer( 0 );
+      } else {
       obj->setPlayer( pl );
+      nonBackground.push_back( pobj );
+      }
     }
 
   return *obj;
@@ -210,8 +223,9 @@ void World::deleteObject(GameObject *obj) {
     if( game.player(i).editObj==obj )
       game.player(i).editObj = 0;
 
-  deleteObject( gameObjects, obj );
-  deleteObject(  eviObjects, obj );
+  deleteObject(  gameObjects,  obj );
+  deleteObject(   eviObjects,  obj );
+  deleteObject( nonBackground, obj );
 
   for( size_t i=0; i<wptrs.size(); ++i )
     if( wptrs[i]->v.get()==obj )
@@ -585,30 +599,23 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
 
     terr->buildGeometry( graphics.vboHolder,
                          graphics.iboHolder );
-    /*
-    terrainView->loadView( terr->buildGeometry( graphics.vboHolder,
-                                                graphics.iboHolder ) );
-    waterView->loadView  ( terr->waterGeometry( graphics.vboHolder,
-                                                graphics.iboHolder ) );
-                                                */
     physics.setTerrain( *terr );
+    }
+  }
+
+void World::onRender() {
+  terr->updatePolish();
+
+  for( size_t i=0; i<gameObjects.size(); ++i ){
+    GameObject & obj = *gameObjects[i];
+    obj.updateSmallObjects();
     }
   }
 
 void World::tick() {
   scene.setCamera( camera );
 
-  terr->resetBusyMap();
-  spatialId.fill( gameObjects );
-
-  for( size_t i=0; i<gameObjects.size(); ++i ){
-    GameObject & obj = *gameObjects[ gameObjects.size()-i-1 ];
-    int wx = obj.x()/Terrain::quadSize,
-        wy = obj.y()/Terrain::quadSize;
-
-    terr->incBusyAt(wx,wy, obj);
-    }
-
+  spatialId.fill( nonBackground );
   spatialId.solveColisions();
 
   for( size_t i=0; i<gameObjects.size(); ++i ){
@@ -672,6 +679,8 @@ ParticleSystemEngine &World::getParticles() {
 
 void World::serialize(GameSerializer &s) {
   terr->serialize(s);
+  spatialId = SpatialIndex( terr->width(),
+                            terr->height() );
 
   if( s.isReader() ){
     terr->buildGeometry( graphics.vboHolder,

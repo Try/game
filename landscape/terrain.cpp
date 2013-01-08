@@ -10,14 +10,13 @@
 #include <memory>
 #include <algorithm>
 
-const int Terrain::busyMapsCount = 4;
-
 Terrain::Terrain(int w, int h,
-                 MyGL::Scene &s,
-                 World &wrld,
-                 const PrototypesLoader &pl)
-        :scene(s), world(wrld), prototype(pl) {
-  groupMask = 0;
+                  Resource & res,
+                  MyGL::Scene &s,
+                  World &wrld,
+                  const PrototypesLoader &pl)
+  :scene(s), world(wrld), prototype(pl), res(res) {
+  //groupMask = 0;
 
   land. reserve( w*h*6 );
   minor.reserve( w*h*6 );
@@ -38,24 +37,22 @@ Terrain::Terrain(int w, int h,
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
   chunks.resize( w/64, h/64 );
-
+/*
   for( int i=0; i<busyMapsCount; ++i ){
     int n = i+1;
     busyMap[i].resize(w/n,h/n);
     }
-
+*/
   std::fill( heightMap.begin(),    heightMap.end(),     0 );
   std::fill( waterMap.begin(),     waterMap.end(),      0 );
   std::fill( buildingsMap.begin(), buildingsMap.end(),  0 );
-  resetBusyMap();
+  //resetBusyMap();
   computeEnableMap();
   }
 
 void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                              MyGL::IndexBufferHolder  & iboHolder){
   computePlanes();
-
-  landView.clear();
 
   for( int i=0; i<chunks.width(); ++i )
     for( int r=0; r<chunks.height(); ++r )
@@ -80,14 +77,11 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
       }
     }
 
-  View view;
-  view.view.reset( new GameObjectView( scene,
+  waterView.view.reset( new GameObjectView( scene,
                                        world,
                                        prototype.get( "water" ),
                                        prototype) );
-  view.view->loadView( waterGeometry(vboHolder, iboHolder) );
-
-  landView.push_back( view );
+  waterView.view->loadView( waterGeometry(vboHolder, iboHolder) );
 
   for( int i=0; i<chunks.width(); ++i )
     for( int r=0; r<chunks.height(); ++r )
@@ -374,12 +368,32 @@ void Terrain::brushHeight( int x, int y,
   double R = m.R, dh = 200;
 
   int iR = int(R+2);
-  int lx = std::max(0, x-iR), rx = std::min(width(), x+iR);
-  int ly = std::max(0, y-iR), ry = std::min(width(), y+iR);
+  int lx = std::max(0, x-iR), rx = std::min(width()-1, x+iR);
+  int ly = std::max(0, y-iR), ry = std::min(height()-1, y+iR);
 
   if( alternative )
     dh = -dh;
 
+  if( m.map==EditMode::Align ){
+    x = std::max(0, std::min(x, heightMap.width() -1) );
+    y = std::max(0, std::min(y, heightMap.height()-1) );
+
+    int h  = heightMap[x][y];
+    int hW =  waterMap[x][y];
+
+    for( int i=lx; i<rx; ++i )
+      for( int r=ly; r<ry; ++r ){
+        double factor = std::max(0.0,
+                                 (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
+        factor = (1.0-factor)*(1.0-factor);
+        factor = 1.0 - std::max(factor-0.8, 0.0)/0.2;
+
+        chunks[i/64][r/64].needToUpdate = true;
+
+        heightMap[i][r] += (h -heightMap[i][r])*factor;
+        waterMap [i][r] += (hW- waterMap[i][r])*factor;
+        }
+    } else
   if( m.wmap!= EditMode::None || m.map!=EditMode::None ){
     for( int i=lx; i<rx; ++i )
       for( int r=ly; r<ry; ++r ){
@@ -504,55 +518,6 @@ bool Terrain::isEnableForBuilding( int x, int y ) const {
   return 0;
   }
 
-void Terrain::resetBusyMap() {
-  for( int i=0; i<busyMapsCount; ++i )
-    busyMap[i].reset();
-  }
-
-int Terrain::busyAt(int ix, int iy, int sz) const {
-  int summ = 0;
-  int id = std::max(0, std::min(sz-1, busyMapsCount-1) );
-
-  for( int i=0; i<=id; ++i ){
-    int n = i+1, x = ix/n, y = iy/n;
-
-    x = std::max(0, std::min(x, busyMap[i].count.width()-1) );
-    y = std::max(0, std::min(y, busyMap[i].count.height()-1) );
-
-    summ += busyMap[i].count[x][y];
-    }
-
-  return summ;
-  }
-
-GameObject *Terrain::unitAt(int ix, int iy) const {
-  GameObject * tmp = 0;
-
-  for( int i=0; i<busyMapsCount; ++i ){
-    int id = i+1, x = ix/id, y = iy/id;
-    if( 0<=x && x<busyMap[i].owner.width() &&
-        0<=y && y<busyMap[i].owner.height() )
-      tmp = busyMap[i].owner[x][y];
-
-    if( tmp && !tmp->isOnMove() )
-      return tmp;
-
-    }
-
-  for( int i=0; i<busyMapsCount; ++i ){
-    int id = i+1, x = ix/id, y = iy/id;
-    if( 0<=x && x<busyMap[i].owner.width() &&
-        0<=y && y<busyMap[i].owner.height() )
-      tmp = busyMap[i].owner[x][y];
-
-    if( tmp )
-      return tmp;
-
-    }
-
-  return 0;
-  }
-
 bool Terrain::isEnableQuad( int x, int y, int size ) const {
   int lx = x-size+1, rx = x+size,
       ly = y-size+1, ry = y+size;
@@ -567,32 +532,6 @@ bool Terrain::isEnableQuad( int x, int y, int size ) const {
         return 0;
 
   return 1;
-  }
-
-void Terrain::incBusyAt(int x, int y, GameObject &owner) {
-  return;//!
-
-  if( !owner.isMoviable() || owner.isMineralMove() )
-    return;
-
-  int sz = owner.getClass().data.size;
-
-  sz = std::max(1, std::min( sz, busyMapsCount) );
-  int id = sz-1;
-  x /= sz;
-  y /= sz;
-
-  if( 0<=x && x<busyMap[id].count.width() &&
-      0<=y && y<busyMap[id].count.height() ){
-    ++busyMap[id].count[x][y];
-
-    GameObject *& ptr = busyMap[id].owner[x][y];
-
-    if( ptr==0 ||
-        (ptr->isOnMove() && !ptr->isRepositionMove()) ){
-      ptr = &owner;
-      }
-    }
   }
 
 std::pair<int, int> Terrain::nearestEnable( int x, int y, int sz) const {
@@ -619,7 +558,7 @@ std::pair<int, int> Terrain::nearestEnable(int x, int y,
     int found = -1, fx = 0, fy = 0;
 
     for( int i=lx; i<=rx; ++i ){
-      if( isEnableQuad(i, ly, sz) && busyAt(i,ly, sz)==0 ){
+      if( isEnableQuad(i, ly, sz) ){
         int d = abs(i-tgX) + abs(ly-tgY);
         if( found<0 || d< found ){
           found = d;
@@ -629,7 +568,7 @@ std::pair<int, int> Terrain::nearestEnable(int x, int y,
         //return std::make_pair(i, ly);
         }
 
-      if( isEnableQuad(i, ry, sz) && busyAt(i,ry, sz)==0 ){
+      if( isEnableQuad(i, ry, sz) ){
         int d = abs(i-tgX) + abs(ry-tgY);
         if( found<0 || d< found ){
           found = d;
@@ -641,7 +580,7 @@ std::pair<int, int> Terrain::nearestEnable(int x, int y,
       }
 
     for( int i=ly; i<=ry; ++i ){
-      if( isEnableQuad(lx, i, sz) && busyAt(lx, i, sz)==0 ){
+      if( isEnableQuad(lx, i, sz) ){
         int d = abs(lx-tgX) + abs(i-tgY);
         if( found<0 || d< found ){
           found = d;
@@ -651,7 +590,7 @@ std::pair<int, int> Terrain::nearestEnable(int x, int y,
         //return std::make_pair(lx, i);
         }
 
-      if( isEnableQuad(rx, i, sz) && busyAt(rx, i, sz)==0 ){
+      if( isEnableQuad(rx, i, sz) ){
         int d = abs(rx-tgX) + abs(i-tgY);
         if( found<0 || d< found ){
           found = d;
@@ -668,11 +607,6 @@ std::pair<int, int> Terrain::nearestEnable(int x, int y,
     }
 
   return std::make_pair(x,y);
-  }
-
-unsigned Terrain::nextGroupMask() const {
-  groupMask = (groupMask+1)%65536;
-  return groupMask;
   }
 
 void Terrain::editBuildingsMap(int x, int y, int w, int h, int dv) {
@@ -734,16 +668,6 @@ int Terrain::depthAt(int x, int y) const {
   return waterMap[x][y];
   }
 
-void Terrain::BusyMap::resize(int w, int h) {
-  count.resize(w,h);
-  owner.resize(w,h);
-  }
-
-void Terrain::BusyMap::reset() {
-  std::fill( count.begin(), count.end(), 0 );
-  std::fill( owner.begin(), owner.end(), (GameObject*)0 );
-  }
-
 void Terrain::serialize( GameSerializer &s ) {
   int w = heightMap.width()  - 1,
       h = heightMap.height() - 1;
@@ -757,13 +681,9 @@ void Terrain::serialize( GameSerializer &s ) {
   chunks. resize( w/64, h/64 );
 
   for( int i=0; i<chunks.width(); ++i )
-    for( int r=0; r<chunks.height(); ++r )
-      chunks[i][r].needToUpdate  = true;
-
-  for( int i=0; i<busyMapsCount; ++i ){
-    int n = i+1;
-    busyMap[i].resize(w/n,h/n);
-    }
+    for( int r=0; r<chunks.height(); ++r ){
+      chunks[i][r] = TerrainChunk();
+      }
 
   for( int i=0; i<w; ++i )
     for( int r=0; r<h; ++r ){
@@ -800,8 +720,13 @@ void Terrain::serialize( GameSerializer &s ) {
     std::fill( buildingsMap.begin(), buildingsMap.end(),  0 );
     }
 
-  resetBusyMap();
   computeEnableMap();
+  }
+
+void Terrain::updatePolish() {
+  for( int i=0; i<chunks.width(); ++i )
+    for( int r=0; r<chunks.height(); ++r )
+      chunks[i][r].update( res );
   }
 
 

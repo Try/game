@@ -6,6 +6,7 @@
 #include "game.h"
 
 #include "util/gameserializer.h"
+#include "graphics/smallobjectsview.h"
 
 #include <cmath>
 
@@ -170,14 +171,24 @@ void GameObjectView::loadView( const Resource & r,
 
     } else {
     if( !src.isParticle ){
-      MyGL::GraphicObject object( scene );
-      object.setModel( model );
+      if( model.size() > 64*3 || !getClass().data.isBackground ){
+        MyGL::GraphicObject object( scene );
+        object.setModel( model );
 
-      view.push_back( object );
-      obj = &view.back();
+        view.push_back( object );
+        if( src.randRotate ){
+          view.back().setRotation(0, rand()%360 );
+          }
 
-      if( src.randRotate ){
-        view.back().setRotation(0, rand()%360 );
+        obj = &view.back();
+        } else {
+        SmallGraphicsObject* object = new SmallGraphicsObject( scene,
+                                                               wrld.game,
+                                                               wrld.terrain(),
+                                                               src );
+        object->setModel( model );
+
+        smallViews.push_back( std::unique_ptr<SmallGraphicsObject>(object) );
         }
 
       //view.back().setSize( sz[0], sz[1], sz[2] );
@@ -187,7 +198,7 @@ void GameObjectView::loadView( const Resource & r,
       }
     }
 
-  if( !src.isParticle ){
+  if( obj ){
     setupMaterials(*obj, src );
     }
 
@@ -237,6 +248,10 @@ void GameObjectView::setViewPosition( float x, float y, float z,
     setViewPosition( view[i], getClass().view[i], x, y, z, interp );
     }
 
+  for( size_t i=0; i<smallViews.size(); ++i ){
+    setViewPosition( *smallViews[i], smallViews[i]->view, x, y, z, interp );
+    }
+
   for( size_t i=0; i<particles.size(); ++i ){
     particles[i].setPosition( x, y, z );
     }
@@ -272,7 +287,8 @@ void GameObjectView::setViewPosition( float x, float y, float z,
     }
   }
 
-void GameObjectView::setViewPosition( MyGL::GraphicObject& obj,
+template< class Object >
+void GameObjectView::setViewPosition( Object& obj,
                                       const ProtoObject::View & v,
                                       float x,
                                       float y,
@@ -294,7 +310,8 @@ void GameObjectView::setViewPosition( MyGL::GraphicObject& obj,
   float ly = obj.y() + (y+dy - obj.y())*interp;
   float lz = obj.z() + (z+dz - obj.z())*interp;
 
-  obj.setPosition( lx,ly,lz );
+  if( lx!=obj.x() || ly!=obj.y() || lz!=obj.z() )
+    obj.setPosition( lx,ly,lz );
   }
 
 double GameObjectView::viewHeight() const {
@@ -311,6 +328,10 @@ double GameObjectView::viewHeight() const {
 void GameObjectView::setViewSize( float x, float y, float z ) {
   for( size_t i=0; i<view.size(); ++i ){
     setViewSize( view[i], getClass().view[i], x, y, z );
+    }
+
+  for( size_t i=0; i<smallViews.size(); ++i ){
+    setViewSize( *smallViews[i], smallViews[i]->view, x, y, z );
     }
 
   double ss[3] = { m.radius*x, m.radius*y, z };
@@ -330,7 +351,8 @@ void GameObjectView::setViewSize( float x, float y, float z ) {
   selection.setSize( s );
   }
 
-void GameObjectView::setViewSize( MyGL::GraphicObject &obj,
+template< class Object >
+void GameObjectView::setViewSize( Object &obj,
                                   const ProtoObject::View & v,
                                   float x, float y, float z ) {
   const double *s = v.size;  
@@ -399,14 +421,26 @@ void GameObjectView::rotate( int delta ) {
 
     view[i].setRotation( 0, a );
     }
-  }
 
-void GameObjectView::setRotation( int a ) {
-  for( size_t i=0; i<view.size(); ++i ){
+  for( size_t i=0; i<smallViews.size(); ++i ){
+    double a = smallViews[i]->angleZ() + delta;
     m.intentDirX = 10000*cos( M_PI*a/180.0 );
     m.intentDirY = 10000*sin( M_PI*a/180.0 );
 
+    smallViews[i]->setRotation( 0, a );
+    }
+  }
+
+void GameObjectView::setRotation( int a ) {
+  m.intentDirX = 10000*cos( M_PI*a/180.0 );
+  m.intentDirY = 10000*sin( M_PI*a/180.0 );
+
+  for( size_t i=0; i<view.size(); ++i ){
     view[i].setRotation( 0, a );
+    }
+
+  for( size_t i=0; i<smallViews.size(); ++i ){
+    smallViews[i]->setRotation( 0, a );
     }
   }
 
@@ -446,9 +480,25 @@ void GameObjectView::tick() {
       } else {
       view[i].setRotation(0, a);
       }
+    }
+
+  for( size_t i=0; i<smallViews.size(); ++i ){
+    smallViews[i]->setRotation( 0, a );
+    double az = smallViews[i]->angleZ();
+    double da = a - az;
+
+    if( fabs(da) > at && !smallViews[i]->view.randRotate ){
+      if( cos( M_PI*da/180.0 ) > cos(M_PI*2*at/180.0 ) )
+        smallViews[i]->setRotation(0, a); else
+      if( sin( M_PI*da/180.0 ) > 0 )
+        smallViews[i]->setRotation(0, az+at); else
+        smallViews[i]->setRotation(0, az-at);
+      } else {
+      smallViews[i]->setRotation(0, a);
+      }
+    }
 
   }
-}
 
 template< class Rigid >
 void GameObjectView::updatePosRigid( Rigid &rigid ){
@@ -526,6 +576,11 @@ double GameObjectView::rawRadius() const {
   return m.radius;
   }
 
+void GameObjectView::updateSmallObjects() {
+  for( size_t i=0; i<smallViews.size(); ++i )
+    smallViews[i]->update();
+  }
+
 Physics *GameObjectView::physicEngine() const {
   return physic;
   }
@@ -554,7 +609,7 @@ void GameObjectView::serialize( GameSerializer &s ) {
   unsigned vsize = view.size();
   s + vsize;
 
-  vsize = std::min( vsize, view.size() );
+  //vsize = view.size();//std::min( vsize, view.size() );
 
   if( s.version()>=2 ){
     int rndS[3];
@@ -574,13 +629,27 @@ void GameObjectView::serialize( GameSerializer &s ) {
   const int mulI = 10000;
 
   for( unsigned i=0; i<vsize; ++i ){
-    MyGL::GraphicObject & g = view[i];
-    int x = World::coordCastD(g.x()),
-        y = World::coordCastD(g.y()),
-        z = World::coordCastD(g.z()),
+    int x = 0,
+        y = 0,
+        z = 0,
 
-        az = g.angleZ()*mulI,
-        ax = g.angleX()*mulI;
+        az = 0,
+        ax = 0;
+
+    int sz[3] = {};
+    if( !s.isReader() ){
+      MyGL::GraphicObject & g = view[i];
+      x = World::coordCastD(g.x());
+      y = World::coordCastD(g.y());
+      z = World::coordCastD(g.z());
+
+      az = g.angleZ()*mulI;
+      ax = g.angleX()*mulI;
+
+      sz[0] = g.sizeX()*10000;
+      sz[1] = g.sizeY()*10000;
+      sz[2] = g.sizeZ()*10000;
+      }
 
     s + x +
         y +
@@ -590,22 +659,23 @@ void GameObjectView::serialize( GameSerializer &s ) {
         m.intentDirX +
         m.intentDirY;
 
-    g.setPosition( World::coordCast(x),
-                   World::coordCast(y),
-                   World::coordCast(z));
-
-    g.setRotation( ax/double(mulI), az/double(mulI) );
-
     if( s.version()>=2 ){
-      int sz[3];
-      sz[0] = g.sizeX()*10000;
-      sz[1] = g.sizeY()*10000;
-      sz[2] = g.sizeZ()*10000;
-
       for( int i=0; i<3; ++i )
         s + sz[i];
+      }
 
-      g.setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
+    if( i<view.size() ){
+      MyGL::GraphicObject & g = view[i];
+
+      g.setPosition( World::coordCast(x),
+                     World::coordCast(y),
+                     World::coordCast(z));
+
+      g.setRotation( ax/double(mulI), az/double(mulI) );
+
+      if( s.version()>=2 ){
+        g.setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
+        }
       }
     }
   }

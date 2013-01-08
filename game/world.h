@@ -40,6 +40,7 @@ class World {
                       const MyGL::Color & > setupMaterial;
 
     void clickEvent( int x, int y, const MyWidget::MouseEvent &e );
+    void onRender();
 
     static double coordCast( int icoord );
     static double coordCastP( double icoord );
@@ -105,14 +106,24 @@ class World {
                       float x, float y, float z );
 
     float zAt( float x, float y ) const;
+
+    struct CameraViewBounds{
+      int x[4];
+      int y[4];
+      };
+
+    const CameraViewBounds& cameraBounds() const;
+    void setCameraBounds( const CameraViewBounds& c );
   private:
     MyGL::Scene scene;
     std::unique_ptr<Terrain> terr;
 
     int mpos[3];
     Terrain::EditMode editLandMode;
+    CameraViewBounds cameraVBounds;
 
     std::vector< PGameObject > gameObjects, eviObjects;
+    std::vector< PGameObject > nonBackground;
     SpatialIndex spatialId;
     // std::vector< PGameObject > selected;
     std::vector< WeakWorldPtr* > wptrs;

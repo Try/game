@@ -31,8 +31,10 @@ void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
                     MyGL::Texture2d &depth, MyGL::Device &device ) {
   dev = &device;
 
-  if( gui.draw( *this ) )
+  if( gui.draw( *this ) ){
+    guiGeometry = MyGL::VertexBuffer<Vertex>();
     guiGeometry = vbHolder.load( guiRawData.data(), guiRawData.size() );
+    }
 
   MyGL::RenderState rs = makeRS( MyWidget::noBlend );
 

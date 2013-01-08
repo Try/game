@@ -29,8 +29,6 @@ class MoveBehavior : public AbstractBehavior {
     void tick( const Terrain & terrain );
 
     void setWay( const std::vector<Point> & v );
-    int mask;
-
     bool isSameDirection( const MoveBehavior& other );
 
     void setupMoveHook();
@@ -45,7 +43,6 @@ private:
 
     //std::vector<Pos> wayPoints;
     int tx, ty, curentSpeed;
-    int isLocked;
     bool isWayAcept, & isMWalk;
     std::vector<Point> way;
 

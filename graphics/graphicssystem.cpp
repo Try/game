@@ -51,6 +51,8 @@ GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
   widget    = 0;
   time      = 0;
   particles = 0;
+
+  lvboHolder.setReserveSize( 64*8092 );
   }
 
 void GraphicsSystem::makeRenderAlgo( Resource &res,
@@ -335,6 +337,7 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
     }
 
   render.setRenderState( rstate );
+  //return;
 
   const MyGL::AbstractCamera & camera = scene.camera();
 
@@ -504,6 +507,8 @@ void GraphicsSystem::drawObjects( MyGL::VertexShader   vs,
                        vs, fs );
   if( clr )
     render.clear( MyGL::Color(0.0), 1 );
+
+  //return;
 
   const MyGL::AbstractCamera & camera = scene.camera();
 

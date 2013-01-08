@@ -15,6 +15,7 @@ namespace MyGL{
 
 class GameObject;
 class GameSerializer;
+class SmallGraphicsObject;
 
 struct WaterVertex: MVertex{
   float h;
@@ -27,6 +28,7 @@ struct WaterVertex: MVertex{
 class Terrain {
   public:
     Terrain( int w, int h,
+             Resource & res,
              MyGL::Scene & s,
              World       & wrld,
              const PrototypesLoader & pl );
@@ -37,7 +39,8 @@ class Terrain {
       enum EHeight{
         None,
         Up,
-        Down
+        Down,
+        Align
         };
       EHeight map, wmap;
       double R;
@@ -69,11 +72,7 @@ class Terrain {
     bool isEnableForBuilding( int x, int y ) const;
     bool isEnableQuad( int x, int y, int size = 1 ) const;
 
-    void resetBusyMap();
     // int& busyAt( int x, int y );
-    void incBusyAt( int x, int y, GameObject & owner );
-    int  busyAt( int x, int y, int sz ) const;
-    GameObject * unitAt( int x, int y ) const;
 
     std::pair<int,int> nearestEnable( int x, int y, int sz ) const;
     std::pair<int,int> nearestEnable( int x, int y,
@@ -82,21 +81,17 @@ class Terrain {
     static const int   quadSize  = 150;
     static const float quadSizef = quadSize;
 
-    unsigned nextGroupMask() const;
-
     void editBuildingsMap( int x, int y, int w, int h, int dv );
 
     void serialize( GameSerializer &s );
 
+    void updatePolish();
   private:
     MyGL::Scene            & scene;
     World                  & world;
     const PrototypesLoader & prototype;
 
-    struct View{
-      std::shared_ptr<GameObjectView> view;
-      };
-    std::vector<View> landView;
+    TerrainChunk::View waterView;
 
     std::vector< std::string > aviableTiles;
     struct Tile {
@@ -113,17 +108,6 @@ class Terrain {
     array2d<int>  waterMap;
     array2d<int>  buildingsMap;
     array2d<unsigned char>  enableMap;
-
-    mutable int groupMask;
-
-    static const int busyMapsCount;
-    struct BusyMap{
-      array2d<int>  count;
-      array2d<GameObject*>  owner;
-
-      void resize( int w, int h );
-      void reset();
-      } busyMap[4];
 
     int clampX( int x ) const;
     int clampY( int y ) const;
@@ -145,6 +129,9 @@ class Terrain {
                         int cX, int cy );
 
     void computePlanes();
+    Resource & res;
+
+    friend class SmallGraphicsObject;
   };
 
 #endif // TERRAIN_H

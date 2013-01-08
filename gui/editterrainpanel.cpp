@@ -35,6 +35,11 @@ EditTerrainPanel::EditTerrainPanel(Resource &res , PrototypesLoader &prototypes)
   btn->setText("Edit height");
   layout().add( btn );
 
+  btn = new Button(res);
+  btn->clicked.bind( *this, &EditTerrainPanel::setupAlign );
+  btn->setText("Align height");
+  layout().add( btn );
+
   ScroolBar *sb = new ScroolBar(res);
   sb->setOrientation( MyWidget::Horizontal );
   sb->valueChanged.bind( *this, &EditTerrainPanel::setR );
@@ -105,6 +110,17 @@ void EditTerrainPanel::setupCombo() {
   m.R = r;
   m.map  = Terrain::EditMode::Up;
   m.wmap = Terrain::EditMode::Up;
+
+  m.isEnable = true;
+  toogleEditLandMode(m);
+  }
+
+void EditTerrainPanel::setupAlign() {
+  int  r  = m.R;
+  m = Terrain::EditMode();
+  m.R = r;
+  m.map  = Terrain::EditMode::Align;
+  m.wmap = Terrain::EditMode::Align;
 
   m.isEnable = true;
   toogleEditLandMode(m);

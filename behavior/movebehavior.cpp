@@ -14,7 +14,7 @@ MoveBehavior::MoveBehavior( GameObject &object,
   :obj(object), clos(c), isMWalk(c.isMineralMove) {
   tx = 0;
   ty = 0;
-  isLocked = 0;
+
   isWayAcept = 0;
   isMWalk    = 0;
 
@@ -24,7 +24,6 @@ MoveBehavior::MoveBehavior( GameObject &object,
   clos.colisionDisp[1] = 0;
 
   clos.isMoviable = true;
-  mask = -1;
 
   instaled = 0;
   hook.mouseDown.bind( *this, &MoveBehavior::mouseDown    );
@@ -76,8 +75,6 @@ void MoveBehavior::moveEvent( MineralMoveEvent &m ) {
 
   tx = m.x;
   ty = m.y;
-  mask = -1;
-  isLocked = 0;
 
   clos.isOnMove    = true;
   clos.isReposMove = false;
@@ -91,8 +88,6 @@ void MoveBehavior::stopEvent(StopEvent &) {
 
   tx = obj.x();
   ty = obj.y();
-  mask = -1;
-  isLocked = 0;
 
   clos.isOnMove    = false;
   clos.isReposMove = false;
@@ -106,8 +101,6 @@ void MoveBehavior::cancelEvent(CancelEvent &) {
 
   tx = obj.x();
   ty = obj.y();
-  mask = -1;
-  isLocked = 0;
 
   clos.isOnMove    = false;
   clos.isReposMove = false;
@@ -132,7 +125,6 @@ void MoveBehavior::positionChangeEvent( PositionChangeEvent & ) {
 
   tx = obj.x();
   ty = obj.y();
-  isLocked = 0;
   }
 
 void MoveBehavior::calcWayAndMove(int tx, int ty, const Terrain & terrain ) {
@@ -249,41 +241,15 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
     int pwx = obj.x()/Terrain::quadSize,
         pwy = obj.y()/Terrain::quadSize;
 
-    GameObject * u = terrain.unitAt(iwx,iwy);
-    MoveBehavior * b = 0;
-
-    int dot = 1;
-    if( u ){
-      b = u->behavior.find<MoveBehavior>();
-      if( b )
-        dot = (obj.x()-tx)*(u->x() - b->tx) +
-              (obj.y()-ty)*(u->y() - b->ty);
-      }
-    int lockMax = 8*terrain.busyAt(iwx, iwy, sz);
-
-    bool isBusy = ( isMWalk ||
-                    u == 0 ||
-                    b->isMWalk ||
-                    u == &obj  ||
-                    !u->isOnMove() ||
-                    ( b && (dot>0 || isLocked > 5*lockMax) && isLocked > lockMax) ||
-                    clos.isReposMove )
-                  || busyIgnoreFlag;
-
     if(  terrain.isEnable( iwx, iwy) ||
         !terrain.isEnable( pwx, pwy) ){
-      if( isBusy ){
-        int ltx = this->tx, lty = this->ty;
+      int ltx = this->tx, lty = this->ty;
 
-        obj.setPositionSmooth( x, y, terrain.heightAt(wx,wy) );
-        obj.setViewDirection( ltx-obj.x(), lty-obj.y() );
+      obj.setPositionSmooth( x, y, terrain.heightAt(wx,wy) );
+      obj.setViewDirection( ltx-obj.x(), lty-obj.y() );
 
-        this->tx = ltx;
-        this->ty = lty;
-        isLocked = 0;
-        } else {
-        isLocked += 1;
-        }
+      this->tx = ltx;
+      this->ty = lty;
       } else {
       if( way.size() ){
         this->tx = way[0].x;
@@ -299,7 +265,6 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
     if( !nextPoint() ){
       clos.isOnMove     = false;
       clos.isReposMove  = false;
-      mask = -1;
       curentSpeed = 0;
       }
     }
@@ -335,7 +300,6 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
 
   int qs = Terrain::quadSize, hqs = qs/2;
 
-  mask = -1;
   int mx = tx/qs,
       my = ty/qs;
 

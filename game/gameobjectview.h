@@ -6,6 +6,9 @@
 #include "envobject.h"
 #include "game/protoobject.h"
 #include "graphics/particlesystem.h"
+class SmallGraphicsObject;
+
+#include <memory>
 
 class Resource;
 class World;
@@ -71,12 +74,15 @@ class GameObjectView {
     double radius() const;
     double rawRadius() const;
 
+    void updateSmallObjects();
+
     Physics* physicEngine() const;
     void serialize( GameSerializer &s);
 
     const ProtoObject &getClass() const;
     MyGL::Matrix4x4 _transform() const;
-private:
+
+  private:
     void setForm(const Physics::Sphere &f);
     void setForm(const Physics::Box &f);
     void setForm(const Physics::AnimatedSphere &f);
@@ -85,13 +91,15 @@ private:
     void setupMaterials( MyGL::AbstractGraphicObject &obj,
                          const ProtoObject::View &src );
 
-    void setViewPosition(MyGL::GraphicObject &obj,
+    template< class Object >
+    void setViewPosition( Object &obj,
                           const ProtoObject::View & v,
                           float x,
                           float y, float z,
                           float interp);
 
-    void setViewSize( MyGL::GraphicObject &obj,
+    template< class Object >
+    void setViewSize( Object &obj,
                       const ProtoObject::View & v,
                       float x, float y, float z );
 
@@ -113,9 +121,10 @@ private:
       Physics::AnimatedBox    box;
       } anim;
 
-    std::vector<EnvObject> env;
-    std::vector<MyGL::GraphicObject> view;
-    std::vector<ParticleSystem>      particles;
+    std::vector< EnvObject > env;
+    std::vector< MyGL::GraphicObject > view;
+    std::vector< std::unique_ptr<SmallGraphicsObject> > smallViews;
+    std::vector< ParticleSystem >      particles;
 
     Physics * physic;
 
