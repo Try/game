@@ -1,7 +1,6 @@
 #include "gameobject.h"
 
 #include <MyGL/GraphicObject>
-#include <MyGL/Algo/GBufferFillPass>
 
 #include "resource.h"
 
@@ -205,10 +204,6 @@ void GameObject::setViewSize(float x, float y, float z) {
 
 void GameObject::updatePos() {
   view.updatePos();
-  }
-
-void GameObject::updateSmallObjects() {
-  view.updateSmallObjects();
   }
 
 const ProtoObject &GameObject::getClass() const {

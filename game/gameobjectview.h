@@ -74,8 +74,6 @@ class GameObjectView {
     double radius() const;
     double rawRadius() const;
 
-    void updateSmallObjects();
-
     Physics* physicEngine() const;
     void serialize( GameSerializer &s);
 
@@ -140,6 +138,9 @@ class GameObjectView {
 
     void updatePosRigid( Physics::Sphere & r, size_t i );
     void updatePosRigid( Physics::Box    & r, size_t i );
+
+    template< class Obj >
+    void serialize(GameSerializer &s, Obj * obj , bool store);
   };
 
 #endif // GAMEOBJECTVIEW_H

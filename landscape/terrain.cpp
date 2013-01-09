@@ -10,6 +10,8 @@
 #include <memory>
 #include <algorithm>
 
+const int Terrain::chunkSize = 32;
+
 Terrain::Terrain(int w, int h,
                   Resource & res,
                   MyGL::Scene &s,
@@ -36,7 +38,7 @@ Terrain::Terrain(int w, int h,
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
-  chunks.resize( w/64, h/64 );
+  chunks.resize( w/chunkSize, h/chunkSize );
 /*
   for( int i=0; i<busyMapsCount; ++i ){
     int n = i+1;
@@ -388,7 +390,7 @@ void Terrain::brushHeight( int x, int y,
         factor = (1.0-factor)*(1.0-factor);
         factor = 1.0 - std::max(factor-0.8, 0.0)/0.2;
 
-        chunks[i/64][r/64].needToUpdate = true;
+        chunks[i/chunkSize][r/chunkSize].needToUpdate = true;
 
         heightMap[i][r] += (h -heightMap[i][r])*factor;
         waterMap [i][r] += (hW- waterMap[i][r])*factor;
@@ -401,7 +403,7 @@ void Terrain::brushHeight( int x, int y,
                                  (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
         factor = 1.0-(1.0-factor)*(1.0-factor);
 
-        chunks[i/64][r/64].needToUpdate = true;
+        chunks[i/chunkSize][r/chunkSize].needToUpdate = true;
 
         if( m.wmap ){
           heightMap[i][r] += dh*factor;
@@ -428,7 +430,7 @@ void Terrain::brushHeight( int x, int y,
         if( factor>0 ){
           tileset[i][r].textureID[texID] = id;
           }
-        chunks[i/64][r/64].needToUpdate = true;
+        chunks[i/chunkSize][r/chunkSize].needToUpdate = true;
         }
     }
 
@@ -678,12 +680,13 @@ void Terrain::serialize( GameSerializer &s ) {
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
   tileset.resize( w+1, h+1 );
-  chunks. resize( w/64, h/64 );
+  chunks. resize( w/chunkSize, h/chunkSize );
 
-  for( int i=0; i<chunks.width(); ++i )
-    for( int r=0; r<chunks.height(); ++r ){
-      chunks[i][r] = TerrainChunk();
-      }
+  if( s.isReader() )
+    for( int i=0; i<chunks.width(); ++i )
+      for( int r=0; r<chunks.height(); ++r ){
+        chunks[i][r] = TerrainChunk();
+        }
 
   for( int i=0; i<w; ++i )
     for( int r=0; r<h; ++r ){

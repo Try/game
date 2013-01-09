@@ -186,7 +186,7 @@ void GameObjectView::loadView( const Resource & r,
                                                                wrld.game,
                                                                wrld.terrain(),
                                                                src );
-        object->setModel( model );
+        object->setModel( model, src.name+"/model" );
 
         smallViews.push_back( std::unique_ptr<SmallGraphicsObject>(object) );
         }
@@ -411,6 +411,9 @@ void GameObjectView::setSelectionVisible(bool v) {
 void GameObjectView::setVisible(bool v) {
   for( size_t i=0; i<view.size(); ++i )
     view[i].setVisible(v);
+
+  for( size_t i=0; i<smallViews.size(); ++i )
+    smallViews[i]->setVisible(v);
   }
 
 void GameObjectView::rotate( int delta ) {
@@ -576,11 +579,6 @@ double GameObjectView::rawRadius() const {
   return m.radius;
   }
 
-void GameObjectView::updateSmallObjects() {
-  for( size_t i=0; i<smallViews.size(); ++i )
-    smallViews[i]->update();
-  }
-
 Physics *GameObjectView::physicEngine() const {
   return physic;
   }
@@ -626,56 +624,84 @@ void GameObjectView::serialize( GameSerializer &s ) {
       m.rndSize[i] = 1;
     }
 
+  if( s.version()>=3 ){
+    unsigned ssize = smallViews.size();
+    s + ssize;
+
+    for( unsigned i=0; i<vsize; ++i ){
+      bool st = i<view.size();
+      serialize( s, st ? &view[i]:0, st );
+      }
+
+    for( unsigned i=0; i<ssize; ++i ){
+      bool st = i<smallViews.size();
+      serialize( s, st ? smallViews[i].get():0, st );
+      }
+
+    } else {
+    for( unsigned i=0; i<view.size(); ++i ){
+      bool st = i<view.size();
+      serialize( s, st ? &view[i]:0, st );
+      }
+
+    if( vsize>view.size() ){
+      unsigned sc = std::min( smallViews.size(), vsize-view.size() );
+      for( unsigned i=0; i<sc; ++i ){
+        bool st = i<smallViews.size();
+        serialize( s, st ? smallViews[i].get():0, st );
+        }
+      }
+    }
+  }
+
+template< class Obj >
+void GameObjectView::serialize( GameSerializer &s, Obj *g,
+                                bool store ) {
   const int mulI = 10000;
 
-  for( unsigned i=0; i<vsize; ++i ){
-    int x = 0,
-        y = 0,
-        z = 0,
+  int x = 0,
+      y = 0,
+      z = 0,
 
-        az = 0,
-        ax = 0;
+      az = 0,
+      ax = 0;
 
-    int sz[3] = {};
-    if( !s.isReader() ){
-      MyGL::GraphicObject & g = view[i];
-      x = World::coordCastD(g.x());
-      y = World::coordCastD(g.y());
-      z = World::coordCastD(g.z());
+  int sz[3] = {};
+  if( !s.isReader() ){
+    x = World::coordCastD(g->x());
+    y = World::coordCastD(g->y());
+    z = World::coordCastD(g->z());
 
-      az = g.angleZ()*mulI;
-      ax = g.angleX()*mulI;
+    az = g->angleZ()*mulI;
+    ax = g->angleX()*mulI;
 
-      sz[0] = g.sizeX()*10000;
-      sz[1] = g.sizeY()*10000;
-      sz[2] = g.sizeZ()*10000;
-      }
+    sz[0] = g->sizeX()*10000;
+    sz[1] = g->sizeY()*10000;
+    sz[2] = g->sizeZ()*10000;
+    }
 
-    s + x +
-        y +
-        z +
-        az +
-        ax +
-        m.intentDirX +
-        m.intentDirY;
+  s + x +
+      y +
+      z +
+      az +
+      ax +
+      m.intentDirX +
+      m.intentDirY;
+
+  if( s.version()>=2 ){
+    for( int i=0; i<3; ++i )
+      s + sz[i];
+    }
+
+  if( store ){
+    g->setPosition( World::coordCast(x),
+                    World::coordCast(y),
+                    World::coordCast(z));
+
+    g->setRotation( ax/double(mulI), az/double(mulI) );
 
     if( s.version()>=2 ){
-      for( int i=0; i<3; ++i )
-        s + sz[i];
-      }
-
-    if( i<view.size() ){
-      MyGL::GraphicObject & g = view[i];
-
-      g.setPosition( World::coordCast(x),
-                     World::coordCast(y),
-                     World::coordCast(z));
-
-      g.setRotation( ax/double(mulI), az/double(mulI) );
-
-      if( s.version()>=2 ){
-        g.setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
-        }
+      g->setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
       }
     }
   }

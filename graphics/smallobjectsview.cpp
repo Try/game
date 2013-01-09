@@ -17,7 +17,10 @@ SmallGraphicsObject::SmallGraphicsObject( MyGL::Scene &s,
   sy = 0;
   sz = 0;
 
+  model = 0;
+
   glocation    = -1;
+  visible      = true;
   needToUpdate = false;
 
   chunkBase().polishObj.push_back( this );
@@ -29,14 +32,10 @@ SmallGraphicsObject::~SmallGraphicsObject() {
   chunk().needToUpdate = true;
   }
 
-void SmallGraphicsObject::setModel( const Model &m ) {
+void SmallGraphicsObject::setModel( const Model &m, const std::string & key ) {
   bds = m.bounds();
 
-  model.vertex.resize( m.size()*3 );
-  m.vertexes().get( model.vertex.begin(),
-                    model.vertex.end(),
-                    0 );
-
+  model = &game.resources().rawModel( key );
   needToUpdate = true;
   chunk().needToUpdate = true;
   }
@@ -79,6 +78,10 @@ void SmallGraphicsObject::setRotation(float x, float z) {
   az = z;
 
   needToUpdate = true;
+  }
+
+float SmallGraphicsObject::angleX() {
+  return ax;
   }
 
 float SmallGraphicsObject::angleZ() {
@@ -129,10 +132,29 @@ void SmallGraphicsObject::update() {
 void SmallGraphicsObject::updateFull() {
   TerrainChunk::PolishView& vx = chunk();
 
+  if( !vx.needToUpdate )
+    return;
+
   glocation = vx.geometry.vertex.size();
-  vx.geometry.vertex.resize( vx.geometry.vertex.size() + model.vertex.size() );
+  vx.geometry.vertex.resize( vx.geometry.vertex.size() + model->vertex.size() );
 
   applyTransform();
+  }
+
+void SmallGraphicsObject::setVisible(bool v) {
+  if( visible==v )
+    return;
+
+  if( v ){
+    chunkBase().polishObj.push_back( this );
+    } else {
+    remove( chunkBase().polishObj, this );
+    }
+
+  TerrainChunk::PolishView *c = &chunk();
+  c->needToUpdate = true;
+
+  visible = v;
   }
 
 void SmallGraphicsObject::applyTransform() {
@@ -151,8 +173,8 @@ void SmallGraphicsObject::applyTransform() {
   Model::Vertex *v = &vx.geometry.vertex[glocation];
   double x, y, z, w = 1;
 
-  for( size_t i=0; i<model.vertex.size(); ++i, ++v ){
-    Model::Vertex & s = model.vertex[i];
+  for( size_t i=0; i<model->vertex.size(); ++i, ++v ){
+    const Model::Vertex & s = model->vertex[i];
     *v = s;
     mat.project( s.x, s.y, s.z, 1, x, y, z, w );
 
@@ -182,7 +204,9 @@ TerrainChunk::PolishView &SmallGraphicsObject::chunk() {
   game.setupMaterials( vx->obj, view, MyGL::Color() );
   c.polish.push_back( std::shared_ptr<TerrainChunk::PolishView>(vx) );
   glocation = 0;
-  vx->geometry.vertex.resize( model.vertex.size() );
+
+  if( model )
+    vx->geometry.vertex.resize( model->vertex.size() );
 
   return *vx;
   }

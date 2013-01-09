@@ -20,7 +20,7 @@ class BlushMaterial : public MainMaterial {
   };
 
 
-class BlushShMaterial : public MyGL::ShadowMapPassBase::Material {
+class BlushShMaterial : public MyGL::ShadowMapPassMaterial {
   public:
     BlushShMaterial();
   };

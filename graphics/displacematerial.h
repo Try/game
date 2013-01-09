@@ -7,7 +7,7 @@
 #include <MyGL/VertexShader>
 #include <MyGL/FragmentShader>
 
-#include <MyGL/Algo/GBufferFillPass>
+#include <MyGL/Scene>
 
 namespace MyGL{
   class Scene;

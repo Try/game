@@ -208,6 +208,21 @@ const Model& Resource::model(const std::string &key) const {
   return models.get(key);
   }
 
+const Model::Raw &Resource::rawModel(const std::string &key) const {
+  if( !rawModels.contains(key ) ){
+    const Model& m = models.get(key);
+    Model::Raw  *model = new Model::Raw();
+
+    model->vertex.resize( m.size()*3 );
+    m.vertexes().get( model->vertex.begin(),
+                      model->vertex.end(),
+                      0 );
+    rawModels.add( key, std::shared_ptr<Model::Raw>(model) );
+    }
+
+  return *rawModels.get(key);
+  }
+
 Model Resource::model( const MyGL::Model<MVertex>::Raw &r ) const {
   Model m;
 

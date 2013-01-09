@@ -72,6 +72,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   gui.load.bind( *this, &Game::load );
 
   graphics.load( resource, gui, w, h );
+
   gui.renderScene.bind( graphics, &GraphicsSystem::renderSubScene );
 
   worlds.push_back( std::unique_ptr<World>( new World(graphics, resource,
@@ -158,7 +159,7 @@ void Game::render( size_t dt ) {
   ++fps.n;
   fps.time += int(GetTickCount() - time);
 
-  if( fps.n>100 ){
+  if( fps.n>100 || ( fps.n>0 && fps.time>1000 ) ){
     double f = 1000.0*double(fps.n)/std::max(1, fps.time);
     SetWindowTextA( HWND(hwnd),
                     Lexical::upcast( f ).data() );
@@ -175,7 +176,7 @@ void Game::resizeEvent( int iw, int ih ){
 
   // std::cout << w << " " << h << std::endl;
 
-  world->camera.setPerespective(true, w, h );
+  //world->camera.setPerespective(true, w, h );
 
   graphics.resizeEvent( w, h, isFullScreen );
   gui.resizeEvent(w,h);
@@ -531,7 +532,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
 
   MainMaterial material( c.shadow.matrix );
 
-  MyGL::ShadowMapPassBase::Material smMaterial;
+  MyGL::ShadowMapPassMaterial smMaterial;
 
   material.diffuseTexture   = r.texture( src.name+"/diff" );
   material.normalMap        = r.texture( src.name+"/norm" );
@@ -586,7 +587,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
 
     if( contains( src.materials, "shadow_cast" ) ){
       BlushShMaterial sm;
-      (MyGL::ShadowMapPassBase::Material&)sm = smMaterial;
+      (MyGL::ShadowMapPassMaterial&)sm = smMaterial;
 
       if( r.findTexture(src.name+"/sm") )
         sm.diffuseTexture = r.texture( src.name+"/sm" );

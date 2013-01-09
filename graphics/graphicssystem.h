@@ -20,7 +20,6 @@
 #include <MyGL/GraphicObject>
 #include <MyGL/Scene>
 
-#include <MyGL/Algo/GBufferFillPass>
 #include <MyGL/Algo/RenderAlgo>
 #include <MyGL/Algo/ShadowMapPass>
 

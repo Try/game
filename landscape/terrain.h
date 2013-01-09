@@ -132,6 +132,8 @@ class Terrain {
     Resource & res;
 
     friend class SmallGraphicsObject;
+
+    static const int chunkSize;
   };
 
 #endif // TERRAIN_H

@@ -13,6 +13,8 @@
 #include "xml/abstractxmlreader.h"
 #include "pixmapspool.h"
 
+#include <memory>
+
 namespace MyGL{
   class TextureHolder;
   class LocalTexturesHolder;
@@ -52,6 +54,7 @@ class Resource : public AbstractXMLReader {
         MyGL::FragmentShaderHolder& fsHolder );
 
     const Model& model( const std::string & key ) const;
+    const Model::Raw& rawModel( const std::string & key ) const;
     Model model(const MyGL::Model<MVertex>::Raw& r) const;
 
     const MyGL::Texture2d &texture( const std::string & key ) const;
@@ -148,6 +151,7 @@ private:
     void load( PixmapsPool::TexturePtr p, const std::string & f );
 
     Box<Model > models;
+    mutable Box< std::shared_ptr<Model::Raw> > rawModels;
     Box<MyGL::Texture2d> textures;
     Box<MyGL::VertexShader>   vs;
     Box<MyGL::FragmentShader> fs;

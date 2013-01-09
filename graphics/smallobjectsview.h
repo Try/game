@@ -21,7 +21,7 @@ class SmallGraphicsObject {
 
     SmallGraphicsObject& operator = ( const SmallGraphicsObject& other ) = delete;
 
-    void setModel( const Model& m );
+    void setModel(const Model& m , const std::string &key);
 
     void setPosition( float x, float y, float z );
     void setSize( float x, float y, float z );
@@ -38,21 +38,24 @@ class SmallGraphicsObject {
     float sizeZ() const;
 
     void setRotation( float ax, float az );
+    float angleX();
     float angleZ();
 
     void update();
     void updateFull();
+
+    void setVisible( bool v );
   private:
     Terrain * t;
 
-    Model::Raw model;
+    const Model::Raw* model;
     MyGL::ModelBounds bds;
     MyGL::Scene &scene;
 
     Game & game;
     float  mx, my, mz, sx, sy, sz, ax, az;
 
-    bool needToUpdate;
+    bool needToUpdate, visible;
 
     void applyTransform();
 

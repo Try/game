@@ -5,7 +5,6 @@
 #include <MyGL/VertexShader>
 #include <MyGL/FragmentShader>
 
-#include <MyGL/Algo/GBufferFillPass>
 #include <MyGL/Algo/Blit>
 #include <MyGL/MaterialPass>
 
@@ -303,7 +302,7 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& shadowMap,
   MyGL::Texture2d depthSm = depth( shadowMap.width(), shadowMap.height() );
 
   fillShadowMap( shadowMap, depthSm, scene,
-                 scene.objects<MyGL::ShadowMapPassBase::Material>(), 1 );
+                 scene.objects<MyGL::ShadowMapPassMaterial>(), 1 );
   fillShadowMap( shadowMap, depthSm, scene,
                  scene.objects<BlushShMaterial>(), 0 );
   }
@@ -1004,7 +1003,7 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
   MyGL::RenderState rstate;
   rstate.setCullFaceMode( MyGL::RenderState::CullMode::front );
 
-  { const MyGL::Scene::Objects &v = scene.objects<MyGL::ShadowMapPassBase::Material>();
+  { const MyGL::Scene::Objects &v = scene.objects<MyGL::ShadowMapPassMaterial>();
     MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
     MyGL::Render render( device,
                          sm, depthSm,
@@ -1055,7 +1054,7 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
       }
     }
 
-  float s = 4*smMatSize(scene);
+  float s = 6*smMatSize(scene);
   gauss( tmp,  sm, sm.width(), sm.height(), s, 0 );
   gauss(  sm, tmp, sm.width(), sm.height(), 0, s );
 
@@ -1064,6 +1063,12 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
 
   gauss_b( tmp,  sm, sm.width(), sm.height(),  s*3, 0 );
   gauss_b(  sm, tmp, sm.width(), sm.height(),  0, s*3 );
+
+  MyGL::Texture2d::Sampler sampler = reflect;
+  sampler.uClamp = MyGL::Texture2d::ClampMode::Clamp;
+  sampler.vClamp = sampler.uClamp;
+
+  sm.setSampler( sampler );
   }
 
 void GraphicsSystem::renderScene( const MyGL::Scene &scene,

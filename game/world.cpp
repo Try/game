@@ -605,11 +605,6 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
 
 void World::onRender() {
   terr->updatePolish();
-
-  for( size_t i=0; i<gameObjects.size(); ++i ){
-    GameObject & obj = *gameObjects[i];
-    obj.updateSmallObjects();
-    }
   }
 
 void World::tick() {

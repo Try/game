@@ -2,13 +2,16 @@
 #define GUIPASS_H
 
 #include <MyGL/AbstractRenderPass>
-#include <MyGL/Algo/GBufferFillPass>
 
 #include <MyGL/VertexShaderHolder>
 #include <MyGL/FragmentShaderHolder>
 
 #include <MyGL/Size>
 #include <MyWidget/Painter>
+#include <MyGL/RenderState>
+
+#include <MyGL/VertexShader>
+#include <MyGL/FragmentShader>
 
 #include "pixmapspool.h"
 
