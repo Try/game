@@ -41,6 +41,9 @@ void SmallGraphicsObject::setModel( const Model &m, const std::string & key ) {
   }
 
 void SmallGraphicsObject::setPosition(float ix, float iy, float iz) {
+  if( mx==ix && my==iy && mz==iz )
+    return;
+
   bool rm = ( &chunkBase(mx,my)!=&chunkBase(ix,iy) );
 
   if( rm )
@@ -63,6 +66,9 @@ void SmallGraphicsObject::setPosition(float ix, float iy, float iz) {
   }
 
 void SmallGraphicsObject::setSize(float ix, float iy, float iz) {
+  if( sx==ix && sy==iy && sz==iz )
+    return;
+
   sx = ix;
   sy = iy;
   sz = iz;

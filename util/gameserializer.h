@@ -1,9 +1,9 @@
 #ifndef GAMESERIALIZER_H
 #define GAMESERIALIZER_H
 
-#include "serialize.h"
+#include "fileserialize.h"
 
-class GameSerializer : public Serialize {
+class GameSerializer : public FileSerialize {
   public:
     GameSerializer( const std::string & s, OpenMode m );
 

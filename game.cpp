@@ -26,6 +26,9 @@
 
 #include "behavior/buildingbehavior.h"
 
+#include "network/localserver.h"
+#include "network/client.h"
+
 #include <cmath>
 
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
@@ -38,6 +41,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
               graphics.vsHolder,
               graphics.fsHolder ),
     gui( graphics.device, iw, ih, resource, proto ),
+    msg(*this),
     serializator("./serialize_tmp.obj", Serialize::Write ){
   w = iw;
   h = ih;
@@ -136,10 +140,16 @@ void Game::tick() {
                  x, y );
     }
 
-  msg.serialize( serializator );
-  msg.tick( *this, *world );
+  bool isLag = false;
+  if( netUser && netUser->isConnected() )
+    isLag = !msg.syncByNet( *netUser );
 
-  world->tick();
+  if( !isLag ){
+    msg.serialize( serializator );
+    msg.tick( *this, *world );
+
+    world->tick();
+    }
 
   fps.time += int(GetTickCount() - time);
   }
@@ -216,20 +226,22 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
 
   F3 v = unProject( e.x, e.y );
 
-  if( e.button==MyWidget::MouseEvent::ButtonLeft ){
-    if( selectionRectTracking==2 )
-      world->updateSelectionFlag( msg, currentPlayer ); else
-      world->updateSelectionClick( msg, currentPlayer, e.x, e.y,
-                                   w, h );
-    //gui.updateSelectUnits( *world );
-    }
+  if( player().editObj==0 ){
+    if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+      if( selectionRectTracking==2 )
+        world->updateSelectionFlag( msg, currentPlayer ); else
+        world->updateSelectionClick( msg, currentPlayer, e.x, e.y,
+                                     w, h );
+      //gui.updateSelectUnits( *world );
+      }
 
-  if( e.button==MyWidget::MouseEvent::ButtonRight ){
-    msg.message( currentPlayer,
-                 AbstractBehavior::Move,
-                 World::coordCastD(v.data[0]),
-                 World::coordCastD(v.data[1]) );
-    //world->emitHudAnim( "hud/move", v.data[0], v.data[1], v.data[2]+0.01 );
+    if( e.button==MyWidget::MouseEvent::ButtonRight ){
+      msg.message( currentPlayer,
+                   AbstractBehavior::Move,
+                   World::coordCastD(v.data[0]),
+                   World::coordCastD(v.data[1]) );
+      //world->emitHudAnim( "hud/move", v.data[0], v.data[1], v.data[2]+0.01 );
+      }
     }
 
   selectionRectTracking = false;
@@ -390,9 +402,10 @@ void Game::addPlayer() {
 
   if( players.size() == 2 ){
     players[1]->setHostCtrl(1);
-    players[1]->onUnitSelected.bind( gui, &MainGui::updateSelectUnits );
-    players[1]->onUnitDied    .bind( gui, &MainGui::onUnitDied );
     }
+
+  players.back()->onUnitSelected.bind( *this, &Game::onUnitsSelected );
+  players.back()->onUnitDied    .bind( *this, &Game::onUnitDied );
   }
 
 Player &Game::player(int i) {
@@ -417,6 +430,19 @@ void Game::createEditorObject(const ProtoObject &p, int pl) {
                World::coordCastD(world->camera.y()),
                p.name,
                pl );
+  }
+
+void Game::onUnitsSelected( std::vector<GameObject *> &u,
+                            Player & pl ) {
+  if( pl.hasHostControl() ){
+    gui.updateSelectUnits(u);
+    }
+  }
+
+void Game::onUnitDied( GameObject& u, Player & pl ) {
+  if( pl.hasHostControl() ){
+    gui.onUnitDied(u);
+    }
   }
 
 Game::F3 Game::unProject( int x, int y, float destZ ) {
@@ -684,6 +710,10 @@ void Game::load( const std::wstring& f ) {
     serialize(s);
   }
 
+bool Game::isFullScr() const {
+  return isFullScreen;
+  }
+
 void Game::serialize( GameSerializer &s ) {
   std::string magic = "SAV";
   s + magic;
@@ -738,4 +768,30 @@ void Game::serialize( GameSerializer &s ) {
 
   for( size_t i=0; i<worlds.size(); ++i )
     worlds[i]->serialize(s);
+  }
+
+void Game::log(const std::string &l) {
+  std::cout << l << std::endl;
+  }
+
+void Game::setupAsServer() {
+  netUser.reset( new LocalServer() );
+  netUser->onRecv.bind( msg,   &BehaviorMSGQueue::onRecvSrv );
+  netUser->onError.bind( *this, &Game::log );
+
+  netUser->start();
+  }
+
+void Game::setupAsClient() {
+  player(1).setHostCtrl(0);
+  player(2).setHostCtrl(1);
+  currentPlayer = 2;
+
+  Client * c = new Client();
+  netUser.reset( c );
+  netUser->onRecv.bind( msg,   &BehaviorMSGQueue::onRecvClient );
+  netUser->onError.bind( *this, &Game::log );
+  netUser->start();
+
+  c->connect("127.0.0.1");
   }

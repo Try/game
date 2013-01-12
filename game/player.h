@@ -28,8 +28,8 @@ class Player {
     void select( GameObject *obj, bool s );
     std::vector<GameObject*>& selected();
 
-    MyWidget::signal< std::vector<GameObject*>& > onUnitSelected;
-    MyWidget::signal< GameObject& > onUnitDied;
+    MyWidget::signal< std::vector<GameObject*>&, Player& > onUnitSelected;
+    MyWidget::signal< GameObject&, Player& > onUnitDied;
 
     const MyGL::Color& color() const;
 
@@ -46,11 +46,17 @@ class Player {
     void serialize( GameSerializer &s);
     size_t unitsCount() const;
     GameObject& unit( size_t id );
+
+    int number() const;
+
+    bool isInSync() const;
+    void setSyncFlag( bool s );
   private:
     struct {
       int num;
       int team;
       bool htCtrl;
+      bool sync;
 
       int gold, lim, limMax;
       std::vector<GameObject*> objects, selected;

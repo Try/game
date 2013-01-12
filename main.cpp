@@ -1,7 +1,10 @@
 #include "game.h"
 #include <MyWidget/Event>
 
+#ifndef STRICT
 #define STRICT
+#endif
+
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
@@ -87,7 +90,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
     /*try*/
     {
 
-    bool isFullScreen = 1;
+    bool isFullScreen = 0;
 
     int w = GetSystemMetrics(SM_CXFULLSCREEN),
         h = GetSystemMetrics(SM_CYFULLSCREEN);
@@ -99,7 +102,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
     DWORD style = WS_OVERLAPPEDWINDOW | WS_POPUP | WS_VISIBLE;
 
     if( isFullScreen )
-      style = WS_EX_TOPMOST | WS_POPUP;
+      style = WS_POPUP;
 
     g_hWnd = CreateWindowEx( NULL, wclass.data(),
                              wclass.data(),
@@ -125,6 +128,19 @@ int WINAPI WinMain( HINSTANCE hInstance,
                  isFullScreen );
 
       mgl_demo = &demo;
+
+      {
+        LPWSTR *args;
+        int argc = 0;
+        args = CommandLineToArgvW(GetCommandLine(), &argc );
+
+        if( argc>1 && std::wstring(args[1])==L"-s" )
+          demo.setupAsServer();
+
+        if( argc>1 && std::wstring(args[1])==L"-c" )
+          demo.setupAsClient();
+        }
+
       demo.toogleFullScreen.bind( toogleFullScreen );
 
 
@@ -333,6 +349,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         case WM_ACTIVATEAPP:
         {
             isAppActive = (wParam==TRUE);
+
+            if( !isAppActive && mgl_demo->isFullScr() )
+              ShowWindow(g_hWnd, SW_MINIMIZE);
         }
         break;
 

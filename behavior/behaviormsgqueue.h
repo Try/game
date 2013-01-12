@@ -4,14 +4,18 @@
 #include "behavior/abstractbehavior.h"
 #include <vector>
 #include <string>
+#include <memory>
+
+#include "threads/mutex.h"
 
 class World;
 class Game;
 class Serialize;
+class NetUser;
 
 class BehaviorMSGQueue : public AbstractBehavior {
   public:
-    BehaviorMSGQueue();
+    BehaviorMSGQueue( Game & owner );
 
     bool message( Message msg,
                   int x, int y,
@@ -41,7 +45,13 @@ class BehaviorMSGQueue : public AbstractBehavior {
     void tick( const Terrain& );
 
     void serialize( Serialize & s );
+    bool syncByNet( NetUser & usr );
+
+    void onRecvSrv(const std::vector<char> &data );
+    void onRecvClient(const std::vector<char> &data );
   private:
+    Game & game;
+
     struct MSG{
       Message msg;
       int x, y, player;
@@ -52,6 +62,25 @@ class BehaviorMSGQueue : public AbstractBehavior {
       };
 
     std::vector<MSG> data;
+
+    static bool cmp( const MSG& m1, const MSG& m2 );
+
+    enum PkgType{
+      pkInGameSync,
+      pkServerAccept,
+      pkInGameLoad,
+      pkQuit
+      };
+
+    struct RecvBuf{
+      std::vector<MSG> data;
+      bool isRdy;
+      };
+
+    RecvBuf recvBuf;
+    Mutex   recvMutex;
+
+    void serialize( std::vector<MSG>& data, Serialize & s );
 
     void computeWay( World &w, const MSG& m );
     static bool isMoveMSG( const MSG & m );

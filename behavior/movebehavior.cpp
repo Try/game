@@ -42,10 +42,12 @@ MoveBehavior::~MoveBehavior() {
 
 void MoveBehavior::atackMoveEvent( MoveSingleEvent &m ) {
   clos.isReposMove = 0;
+  clos.isOnMove    = true;
 
   isWayAcept = 1;
   isMWalk    = 0;
-  obj.world().game.message( obj.playerNum(), AtackMoveGroup, m.x, m.y, m.modif );
+  obj.world().game.message( obj.playerNum(),
+                            AtackMoveGroup, m.x, m.y, m.modif );
   }
 
 void MoveBehavior::atackContinueEvent(MoveSingleEvent &m) {
@@ -61,6 +63,7 @@ void MoveBehavior::moveEvent( MoveEvent &m ) {
   }
 
 void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
+  clos.isOnMove    = true;
   clos.isReposMove = 0;
   isMWalk    = 0;
 

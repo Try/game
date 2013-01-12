@@ -4,11 +4,17 @@
 #include "algo/wayfindalgo.h"
 #include "algo/algo.h"
 #include "util/serialize.h"
+#include "util/bytearrayserialize.h"
+
 #include "game.h"
 
 #include "recruterbehavior.h"
 
-BehaviorMSGQueue::BehaviorMSGQueue() {
+BehaviorMSGQueue::BehaviorMSGQueue( Game & owner )
+                 :game(owner) {
+  recvBuf.isRdy = false;
+  data.reserve( 64 );
+  recvBuf.data.reserve( 64 );
   }
 
 bool BehaviorMSGQueue::message( Message msg,
@@ -79,12 +85,18 @@ bool BehaviorMSGQueue::isSystemMSG(const BehaviorMSGQueue::MSG &m) {
   }
 
 void BehaviorMSGQueue::unselect( World &w, int pl ) {
+  //if( pl!=w.game.player().number() )
+    //return;
+
   for( size_t i=0; i<w.objectsCount(); ++i )
     if( w.object(i).playerNum()==pl )
       w.object(i).unSelect();
   }
 
 void BehaviorMSGQueue::select( World &w, int pl, size_t b, size_t size ) {
+  //if( pl!=w.game.player().number() )
+    //return;
+
   size += b;
 
   for( size_t i=b; i<size; ++i )
@@ -99,10 +111,11 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
     const MSG m = data[r];
     bool acepted = 0;
 
-    for( size_t i=0; i<w.objectsCount(); ++i ){
-      GameObject & obj = w.object(i);
+    Player &pl = w.game.player( m.player );
+    for( size_t i=0; i<pl.selected().size(); ++i ){
+      GameObject & obj = *pl.selected()[i];
 
-      if( obj.isSelected() ){
+      if( obj.isSelected() && obj.playerNum() ){
         bool a = 0;
         if( m.msg==Buy ){
           a = buyMsgRecv( game, w, obj, m );
@@ -137,6 +150,7 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
     }
 
   tick( w.terrain() );
+  data.clear();
   }
 
 
@@ -212,6 +226,11 @@ bool BehaviorMSGQueue::buyMsgRecv( Game &game,
   }
 
 void BehaviorMSGQueue::serialize( Serialize &s ) {
+  serialize(data,s);
+  }
+
+void BehaviorMSGQueue::serialize( std::vector<BehaviorMSGQueue::MSG> &data,
+                                  Serialize &s ) {
   unsigned sz = data.size();
   s + sz;
 
@@ -238,4 +257,107 @@ void BehaviorMSGQueue::serialize( Serialize &s ) {
 
     m.msg = AbstractBehavior::Message(msgCode);
     }
+  }
+
+bool BehaviorMSGQueue::syncByNet( NetUser &usr ) {
+  if( Lock(recvMutex, Lock::TryLock ) ){
+    if( usr.isServer() ){
+      for( size_t i=1; i<game.plCount(); ++i ){
+        if( !game.player(i).isInSync() && game.player().number()!=int(i) )
+          return false;
+        }
+
+      std::vector<char> v;
+      ByteArraySerialize s(v, Serialize::Write);
+      unsigned x = unsigned(pkServerAccept);
+      s + x;
+      int plN = game.player().number();
+      s + plN;
+
+      for( size_t i=0; i<recvBuf.data.size(); ++i )
+        data.push_back( recvBuf.data[i] );
+      recvBuf.data.clear();
+
+      serialize( s );
+      usr.sendMsg(v);
+
+      for( size_t i=1; i<game.plCount(); ++i ){
+        game.player(i).setSyncFlag(0);
+        }
+      return true;
+      } else {//client
+      if( recvBuf.isRdy ){
+        std::vector<char> v;
+        ByteArraySerialize s(v, Serialize::Write);
+        unsigned x = unsigned(pkInGameSync);
+        s + x;
+        int plN = game.player().number();
+        s + plN;
+        serialize( s );
+
+        usr.sendMsg(v);
+
+        data = recvBuf.data;
+        recvBuf.data.clear();
+        recvBuf.isRdy = false;
+        return true;
+        }
+
+      return false;
+      }
+    }
+
+  return false;
+  }
+
+void BehaviorMSGQueue::onRecvSrv( const std::vector<char> &v ) {
+  recvMutex.lock();
+
+  RecvBuf buf;
+  ByteArraySerialize s(v);
+
+  unsigned pkgType = unsigned(pkInGameSync);
+  s + pkgType;
+
+  if( pkgType==pkInGameSync ){
+    int plN = 0;
+    s + plN;
+
+    game.player(plN).setSyncFlag(1);
+
+    serialize( buf.data, s );
+
+    for( size_t i=0; i<buf.data.size(); ++i )
+      recvBuf.data.push_back( buf.data[i] );
+    //data.clear();
+    }
+
+  recvMutex.unlock();
+  }
+
+void BehaviorMSGQueue::onRecvClient( const std::vector<char> &v ) {
+  recvMutex.lock();
+
+  RecvBuf buf;
+  ByteArraySerialize s(v);
+
+  unsigned pkgType = -1;
+  s + pkgType;
+
+  if( pkgType==pkServerAccept ){
+    int plN = 0;
+    s + plN;
+
+    serialize( buf.data, s );
+
+    recvBuf.data  = buf.data;
+    recvBuf.isRdy = true;
+    }
+
+  recvMutex.unlock();
+  }
+
+bool BehaviorMSGQueue::cmp( const BehaviorMSGQueue::MSG &m1,
+                            const BehaviorMSGQueue::MSG &m2 ) {
+  return m1.player < m2.player;
   }

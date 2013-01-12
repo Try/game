@@ -228,6 +228,8 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
   if( !device.startRender() )
     return false;
 
+  //return false;
+
   time = dt;//(time+dt);
   unsigned tx = time%(16*1024);
 

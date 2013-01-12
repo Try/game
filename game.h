@@ -15,8 +15,10 @@
 #include "gui/maingui.h"
 #include "behavior/behaviormsgqueue.h"
 #include <MyWidget/Event>
-#include "util/serialize.h"
+#include "util/fileserialize.h"
 #include "gui/inputhook.h"
+
+#include "network/netuser.h"
 
 class GameSerializer;
 
@@ -73,6 +75,11 @@ class Game {
 
     void save(const std::wstring &str);
     void load(const std::wstring &str);
+
+    bool isFullScr() const;
+
+    void setupAsServer();
+    void setupAsClient();
   private:
     void* hwnd;
     bool isFullScreen;
@@ -83,7 +90,7 @@ class Game {
 
     MainGui  gui;
     BehaviorMSGQueue msg;
-    Serialize serializator;
+    FileSerialize serializator;
 
     void addPlayer();
     int currentPlayer;
@@ -114,7 +121,14 @@ class Game {
       int n, time;
       } fps;
 
+    std::unique_ptr<NetUser> netUser;
+
     void serialize( GameSerializer &s);
+
+    void log(const std::string &l );
+
+    void onUnitsSelected( std::vector<GameObject*>& u, Player &pl);
+    void onUnitDied( GameObject& u, Player &pl);
   };
 
 #endif // GAME_H

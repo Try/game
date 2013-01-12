@@ -21,7 +21,7 @@ INCLUDEPATH += "$$(DXSDK_DIR)/include"\
                "$$(FREETYPE_INCLUDE_PATH)" \
                "$$(FREETYPE_INCLUDE_PATH)/freetype2"
 
-LIBS += -l"gdi32" -l"ws2_32" -l"comdlg32"
+LIBS += -l"gdi32" -l"ws2_32" -l"comdlg32" -l"pthread"
 
 LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
 LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
@@ -122,7 +122,15 @@ HEADERS += \
     game/spatialindex.h \
     graphics/hudanim.h \
     landscape/terrainchunk.h \
-    graphics/smallobjectsview.h
+    graphics/smallobjectsview.h \
+    network/localserver.h \
+    threads/thread.h \
+    threads/async.h \
+    network/client.h \
+    network/netuser.h \
+    util/fileserialize.h \
+    util/bytearrayserialize.h \
+    threads/mutex.h
 
 SOURCES += \
     main.cpp \
@@ -209,7 +217,15 @@ SOURCES += \
     game/spatialindex.cpp \
     graphics/hudanim.cpp \
     landscape/terrainchunk.cpp \
-    graphics/smallobjectsview.cpp
+    graphics/smallobjectsview.cpp \
+    network/localserver.cpp \
+    threads/thread.cpp \
+    threads/async.cpp \
+    network/client.cpp \
+    network/netuser.cpp \
+    util/fileserialize.cpp \
+    util/bytearrayserialize.cpp \
+    threads/mutex.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

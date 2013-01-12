@@ -3,7 +3,7 @@
 const unsigned GameSerializer::currentVersion = 3;
 
 GameSerializer::GameSerializer( const std::string &s, OpenMode m )
-               :Serialize(s,m){
+               :FileSerialize(s,m){
   cversion = currentVersion;
 
   *this + cversion;

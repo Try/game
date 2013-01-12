@@ -604,17 +604,18 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
   }
 
 void World::onRender() {
+  scene.setCamera( camera );
   terr->updatePolish();
   }
 
 void World::tick() {
-  scene.setCamera( camera );
+  //return;
 
   spatialId.fill( nonBackground );
   spatialId.solveColisions();
 
-  for( size_t i=0; i<gameObjects.size(); ++i ){
-    GameObject & obj = *gameObjects[i];
+  for( size_t i=0; i<nonBackground.size(); ++i ){
+    GameObject & obj = *nonBackground[i];
     obj.tick( terrain() );
     }
 
@@ -634,10 +635,10 @@ void World::tick() {
       }
     }
 
-  for( size_t i=0; i<gameObjects.size(); ++i )
-    if( gameObjects[i]->hp() <= 0 ) {
-      GameObject & src = *gameObjects[i];
-      GameObject & obj = addObjectEnv( gameObjects[i]->getClass().name );
+  for( size_t i=0; i<nonBackground.size(); ++i )
+    if( nonBackground[i]->hp() <= 0 ) {
+      GameObject & src = *nonBackground[i];
+      GameObject & obj = addObjectEnv( nonBackground[i]->getClass().name );
 
       obj.setTeamColor( src.teamColor() );
       MyGL::Color cl = obj.teamColor();
@@ -649,9 +650,9 @@ void World::tick() {
       //obj.rotate();
       }
 
-  for( size_t i=0; i<gameObjects.size(); ){
-    if( gameObjects[i]->hp() <= 0 ) {
-      deleteObject( gameObjects[i].get() );
+  for( size_t i=0; i<nonBackground.size(); ){
+    if( nonBackground[i]->hp() <= 0 ) {
+      deleteObject( nonBackground[i].get() );
       } else {
       ++i;
       }

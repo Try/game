@@ -34,6 +34,7 @@ Player::Player(int num) {
   m.color = MyGL::Color( 255*m.color.r(),
                          255*m.color.g(),
                          255*m.color.b() );*/
+  setSyncFlag(0);
   }
 
 void Player::addUnit(GameObject *u) {
@@ -45,7 +46,7 @@ void Player::addUnit(GameObject *u) {
   }
 
 void Player::delUnit(GameObject *u) {
-  onUnitDied(*u);
+  onUnitDied(*u, *this);
 
   m.lim += u->getClass().data.lim;
   m.lim -= u->getClass().data.limInc;
@@ -80,7 +81,7 @@ void Player::select(GameObject *obj, bool s ) {
              m.selected.end(),
              Player::compare );
 
-  onUnitSelected( selected() );
+  onUnitSelected( selected(), *this );
   }
 
 std::vector<GameObject*> &Player::selected() {
@@ -131,6 +132,18 @@ size_t Player::unitsCount() const {
 
 GameObject &Player::unit(size_t id) {
   return *m.objects[id];
+  }
+
+int Player::number() const {
+  return m.num;
+  }
+
+bool Player::isInSync() const {
+  return m.sync;
+  }
+
+void Player::setSyncFlag(bool s) {
+  m.sync = s;
   }
 
 bool Player::compare(const GameObject *a, const GameObject *b) {

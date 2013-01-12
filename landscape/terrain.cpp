@@ -652,7 +652,7 @@ void Terrain::computeEnableMap() {
 
       int det = *std::max_element(h, h+4) - *std::min_element(h,h+4);
 
-      enableMap[i][r] = (det<50);
+      enableMap[i][r] = (det<75);
       }
   }
 

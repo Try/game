@@ -11,14 +11,8 @@ class Serialize {
       Append = 2
       };
 
-    Serialize( const std::string & s, OpenMode m );
-    ~Serialize();
-
-    Serialize( const Serialize&  )              = delete;
-    Serialize & operator = ( const Serialize& ) = delete;
-
-    void write( unsigned int  val );
-    void read ( unsigned int& val );
+    virtual void write( unsigned int  val ) = 0;
+    virtual void read ( unsigned int& val ) = 0;
 
     void write( int  val );
     void read ( int& val );
@@ -26,15 +20,15 @@ class Serialize {
     void write( bool  val );
     void read ( bool& val );
 
-    void write( const std::string& val );
-    void read ( std::string& val );
+    virtual void write( const std::string& val ) = 0;
+    virtual void read ( std::string& val ) = 0;
 
-    void write( char  val );
-    void read ( char& val );
+    virtual void write( char  val ) = 0;
+    virtual void read ( char& val ) = 0;
 
-    bool isEof() const;
-    bool isOpen() const;
-    bool isReader() const;
+    virtual bool isEof() const = 0;
+    virtual bool isOpen() const = 0;
+    virtual bool isReader() const = 0;
 
     template< class T >
     Serialize & operator + ( T & t ){
@@ -44,9 +38,8 @@ class Serialize {
 
       return *this;
       }
-  private:
-    FILE * f;
 
+  protected:
     OpenMode mode;
   };
 
