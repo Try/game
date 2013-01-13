@@ -5,7 +5,8 @@
 #include "game/world.h"
 
 MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
-  rtime = clock();
+  rtime   = clock();
+  pressed = false;
   }
 
 void MiniMapView::render(World &wx) {
@@ -176,4 +177,18 @@ void MiniMapView::lineTo( MyGL::Pixmap &renderTo,
       y0 += signY;
       }
     }
+  }
+
+void MiniMapView::mouseDownEvent(MyWidget::MouseEvent &e) {
+  mouseEvent( e.x/float(w()), e.y/float(h()) );
+  pressed = true;
+  }
+
+void MiniMapView::mouseDragEvent(MyWidget::MouseEvent &e) {
+  mouseEvent( e.x/float(w()), e.y/float(h()) );
+  }
+
+void MiniMapView::mouseUpEvent(MyWidget::MouseEvent &e) {
+  mouseEvent( e.x/float(w()), e.y/float(h()) );
+  pressed = false;
   }

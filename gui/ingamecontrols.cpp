@@ -20,6 +20,7 @@
 #include "util/lexicalcast.h"
 
 #include "unitlist.h"
+#include "unitinfo.h"
 
 #include "gui/textureview.h"
 #include "gui/unitview.h"
@@ -124,6 +125,7 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
 
   minimap = new MiniMapView(res);
   minimap->setTexture( res.texture("grass/diff") );
+  minimap->mouseEvent.bind( setCameraPosXY );
 
   img->setLayout( Vertical );
   img->layout().add( minimap );
@@ -139,13 +141,14 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   cenp->layout().setMargin(7);
 
   commands = new CommandsPanel(res, q);
+  UnitInfo *uinfo = new UnitInfo(res);
   UnitView *uview = new UnitView(res);
-  units = new UnitList(commands,res, uview);
+  units = new UnitList(commands,res, uview, uinfo);
   units->setCameraPos.bind( setCameraPos );
 
-  cenp->layout().add( new MyWidget::Widget() );
+  //cenp->layout().add( new MyWidget::Widget() );
   cenp->layout().add( units );
-  cenp->layout().add( new MyWidget::Widget() );
+  cenp->layout().add( uinfo );
 
   cen->setSizePolicy( MyWidget::Expanding );
 

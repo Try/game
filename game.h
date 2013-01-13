@@ -79,7 +79,7 @@ class Game {
     bool isFullScr() const;
 
     void setupAsServer();
-    void setupAsClient();
+    void setupAsClient(const std::wstring &str);
   private:
     void* hwnd;
     bool isFullScreen;
@@ -116,11 +116,13 @@ class Game {
 
     void moveCamera();
     void setCameraPos( GameObject& obj );
+    void setCameraPosXY( float x, float y );
 
     struct Fps{
       int n, time;
       } fps;
 
+    int     sendDelay;
     std::unique_ptr<NetUser> netUser;
 
     void serialize( GameSerializer &s);

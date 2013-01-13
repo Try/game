@@ -137,8 +137,8 @@ int WINAPI WinMain( HINSTANCE hInstance,
         if( argc>1 && std::wstring(args[1])==L"-s" )
           demo.setupAsServer();
 
-        if( argc>1 && std::wstring(args[1])==L"-c" )
-          demo.setupAsClient();
+        if( argc>2 && std::wstring(args[1])==L"-c" )
+          demo.setupAsClient( std::wstring(args[2]) );
         }
 
       demo.toogleFullScreen.bind( toogleFullScreen );

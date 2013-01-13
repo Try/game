@@ -141,6 +141,8 @@ class GameObjectView {
 
     template< class Obj >
     void serialize(GameSerializer &s, Obj * obj , bool store);
+
+    void init();
   };
 
 #endif // GAMEOBJECTVIEW_H

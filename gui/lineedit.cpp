@@ -139,7 +139,7 @@ void LineEdit::paintEvent( MyWidget::PaintEvent &pe ) {
     }
 
   p.drawRect( sx+oldSc, 0, x-sx, h(),
-              1,0, 1,1 );
+              2,0, 1,1 );
 
   if( hasFocus() ){
     //p.drawRect( 0, 0, w(), h(),

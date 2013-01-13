@@ -15,14 +15,21 @@ class MiniMapView : public TextureView {
     MiniMapView( Resource & res );
 
     void render( World& w );
+
+    MyWidget::signal<float, float> mouseEvent;
   private:
     MyGL::Pixmap renderTo, cashed;
     Resource &res;
 
     clock_t rtime;
+    bool pressed;
 
     void lineTo( MyGL::Pixmap &renderTo,
                  int x0, int y0, int x1, int y1 );
+
+    void mouseDownEvent(MyWidget::MouseEvent &e);
+    void mouseDragEvent(MyWidget::MouseEvent &e);
+    void mouseUpEvent(MyWidget::MouseEvent &e);
   };
 
 #endif // MINIMAPVIEW_H

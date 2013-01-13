@@ -336,8 +336,6 @@ void BehaviorMSGQueue::onRecvSrv( const std::vector<char> &v ) {
   }
 
 void BehaviorMSGQueue::onRecvClient( const std::vector<char> &v ) {
-  recvMutex.lock();
-
   RecvBuf buf;
   ByteArraySerialize s(v);
 
@@ -348,13 +346,16 @@ void BehaviorMSGQueue::onRecvClient( const std::vector<char> &v ) {
     int plN = 0;
     s + plN;
 
+    recvMutex.lock();
+
     serialize( buf.data, s );
 
     recvBuf.data  = buf.data;
     recvBuf.isRdy = true;
+
+    recvMutex.unlock();
     }
 
-  recvMutex.unlock();
   }
 
 bool BehaviorMSGQueue::cmp( const BehaviorMSGQueue::MSG &m1,

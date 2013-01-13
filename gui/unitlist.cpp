@@ -28,8 +28,11 @@ struct UnitList::View: public MyWidget::Widget{
     }
   };
 
-UnitList::UnitList(CommandsPanel *panel, Resource & res , UnitView *uview)
-  :ScroolWidget(res), res(res), uview(uview), cmd(panel) {
+UnitList::UnitList( CommandsPanel *panel,
+                    Resource & res,
+                    UnitView *uview,
+                    UnitInfo *uinf )
+  :ScroolWidget(res), res(res), uview(uview), uinfo(uinf), cmd(panel) {
 
   uview->setCameraPos.bind( setCameraPos );
 
@@ -37,7 +40,7 @@ UnitList::UnitList(CommandsPanel *panel, Resource & res , UnitView *uview)
   const int sz = 40;
 
   view = new View();
-  view->setMinimumSize( sz*10, sz*3 );
+  view->setMinimumSize( sz*10+4, sz*3 );
   view->setSizePolicy( MyWidget::FixedMin, MyWidget::FixedMin );
 
   centralWidget().layout().add( view );
@@ -53,9 +56,11 @@ void UnitList::setup(const std::vector<GameObject*> &ux ) {
   if( units.size() ){
     cmd->bind( units[0]);
     uview->setupUnit( units[0] );
+    uinfo->setup( units[0] );
     } else {
     cmd->bind(0);
     uview->setupUnit( 0 );
+    uinfo->setup( 0 );
     }
 
   view->layout().removeAll();
@@ -64,22 +69,16 @@ void UnitList::setup(const std::vector<GameObject*> &ux ) {
 
   const int sz = 40;
 
-  view->setMinimumSize( sz*10, sz*(units.size()/10+1) );
-
-  if( units.size()==1 ){
-    view->setMinimumSize( sz*10, h() );
-    UnitInfo *ux = new UnitInfo( *units[0], res );
-    ux->resize( sz*10, view->h() );
-
-    view->layout().add( ux );
-    return;
-    }
+  view->setMinimumSize( sz*10+4, sz*(units.size()/10+1) );
 
   for( size_t i=0; i<units.size(); ++i ){
     Btn *b = new Btn(res);
     b->icon.data = res.pixmap("gui/icon/"+units[i]->getClass().name);
     b->owner = units[i];
-    b->setGeometry( sz*(i%10), sz*(i/10), sz, sz );
+    int x = sz*(i%10);
+    if( i%10>=5 )
+      x += 4;
+    b->setGeometry( x, sz*(i/10), sz, sz );
 
     view->layout().add( b );
     btn.push_back(b);
@@ -113,4 +112,5 @@ void UnitList::onUnitDied(GameObject &obj) {
 
   cmd->bind(0);
   uview->setupUnit( 0 );
+  uinfo->setup( 0 );
   }

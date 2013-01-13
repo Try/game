@@ -46,7 +46,7 @@ void SmallGraphicsObject::setPosition(float ix, float iy, float iz) {
 
   bool rm = ( &chunkBase(mx,my)!=&chunkBase(ix,iy) );
 
-  if( rm )
+  if( rm && visible )
     remove( chunkBase().polishObj, this );
 
   TerrainChunk::PolishView *v1 = &chunk();
@@ -56,7 +56,7 @@ void SmallGraphicsObject::setPosition(float ix, float iy, float iz) {
   my = iy;
   mz = iz;
 
-  if( rm )
+  if( rm && visible  )
     chunkBase().polishObj.push_back( this );
 
   TerrainChunk::PolishView *v2 = &chunk();
@@ -73,7 +73,7 @@ void SmallGraphicsObject::setSize(float ix, float iy, float iz) {
   sy = iy;
   sz = iz;
 
-  needToUpdate = true;
+  needToUpdate =  visible;
   }
 
 void SmallGraphicsObject::setRotation(float x, float z) {
@@ -83,7 +83,7 @@ void SmallGraphicsObject::setRotation(float x, float z) {
   ax = x;
   az = z;
 
-  needToUpdate = true;
+  needToUpdate = visible;
   }
 
 float SmallGraphicsObject::angleX() {

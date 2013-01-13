@@ -25,7 +25,7 @@ class FormBuilder::FrmWidget : public Widget {
       Painter p(e);
 
       MyWidget::Rect r   = MyWidget::Rect(0,0, w(),h()),
-                     tex = MyWidget::Rect(1,0, 1,1);
+                     tex = MyWidget::Rect(2,0, 1,1);
 
       p.setTexture( frame );
       p.setBlendMode( MyWidget::addBlend );
@@ -201,7 +201,7 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
 
       if( this==owner.selected ){
         MyWidget::Rect r   = MyWidget::Rect(0,0, w,h),
-                       tex = MyWidget::Rect(1,0, 1,1);
+                       tex = MyWidget::Rect(2,0, 1,1);
 
         p.setTexture( frame );
         p.setBlendMode( MyWidget::addBlend );

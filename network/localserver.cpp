@@ -114,7 +114,7 @@ int LocalServer::clientRecieve( void* data ){
       break;
       }
 
-    onError("Data recieved;");
+    //onError("Data recieved;");
     onRecv(buffer);
     //fsend = async(this, &LocalServer::sendToClients, (void*)&buffer);
 

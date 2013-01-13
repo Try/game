@@ -1,6 +1,6 @@
 QT    -= core gui
 
-TARGET = cgDemo
+TARGET = game
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
 
 INCLUDEPATH += include

@@ -58,8 +58,8 @@ void Client::clientConnect( const char* in ){
     serverAddress.sin_addr.S_un.S_addr = ip;
 
     if( ::connect( serverSocket,
-                 (sockaddr*)(&serverAddress),
-                 sizeof(struct sockaddr_in)) != 0){
+                   (sockaddr*)(&serverAddress),
+                   sizeof(sockaddr_in) ) != 0){
       onError("Error connecting");
       }else{
       onError("Connected successfully!");

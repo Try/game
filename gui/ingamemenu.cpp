@@ -41,7 +41,7 @@ void InGameMenu::paintEvent( MyWidget::PaintEvent &e ) {
   p.setTexture( frame );
   p.setBlendMode( MyWidget::alphaBlend );
   p.drawRect( 0,0, w(), h(),
-              0,2, 1,1 );
+              0,4, 1,1 );
   }
 
   paintNested(e);

@@ -56,6 +56,7 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   mainwidget = new InGameControls(res, msg, prototypes, game);
   mainwidget->renderScene.bind( renderScene );
   mainwidget->setCameraPos.bind( setCameraPos );
+  mainwidget->setCameraPosXY.bind( setCameraPosXY );
 
   updateView.bind( mainwidget->updateView );
 

@@ -36,17 +36,17 @@ void PropertyEditor::paintEvent(MyWidget::PaintEvent &pe) {
 
   for( size_t i=0; i<prop.size(); ++i ){
     p.drawRect( 0, i*rowH, w(), 1,
-                3,0, 1,1);
+                6,0, 1,1);
     }
   p.drawRect( 0, prop.size()*rowH, w(), 1,
-              3,0, 1,1);
+              6,0, 1,1);
 
   p.drawRect( w()/2, 0, 1, h(),
-              3,0, 1,1);
+              6,0, 1,1);
   p.drawRect( w()-1, 0, 1, h(),
-              3,0, 1,1);
+              6,0, 1,1);
   p.drawRect( 0, 0, 1, h(),
-              3,0, 1,1);
+              6,0, 1,1);
 
   for( size_t i=0; i<prop.size(); ++i ){
     p.drawText( 5, i*rowH, w()-5, rowH, prop[i].name );

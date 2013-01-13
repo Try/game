@@ -60,6 +60,7 @@ class MainGui {
     MyWidget::signal<const Terrain::EditMode&> toogleEditLandMode;
     MyWidget::signal<> updateView;
     MyWidget::signal<GameObject&> setCameraPos;
+    MyWidget::signal<float, float> setCameraPosXY;
 
     MyWidget::signal< const std::wstring& > save, load;    
 

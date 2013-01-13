@@ -71,6 +71,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
   gui.addObject.bind( *this, &Game::createEditorObject );
   gui.setCameraPos.bind(*this, &Game::setCameraPos );
+  gui.setCameraPosXY.bind(*this, &Game::setCameraPosXY );
 
   gui.save.bind( *this, &Game::save );
   gui.load.bind( *this, &Game::load );
@@ -97,6 +98,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   fps.n    = 0;
   fps.time = 0;
+
+  sendDelay = 0;
   }
 
 void Game::tick() {
@@ -141,13 +144,25 @@ void Game::tick() {
     }
 
   bool isLag = false;
-  if( netUser && netUser->isConnected() )
-    isLag = !msg.syncByNet( *netUser );
+  ++sendDelay;
 
-  if( !isLag ){
+  if( netUser ){
+    if( netUser->isConnected() &&
+        sendDelay >=10 ){
+      isLag = !msg.syncByNet( *netUser );
+
+      if( !isLag ){
+        msg.serialize( serializator );
+        msg.tick( *this, *world );
+        sendDelay = 0;
+        }
+      }
+    } else {
     msg.serialize( serializator );
     msg.tick( *this, *world );
+    }
 
+  if( !isLag ){
     world->tick();
     }
 
@@ -232,7 +247,6 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
         world->updateSelectionFlag( msg, currentPlayer ); else
         world->updateSelectionClick( msg, currentPlayer, e.x, e.y,
                                      w, h );
-      //gui.updateSelectUnits( *world );
       }
 
     if( e.button==MyWidget::MouseEvent::ButtonRight ){
@@ -240,7 +254,6 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
                    AbstractBehavior::Move,
                    World::coordCastD(v.data[0]),
                    World::coordCastD(v.data[1]) );
-      //world->emitHudAnim( "hud/move", v.data[0], v.data[1], v.data[2]+0.01 );
       }
     }
 
@@ -547,6 +560,24 @@ void Game::setCameraPos(GameObject &obj) {
         y = world->camera.y(),
         z = world->camera.z();
 
+  float l0 = sqrt( pow(x-x1,2) + pow(y-y1,2) + pow(z-z1,2) );
+  l0 = std::max(0.0f, l0-1);
+
+  k = std::min(0.3+l0, 1.0);
+
+  world->camera.setPosition( x+(x1-x)*k, y+(y1-y)*k, z+(z1-z)*k );
+  }
+
+void Game::setCameraPosXY(float fx, float fy) {
+  float x1 = World::coordCast(fx*world->terrain().width() *Terrain::quadSizef),
+        y1 = World::coordCast(fy*world->terrain().height()*Terrain::quadSizef),
+        z1 = world->camera.z();
+
+  float k = 1;//0.3;
+  float x = world->camera.x(),
+        y = world->camera.y(),
+        z = world->camera.z();
+
   world->camera.setPosition( x+(x1-x)*k, y+(y1-y)*k, z+(z1-z)*k );
   }
 
@@ -780,9 +811,10 @@ void Game::setupAsServer() {
   netUser->onError.bind( *this, &Game::log );
 
   netUser->start();
+  sendDelay = 0;
   }
 
-void Game::setupAsClient() {
+void Game::setupAsClient(const std::wstring &s ) {
   player(1).setHostCtrl(0);
   player(2).setHostCtrl(1);
   currentPlayer = 2;
@@ -793,5 +825,9 @@ void Game::setupAsClient() {
   netUser->onError.bind( *this, &Game::log );
   netUser->start();
 
-  c->connect("127.0.0.1");
+  std::string str;
+  str.assign( s.begin(), s.end() );
+
+  c->connect( str );
+  sendDelay = 0;
   }

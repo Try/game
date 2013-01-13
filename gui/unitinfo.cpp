@@ -7,7 +7,21 @@
 
 #include <MyWidget/Layout>
 
-UnitInfo::UnitInfo(GameObject &obj, Resource & res ) {
+UnitInfo::UnitInfo(GameObject &obj, Resource & res )
+         :obj(&obj), res(res) {
+  setup( &obj );
+  }
+
+UnitInfo::UnitInfo(Resource &res):res(res) {
+  obj = 0;
+  }
+
+void UnitInfo::setup(GameObject *nobj) {
+  obj = nobj;
+  layout().removeAll();
+  if( obj==0 )
+    return;
+
   UI::UnitInfo ui;
   ui.setupUi(this, res);
 
@@ -19,7 +33,7 @@ UnitInfo::UnitInfo(GameObject &obj, Resource & res ) {
   ui.caption->setEditable(0);
 
   std::wstring s;
-  s.assign( obj.getClass().name.begin(),
-            obj.getClass().name.end() );
+  s.assign( obj->getClass().name.begin(),
+            obj->getClass().name.end() );
   ui.caption->setText( s );
   }

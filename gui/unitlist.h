@@ -9,11 +9,14 @@ class GameObject;
 
 class CommandsPanel;
 class UnitView;
+class UnitInfo;
 
 class UnitList : public ScroolWidget {
   public:
-    UnitList( CommandsPanel *panel, Resource &res,
-              UnitView *uview );
+    UnitList( CommandsPanel *panel,
+              Resource &res,
+              UnitView *uview,
+              UnitInfo * uinf );
 
     void setup( const std::vector<GameObject *> &u );
     void onUnitDied(GameObject &obj);
@@ -29,6 +32,7 @@ class UnitList : public ScroolWidget {
 
     View * view;
     UnitView *uview;
+    UnitInfo *uinfo;
     CommandsPanel *cmd;
 
     std::vector<GameObject*> units;

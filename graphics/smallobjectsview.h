@@ -16,9 +16,9 @@ class SmallGraphicsObject {
                          Game & g,
                          Terrain & t,
                          const ProtoObject::View & view );
-    SmallGraphicsObject( const SmallGraphicsObject& other ) = delete;
     ~SmallGraphicsObject();
 
+    SmallGraphicsObject( const SmallGraphicsObject& other ) = delete;
     SmallGraphicsObject& operator = ( const SmallGraphicsObject& other ) = delete;
 
     void setModel(const Model& m , const std::string &key);

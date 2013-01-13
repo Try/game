@@ -41,7 +41,8 @@ class InGameControls : public MyWidget::Widget {
 
     MyWidget::signal<> save, load;
     MyWidget::signal<> updateView;
-    MyWidget::signal<GameObject&> setCameraPos;
+    MyWidget::signal<GameObject&>  setCameraPos;
+    MyWidget::signal<float, float> setCameraPosXY;
 
     MyWidget::signal< const MyGL::Scene &,
                       ParticleSystemEngine &,
