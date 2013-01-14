@@ -34,7 +34,7 @@ Player::Player(int num) {
   m.color = MyGL::Color( 255*m.color.r(),
                          255*m.color.g(),
                          255*m.color.b() );*/
-  setSyncFlag(0);
+  //setSyncFlag(0);
   }
 
 void Player::addUnit(GameObject *u) {
@@ -136,14 +136,6 @@ GameObject &Player::unit(size_t id) {
 
 int Player::number() const {
   return m.num;
-  }
-
-bool Player::isInSync() const {
-  return m.sync;
-  }
-
-void Player::setSyncFlag(bool s) {
-  m.sync = s;
   }
 
 bool Player::compare(const GameObject *a, const GameObject *b) {

@@ -20,6 +20,10 @@ void AbstractBehavior::moveEvent(MoveEvent &m) {
   m.ignore();
   }
 
+void AbstractBehavior::moveEvent(MoveToUnitEvent &m) {
+  m.ignore();
+  }
+
 void AbstractBehavior::moveEvent(MoveSingleEvent &m) {
   m.ignore();
   }
@@ -136,6 +140,21 @@ bool AbstractBehavior::message( AbstractBehavior::Message m,
   if( m==Cancel ){
     CancelEvent mm;
     cancelEvent(mm);
+    return mm.isAccepted();
+    }
+
+  return 0;
+  }
+
+bool AbstractBehavior::message( Message m,
+                                size_t id,
+                                AbstractBehavior::Modifers md) {
+  if( m==ToUnit ){
+    MoveToUnitEvent mm;
+    mm.modif = md;
+    mm.id = id;
+
+    moveEvent(mm);
     return mm.isAccepted();
     }
 

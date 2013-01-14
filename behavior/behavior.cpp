@@ -56,6 +56,15 @@ bool Behavior::message( Message msg, int x, int y, Modifers md ) {
   return 0;
   }
 
+bool Behavior::message( Message msg, size_t id,
+                        AbstractBehavior::Modifers md) {
+  for( size_t i=behaviors.size(); i>0; --i )
+    if( behaviors[i-1]->message( msg, id, md ) )
+      return 1;
+
+  return 0;
+  }
+
 bool Behavior::message( AbstractBehavior::Message msg,
                         const std::string &s,
                         AbstractBehavior::Modifers md) {

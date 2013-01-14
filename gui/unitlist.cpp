@@ -11,10 +11,20 @@
 #include "commandspanel.h"
 #include "unitview.h"
 
+#include "game.h"
+#include "util/weakworldptr.h"
+
 struct UnitList::Btn : public Button {
-  Btn( Resource & res ):Button(res){}
+  Btn( Resource & res ):Button(res){
+    Button::clicked.bind(*this, &Btn::onClick );
+    }
+
+  void onClick(){
+    clicked(owner);
+    }
 
   GameObject * owner;
+  MyWidget::signal<GameObject*> clicked;
   };
 
 struct UnitList::Lay : public MyWidget::Layout {
@@ -73,6 +83,7 @@ void UnitList::setup(const std::vector<GameObject*> &ux ) {
 
   for( size_t i=0; i<units.size(); ++i ){
     Btn *b = new Btn(res);
+    b->clicked.bind(*this, &UnitList::onBtn );
     b->icon.data = res.pixmap("gui/icon/"+units[i]->getClass().name);
     b->owner = units[i];
     int x = sz*(i%10);
@@ -113,4 +124,13 @@ void UnitList::onUnitDied(GameObject &obj) {
   cmd->bind(0);
   uview->setupUnit( 0 );
   uinfo->setup( 0 );
+  }
+
+void UnitList::onBtn( GameObject * obj ) {
+  if( obj==0 )
+    return;
+
+  int pl = obj->playerNum();
+  size_t id = obj->world().objectWPtr(obj).id();
+  obj->game().message( pl, Behavior::Select, id );
   }

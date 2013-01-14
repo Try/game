@@ -17,6 +17,9 @@ class WorkerBehavior : public AbstractBehavior  {
 
     void tick( const Terrain & terrain );
     bool message( Message msg, int x, int y, Modifers md);
+    bool message( Message msg,
+                  size_t id,
+                  Modifers md = BehaviorEvent::NoModifer );
 
   private:
     GameObject & obj;

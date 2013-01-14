@@ -163,10 +163,14 @@ void SmallGraphicsObject::setVisible(bool v) {
   visible = v;
   }
 
+MyGL::Matrix4x4 SmallGraphicsObject::transform() const {
+  return transformV;
+  }
+
 void SmallGraphicsObject::applyTransform() {
   TerrainChunk::PolishView& vx = chunk();
 
-  MyGL::Matrix4x4 mat;
+  MyGL::Matrix4x4& mat = transformV;
 
   mat.identity();
   mat.translate( mx, my, mz );

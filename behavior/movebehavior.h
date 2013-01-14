@@ -4,6 +4,7 @@
 #include "abstractbehavior.h"
 #include "behavior.h"
 #include "gui/inputhook.h"
+#include "util/weakworldptr.h"
 
 class Point;
 
@@ -19,6 +20,7 @@ class MoveBehavior : public AbstractBehavior {
     void atackContinueEvent( MoveSingleEvent & m );
 
     void moveEvent( MoveEvent &m );
+    void moveEvent( MoveToUnitEvent & m );
     void moveEvent( MoveSingleEvent  &m );
     void moveEvent( MineralMoveEvent &m );
     void stopEvent(StopEvent &m);
@@ -34,15 +36,19 @@ class MoveBehavior : public AbstractBehavior {
     void setupMoveHook();
 
     static bool isCloseEnough(int x1, int y1, int x2, int y2 , int unitSize);
-private:
+
+  private:
     GameObject & obj;
     Behavior::Closure & clos;
 
     InputHook hook;
     bool instaled;
+    int timer;
 
     //std::vector<Pos> wayPoints;
     int tx, ty, curentSpeed;
+    WeakWorldPtr taget;
+
     bool isWayAcept, & isMWalk;
     std::vector<Point> way;
 

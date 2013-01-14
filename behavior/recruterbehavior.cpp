@@ -16,9 +16,6 @@ RecruterBehavior::RecruterBehavior( GameObject & o,
   time     = 0;
   queueLim = 0;
 
-  light.setSelectionVisible(0);
-  flag .setSelectionVisible(0);
-
   flag.setRotation( 180 );
   }
 
@@ -99,10 +96,24 @@ bool RecruterBehavior::message( AbstractBehavior::Message msg,
 
 bool RecruterBehavior::message( AbstractBehavior::Message msg,
                                 int x, int y,
-                                AbstractBehavior::Modifers md) {
+                                AbstractBehavior::Modifers /*md*/ ) {
   if( msg==Move || msg==onPositionChange ){
     rallyX = x;
     rallyY = y;
+    }
+
+  return 0;
+  }
+
+bool RecruterBehavior::message( AbstractBehavior::Message msg,
+                                size_t id,
+                                AbstractBehavior::Modifers /*md*/ ) {
+  if( msg==ToUnit ){
+    GameObject & m = obj.world().object(id);
+    taget          = obj.world().objectWPtr(id);
+
+    rallyX = m.x();
+    rallyY = m.y();
     }
 
   return 0;
@@ -188,6 +199,9 @@ bool RecruterBehavior::create(const std::string &s, const Terrain &terrain) {
 
   tg.setViewDirection( -(obj.x()-x1), -(obj.y()-y1) );
 
-  tg.behavior.message( MoveSingle, rallyX, rallyY );
+  if( taget )
+    tg.behavior.message( ToUnit, taget.id() ); else
+    tg.behavior.message( MoveSingle, rallyX, rallyY );
+
   return true;
   }

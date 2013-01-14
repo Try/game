@@ -199,7 +199,6 @@ void GameObject::setViewSize( MyGL::GraphicObject &obj,
 
 void GameObject::setViewSize(float x, float y, float z) {
   view.setViewSize(x,y,z);
-  view.setSelectionVisible( m.isMouseOwer );
   }
 
 void GameObject::updatePos() {
@@ -230,7 +229,7 @@ void GameObject::select() {
   if( !m.isSelected ){
     m.isSelected = true;
     //selection.setVisible( m.isSelected );
-    view.setSelectionVisible( m.isSelected );
+    view.setSelectionVisible( m.isSelected, GameObjectView::selStd );
 
     world().player( m.pl ).select( this, 1);
     }
@@ -239,14 +238,15 @@ void GameObject::select() {
 void GameObject::unSelect() {
   if( m.isSelected ){
     m.isSelected  = false;
-    view.setSelectionVisible( m.isSelected );
+    view.setSelectionVisible( m.isSelected, GameObjectView::selStd );
 
     world().player( m.pl ).select( this, 0);
     }
   }
 
 void GameObject::updateSelection() {
-  view.setSelectionVisible( m.isMouseOwer && (!getClass().data.isBackground) );
+  view.setSelectionVisible( m.isMouseOwer && (!getClass().data.isBackground),
+                            GameObjectView::selOver );
   m.isMouseOwer = 0;
   }
 
@@ -273,7 +273,8 @@ bool GameObject::isMouseOwer() const {
 void GameObject::setMouseOverFlag(bool f) {
   m.isMouseOwer = f;
 //  selection.setVisible( m.isMouseOwer );
-  view.setSelectionVisible( m.isMouseOwer && (!getClass().data.isBackground) );
+  view.setSelectionVisible( m.isMouseOwer && (!getClass().data.isBackground),
+                            GameObjectView::selOver );
   }
 
 double GameObject::radius() const {
@@ -409,4 +410,8 @@ void GameObject::setColisionDisp(int dx, int dy) {
 void GameObject::incColisionDisp(int dx, int dy) {
   bclos.colisionDisp[0] += dx;
   bclos.colisionDisp[1] += dy;
+  }
+
+void GameObject::higlight(int time, GameObjectView::Selection type) {
+  view.higlight(time, type);
   }

@@ -61,6 +61,11 @@ class Game {
                   int y,
                   AbstractBehavior::Modifers md = BehaviorEvent::NoModifer );
 
+    bool message( int pl,
+                  AbstractBehavior::Message m,
+                  size_t id,
+                  AbstractBehavior::Modifers md = BehaviorEvent::NoModifer );
+
     bool instalHook( InputHookBase* b );
     void removeHook( InputHookBase* b );
 
@@ -78,8 +83,11 @@ class Game {
 
     bool isFullScr() const;
 
+    void setCurrectPlayer( int pl );
     void setupAsServer();
     void setupAsClient(const std::wstring &str);
+
+    void onUnitRemove( size_t i );
   private:
     void* hwnd;
     bool isFullScreen;

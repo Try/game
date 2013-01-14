@@ -64,6 +64,7 @@ class World {
 
     size_t objectsCount() const;
     GameObject& object( size_t i );
+    const GameObject& object( size_t i ) const;
     WeakWorldPtr objectWPtr( size_t i );
     WeakWorldPtr objectWPtr( GameObject* i );
     //std::vector< PGameObject >& selectedObjects();
@@ -73,7 +74,10 @@ class World {
 
     void updateMouseOverFlag(double x0, double y0, double x1, double y1);
     void updateSelectionFlag( BehaviorMSGQueue & msg, int pl );
-    void updateSelectionClick(BehaviorMSGQueue & msg, int pl , int mx, int my, int w, int h);
+    void updateSelectionClick(BehaviorMSGQueue & msg, int pl,
+                              int mx, int my, int w, int h );
+    size_t unitUnderMouse(int mx, int my, int w, int h ) const;
+
     void paintHUD( MyWidget::Painter &, int w, int h );
 
     Player& player( int id );
@@ -92,9 +96,12 @@ class World {
     const std::vector< GameObject* >& resouce() const;
 
     void setMousePos( int x, int y, int z );
+    void setMouseObject( size_t i );
+
     int mouseX() const;
     int mouseY() const;
     int mouseZ() const;
+    GameObject* mouseObj();
 
     void toogleEditLandMode( const Terrain::EditMode & m );
     Physics physics;
@@ -114,6 +121,7 @@ class World {
 
     const CameraViewBounds& cameraBounds() const;
     void setCameraBounds( const CameraViewBounds& c );
+
   private:
     MyGL::Scene scene;
     std::unique_ptr<Terrain> terr;
@@ -127,6 +135,7 @@ class World {
     SpatialIndex spatialId;
     // std::vector< PGameObject > selected;
     std::vector< WeakWorldPtr* > wptrs;
+    GameObject* mouseObject;
 
     std::vector< std::unique_ptr<HudAnim> > hudAnims;
 
@@ -149,6 +158,9 @@ class World {
     void createTestMap();
 
     void createResp( int pl, int x, int y, int minX, int minY );
+
+    bool isUnitUnderMouse(MyGL::Matrix4x4 & gmMat, const GameObject &obj,
+                           int mx, int my, int w, int h ) const;
 };
 
 #endif // WORLD_H

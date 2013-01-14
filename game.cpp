@@ -124,9 +124,13 @@ void Game::tick() {
   F3 v = unProject( curMPos.x, curMPos.y );
   int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
       vy = World::coordCastD(v.data[1])/Terrain::quadSize;
+
   world->setMousePos( vx*Terrain::quadSize,
                       vy*Terrain::quadSize,
                       World::coordCastD(v.data[2]) );
+  world->setMouseObject( world->unitUnderMouse( curMPos.x,
+                                                curMPos.y,
+                                                w, h ) );
 
   if( player().editObj ){
     int x = World::coordCastD(v.data[0]),
@@ -250,10 +254,19 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
       }
 
     if( e.button==MyWidget::MouseEvent::ButtonRight ){
-      msg.message( currentPlayer,
-                   AbstractBehavior::Move,
-                   World::coordCastD(v.data[0]),
-                   World::coordCastD(v.data[1]) );
+      size_t obj = world->unitUnderMouse( e.x, e.y,
+                                          w, h );
+
+      if( obj==size_t(-1) ){
+        msg.message( currentPlayer,
+                     AbstractBehavior::Move,
+                     World::coordCastD(v.data[0]),
+                     World::coordCastD(v.data[1]) );
+        } else {
+        msg.message_st( currentPlayer,
+                        AbstractBehavior::ToUnit,
+                        obj );
+        }
       }
     }
 
@@ -391,6 +404,14 @@ bool Game::message( int pl,
                     int y,
                     BehaviorMSGQueue::Modifers md ) {
   msg.message(pl, m, x, y, md);
+  return 1;
+  }
+
+bool Game::message( int pl,
+                    BehaviorMSGQueue::Message m,
+                    size_t id,
+                    BehaviorMSGQueue::Modifers /*md*/ ) {
+  msg.message_st(pl, m, id, 1);
   return 1;
   }
 
@@ -806,18 +827,18 @@ void Game::log(const std::string &l) {
   }
 
 void Game::setupAsServer() {
-  netUser.reset( new LocalServer() );
+  LocalServer *s = new LocalServer();
+  netUser.reset( s );
   netUser->onRecv.bind( msg,   &BehaviorMSGQueue::onRecvSrv );
   netUser->onError.bind( *this, &Game::log );
+  s->onConnected.   bind( msg, &BehaviorMSGQueue::onNewClient );
+  s->onDisConnected.bind( msg, &BehaviorMSGQueue::onDelClient );
 
   netUser->start();
   sendDelay = 0;
   }
 
 void Game::setupAsClient(const std::wstring &s ) {
-  player(1).setHostCtrl(0);
-  player(2).setHostCtrl(1);
-  currentPlayer = 2;
 
   Client * c = new Client();
   netUser.reset( c );
@@ -830,4 +851,14 @@ void Game::setupAsClient(const std::wstring &s ) {
 
   c->connect( str );
   sendDelay = 0;
+  }
+
+void Game::onUnitRemove(size_t i) {
+  msg.onUnitRemove(i);
+  }
+
+void Game::setCurrectPlayer(int pl) {
+  player(currentPlayer).setHostCtrl(0);
+  currentPlayer = pl;
+  player(currentPlayer).setHostCtrl(1);
   }

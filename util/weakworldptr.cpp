@@ -43,3 +43,11 @@ GameObject &WeakWorldPtr::value() {
 WeakWorldPtr::operator bool() const {
   return v;
   }
+
+size_t WeakWorldPtr::id() const {
+  for( size_t i=0; i<w->objectsCount(); ++i )
+    if( v.get()==&w->object(i) )
+      return i;
+
+  return -1;
+  }

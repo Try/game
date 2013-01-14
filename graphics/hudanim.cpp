@@ -9,8 +9,6 @@ HudAnim::HudAnim( MyGL::Scene & s,
                   Resource &res, Physics &phys )
   :view(s, wrld, p, pl ) {
   view.loadView(res, phys, 0);
-
-  view.setSelectionVisible(0);
   //view.setViewSize(1,1,1);
 
   t = 100;

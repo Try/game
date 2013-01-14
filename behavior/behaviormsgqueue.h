@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "threads/mutex.h"
+#include "network/localserver.h"
 
 class World;
 class Game;
@@ -29,6 +30,10 @@ class BehaviorMSGQueue : public AbstractBehavior {
                      size_t begin,
                      size_t size );
 
+    void message_st( int pl,
+                     Message msg,
+                     size_t id );
+
     void message( int pl,
                   Message msg,
                   int x, int y,
@@ -44,11 +49,16 @@ class BehaviorMSGQueue : public AbstractBehavior {
     void tick( Game & game, World & w );
     void tick( const Terrain& );
 
+    void onUnitRemove(size_t id);
+
     void serialize( Serialize & s );
     bool syncByNet( NetUser & usr );
 
     void onRecvSrv(const std::vector<char> &data );
     void onRecvClient(const std::vector<char> &data );
+    void onNewClient(NetUser&, LocalServer::Client & lc );
+    void onDelClient(NetUser&, LocalServer::Client & lc );
+
   private:
     Game & game;
 
@@ -63,11 +73,12 @@ class BehaviorMSGQueue : public AbstractBehavior {
 
     std::vector<MSG> data;
 
-    static bool cmp( const MSG& m1, const MSG& m2 );
-
     enum PkgType{
       pkInGameSync,
       pkServerAccept,
+
+      pkClientInit,
+
       pkInGameLoad,
       pkQuit
       };
@@ -79,6 +90,14 @@ class BehaviorMSGQueue : public AbstractBehavior {
 
     RecvBuf recvBuf;
     Mutex   recvMutex;
+
+    struct Client{
+      size_t pl;
+      bool  isSync;
+      void * pid;
+      };
+
+    std::vector<Client> clients;
 
     void serialize( std::vector<MSG>& data, Serialize & s );
 

@@ -17,6 +17,8 @@ class WeakWorldPtr {
 
     GameObject& value();
     operator bool () const;
+
+    size_t id() const;
   private:
     std::shared_ptr<GameObject> v;
     World * w;

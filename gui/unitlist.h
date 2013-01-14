@@ -36,6 +36,8 @@ class UnitList : public ScroolWidget {
     CommandsPanel *cmd;
 
     std::vector<GameObject*> units;
+
+    void onBtn( GameObject* );
   };
 
 #endif // UNITLIST_H

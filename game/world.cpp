@@ -28,6 +28,7 @@ World::World( GraphicsSystem& g,
     resource(r), prototypes(p),
     particles(scene, p, r) {
   tx = ty = 0;
+  mouseObject = 0;
 
   terr.reset( new Terrain( w,h, r, scene, *this, p) );
 
@@ -219,17 +220,34 @@ GameObject &World::addObject( const ProtoObject &p,
   }
 
 void World::deleteObject(GameObject *obj) {
+  // TOFIX: mgsq index
   for( size_t i=0; i<game.plCount(); ++i )
     if( game.player(i).editObj==obj )
       game.player(i).editObj = 0;
 
-  deleteObject(  gameObjects,  obj );
+  if( obj==mouseObject )
+    mouseObject = 0;
+
+  //deleteObject(  gameObjects,  obj );
   deleteObject(   eviObjects,  obj );
   deleteObject( nonBackground, obj );
 
   for( size_t i=0; i<wptrs.size(); ++i )
     if( wptrs[i]->v.get()==obj )
       wptrs[i]->v.reset();
+
+  for( size_t i=0; i<gameObjects.size(); ++i ){
+    if( gameObjects[i].get()==obj ){
+      game.onUnitRemove(i);
+
+      for( size_t r=i; r+1<gameObjects.size(); ++r ){
+        gameObjects[r] = gameObjects[r+1];
+        }
+
+      gameObjects.pop_back();
+      return;
+      }
+    }
   }
 
 void World::deleteObject(std::vector< PGameObject > &c, GameObject *obj) {
@@ -245,6 +263,10 @@ size_t World::objectsCount() const {
   }
 
 GameObject &World::object(size_t i) {
+  return *gameObjects[i];
+  }
+
+const GameObject &World::object(size_t i) const {
   return *gameObjects[i];
   }
 
@@ -338,6 +360,8 @@ void World::updateSelectionFlag( BehaviorMSGQueue & msg, int pl ) {
         ++isize;
         }
       }
+
+    obj.setMouseOverFlag(0);
     }
 
   if( ibegin!=size_t(-1) ){
@@ -349,68 +373,94 @@ void World::updateSelectionClick( BehaviorMSGQueue &msg,
                                   int pl,
                                   int mx, int my,
                                   int w, int h ) {
+  size_t i = unitUnderMouse(mx,my,w,h);
+  if( i==size_t(-1) )
+    return;
+
+  msg.message( pl, Behavior::UnSelect );
+  msg.message_st( pl, Behavior::SelectAdd, i, 1 );
+  }
+
+size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
   MyGL::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
 
-  double data1[4], data2[4];
-
   for( size_t i=0; i<objectsCount(); ++i ){
-    MyGL::Matrix4x4 m = gmMat;
+    if( object(i).getClass().data.isBackground )
+      continue;
 
-    GameObject & obj = object(i);
-    m.mul( obj._transform() );
+    if( isUnitUnderMouse( gmMat, object(i), mx, my, w, h ) )
+      return i;
+    }
 
-    MyGL::Matrix4x4 mat = obj._transform();
-
-    double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
-    double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
-
-    for( int r=0; r<3; ++r ){
-      left[3] += left[r]*left[r];
-      top [3] += top [r]*top [r];
-      }
-    left[3] = sqrt(left[3]);
-    top [3] = sqrt( top[3]);
-
-    for( int r=0; r<3; ++r ){
-      left[r] /= left[3];
-      top [r] /=  top[3];
-
-      left[r] += top[r];
-      }
-
-    double x = 0,
-           y = 0,
-           z = 0;//0.5*obj.rawRadius();
-
-    double r = 0.8*obj.rawRadius();
-
-    m.project( x+r*left[0], y+r*left[1], z+r*left[2], 1,
-               data1[0], data1[1], data1[2], data1[3] );
-    for( int r=0; r<3; ++r )
-      data1[r] /= data1[3];
-
-    m.project( x-r*left[0], y-r*left[1], z-r*left[2], 1,
-               data2[0], data2[1], data2[2], data2[3] );
-    for( int r=0; r<3; ++r )
-      data2[r] /= data2[3];
-
-    data1[0] = 0.5*(1+data1[0])*w;
-    data1[1] = 0.5*(1-data1[1])*h;
-
-    data2[0] = 0.5*(1+data2[0])*w;
-    data2[1] = 0.5*(1-data2[1])*h;
-
-    if( data2[0] <= mx && mx <= data1[0] &&
-        data2[1] <= my && my <= data1[1] ){
-      msg.message( pl, Behavior::UnSelect );
-      msg.message_st( pl, Behavior::SelectAdd, i, 1 );
-
-      obj.setMouseOverFlag(1);
-      return;
+  for( size_t i=0; i<resouces.size(); ++i ){
+    if( isUnitUnderMouse( gmMat, *resouces[i], mx, my, w, h ) ){
+      for( size_t r=0; r<objectsCount(); ++r )
+        if( &object(r)==resouces[i] )
+          return r;
       }
     }
 
+  return -1;
+  }
+
+
+
+bool World::isUnitUnderMouse( MyGL::Matrix4x4 & gmMat,
+                              const GameObject & obj,
+                              int mx, int my, int w, int h) const {
+  double data1[4], data2[4];
+  MyGL::Matrix4x4 m = gmMat;
+
+  m.mul( obj._transform() );
+
+  MyGL::Matrix4x4 mat = obj._transform();
+
+  double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
+  double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
+
+  for( int r=0; r<3; ++r ){
+    left[3] += left[r]*left[r];
+    top [3] += top [r]*top [r];
+    }
+  left[3] = sqrt(left[3]);
+  top [3] = sqrt( top[3]);
+
+  for( int r=0; r<3; ++r ){
+    left[r] /= left[3];
+    top [r] /=  top[3];
+
+    left[r] += top[r];
+    }
+
+  double x = 0,
+         y = 0,
+         z = 0;//0.5*obj.rawRadius();
+
+  double r = 0.8*obj.rawRadius();
+
+  m.project( x+r*left[0], y+r*left[1], z+r*left[2], 1,
+             data1[0], data1[1], data1[2], data1[3] );
+  for( int r=0; r<3; ++r )
+    data1[r] /= data1[3];
+
+  m.project( x-r*left[0], y-r*left[1], z-r*left[2], 1,
+             data2[0], data2[1], data2[2], data2[3] );
+  for( int r=0; r<3; ++r )
+    data2[r] /= data2[3];
+
+  data1[0] = 0.5*(1+data1[0])*w;
+  data1[1] = 0.5*(1-data1[1])*h;
+
+  data2[0] = 0.5*(1+data2[0])*w;
+  data2[1] = 0.5*(1-data2[1])*h;
+
+  if( data2[0] <= mx && mx <= data1[0] &&
+      data2[1] <= my && my <= data1[1] ){
+    return true;
+    }
+
+  return false;
   }
 
 void World::paintHUD( MyWidget::Painter & p,
@@ -546,12 +596,20 @@ void World::delResouce (GameObject *p) {
 
 const std::vector<GameObject*> &World::resouce() const {
   return resouces;
-}
+  }
 
 void World::setMousePos(int x, int y, int z) {
   mpos[0] = x;
   mpos[1] = y;
   mpos[2] = z;
+  }
+
+void World::setMouseObject(size_t i) {
+  if( i==size_t(-1) ){
+    mouseObject = 0;
+    } else {
+    mouseObject = gameObjects[i].get();
+    }
   }
 
 int World::mouseX() const {
@@ -564,6 +622,10 @@ int World::mouseY() const {
 
 int World::mouseZ() const {
   return mpos[2];
+  }
+
+GameObject * World::mouseObj() {
+  return mouseObject;
   }
 
 void World::toogleEditLandMode(const Terrain::EditMode &m) {
@@ -681,12 +743,7 @@ void World::serialize(GameSerializer &s) {
   if( s.isReader() ){
     terr->buildGeometry( graphics.vboHolder,
                          graphics.iboHolder );
-    /*
-    terrainView->loadView( terr->buildGeometry( graphics.vboHolder,
-                                               graphics.iboHolder ) );
-    waterView->loadView  ( terr->waterGeometry( graphics.vboHolder,
-                                               graphics.iboHolder ) );
-                                               */
+
     physics.setTerrain( *terr );
     }
 

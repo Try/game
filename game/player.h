@@ -48,15 +48,11 @@ class Player {
     GameObject& unit( size_t id );
 
     int number() const;
-
-    bool isInSync() const;
-    void setSyncFlag( bool s );
   private:
     struct {
       int num;
       int team;
       bool htCtrl;
-      bool sync;
 
       int gold, lim, limMax;
       std::vector<GameObject*> objects, selected;

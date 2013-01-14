@@ -116,6 +116,8 @@ class GameObject {
     void serialize( GameSerializer &s );
     void setColisionDisp( int dx, int dy );
     void incColisionDisp( int dx, int dy );
+
+    void higlight(int time, GameObjectView::Selection type );
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;

@@ -17,11 +17,12 @@ class WarriorBehavior : public AbstractBehavior  {
 
     void tick( const Terrain &  );
     bool message(Message msg, int x, int y, Modifers md);
+    bool message(Message msg, size_t id, Modifers md);
 
     void aClick();
   private:
     GameObject & obj;
-    WeakWorldPtr taget;
+    WeakWorldPtr taget, mvTaget;
 
     InputHook hook;
     bool instaled;
@@ -40,7 +41,7 @@ class WarriorBehavior : public AbstractBehavior  {
 
     void positionChangeEvent(PositionChangeEvent &m);
 
-    void tickAtack();
+    void tickAtack(bool ignoreVrange);
 
     static void lookOn(GameObject& tg ,
                        GameObject &obj,

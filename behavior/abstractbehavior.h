@@ -29,6 +29,10 @@ struct MoveEvent : BehaviorEvent{
   int x,y;
   };
 
+struct MoveToUnitEvent : BehaviorEvent{
+  size_t id;
+  };
+
 struct MoveSingleEvent : BehaviorEvent{
   int x,y;
   };
@@ -58,11 +62,17 @@ class AbstractBehavior {
     enum Message {
       NoMessage,
       Cancel,
+
       Move,
+      ToUnit,
       MoveSingle,
+
       MoveGroup,
+      MoveToUnitGroup,
+
       MineralMove,
       Hold,
+      AtackToUnit,
       AtackMove,
       AtackMoveContinue,
       AtackMoveGroup,
@@ -100,6 +110,8 @@ class AbstractBehavior {
     virtual void atackContinueEvent( MoveSingleEvent & m );
 
     virtual void moveEvent  ( MoveEvent & m );
+    virtual void moveEvent  ( MoveToUnitEvent & m );
+
     virtual void moveEvent  ( MoveSingleEvent &m );
     virtual void moveEvent  ( MineralMoveEvent &m );
     virtual void stopEvent  ( StopEvent &m );
@@ -110,6 +122,10 @@ class AbstractBehavior {
 
     virtual bool message( Message msg,
                           int x, int y,
+                          Modifers md = BehaviorEvent::NoModifer );
+
+    virtual bool message( Message msg,
+                          size_t id,
                           Modifers md = BehaviorEvent::NoModifer );
 
     virtual bool message( Message msg,

@@ -15,6 +15,8 @@ class Behavior : public AbstractBehavior {
 
     bool message( Message msg, int x,
                   int y, Modifers md = BehaviorEvent::NoModifer );
+    bool message( Message msg, size_t id,
+                  Modifers md = BehaviorEvent::NoModifer );
     bool message( Message msg, const std::string& s,
                   Modifers md = BehaviorEvent::NoModifer );
 

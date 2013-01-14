@@ -29,6 +29,14 @@ void BehaviorMSGQueue::message(int pl, AbstractBehavior::Message msg) {
   }
 
 void BehaviorMSGQueue::message_st( int pl, AbstractBehavior::Message msg,
+                                   size_t begin ) {
+  message( pl, msg, 0, 0 );
+
+  data.back().begin = begin;
+  data.back().size  = 1;
+  }
+
+void BehaviorMSGQueue::message_st( int pl, AbstractBehavior::Message msg,
                                    size_t begin, size_t size) {
   message( pl, msg, 0, 0 );
 
@@ -53,7 +61,7 @@ void BehaviorMSGQueue::message( int pl,
   data.push_back(m);
   }
 
-void BehaviorMSGQueue::message(int pl,
+void BehaviorMSGQueue::message( int pl,
                                 AbstractBehavior::Message msg,
                                 int x, int y,
                                 const std::string &str, size_t size,
@@ -67,17 +75,41 @@ void BehaviorMSGQueue::tick(const Terrain &) {
   data.clear();
   }
 
+void BehaviorMSGQueue::onUnitRemove( size_t id ) {
+  for( size_t i=0; i<data.size(); ++i ){
+    MSG & m = data[i];
+    if( m.msg==SelectAdd || m.msg==Select ){
+      if( m.begin+m.size > id )
+        --m.size;
+
+      if( m.begin > id )
+        --m.begin;
+      }
+    }
+  }
+
 void BehaviorMSGQueue::computeWay( World &w, const MSG& m ) {
+  int x = m.x,
+      y = m.y;
+
+  if( m.msg==MoveToUnitGroup ){
+    GameObject& obj = w.object( m.begin );
+    x = obj.x();
+    y = obj.y();
+    }
+
   WayFindAlgo algo( w.terrain() );
 
   algo.fillClasrerMap( w.player(m.player).selected() );
-  algo.findWay       ( w.player(m.player).selected(), m.x, m.y );
+  algo.findWay       ( w.player(m.player).selected(), x, y );
 
   remove_if( data, isMoveMSG );
   }
 
 bool BehaviorMSGQueue::isMoveMSG(const BehaviorMSGQueue::MSG &m) {
-  return m.msg==MoveGroup || m.msg==AtackMoveGroup;
+  return m.msg==MoveGroup ||
+         m.msg==MoveToUnitGroup ||
+         m.msg==AtackMoveGroup;
   }
 
 bool BehaviorMSGQueue::isSystemMSG(const BehaviorMSGQueue::MSG &m) {
@@ -119,6 +151,15 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
         bool a = 0;
         if( m.msg==Buy ){
           a = buyMsgRecv( game, w, obj, m );
+          } else
+        if( m.msg==ToUnit || m.msg==AtackToUnit ){
+          GameObject& tg = w.object( m.begin );
+
+          if( m.msg==AtackToUnit )
+            tg.higlight( 25, GameObjectView::selAtk    ); else
+            tg.higlight( 25, GameObjectView::selMoveTo );
+
+          a = obj.behavior.message( m.msg, m.begin, m.modifers );
           } else {
           a = obj.behavior.message( m.msg, m.x, m.y, m.modifers );
           }
@@ -130,7 +171,9 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
         }
       }
 
-    if( m.msg==MoveGroup || m.msg==AtackMoveGroup ){
+    if( m.msg==MoveGroup ||
+        m.msg==MoveToUnitGroup ||
+        m.msg==AtackMoveGroup ){
       computeWay(w,m);
 
       if( m.msg==MoveGroup ){
@@ -262,8 +305,9 @@ void BehaviorMSGQueue::serialize( std::vector<BehaviorMSGQueue::MSG> &data,
 bool BehaviorMSGQueue::syncByNet( NetUser &usr ) {
   if( Lock(recvMutex, Lock::TryLock ) ){
     if( usr.isServer() ){
-      for( size_t i=1; i<game.plCount(); ++i ){
-        if( !game.player(i).isInSync() && game.player().number()!=int(i) )
+      for( size_t i=0; i<clients.size(); ++i ){
+        if( !clients[i].isSync &&
+            game.player().number()!=int(clients[i].pl) )
           return false;
         }
 
@@ -281,9 +325,9 @@ bool BehaviorMSGQueue::syncByNet( NetUser &usr ) {
       serialize( s );
       usr.sendMsg(v);
 
-      for( size_t i=1; i<game.plCount(); ++i ){
-        game.player(i).setSyncFlag(0);
-        }
+      for( size_t i=0; i<clients.size(); ++i )
+        clients[i].isSync = false;
+
       return true;
       } else {//client
       if( recvBuf.isRdy ){
@@ -323,7 +367,10 @@ void BehaviorMSGQueue::onRecvSrv( const std::vector<char> &v ) {
     int plN = 0;
     s + plN;
 
-    game.player(plN).setSyncFlag(1);
+    //game.player(plN).setSyncFlag(1);
+    for( size_t i=0; i<clients.size(); ++i )
+      if( int(clients[i].pl)==plN )
+        clients[i].isSync = true;
 
     serialize( buf.data, s );
 
@@ -356,9 +403,69 @@ void BehaviorMSGQueue::onRecvClient( const std::vector<char> &v ) {
     recvMutex.unlock();
     }
 
+  if( pkgType==pkClientInit ){
+    size_t plN = 0;
+    s + plN;
+    game.setCurrectPlayer(plN);
+
+    data.clear();
+    recvBuf.data.clear();
+    recvBuf.isRdy = true;
+    }
+
   }
 
-bool BehaviorMSGQueue::cmp( const BehaviorMSGQueue::MSG &m1,
-                            const BehaviorMSGQueue::MSG &m2 ) {
-  return m1.player < m2.player;
+void BehaviorMSGQueue::onNewClient( NetUser &usr,
+                                    LocalServer::Client &nc ) {
+  recvMutex.lock();
+
+  std::vector<char> v;
+  ByteArraySerialize s(v, Serialize::Write);
+
+  unsigned pkgType = unsigned(pkClientInit);
+  s + pkgType;
+
+  Client c;
+  c.pl     = game.plCount();
+  c.isSync = false;
+  c.pid    = &nc;
+
+  for( size_t i=2/*null player + server player*/; i<game.plCount(); ++i ){
+    bool freedSlot = true;
+    for( size_t r=0; r<clients.size(); ++r ){
+      if( clients[r].pl==i )
+        freedSlot = false;
+      }
+
+    if( freedSlot ){
+      c.pl = i;
+      break;
+      }
+    }
+
+  s+c.pl;
+  if( c.pl==game.plCount() ){
+    game.player(c.pl);
+    }
+
+  clients.push_back(c);
+  usr.sendMsg(v, nc);
+
+  recvMutex.unlock();
   }
+
+void BehaviorMSGQueue::onDelClient (NetUser &, NetUser::Client &c) {
+  recvMutex.lock();
+
+  for( size_t i=0; i<clients.size(); ++i ){
+    if( clients[i].pid == &c ){
+      clients[i] = clients.back();
+      clients.pop_back();
+      recvMutex.unlock();
+      return;
+      }
+    }
+
+  recvMutex.unlock();
+  }
+

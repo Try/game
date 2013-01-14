@@ -49,6 +49,7 @@ void WarriorBehavior::tick( const Terrain & ) {
     }
 
   if( isAClick &&
+      !mvTaget &&
       MoveBehavior::isCloseEnough( obj.x(), obj.y(),
                                    acX, acY, obj.getClass().data.size ) ){
     isAClick = false;
@@ -60,26 +61,36 @@ void WarriorBehavior::tick( const Terrain & ) {
   GameObject * rawTgBuild = 0;
   int dTg = 0, dBuild = 0;
 
-  obj.world().spatial().visit( obj.x()/Terrain::quadSize,
-                               obj.y()/Terrain::quadSize,
-                               obj.getClass().data.visionRange,
-                               &lookOn,
-                               obj,
-                               this,
-                               rawTg,
-                               rawTgBuild,
-                               dTg,
-                               dBuild );
+  GameObject * tg = 0;
+  if( mvTaget ){
+    acX = mvTaget.value().x();
+    acY = mvTaget.value().y();
+    } else {
+    obj.world().spatial().visit( obj.x()/Terrain::quadSize,
+                                 obj.y()/Terrain::quadSize,
+                                 obj.getClass().data.visionRange,
+                                 &lookOn,
+                                 obj,
+                                 this,
+                                 rawTg,
+                                 rawTgBuild,
+                                 dTg,
+                                 dBuild );
 
-  GameObject * tg = rawTgBuild;
-  takeTaget( tg, rawTgBuild, dBuild );
-  takeTaget( tg, rawTg,      dTg    );
+    tg = rawTgBuild;
+    takeTaget( tg, rawTgBuild, dBuild );
+    takeTaget( tg, rawTg,      dTg    );
+    }
+
+  taget = mvTaget;
 
   if( !obj.isOnMove() || isAtk || (obj.distanceQL(lastX, lastY)>1) ){
+    if( mvTaget )
+      taget = mvTaget; else
     if( tg )
       taget = obj.world().objectWPtr( tg );
 
-    tickAtack();
+    tickAtack( mvTaget==taget );
     } else {
     if( mvLock ){
       obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
@@ -116,7 +127,7 @@ void WarriorBehavior::lookOn( GameObject &tg,
     }
   }
 
-void WarriorBehavior::takeTaget( GameObject *&out, GameObject *tg, int d ) {
+void WarriorBehavior::takeTaget( GameObject *&out, GameObject *tg, int /*d*/ ){
   if( tg!=0 ){
     int vrange = (obj.getClass().data.visionRange +
                   tg->getClass().data.size )*Terrain::quadSize;
@@ -135,6 +146,8 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
       msg==MoveGroup ||
       msg==MineralMove ||
       msg==MoveSingle ){
+    mvTaget = WeakWorldPtr();
+
     isAtk    = false;
     isAClick = false;
 
@@ -146,12 +159,40 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
 
   if( msg==AtackMove ||
       msg==AtackMoveGroup ){
+    mvTaget = WeakWorldPtr();
+
     isAClick = true;
     acX = x;
     acY = y;
     }
 
   return AbstractBehavior::message(msg, x, y, md);
+  }
+
+bool WarriorBehavior::message( Message msg, size_t id,
+                               AbstractBehavior::Modifers md) {
+  if( msg==ToUnit || msg==AtackToUnit ){
+    WeakWorldPtr ptr = obj.world().objectWPtr(id);
+    if( ptr.value().team()!=obj.team() || msg==AtackToUnit ){
+      mvTaget = ptr;
+      isAClick = true;
+      acX = mvTaget.value().x();
+      acY = mvTaget.value().y();
+      return 1;
+      }
+    } else {
+    mvTaget = WeakWorldPtr();
+
+    isAtk    = false;
+    isAClick = false;
+
+    if( mvLock ){
+      obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
+      mvLock = 0;
+      }
+    }
+
+  return AbstractBehavior::message(msg, id, md);
   }
 
 void WarriorBehavior::aClick() {
@@ -196,7 +237,6 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     b.x = obj.x();
     b.y = obj.y();
     b.view.teamColor = obj.teamColor();
-    b.view.setSelectionVisible(0);
 
     b.z   = obj.viewHeight()/2;
     b.tgZ = dobj.viewHeight()/2;
@@ -217,7 +257,7 @@ void WarriorBehavior::positionChangeEvent(PositionChangeEvent &) {
     }
   }
 
-void WarriorBehavior::tickAtack() {
+void WarriorBehavior::tickAtack( bool ignoreVrange ) {
   if( taget ){
     int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
     int arange = (  obj.getClass().data.atk[0].range +
@@ -238,7 +278,7 @@ void WarriorBehavior::tickAtack() {
         mvLock = 1;
         }
       } else
-    if( d <= vrange )
+    if( d <= vrange || ignoreVrange )
       move( taget.value().x(), taget.value().y() );
     } else {
     if( mvLock ){
@@ -254,11 +294,18 @@ void WarriorBehavior::mouseDown(MyWidget::MouseEvent &e) {
 
 void WarriorBehavior::mouseUp( MyWidget::MouseEvent &e ) {
   if( e.button==MyWidget::MouseEvent::ButtonLeft ){
-    obj.game().message( obj.playerNum(),
-                        AtackMove,
-                        obj.world().mouseX(),
-                        obj.world().mouseY()
-                        );
+    if( obj.world().mouseObj()==0 ){
+      obj.game().message( obj.playerNum(),
+                          AtackMove,
+                          obj.world().mouseX(),
+                          obj.world().mouseY()
+                          );
+      } else {
+      GameObject *tg = obj.world().mouseObj();
+      obj.game().message( obj.playerNum(),
+                          AtackToUnit,
+                          obj.world().objectWPtr(tg).id() );
+      }
     }
 
   onRemoveHook();

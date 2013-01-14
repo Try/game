@@ -45,6 +45,8 @@ class SmallGraphicsObject {
     void updateFull();
 
     void setVisible( bool v );
+
+    MyGL::Matrix4x4 transform() const;
   private:
     Terrain * t;
 
@@ -58,6 +60,7 @@ class SmallGraphicsObject {
     bool needToUpdate, visible;
 
     void applyTransform();
+    MyGL::Matrix4x4 transformV;
 
     size_t glocation;
 

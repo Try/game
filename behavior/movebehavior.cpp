@@ -15,6 +15,8 @@ MoveBehavior::MoveBehavior( GameObject &object,
   tx = 0;
   ty = 0;
 
+  timer = 0;
+
   isWayAcept = 0;
   isMWalk    = 0;
 
@@ -41,6 +43,8 @@ MoveBehavior::~MoveBehavior() {
   }
 
 void MoveBehavior::atackMoveEvent( MoveSingleEvent &m ) {
+  taget = WeakWorldPtr();
+
   clos.isReposMove = 0;
   clos.isOnMove    = true;
 
@@ -56,13 +60,29 @@ void MoveBehavior::atackContinueEvent(MoveSingleEvent &m) {
 
 void MoveBehavior::moveEvent( MoveEvent &m ) {
   clos.isReposMove = 0;
+  taget = WeakWorldPtr();
 
   isWayAcept = 1;
   isMWalk    = 0;
   obj.world().game.message( obj.playerNum(), MoveGroup, m.x, m.y, m.modif );
   }
 
+void MoveBehavior::moveEvent(MoveToUnitEvent &m) {
+  clos.isReposMove = 0;
+
+  taget = obj.world().objectWPtr( m.id );
+
+  isWayAcept = 1;
+  isMWalk    = 0;
+  obj.world().game.message( obj.playerNum(),
+                            MoveToUnitGroup,
+                            m.id,
+                            m.modif );
+  }
+
 void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
+  taget = WeakWorldPtr();
+
   clos.isOnMove    = true;
   clos.isReposMove = 0;
   isMWalk    = 0;
@@ -71,6 +91,8 @@ void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
   }
 
 void MoveBehavior::moveEvent( MineralMoveEvent &m ) {
+  taget = WeakWorldPtr();
+
   clos.isReposMove = 0;
 
   way.clear();
@@ -87,6 +109,8 @@ void MoveBehavior::stopEvent(StopEvent &) {
   clos.isReposMove = 0;
 
   way.clear();
+  taget = WeakWorldPtr();
+
   isMWalk = 0;
 
   tx = obj.x();
@@ -100,6 +124,8 @@ void MoveBehavior::cancelEvent(CancelEvent &) {
   clos.isReposMove = 0;
 
   way.clear();
+  taget = WeakWorldPtr();
+
   isMWalk = 0;
 
   tx = obj.x();
@@ -147,11 +173,18 @@ void MoveBehavior::mouseDown(MyWidget::MouseEvent &e) {
 
 void MoveBehavior::mouseUp( MyWidget::MouseEvent &e ) {
   if( e.button==MyWidget::MouseEvent::ButtonLeft ){
-    obj.game().message( obj.playerNum(),
-                        Move,
-                        obj.world().mouseX(),
-                        obj.world().mouseY()
-                        );
+    if( obj.world().mouseObj()==0 ){
+      obj.game().message( obj.playerNum(),
+                          Move,
+                          obj.world().mouseX(),
+                          obj.world().mouseY()
+                          );
+      } else {
+      GameObject *tg = obj.world().mouseObj();
+      obj.game().message( obj.playerNum(),
+                          ToUnit,
+                          obj.world().objectWPtr(tg).id() );
+      }
     }
 
   onRemoveHook();
@@ -163,6 +196,23 @@ void MoveBehavior::onRemoveHook() {
   }
 
 void MoveBehavior::tick(const Terrain &terrain) {
+  if( taget && timer==0 ){
+    tx = taget.value().x();
+    ty = taget.value().y();
+
+    int d = obj.getClass().data.size +
+            taget.value().getClass().data.size;
+    d *= Terrain::quadSize;
+
+    if( obj.distanceSQ(tx, ty) > d*d )
+      calcWayAndMove( tx, ty,  terrain );
+
+    timer = 15;
+    }
+
+  if( timer>0 )
+    --timer;
+
   int qs = Terrain::quadSize;
   int x = obj.x()/qs,
       y = obj.y()/qs;

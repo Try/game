@@ -6,6 +6,7 @@
 
 #include <vector>
 #include "netuser.h"
+#include "threads/mutex.h"
 
 class LocalServer : public NetUser {
   public:
@@ -14,17 +15,17 @@ class LocalServer : public NetUser {
 
     void start();
     void sendMsg( const std::vector<char> & v );
+    void sendMsg( const std::vector<char> & v,
+                  Client & c );
 
     bool isServer() const;
     bool isConnected() const;
+
+    MyWidget::signal< NetUser&, Client& > onConnected;
+    MyWidget::signal< NetUser&, Client& > onDisConnected;
+
   private:
-    struct Client{
-      SOCKET sock;
-      sockaddr_in addr;
-
-      Future thread;
-      };
-
+    Mutex clientsMut;
     std::vector<Client*> clients;
     SOCKET listenSocket;
     sockaddr_in listenAddress;

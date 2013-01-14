@@ -17,7 +17,6 @@ WorkerBehavior::WorkerBehavior( GameObject & object,
   mtime = 0;
   forceWalk = 0;
 
-  mineral.setSelectionVisible(0);
   mineral.setViewSize(0.4, 0.4, 0.4);
 
   bank = 0;
@@ -100,30 +99,28 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
   }
 
 bool WorkerBehavior::message( AbstractBehavior::Message msg,
-                              int x, int y,
-                              AbstractBehavior::Modifers md ) {
+                              int /*x*/, int /*y*/,
+                              AbstractBehavior::Modifers /*md*/ ) {
   if( msg!=Move && msg!=MoveSingle )
     return 0;
 
   setMineral( WeakWorldPtr() );
   mode = NoWork;
+  return 0;
+  }
+
+bool WorkerBehavior::message( Message msg,
+                              size_t id,
+                              AbstractBehavior::Modifers /*md*/ ) {
+  if( msg!=ToUnit )
+    return 0;
+
+  setMineral( WeakWorldPtr() );
 
   World & w = obj.world();
+  if( w.object(id).behavior.find<ResourceBehavior>() ){
+    GameObject & m = w.object(id);
 
-  size_t id = 0;
-  int l = -1;
-
-  for( size_t i=0; i<w.resouce().size(); ++i ){
-    GameObject & m = *w.resouce()[i];
-    int l2 = m.distanceQL(x, y);
-    if( l2 < l || l<0 ){
-      l = l2;
-      id = i;
-      }
-    }
-
-  if( l>=0 && l<3 ){
-    GameObject & m = *w.resouce()[id];
     move( m.x(), m.y() );
     forceWalk = 1;
     mode = ToMineral;

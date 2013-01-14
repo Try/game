@@ -5,6 +5,7 @@
 #include "behavior.h"
 
 #include "game/gameobjectview.h"
+#include "util/weakworldptr.h"
 
 class WorkerBehavior;
 
@@ -17,11 +18,14 @@ class RecruterBehavior : public AbstractBehavior  {
 
     void tick( const Terrain & terrain );
     bool message(Message msg, const std::string &cls, Modifers md);
+    bool message(Message msg, size_t id, Modifers md);
     bool message(Message msg, int x, int y, Modifers md);
 
     int  qtime();
   private:
     GameObject & obj;
+    WeakWorldPtr taget;
+
     int time, rallyX, rallyY;
     std::vector<std::string> queue;
 

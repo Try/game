@@ -11,8 +11,18 @@
     #include <netinet/in.h>
 #endif
 
+#include "threads/async.h"
+
 class NetUser {
   public:
+    class Client{
+      SOCKET sock;
+      sockaddr_in addr;
+
+      Future thread;
+      friend class LocalServer;
+      };
+
     NetUser();
     virtual ~NetUser();
 
@@ -21,6 +31,8 @@ class NetUser {
 
     virtual void start() = 0;
     virtual void sendMsg( const std::vector<char> & v ) = 0;
+    virtual void sendMsg( const std::vector<char> &,
+                          Client & ){}
 
     virtual bool isServer() const = 0;
     virtual bool isConnected() const = 0;

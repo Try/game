@@ -7,7 +7,7 @@ Client::Client() {
   }
 
 Client::~Client() {
-
+  connected = false;
   }
 
 void Client::start() {
@@ -77,7 +77,7 @@ int Client::reciever(void *){
   std::vector<char> buffer;
   int recieved;
 
-  while(1){
+  while( connected ){
     recieved = recvStr( serverSocket, buffer );
 
     if (recieved == 0){

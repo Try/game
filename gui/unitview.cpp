@@ -41,7 +41,6 @@ void UnitView::setupUnit(GameObject *obj) {
                                     p,
                                     obj->prototypes ) );
     view->loadView( obj->game().resources(), obj->world().physics, 0 );
-    view->setSelectionVisible(0);
     view->teamColor = MyGL::Color(1, 1, 0, 1);
     setupCamera();
     }

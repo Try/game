@@ -12,8 +12,7 @@
 
 GameObjectView::GameObjectView( GameObject &obj,
                                 const ProtoObject &p )
-  : selection(obj.getScene()),
-    scene( obj.getScene() ),
+  : scene( obj.getScene() ),
     wrld( obj.world() ),    
     psysEngine( wrld.getParticles() ),
     cls(&p),
@@ -26,7 +25,7 @@ GameObjectView::GameObjectView( MyGL::Scene & s,
                                 World       & wrld,
                                 const ProtoObject &p,
                                 const PrototypesLoader & pl )
-  : selection(s), scene(s), wrld(wrld),
+  : scene(s), wrld(wrld),
     psysEngine( wrld.getParticles() ), cls(&p), prototypes(pl) {
   init();
   }
@@ -36,7 +35,7 @@ GameObjectView::GameObjectView( MyGL::Scene & s,
                                 ParticleSystemEngine & psysEngine,
                                 const ProtoObject &p,
                                 const PrototypesLoader & pl )
-  : selection(s), scene(s), wrld(wrld),
+  : scene(s), wrld(wrld),
     psysEngine(psysEngine), cls(&p), prototypes(pl) {
   init();
   }
@@ -56,6 +55,12 @@ void GameObjectView::init() {
 
   m.intentDirX = 0;
   m.intentDirY = -1;
+
+  for( int i=0; i<selectModelsCount; ++i ){
+    selection[i].reset( new MyGL::GraphicObject(scene) );
+    selection[i]->setVisible(false);
+    htime[i] = 0;
+    }
   }
 
 GameObjectView::~GameObjectView() {
@@ -111,9 +116,28 @@ void GameObjectView::loadView( const Resource &r, Physics & p, bool env ) {
       }
     }
 
-  const ProtoObject::View & v = prototypes.get("selection.green").view[0];
-  setupMaterials( selection, v );
-  selection.setModel( r.model("quad/model") );
+  { const ProtoObject::View & v = prototypes.get("selection.green").view[0];
+    setupMaterials( *selection[0], v );
+    }
+
+  { const ProtoObject::View & v = prototypes.get("selection.over").view[0];
+    setupMaterials( *selection[1], v );
+    }
+
+  { const ProtoObject::View & v = prototypes.get("selection.moveTo").view[0];
+    setupMaterials( *selection[2], v );
+    }
+
+  { const ProtoObject::View & v = prototypes.get("selection.moveTo").view[0];
+    setupMaterials( *selection[3], v );
+    }
+
+  { const ProtoObject::View & v = prototypes.get("selection.atkTo").view[0];
+    setupMaterials( *selection[4], v );
+    }
+
+  for( int i=0; i<selectModelsCount; ++i )
+    selection[i]->setModel( r.model("quad/model") );
 
   setViewSize(1, 1, 1);
   //rotate( 180 );
@@ -235,7 +259,9 @@ void GameObjectView::setViewPosition( float x, float y, float z,
   //float zland = World::coordCast( std::max( wrld.terrain().heightAt(wx,wy),
   //                                          wrld.terrain().atF(wx,wy) ) );
   float zland = World::coordCast( wrld.terrain().heightAt(wx,wy) );
-  selection.setPosition( x, y, zland+0.01 );
+
+  for( int i=0; i<selectModelsCount; ++i )
+    selection[i]->setPosition( x, y, zland+0.01 );
 
   if( form.sphere.isValid() )
     form.sphere.setPosition(x,y,z);
@@ -322,7 +348,10 @@ void GameObjectView::setViewSize( float x, float y, float z ) {
   for( int i=0; i<2; ++i )
     s = std::min(s, m.selectionSize[i] );
 
-  selection.setSize( s );
+  selection[0]->setSize( s );
+
+  for( int i=1; i<selectModelsCount; ++i )
+    selection[i]->setSize( s*1.05 );
   }
 
 template< class Object >
@@ -378,8 +407,13 @@ void GameObjectView::updatePos() {
     }
   }
 
-void GameObjectView::setSelectionVisible(bool v) {
-  selection.setVisible(v);
+void GameObjectView::setSelectionVisible( bool v, Selection s ) {
+  selection[int(s)]->setVisible(v);
+  }
+
+void GameObjectView::higlight(int time, GameObjectView::Selection s) {
+  htime[int(s)] = time;
+  selection[int(s)]->setVisible(true);
   }
 
 void GameObjectView::setVisible(bool v) {
@@ -441,6 +475,19 @@ double GameObjectView::rAngle() const {
   }
 
 void GameObjectView::tick() {
+  for( int i=1; i<selectModelsCount; ++i ){
+    selection[i]->setRotation( selection[i]->angleX(),
+                               selection[i]->angleZ()+1 );
+    }
+
+  for( int i=2; i<selectModelsCount; ++i ){
+    if( htime[i] ){
+      htime[i]--;
+      if( htime[i]==0 )
+        selection[i]->setVisible(false);
+      }
+    }
+
   double a  = 180.0*atan2( m.intentDirY, m.intentDirX )/M_PI;
   double at = cls->rotateSpeed;
 
@@ -562,8 +609,11 @@ const ProtoObject &GameObjectView::getClass() const {
   }
 
 MyGL::Matrix4x4 GameObjectView::_transform() const {
-  if( view.size()==0 )
-    return MyGL::Matrix4x4();
+  if( view.size()==0 ){
+    if( smallViews.size() )
+      return smallViews[0]->transform(); else
+      return MyGL::Matrix4x4();
+    }
 
   return view[0].transform();
   }
@@ -574,9 +624,11 @@ void GameObjectView::setupMaterials( MyGL::AbstractGraphicObject &obj,
   }
 
 void GameObjectView::serialize( GameSerializer &s ) {
-  bool v = selection.isVisible();
-  s + v;
-  selection.setVisible(v);
+  if( s.version()<4 ){
+    bool v = false;//selection.isVisible();
+    s + v;
+    //selection.setVisible(v);
+    }
 
   unsigned vsize = view.size();
   s + vsize;

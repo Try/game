@@ -39,6 +39,13 @@ void LocalServer::sendMsg(const std::vector<char> &v) {
   sendToClients( &v );
   }
 
+void LocalServer::sendMsg( const std::vector<char> &v,
+                           LocalServer::Client &c ) {
+  if (sendStr(c.sock, v) == SOCKET_ERROR){
+    onError("Send error");
+    }
+  }
+
 bool LocalServer::isServer() const {
   return true;
   }
@@ -78,20 +85,26 @@ int LocalServer::serverListen( void * ){
         c->sock = newSocket;
         c->addr = newAddress;
 
+        clientsMut.lock();
         clients.push_back(c);
+        clientsMut.unlock();
+
         c->thread = async( this, &LocalServer::clientRecieve, (void*)c);
         }
       }
     }
 
-  /*
-  for( size_t i=0; i<clients.size(); ++i ){//FIXME
+  clientsMut.lock();
+
+  for( size_t i=0; i<clients.size(); ++i ){
     Client &c = *clients[i];
     c.thread.cancel();
     closesocket(c.sock);
     delete clients[i];
     }
-    */
+  clients.clear();
+
+  clientsMut.unlock();
 
   return 0;
   }
@@ -100,7 +113,7 @@ int LocalServer::clientRecieve( void* data ){
   std::vector<char> buffer;
   Client* client = (Client*)data;
 
-  //Future fsend;
+  onConnected(*this, *client);
 
   while( 1 ){
     int recieved = recvStr( client->sock, buffer );
@@ -119,10 +132,9 @@ int LocalServer::clientRecieve( void* data ){
     //fsend = async(this, &LocalServer::sendToClients, (void*)&buffer);
 
     //sendToClients( (void*)&buffer );
-    }
+    }  
 
-  closesocket(client->sock);
-
+  clientsMut.lock();
   for( size_t i = 0; i<clients.size(); ){
     if (clients[i] == client){
       clients[i] = clients.back();
@@ -131,19 +143,23 @@ int LocalServer::clientRecieve( void* data ){
       ++i;
       }
     }
+  clientsMut.unlock();
+
+  onDisConnected(*this, *client);
+  closesocket(client->sock);
 
   delete client;
   return 0;
   }
 
 int LocalServer::sendToClients( const void* data ){
+  clientsMut.lock();
   const std::vector<char>  &s = *(( const std::vector<char> *)data);
 
   for ( size_t i = 0; i<clients.size(); ++i){
-    if (sendStr(clients[i]->sock, s) == SOCKET_ERROR){
-      onError("Send error");
-      }
+    sendMsg( s, *clients[i] );
     }
 
+  clientsMut.unlock();
   return 0;
   }

@@ -55,7 +55,16 @@ class GameObjectView {
     void setViewSize(float x, float y, float z);
     void updatePos();
 
-    void setSelectionVisible( bool v );
+    enum Selection{
+      selStd    = 0,
+      selOver   = 1,
+      selCmd    = 2,
+      selMoveTo = 3,
+      selAtk    = 4
+      };
+
+    void setSelectionVisible( bool v, Selection s );
+    void higlight( int time, Selection s );
     void setVisible( bool v );
 
     void rotate(int delta);
@@ -126,7 +135,10 @@ class GameObjectView {
 
     Physics * physic;
 
-    MyGL::GraphicObject selection;
+    static const int selectModelsCount = 5;
+    std::unique_ptr<MyGL::GraphicObject> selection[selectModelsCount];
+    int htime[selectModelsCount];
+
     MyGL::Scene & scene;
     World       & wrld;
     ParticleSystemEngine & psysEngine;
