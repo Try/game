@@ -394,6 +394,11 @@ void GameObject::serialize( GameSerializer &s ) {
       y  +
       z;
 
+  if( s.version()<5 ){
+    x*=4;
+    y*=4;
+    }
+
   if( s.isReader() ){
     setPosition( x, y, z );
     setPlayer( pl );

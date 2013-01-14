@@ -30,8 +30,8 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
   int x = obj.x(), y = obj.y();
 
   int vx = 0, vy = 0;
-  vx = 100*cos( obj.rAngle() );
-  vy = 100*sin( obj.rAngle() );
+  vx = 400*cos( obj.rAngle() );
+  vy = 400*sin( obj.rAngle() );
 
   mineral.setPosition( x, y );
   mineral.setViewPosition( World::coordCast(x+vx),

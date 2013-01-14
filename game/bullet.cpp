@@ -24,7 +24,7 @@ Bullet::Bullet( MyGL::Scene & s,
   isFinished = 0;
   absDmg     = 0;
 
-  speed = 150;
+  speed = 600;
   }
 
 void Bullet::tick() {

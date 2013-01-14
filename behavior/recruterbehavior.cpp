@@ -33,13 +33,24 @@ void RecruterBehavior::tick( const Terrain &terrain ) {
   light.setVisible( queue.size()>0 );
   light.tick();
 
-  flag.setPosition( rallyX, rallyY );
-  flag.setViewPosition( World::coordCast(rallyX),
-                        World::coordCast(rallyY),
-                        0 );
+  if( taget ){
+    rallyX = obj.x();
+    rallyY = obj.y();
+
+    flag.setPosition( taget.value().x(), taget.value().y() );
+    flag.setViewPosition( World::coordCast(taget.value().x()),
+                          World::coordCast(taget.value().y()),
+                          0 );
+    } else {
+    flag.setPosition( rallyX, rallyY );
+    flag.setViewPosition( World::coordCast(rallyX),
+                          World::coordCast(rallyY),
+                          0 );
+    }
+
   flag.setVisible( obj.isSelected() &&
                    obj.hasHostCtrl() &&
-                   !(rallyX==obj.x() && rallyY==obj.y() ) );
+                   (!(rallyX==obj.x() && rallyY==obj.y() ) || taget ) );
   flag.tick();
 
   if( queue.size()==0 )
@@ -100,6 +111,7 @@ bool RecruterBehavior::message( AbstractBehavior::Message msg,
   if( msg==Move || msg==onPositionChange ){
     rallyX = x;
     rallyY = y;
+    taget  = WeakWorldPtr();
     }
 
   return 0;

@@ -139,19 +139,19 @@ void World::createResp(int pl, int x, int y, int minX, int minY) {
   }
 
 double World::coordCast(int icoord) {
-  return icoord*0.001;
+  return icoord/4000.f;
   }
 
 double World::coordCastP(double icoord) {
-  return icoord*0.001;
+  return icoord/4000.f;
   }
 
 int World::coordCastD(double dcoord) {
-  return int(dcoord*1000.0);
+  return int(dcoord*4000.0);
   }
 
 int World::coordCastD(int dcoord) {
-  return dcoord*1000;
+  return dcoord*4000;
   }
 
 void World::moveCamera(double x, double y) {

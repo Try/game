@@ -367,7 +367,7 @@ void Terrain::brushHeight( int x, int y,
   x/=quadSize;
   y/=quadSize;
 
-  double R = m.R, dh = 200;
+  double R = m.R, dh = 800;
 
   int iR = int(R+2);
   int lx = std::max(0, x-iR), rx = std::min(width()-1, x+iR);
@@ -652,7 +652,7 @@ void Terrain::computeEnableMap() {
 
       int det = *std::max_element(h, h+4) - *std::min_element(h,h+4);
 
-      enableMap[i][r] = (det<75);
+      enableMap[i][r] = (det<4*75);
       }
   }
 
@@ -716,6 +716,14 @@ void Terrain::serialize( GameSerializer &s ) {
         s   + t.plane
             + t.textureID[0]
             + t.textureID[1];
+        }
+    }
+
+  if( s.version()<5 ){
+    for( int i=0; i<=w; ++i )
+      for( int r=0; r<=h; ++r ){
+        heightMap[i][r] *= 4;
+        waterMap [i][r] *= 4;
         }
     }
 

@@ -90,7 +90,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
     /*try*/
     {
 
-    bool isFullScreen = 0;
+    bool isFullScreen = 1;
 
     int w = GetSystemMetrics(SM_CXFULLSCREEN),
         h = GetSystemMetrics(SM_CYFULLSCREEN);
@@ -154,8 +154,9 @@ int WINAPI WinMain( HINSTANCE hInstance,
           } else {
           DWORD ft = GetTickCount();
 
-          if( isAppActive )
+          if( isAppActive ){
             demo.render( GetTickCount() );
+            }
 
           gameTime += std::min<DWORD>((GetTickCount() - time), 5*frameTime);
           time = GetTickCount();

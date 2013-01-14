@@ -116,28 +116,30 @@ void GameObjectView::loadView( const Resource &r, Physics & p, bool env ) {
       }
     }
 
-  { const ProtoObject::View & v = prototypes.get("selection.green").view[0];
-    setupMaterials( *selection[0], v );
-    }
+  if( !getClass().data.isBackground ){
+    { const ProtoObject::View & v = prototypes.get("selection.green").view[0];
+      setupMaterials( *selection[0], v );
+      }
 
-  { const ProtoObject::View & v = prototypes.get("selection.over").view[0];
-    setupMaterials( *selection[1], v );
-    }
+    { const ProtoObject::View & v = prototypes.get("selection.over").view[0];
+      setupMaterials( *selection[1], v );
+      }
 
-  { const ProtoObject::View & v = prototypes.get("selection.moveTo").view[0];
-    setupMaterials( *selection[2], v );
-    }
+    { const ProtoObject::View & v = prototypes.get("selection.moveTo").view[0];
+      setupMaterials( *selection[2], v );
+      }
 
-  { const ProtoObject::View & v = prototypes.get("selection.moveTo").view[0];
-    setupMaterials( *selection[3], v );
-    }
+    { const ProtoObject::View & v = prototypes.get("selection.moveTo").view[0];
+      setupMaterials( *selection[3], v );
+      }
 
-  { const ProtoObject::View & v = prototypes.get("selection.atkTo").view[0];
-    setupMaterials( *selection[4], v );
-    }
+    { const ProtoObject::View & v = prototypes.get("selection.atkTo").view[0];
+      setupMaterials( *selection[4], v );
+      }
 
-  for( int i=0; i<selectModelsCount; ++i )
-    selection[i]->setModel( r.model("quad/model") );
+    for( int i=0; i<selectModelsCount; ++i )
+      selection[i]->setModel( r.model("quad/model") );
+    }
 
   setViewSize(1, 1, 1);
   //rotate( 180 );
@@ -720,6 +722,11 @@ void GameObjectView::serialize( GameSerializer &s, Obj *g,
     }
 
   if( store ){
+    if( s.version()<5 ){
+      x*=4;
+      y*=4;
+      }
+
     g->setPosition( World::coordCast(x),
                     World::coordCast(y),
                     World::coordCast(z));

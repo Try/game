@@ -52,7 +52,7 @@ class MoveBehavior : public AbstractBehavior {
     bool isWayAcept, & isMWalk;
     std::vector<Point> way;
 
-    void step( const Terrain & terrain, int sz, bool busyIgnoreFlag );
+    void step(const Terrain & terrain, int sz);
     bool nextPoint();
 
     void calcWayAndMove( int tx, int ty, const Terrain & terrain );

@@ -244,17 +244,17 @@ void MoveBehavior::tick(const Terrain &terrain) {
 
   if( terrain.isEnableQuad( x, y, sz ) && ( clos.isReposMove || bm<=1 ) ){
     if( clos.isOnMove || clos.isReposMove ){
-      step(terrain, sz, true);
+      step(terrain, sz);
       }
     } else {
     //if( bm==2 )
-      step(terrain, sz, true);
+      step(terrain, sz);
     }
 
   }
 
-void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
-  int acseleration = 2;
+void MoveBehavior::step(const Terrain &terrain, int sz ) {
+  int acseleration = 8;
 
   int tx = this->tx,
       ty = this->ty;
@@ -282,8 +282,8 @@ void MoveBehavior::step(const Terrain &terrain, int sz, bool busyIgnoreFlag ) {
           way.size()>0 ) ||
         clos.isReposMove) &&
       l > 0 ){
-    int x = obj.x()+(tx-obj.x())/l,
-        y = obj.y()+(ty-obj.y())/l;
+    int x = obj.x()+(tx-obj.x())*curentSpeed/realL,
+        y = obj.y()+(ty-obj.y())*curentSpeed/realL;
 
     float wx = x/Terrain::quadSizef,
           wy = y/Terrain::quadSizef;
