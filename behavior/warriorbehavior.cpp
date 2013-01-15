@@ -66,8 +66,8 @@ void WarriorBehavior::tick( const Terrain & ) {
     acX = mvTaget.value().x();
     acY = mvTaget.value().y();
     } else {
-    obj.world().spatial().visit( obj.x()/Terrain::quadSize,
-                                 obj.y()/Terrain::quadSize,
+    obj.world().spatial().visit( obj.x(),
+                                 obj.y(),
                                  obj.getClass().data.visionRange,
                                  &lookOn,
                                  obj,
@@ -145,7 +145,8 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
   if( msg==Move ||
       msg==MoveGroup ||
       msg==MineralMove ||
-      msg==MoveSingle ){
+      msg==MoveSingle  ||
+      msg==Cancel ){
     mvTaget = WeakWorldPtr();
 
     isAtk    = false;
@@ -230,7 +231,8 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
   obj.setViewDirection( dobj.x() - obj.x(),
                         dobj.y() - obj.y() );
 
-  if( obj.getClass().data.atk[0].range>0 ){
+  if( obj.getClass().data.atk[0].range>0 &&
+      obj.getClass().data.atk[0].bullet.size() ){
     auto bul = dobj.reciveBulldet( obj.getClass().data.atk[0].bullet );
     Bullet& b = *bul;
 

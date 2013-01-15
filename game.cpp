@@ -100,6 +100,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   fps.time = 0;
 
   sendDelay = 0;
+
+  //load(L"./save/1.sav");
   }
 
 void Game::tick() {

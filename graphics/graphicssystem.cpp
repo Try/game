@@ -541,11 +541,12 @@ void GraphicsSystem::drawTranscurent( MyGL::Texture2d& screen,
   device.setUniform( displaceData.fs, tc, 2, "dTexCoord");
 
   const MyGL::AbstractCamera & camera = scene.camera();
+  const MyGL::ViewTester & t = scene.viewTester();
 
   for( size_t i=0; i<v.size(); ++i ){
     const MyGL::AbstractGraphicObject& ptr = v[i].object();
 
-    if( scene.viewTester().isVisible( ptr, camera ) ){
+    if( t.isVisible( ptr, camera ) ){
       render.draw( v[i].material(), ptr,
                    ptr.transform(), camera );
       }

@@ -100,7 +100,7 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
 bool WorkerBehavior::message( AbstractBehavior::Message msg,
                               int /*x*/, int /*y*/,
                               AbstractBehavior::Modifers /*md*/ ) {
-  if( msg!=Move && msg!=MoveSingle )
+  if( msg!=Move && msg!=MoveSingle && msg!=Cancel )
     return 0;
 
   setMineral( WeakWorldPtr() );

@@ -250,6 +250,10 @@ void World::deleteObject(GameObject *obj) {
     }
   }
 
+const std::vector<World::PGameObject> &World::activeObjects() {
+  return nonBackground;
+  }
+
 void World::deleteObject(std::vector< PGameObject > &c, GameObject *obj) {
   for( size_t i=0; i<c.size(); ++i )
     if( c[i].get()==obj ){

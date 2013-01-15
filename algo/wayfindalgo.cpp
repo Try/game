@@ -184,7 +184,7 @@ void WayFindAlgo::findWay(GameObject & obj, int x, int y, int rx, int ry) {
         way.push_back(re);
         re = p;
         found = true;
-        break;
+        //break;
         }
       }
 
@@ -209,13 +209,14 @@ void WayFindAlgo::optimizeWay() {
   if( way.size()==0 )
     return;
 
-  int a = 0, b = 2, wr = 1;
+  int a = 1, b = 2, wr = 1;
 
   for( ; b < int(way.size());  ){
-    if( !optimizeWay( way[a], way[b] ) ){
+    if( !optimizeWay( way[a], way[b] ) || b-a>20 ){
       way[wr] = way[b];
       ++wr;
-      ++a;
+      //++a;
+      a = b;
       ++b;
       } else {
       ++b;

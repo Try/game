@@ -2,6 +2,7 @@ QT    -= core gui
 
 TARGET = game
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
+QMAKE_LFLAGS   += -pg
 
 INCLUDEPATH += include
 

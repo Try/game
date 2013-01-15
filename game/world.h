@@ -62,6 +62,8 @@ class World {
                            int pl, bool env );
     void deleteObject( GameObject* obj );
 
+    const std::vector< PGameObject >& activeObjects();
+
     size_t objectsCount() const;
     GameObject& object( size_t i );
     const GameObject& object( size_t i ) const;

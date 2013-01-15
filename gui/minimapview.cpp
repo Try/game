@@ -10,13 +10,15 @@ MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
   }
 
 void MiniMapView::render(World &wx) {
+  int mk = wx.terrain().width()*wx.terrain().height()/(128*128);
+
   if( renderTo.width() != w() ||
       renderTo.height()!= h() ){
     renderTo = MyGL::Pixmap(w(), h(), false);
-    rtime = clock() - CLOCKS_PER_SEC/2;
+    rtime = clock() - mk*CLOCKS_PER_SEC/2;
     }
 
-  if( clock() >= rtime+CLOCKS_PER_SEC/2 ){
+  if( clock() >= rtime+mk*CLOCKS_PER_SEC/2 ){
     rtime = clock();
 
     MyGL::Pixmap::Pixel pix;
@@ -25,10 +27,13 @@ void MiniMapView::render(World &wx) {
     pix.b = 0;
     pix.a = 255;
 
+    int tw = wx.terrain().width(),
+        th = wx.terrain().height();
+
     for( int i=0; i<renderTo.width(); ++i )
       for( int r=0; r<renderTo.height(); ++r ){
-        int terrX = (i*wx.terrain().width()) /renderTo.width();
-        int terrY = (r*wx.terrain().height())/renderTo.height();
+        int terrX = (i*tw) /renderTo.width();
+        int terrY = (r*th)/renderTo.height();
 
         pix.r = 0;
         pix.g = 0;
@@ -49,13 +54,14 @@ void MiniMapView::render(World &wx) {
         renderTo.set(i,r, pix);
         }
 
-    for( size_t i=0; i<wx.objectsCount(); ++i ){
-      GameObject &obj = wx.object(i);
+    const std::vector<World::PGameObject> & objects = wx.activeObjects();
+    for( size_t i=0; i<objects.size(); ++i ){
+      GameObject &obj = *objects[i];
       int terrX = (obj.x()+Terrain::quadSize)/Terrain::quadSize;
       int terrY = (obj.y()+Terrain::quadSize)/Terrain::quadSize;
 
-      terrX = (terrX*renderTo.width()) /wx.terrain().width();
-      terrY = (terrY*renderTo.height())/wx.terrain().height();
+      terrX = (terrX*renderTo.width()) /tw;
+      terrY = (terrY*renderTo.height())/th;
 
       pix.r = obj.teamColor().r()*255;
       pix.g = obj.teamColor().g()*255;
@@ -69,13 +75,13 @@ void MiniMapView::render(World &wx) {
 
           int terrX0 = (obj.x())/Terrain::quadSize - sz/2;
           int terrY0 = (obj.y())/Terrain::quadSize - sz/2;
-          terrX0 = (terrX0*renderTo.width()) /wx.terrain().width();
-          terrY0 = (terrY0*renderTo.height())/wx.terrain().height();
+          terrX0 = (terrX0*renderTo.width()) /tw;
+          terrY0 = (terrY0*renderTo.height())/th;
 
           int terrX1 = (obj.x())/Terrain::quadSize + sz-sz/2;
           int terrY1 = (obj.y())/Terrain::quadSize + sz-sz/2;
-          terrX1 = (terrX1*renderTo.width()) /wx.terrain().width();
-          terrY1 = (terrY1*renderTo.height())/wx.terrain().height();
+          terrX1 = (terrX1*renderTo.width()) /tw;
+          terrY1 = (terrY1*renderTo.height())/th;
 
           terrX0 = std::max(terrX0,0);
           terrY0 = std::max(terrY0,0);

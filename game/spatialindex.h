@@ -18,11 +18,11 @@ class SpatialIndex {
 
     template< class F, class ... Args >
     void visit( int x, int y, int R, F func, Args & ... args ) const {
-      int lx = x - sizeMax - R,
-          rx = x + sizeMax + R;
+      int lx = x/qsize - (sizeMax + R)/detail - 1,
+          rx = x/qsize + (sizeMax + R)/detail + 1;
 
-      int ly = y - sizeMax - R,
-          ry = y + sizeMax + R;
+      int ly = y/qsize - (sizeMax + R)/detail - 1,
+          ry = y/qsize + (sizeMax + R)/detail + 1;
 
       lx = std::max(0, lx);
       rx = std::min(w, rx);
@@ -51,6 +51,9 @@ class SpatialIndex {
 
     static bool hasEffect(GameObject &tg, GameObject &obj );
     static void collision(GameObject &obj , GameObject &m, size_t id);
+
+    static const int qsize;
+    static const int detail;
   };
 
 #endif // SPATIALINDEX_H
