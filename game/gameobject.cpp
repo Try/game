@@ -420,3 +420,7 @@ void GameObject::incColisionDisp(int dx, int dy) {
 void GameObject::higlight(int time, GameObjectView::Selection type) {
   view.higlight(time, type);
   }
+
+void GameObject::setVisible(bool v) {
+  view.setVisible(v);
+  }

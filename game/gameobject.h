@@ -118,6 +118,7 @@ class GameObject {
     void incColisionDisp( int dx, int dy );
 
     void higlight(int time, GameObjectView::Selection type );
+    void setVisible( bool v );
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;

@@ -48,12 +48,8 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
   if( mode==ToMineral && res ){
     GameObject & re = res.value();
 
-    if( !obj.isOnMove() ){
-      toMineral();
-      }
-
     int d = re.distanceQL(x, y);
-    if( d < 1 ){
+    if( d <= 1 ){
       if( re.behavior.find<ResourceBehavior>()->isBusy==this ){
         mode  = Mining;
         mtime = 50;
@@ -61,6 +57,9 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
         toMineral();
 
       return;
+      } else
+    if( !obj.isOnMove() ){
+      toMineral();
       }
     }
 

@@ -184,7 +184,7 @@ void WayFindAlgo::findWay(GameObject & obj, int x, int y, int rx, int ry) {
         way.push_back(re);
         re = p;
         found = true;
-        continue;
+        break;
         }
       }
 
@@ -199,11 +199,13 @@ void WayFindAlgo::findWay(GameObject & obj, int x, int y, int rx, int ry) {
 
 bool WayFindAlgo::isQuadEnable( const array2d<int> &  map,
                                 Point p,
-                                Point src ) {
+                                Point /*src*/ ) {
   return terrain.isEnable( p.x, p.y ) && map[p.x][p.y]<0;
   }
 
 void WayFindAlgo::optimizeWay() {
+  //return;
+
   if( way.size()==0 )
     return;
 

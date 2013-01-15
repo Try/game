@@ -401,7 +401,7 @@ size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
       }
     }
 
-  if( mdist>=0 ){
+  if( mdist>=0 && gameObjects[ret]->getClass().name!="worker" ){
     return ret;
     }
 
@@ -413,7 +413,7 @@ size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
       }
     }
 
-  return -1;
+  return ret;
   }
 
 
@@ -483,7 +483,7 @@ bool World::isUnitUnderMouse( MyGL::Matrix4x4 & gmMat,
 
 void World::paintHUD( MyWidget::Painter & p,
                       int w, int h ) {
-  //return;
+  return;
 
   MyGL::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
@@ -690,6 +690,40 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
 void World::onRender() {
   scene.setCamera( camera );
   terr->updatePolish();
+
+  int rx = 0, lx = terrain().width()*Terrain::quadSize;
+  int ry = 0, ly = terrain().height()*Terrain::quadSize;
+
+  for( size_t i=0; i<4; ++i ){
+    lx = std::min( cameraVBounds.x[i], lx );
+    rx = std::max( cameraVBounds.x[i], rx );
+
+    ly = std::min( cameraVBounds.y[i], ly );
+    ry = std::max( cameraVBounds.y[i], ry );
+    }
+
+  int divSz = Terrain::quadSize*8;
+
+  lx -= divSz;
+  rx += divSz;
+
+  ly -= divSz;
+  ry += divSz;
+
+  rx = int(rx/divSz+1)*divSz;
+  lx = int(lx/divSz)*divSz;
+
+  ry = int(ry/divSz+1)*divSz;
+  ly = int(ly/divSz)*divSz;
+
+  for( size_t i=0; i<gameObjects.size(); ++i ){
+    GameObject &obj = *gameObjects[i];
+
+    if( lx<=obj.x() && obj.x()<=rx &&
+        ly<=obj.y() && obj.y()<=ry )
+      obj.setVisible(true); else
+      obj.setVisible(false);
+    }
   }
 
 void World::tick() {

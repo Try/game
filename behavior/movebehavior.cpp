@@ -285,6 +285,11 @@ void MoveBehavior::step(const Terrain &terrain, int sz ) {
     int x = obj.x()+(tx-obj.x())*curentSpeed/realL,
         y = obj.y()+(ty-obj.y())*curentSpeed/realL;
 
+    if( l==1 ){
+      x = tx;
+      y = ty;
+      }
+
     float wx = x/Terrain::quadSizef,
           wy = y/Terrain::quadSizef;
 
@@ -294,8 +299,10 @@ void MoveBehavior::step(const Terrain &terrain, int sz ) {
     int pwx = obj.x()/Terrain::quadSize,
         pwy = obj.y()/Terrain::quadSize;
 
-    if(  terrain.isEnable( iwx, iwy) ||
-        !terrain.isEnable( pwx, pwy) ){
+    bool ienable = terrain.isEnable( iwx, iwy );
+    bool penable = terrain.isEnable( pwx, pwy );
+
+    if( ienable || !penable ){
       int ltx = this->tx, lty = this->ty;
 
       obj.setPositionSmooth( x, y, terrain.heightAt(wx,wy) );
@@ -399,7 +406,7 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
     while( way.size() && way.back().x==obj.x()/qs && way.back().y==obj.y()/qs )
       way.pop_back();
 
-    while( way.size() && way.back().x==mx && way.back().y==my)
+    while( way.size() && way.back().x==mx && way.back().y==my )
       way.pop_back();
     } else {
     nextPoint();

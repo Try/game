@@ -195,6 +195,9 @@ void GameObjectView::loadView( const Resource & r,
         object->setModel( model, src.name+"/model" );
 
         smallViews.push_back( std::unique_ptr<SmallGraphicsObject>(object) );
+        if( src.randRotate ){
+          smallViews.back()->setRotation(0, rand()%360 );
+          }
         }
 
       //view.back().setSize( sz[0], sz[1], sz[2] );
