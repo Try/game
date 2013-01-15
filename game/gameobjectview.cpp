@@ -427,6 +427,11 @@ void GameObjectView::higlight(int time, GameObjectView::Selection s) {
   selection[int(s)]->setVisible(true);
   }
 
+void GameObjectView::setVisible_perf(bool v) {
+  for( size_t i=0; i<view.size(); ++i )
+    view[i].setVisible(v);
+  }
+
 void GameObjectView::setVisible(bool v) {
   for( size_t i=0; i<view.size(); ++i )
     view[i].setVisible(v);

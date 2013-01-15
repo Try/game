@@ -66,6 +66,7 @@ class GameObjectView {
     void setSelectionVisible( bool v, Selection s );
     void higlight( int time, Selection s );
     void setVisible( bool v );
+    void setVisible_perf( bool v );
 
     void rotate(int delta);
     void setRotation(int delta);

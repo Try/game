@@ -725,8 +725,8 @@ void World::onRender() {
 
     if( lx<=obj.x() && obj.x()<=rx &&
         ly<=obj.y() && obj.y()<=ry )
-      obj.setVisible(true); else
-      obj.setVisible(false);
+      obj.setVisible_perf(true); else
+      obj.setVisible_perf(false);
     }
   }
 

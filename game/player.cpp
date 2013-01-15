@@ -10,7 +10,8 @@
 Player::Player(int num) {
   editObj  = 0;
 
-  m.gold   = 50;
+  m.gold   = 100500;
+  //m.gold   = 50;
   m.lim    = 0;
   m.limMax = 0;
 

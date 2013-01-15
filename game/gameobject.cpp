@@ -421,6 +421,6 @@ void GameObject::higlight(int time, GameObjectView::Selection type) {
   view.higlight(time, type);
   }
 
-void GameObject::setVisible(bool v) {
-  view.setVisible(v);
+void GameObject::setVisible_perf(bool v) {
+  view.setVisible_perf(v);
   }

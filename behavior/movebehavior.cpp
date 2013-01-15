@@ -242,13 +242,12 @@ void MoveBehavior::tick(const Terrain &terrain) {
       }
     }
 
-  if( terrain.isEnableQuad( x, y, sz ) ){
-    if( clos.isOnMove || clos.isReposMove ){
-      step(terrain, sz);
-      }
+  if( clos.isOnMove || clos.isReposMove ){
+    step(terrain, sz);
     } else {
-    //if( bm==2 )
-      //step(terrain, sz);
+    if( !terrain.isEnableQuad( x, y, sz ) ){
+      calcWayAndMove( obj.x(), obj.y(), terrain );
+      }
     }
 
   }
