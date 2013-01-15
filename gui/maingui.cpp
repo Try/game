@@ -167,6 +167,11 @@ void MainGui::renderMinimap(World &w) {
   mainwidget->renderMinimap(w);
   }
 
+void MainGui::updateValues() {
+  MyWidget::CustomEvent e;
+  mainwidget->customEvent(e);
+  }
+
 void MainGui::saveGame() {
   SaveDialog* dlg = new SaveDialog(res, mainwidget);
   dlg->setSaveMode();

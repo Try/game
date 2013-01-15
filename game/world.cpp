@@ -385,16 +385,28 @@ size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
   MyGL::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
 
+  int dist = -1, mdist = -1;
+  size_t ret = -1;
+
   for( size_t i=0; i<objectsCount(); ++i ){
     if( object(i).getClass().data.isBackground )
       continue;
 
-    if( isUnitUnderMouse( gmMat, object(i), mx, my, w, h ) )
-      return i;
+    if( isUnitUnderMouse( gmMat, object(i), mx, my, w, h, dist ) ){
+      //return i;
+      if( mdist<0 || dist<mdist ){
+        ret = i;
+        mdist = dist;
+        }
+      }
+    }
+
+  if( mdist>=0 ){
+    return ret;
     }
 
   for( size_t i=0; i<resouces.size(); ++i ){
-    if( isUnitUnderMouse( gmMat, *resouces[i], mx, my, w, h ) ){
+    if( isUnitUnderMouse( gmMat, *resouces[i], mx, my, w, h, dist ) ){
       for( size_t r=0; r<objectsCount(); ++r )
         if( &object(r)==resouces[i] )
           return r;
@@ -408,7 +420,8 @@ size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
 
 bool World::isUnitUnderMouse( MyGL::Matrix4x4 & gmMat,
                               const GameObject & obj,
-                              int mx, int my, int w, int h) const {
+                              int mx, int my, int w, int h,
+                              int & dist ) const {
   double data1[4], data2[4];
   MyGL::Matrix4x4 m = gmMat;
 
@@ -457,9 +470,14 @@ bool World::isUnitUnderMouse( MyGL::Matrix4x4 & gmMat,
 
   if( data2[0] <= mx && mx <= data1[0] &&
       data2[1] <= my && my <= data1[1] ){
+    int midX = (data1[0]+data2[0])/2;
+    int midY = (data1[1]+data2[1])/2;
+
+    dist = std::max( abs(midX-mx), abs(midY-my) );
     return true;
     }
 
+  dist = -1;
   return false;
   }
 
@@ -605,10 +623,14 @@ void World::setMousePos(int x, int y, int z) {
   }
 
 void World::setMouseObject(size_t i) {
+  if( mouseObject )
+    mouseObject->setMouseOverFlag(0);
+
   if( i==size_t(-1) ){
     mouseObject = 0;
     } else {
     mouseObject = gameObjects[i].get();
+    mouseObject->setMouseOverFlag(1);
     }
   }
 
@@ -679,6 +701,12 @@ void World::tick() {
   for( size_t i=0; i<nonBackground.size(); ++i ){
     GameObject & obj = *nonBackground[i];
     obj.tick( terrain() );
+    }
+
+  for( size_t i=0; i<resouces.size(); ++i ){
+    GameObject & obj = *resouces[i];
+    if( obj.getClass().data.isBackground )
+      obj.tick( terrain() );
     }
 
   spatialId.clear();

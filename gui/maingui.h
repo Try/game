@@ -90,6 +90,7 @@ class MainGui {
     void enableHooks( bool e );
 
     void renderMinimap( World& w );
+    void updateValues();
   private:
     typedef MyWidget::PainterDevice Painter;
     typedef MyWidget::Widget  Widget;

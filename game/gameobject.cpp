@@ -273,8 +273,7 @@ bool GameObject::isMouseOwer() const {
 void GameObject::setMouseOverFlag(bool f) {
   m.isMouseOwer = f;
 //  selection.setVisible( m.isMouseOwer );
-  view.setSelectionVisible( m.isMouseOwer && (!getClass().data.isBackground),
-                            GameObjectView::selOver );
+  view.setSelectionVisible( m.isMouseOwer, GameObjectView::selOver );
   }
 
 double GameObject::radius() const {
@@ -397,6 +396,7 @@ void GameObject::serialize( GameSerializer &s ) {
   if( s.version()<5 ){
     x*=4;
     y*=4;
+    z*=4;
     }
 
   if( s.isReader() ){

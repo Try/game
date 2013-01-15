@@ -160,7 +160,7 @@ class World {
     void createResp( int pl, int x, int y, int minX, int minY );
 
     bool isUnitUnderMouse(MyGL::Matrix4x4 & gmMat, const GameObject &obj,
-                           int mx, int my, int w, int h ) const;
+                           int mx, int my, int w, int h , int &dist) const;
 };
 
 #endif // WORLD_H

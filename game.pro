@@ -130,7 +130,8 @@ HEADERS += \
     network/netuser.h \
     util/fileserialize.h \
     util/bytearrayserialize.h \
-    threads/mutex.h
+    threads/mutex.h \
+    gui/progressbar.h
 
 SOURCES += \
     main.cpp \
@@ -225,7 +226,8 @@ SOURCES += \
     network/netuser.cpp \
     util/fileserialize.cpp \
     util/bytearrayserialize.cpp \
-    threads/mutex.cpp
+    threads/mutex.cpp \
+    gui/progressbar.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

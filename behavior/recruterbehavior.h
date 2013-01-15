@@ -22,6 +22,8 @@ class RecruterBehavior : public AbstractBehavior  {
     bool message(Message msg, int x, int y, Modifers md);
 
     int  qtime();
+    int  ctime() const;
+    const std::vector<std::string>& orders() const;
   private:
     GameObject & obj;
     WeakWorldPtr taget;

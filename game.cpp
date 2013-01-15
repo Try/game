@@ -174,6 +174,8 @@ void Game::tick() {
   }
 
 void Game::render( size_t dt ) {
+  gui.updateValues();
+
   world->camera.setSpinX(spinX);
   world->camera.setSpinY(spinY);
 

@@ -116,7 +116,13 @@ void GameObjectView::loadView( const Resource &r, Physics & p, bool env ) {
       }
     }
 
-  if( !getClass().data.isBackground ){
+  bool res = false;
+
+  for( size_t i=0; i<getClass().behaviors.size(); ++i )
+    if( getClass().behaviors[i]=="resource" )
+      res = true;
+
+  if( !getClass().data.isBackground || res ){
     { const ProtoObject::View & v = prototypes.get("selection.green").view[0];
       setupMaterials( *selection[0], v );
       }
@@ -339,7 +345,7 @@ void GameObjectView::setViewSize( float x, float y, float z ) {
   double ss[3] = { m.radius*x, m.radius*y, z };
 
   m.selectionSize[2] = ss[2];
-  if( view.size() ){
+  if( getClass().view.size() ){
     for( int i=0; i<2; ++i )
       m.selectionSize[i] = ss[i]*getClass().view[0].size[i]/1.44;
     }
@@ -725,6 +731,7 @@ void GameObjectView::serialize( GameSerializer &s, Obj *g,
     if( s.version()<5 ){
       x*=4;
       y*=4;
+      z*=4;
       }
 
     g->setPosition( World::coordCast(x),

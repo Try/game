@@ -88,6 +88,9 @@ bool RecruterBehavior::message( AbstractBehavior::Message msg,
   if( msg!=Buy )
     return 0;
 
+  if( queue.size()>=6 )
+    return 0;
+
   const ProtoObject& p = obj.world().game.prototype( cls );
 
   if( obj.player().canBuild( p ) ){
@@ -139,6 +142,14 @@ int RecruterBehavior::qtime() {
     }
 
   return r;
+  }
+
+int RecruterBehavior::ctime() const {
+  return time;
+  }
+
+const std::vector<std::string> &RecruterBehavior::orders() const {
+  return queue;
   }
 
 bool RecruterBehavior::create(const std::string &s, const Terrain &terrain) {

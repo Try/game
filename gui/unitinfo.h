@@ -16,6 +16,9 @@ class UnitInfo : public MyWidget::Widget {
   private:
     GameObject* obj;
     Resource &  res;
+
+    struct Production;
+    struct Btn;
   };
 
 #endif // UNITINFO_H

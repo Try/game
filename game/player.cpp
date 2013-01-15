@@ -124,6 +124,7 @@ int Player::limMax() const {
 
 void Player::serialize(GameSerializer &s) {
   s + m.gold + m.team + m.htCtrl + m.num;  
+  //m.gold = 50;
   }
 
 size_t Player::unitsCount() const {
