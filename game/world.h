@@ -131,6 +131,9 @@ class World {
     int mpos[3];
     Terrain::EditMode editLandMode;
     CameraViewBounds cameraVBounds;
+    struct IntCameraBounds{
+      int rx, ry, lx, ly;
+      } lcamBds;
 
     std::vector< PGameObject > gameObjects, eviObjects;
     std::vector< PGameObject > nonBackground;

@@ -30,6 +30,8 @@ GameObject::GameObject( MyGL::Scene & s,
   m.y = 0;
   m.z = 0;
 
+  m.isVisible_perf = true;
+
   bclos.colisionDisp[0] = 0;
   bclos.colisionDisp[1] = 0;
 
@@ -423,4 +425,9 @@ void GameObject::higlight(int time, GameObjectView::Selection type) {
 
 void GameObject::setVisible_perf(bool v) {
   view.setVisible_perf(v);
+  m.isVisible_perf = v;
+  }
+
+bool GameObject::isVisible_perf() const {
+  return m.isVisible_perf;
   }

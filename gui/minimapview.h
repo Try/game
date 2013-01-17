@@ -18,7 +18,7 @@ class MiniMapView : public TextureView {
 
     MyWidget::signal<float, float> mouseEvent;
   private:
-    MyGL::Pixmap renderTo, cashed;
+    MyGL::Pixmap renderTo, cashed, fog;
     Resource &res;
 
     clock_t rtime;
@@ -30,6 +30,11 @@ class MiniMapView : public TextureView {
     void mouseDownEvent(MyWidget::MouseEvent &e);
     void mouseDragEvent(MyWidget::MouseEvent &e);
     void mouseUpEvent(MyWidget::MouseEvent &e);
+
+    void fillFog( MyGL::Pixmap &p, World &wx  );
+    void cride( MyGL::Pixmap &p, int x, int y, int r );
+
+    void aceptFog( MyGL::Pixmap &p, const MyGL::Pixmap &f );
   };
 
 #endif // MINIMAPVIEW_H

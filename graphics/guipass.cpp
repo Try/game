@@ -18,13 +18,12 @@ GUIPass::GUIPass( const MyGL::VertexShader   & vsh,
 
   vdecl = MyGL::VertexDeclaration( vbo.device(), decl );
 
-  guiRawData.reserve( 4*2048 );
-  geometryBlocks.reserve( 512 );
-
   texSize = MyWidget::Size(2048);
 
   //noTexture = res.texture("gui/noTexture");
   //testTex   = res.texture("gui/frame");
+  layers.reserve(8);
+  setCurrentBuffer(0);
   }
 
 void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
@@ -32,8 +31,15 @@ void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
   dev = &device;
 
   if( gui.draw( *this ) ){
-    guiGeometry = MyGL::VertexBuffer<Vertex>();
-    guiGeometry = vbHolder.load( guiRawData.data(), guiRawData.size() );
+    for( size_t i=0; i<layers.size(); ++i ){
+      Layer& lay = layers[i];
+
+      if( lay.needToUpdate ){
+        lay.guiGeometry = MyGL::VertexBuffer<Vertex>();
+        lay.guiGeometry = vbHolder.load( lay.guiRawData.data(),
+                                         lay.guiRawData.size() );
+        }
+      }
     }
 
   MyGL::RenderState rs = makeRS( MyWidget::noBlend );
@@ -47,25 +53,29 @@ void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
   device.beginPaint(rt, depth);
   device.setUniform( vs, dTexCoord, 2, "dTexCoord" );
 
-  for( size_t i=0; i<geometryBlocks.size(); ++i ){
-    const GeometryBlock& b = geometryBlocks[i];
+  for( size_t r=0; r<layers.size(); ++r ){
+    Layer& lay = layers[r];
 
-    if( b.size && (b.texture.tex || b.texture.nonPool) ){
-      if( b.texture.nonPool )
-        device.setUniform( fs, *b.texture.nonPool,  "texture" ); else
-        device.setUniform( fs, b.texture.pageRawData(),  "texture" );
+    for( size_t i=0; i<lay.geometryBlocks.size(); ++i ){
+      const GeometryBlock& b = lay.geometryBlocks[i];
 
-      if( currntRS!=b.state ){
-        currntRS = b.state;
-        device.setRenderState( b.state );
+      if( b.size && (b.texture.tex || b.texture.nonPool) ){
+        if( b.texture.nonPool )
+          device.setUniform( fs, *b.texture.nonPool,  "texture" ); else
+          device.setUniform( fs, b.texture.pageRawData(),  "texture" );
+
+        if( currntRS!=b.state ){
+          currntRS = b.state;
+          device.setRenderState( b.state );
+          }
+
+        device.drawPrimitive( MyGL::AbstractAPI::Triangle,
+                              vs, fs,
+                              vdecl,
+                              lay.guiGeometry,
+                              b.begin,
+                              b.size/3 );
         }
-
-      device.drawPrimitive( MyGL::AbstractAPI::Triangle,
-                            vs, fs,
-                            vdecl,
-                            guiGeometry,
-                            b.begin,
-                            b.size/3 );
       }
     }
 
@@ -105,24 +115,29 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
     v[i].v /= texSize.h;
     }
 
-  guiRawData.push_back( v[0] );
-  guiRawData.push_back( v[1] );
-  guiRawData.push_back( v[2] );
+  Layer& lay = layers[curLay];
+  lay.needToUpdate = true;
 
-  guiRawData.push_back( v[0] );
-  guiRawData.push_back( v[2] );
-  guiRawData.push_back( v[3] );
+  lay.guiRawData.push_back( v[0] );
+  lay.guiRawData.push_back( v[1] );
+  lay.guiRawData.push_back( v[2] );
 
-  geometryBlocks.back().size += 6;
+  lay.guiRawData.push_back( v[0] );
+  lay.guiRawData.push_back( v[2] );
+  lay.guiRawData.push_back( v[3] );
+
+  lay.geometryBlocks.back().size += 6;
   }
 
 void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
+  Layer& lay = layers[curLay];
+
   texRect = t.rect;
 
-  if( geometryBlocks.size() &&
-      geometryBlocks.back().texture.tex     == t.tex &&
-      geometryBlocks.back().texture.id      == t.id  &&
-      geometryBlocks.back().texture.nonPool == t.nonPool ){
+  if( lay.geometryBlocks.size() &&
+      lay.geometryBlocks.back().texture.tex     == t.tex &&
+      lay.geometryBlocks.back().texture.id      == t.id  &&
+      lay.geometryBlocks.back().texture.nonPool == t.nonPool ){
 
     return;
     }
@@ -140,54 +155,72 @@ void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
   GeometryBlock b;
   b.state = makeRS( MyWidget::noBlend );
 
-  if( geometryBlocks.size() ){
-    b = geometryBlocks.back();
+  if( lay.geometryBlocks.size() ){
+    b = lay.geometryBlocks.back();
     }
 
   b.texture = t;
-  b.begin   = guiRawData.size();
+  b.begin   = lay.guiRawData.size();
   b.size    = 0;
 
-  while( geometryBlocks.size() && geometryBlocks.back().size==0 )
-    geometryBlocks.pop_back();
+  while( lay.geometryBlocks.size() && lay.geometryBlocks.back().size==0 )
+    lay.geometryBlocks.pop_back();
 
-  geometryBlocks.push_back(b);
+  lay.geometryBlocks.push_back(b);
   }
 
 void GUIPass::unsetTexture() {
+  Layer& lay = layers[curLay];
+
   GeometryBlock b;
   b.texture.tex = 0;
-  b.begin   = guiRawData.size();
+  b.begin   = lay.guiRawData.size();
   b.size    = 0;
 
   b.state = makeRS( MyWidget::noBlend );
 
-  geometryBlocks.push_back(b);
+  lay.geometryBlocks.push_back(b);
   }
 
 void GUIPass::clearBuffers() {
-  guiRawData.clear();
-  geometryBlocks.resize(1);
-  geometryBlocks.back().begin   = 0;
-  geometryBlocks.back().size    = 0;
-  geometryBlocks.back().texture.tex = 0;
+  Layer& lay = layers[curLay];
 
-  geometryBlocks.back().state = makeRS( MyWidget::noBlend );
+  lay.needToUpdate = true;
+  lay.guiRawData.clear();
+  lay.geometryBlocks.resize(1);
+  lay.geometryBlocks.back().begin   = 0;
+  lay.geometryBlocks.back().size    = 0;
+  lay.geometryBlocks.back().texture.tex = 0;
+
+  lay.geometryBlocks.back().state = makeRS( MyWidget::noBlend );
   }
 
 void GUIPass::setBlendMode( MyWidget::BlendMode m ) {
+  Layer& lay = layers[curLay];
+
   GeometryBlock b;
   b.texture.tex = 0;
 
-  if( geometryBlocks.size() ){
-    b = geometryBlocks.back();
+  if( lay.geometryBlocks.size() ){
+    b = lay.geometryBlocks.back();
     }
 
-  b.begin   = guiRawData.size();
+  b.begin   = lay.guiRawData.size();
   b.state   = makeRS( m );
   b.size    = 0;
 
-  geometryBlocks.push_back(b);
+  lay.geometryBlocks.push_back(b);
+  }
+
+void GUIPass::setCurrentBuffer(int i) {
+  curLay = i;
+
+  while( layers.size() <= size_t(i) ){
+    layers.push_back( Layer() );
+    layers.back().geometryBlocks.reserve( 512 );
+    layers.back().needToUpdate = false;
+    layers.back().guiRawData.reserve( 4*2048 );
+    }
   }
 
 MyGL::RenderState GUIPass::makeRS(MyWidget::BlendMode m) {

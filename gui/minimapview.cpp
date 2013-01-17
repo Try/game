@@ -9,7 +9,7 @@ MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
   pressed = false;
   }
 
-void MiniMapView::render(World &wx) {
+void MiniMapView::render( World &wx ) {
   int mk = wx.terrain().width()*wx.terrain().height()/(128*128);
 
   if( renderTo.width() != w() ||
@@ -94,6 +94,9 @@ void MiniMapView::render(World &wx) {
               }
           }
       }
+
+    fillFog(fog, wx);
+    aceptFog(renderTo, fog);
     cashed = renderTo;
     }
 
@@ -197,4 +200,89 @@ void MiniMapView::mouseDragEvent(MyWidget::MouseEvent &e) {
 void MiniMapView::mouseUpEvent(MyWidget::MouseEvent &e) {
   mouseEvent( e.x/float(w()), e.y/float(h()) );
   pressed = false;
+  }
+
+void MiniMapView::fillFog( MyGL::Pixmap &p, World &wx ) {
+  if( p.width()  != wx.terrain().width() ||
+      p.height() != wx.terrain().height() ){
+    p = MyGL::Pixmap( wx.terrain().width(),
+                      wx.terrain().height(),
+                      false);
+    }
+
+  MyGL::Pixmap::Pixel pix;
+  pix.r = 128;
+  pix.g = 128;
+  pix.b = 128;
+  pix.a = 255;
+
+  for( int i=0; i<p.width(); ++i )
+    for( int r=0; r<p.height(); ++r )
+      p.set(i,r, pix);
+
+  const std::vector<World::PGameObject> & objects = wx.activeObjects();
+  int qs = Terrain::quadSize;
+
+  for( size_t i=0; i<objects.size(); ++i ){
+    const GameObject& obj = *objects[i];
+
+    cride( p, obj.x()/qs, obj.y()/qs, obj.getClass().data.visionRange );
+    }
+  }
+
+void MiniMapView::cride(MyGL::Pixmap &p, int x, int y, int r) {
+  MyGL::Pixmap::Pixel pix;
+  pix.r = 255;
+  pix.g = 255;
+  pix.b = 255;
+  pix.a = 255;
+
+  int lx = x - r,
+      rx = x + r,
+      ly = y - r,
+      ry = y + r;
+
+  r*=r;
+
+  lx = std::max(0,lx);
+  ly = std::max(0,ly);
+
+  rx = std::max(p.width()-1,rx);
+  ry = std::max(p.height()-1,ry);
+
+  for( int i=lx; i<=rx; ++i )
+    for( int r=ly; r<=ry; ++r ){
+      int dx = i-x,
+          dy = r-y;
+
+      if( dx*dx+dy*dy <= r )
+        p.set(i,r, pix);
+      }
+  }
+
+void MiniMapView::aceptFog(MyGL::Pixmap &p, const MyGL::Pixmap &f) {
+  for( int i=0; i<p.width(); ++i )
+    for( int r=0; r<p.height(); ++r ){
+      int lx = i*f.width()/p.width(),
+          rx = (i+1)*f.width()/p.width(),
+          ly = r*f.height()/p.height(),
+          ry = (r+1)*f.height()/p.height();
+
+      if( lx<rx && ly<ry ){
+        int v = 0;
+        for( int ix = lx; ix<rx; ++ix )
+          for( int iy = ly; iy<ry; ++iy ){
+            //const MyGL::Pixmap::Pixel pix = f.at( ix, iy);
+            v += f.at( ix, iy).r;
+            }
+
+        MyGL::Pixmap::Pixel pix = p.at(i,r);
+        int dv = (rx-lx)*(ry-ly)*255;
+        pix.r = (v*pix.r)/dv;
+        pix.g = (v*pix.g)/dv;
+        pix.b = (v*pix.b)/dv;
+
+        p.set(i,r, pix);
+        }
+      }
   }

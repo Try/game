@@ -48,7 +48,7 @@ class InGameControls : public MyWidget::Widget {
                       ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
 
-    MyWidget::Rect selection;
+    //MyWidget::Rect selection;
 
     void updateSelectUnits( const std::vector<GameObject*> &u );
     void onUnitDied(GameObject &obj);
@@ -85,7 +85,7 @@ class InGameControls : public MyWidget::Widget {
     Button *gold, *lim;
     MiniMapView * minimap;
 
-    MyWidget::Bind::UserTexture frame;
+    //MyWidget::Bind::UserTexture frame;
     int currPl;
 
     void setCurrPl( size_t i );

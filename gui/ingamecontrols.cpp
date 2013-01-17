@@ -60,9 +60,6 @@ InGameControls::InGameControls(Resource &res,
   currPl         = 1;
   setFocusPolicy( MyWidget::ClickFocus );
 
-  //paintObjectsHud.bind( paintObjectsHud );
-  frame.data = res.pixmap("gui/colors");
-
   setLayout( MyWidget::Vertical );
   layout().setMargin( MyWidget::Margin(4) );
   useScissor( false );
@@ -279,41 +276,6 @@ void InGameControls::renderMinimap(World &w) {
 
 void InGameControls::paintEvent(PaintEvent &e) {
   Widget::paintEvent(e);
-
-  MyWidget::Painter p(e);
-  p.setTexture( frame );
-  paintObjectsHud( p, w(), h() );
-
-  p.setTexture( frame );
-  MyWidget::Rect r = selection;
-  if( r.w<0 ){
-    r.x += r.w;
-    r.w = -r.w;
-    }
-  if( r.h<0 ){
-    r.y += r.h;
-    r.h = -r.h;
-    }
-  int w = r.w, h = r.h;
-  MyWidget::Rect tex = MyWidget::Rect(0,0, 1,1);
-
-  p.setBlendMode( MyWidget::addBlend );
-  p.drawRect( r, tex );
-
-  r = MyWidget::Rect(r.x, r.y, 1, r.h);
-  p.drawRect( r, tex );
-
-  r = MyWidget::Rect(r.x+w-1, r.y, 1, r.h);
-  p.drawRect( r, tex );
-
-  r = MyWidget::Rect(r.x-w+2, r.y, w-2, 1);
-  p.drawRect( r, tex );
-
-  r = MyWidget::Rect(r.x, r.y+h-1, w-2, 1);
-  p.drawRect( r, tex );
-
-  p.unsetTexture();
-
   //p.setFont( mainFont );
   //p.drawText(100, 100, L"абвгд" );
   paintNested(e);

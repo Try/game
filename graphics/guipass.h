@@ -34,7 +34,8 @@ class GUIPass : public MyGL::AbstractRenderPass {
     void exec( MainGui &gui, MyGL::Texture2d &rt,
                MyGL::Texture2d &depth, MyGL::Device &device );
 
-    void rect( int x0, int y0, int x1, int y1, int texDx, int texDy, int tw, int th );
+    void rect( int x0, int y0, int x1, int y1,
+               int texDx, int texDy, int tw, int th );
 
     void setTexture( const PixmapsPool::TexturePtr &t );
     void unsetTexture();
@@ -42,6 +43,7 @@ class GUIPass : public MyGL::AbstractRenderPass {
     void clearBuffers();
     void setBlendMode( MyWidget::BlendMode m );
 
+    void setCurrentBuffer( int i );
   private:
     struct Vertex{
       float x,y;
@@ -55,10 +57,17 @@ class GUIPass : public MyGL::AbstractRenderPass {
       PixmapsPool::TexturePtr texture;
       };
 
-    std::vector<GeometryBlock> geometryBlocks;
+    struct Layer{
+      std::vector<GeometryBlock> geometryBlocks;
+      MyGL::VertexBuffer<Vertex> guiGeometry;
 
-    std::vector<Vertex> guiRawData;
-    MyGL::VertexBuffer<Vertex> guiGeometry;
+      std::vector<Vertex> guiRawData;
+      bool needToUpdate;
+      };
+
+    std::vector<Layer> layers;
+    int curLay;
+
     MyGL::VertexDeclaration    vdecl;
 
     MyGL::VertexShader   vs;

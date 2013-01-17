@@ -27,6 +27,7 @@
 #include <MyGL/Algo/PostProcessHelper>
 
 #include "graphics/guipass.h"
+#include <MyWidget/signal>
 
 namespace MyGL{
   class Camera;
@@ -50,6 +51,8 @@ class GraphicsSystem {
     void renderSubScene( const MyGL::Scene &scene,
                          ParticleSystemEngine &e,
                          MyGL::Texture2d & out   );
+
+    MyWidget::signal<> onRender;
   private:
     MyGL::DirectX9 directx;
 

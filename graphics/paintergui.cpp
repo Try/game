@@ -8,7 +8,7 @@
 PainterGUI::PainterGUI(GUIPass & d, Resource &res, int sx, int sy, int sw, int sh )
            :drawer(d), te(*this, res) {
   unsetTexture();
-  drawer.clearBuffers();
+  //drawer.clearBuffers();
 
   setScissor(sx, sy, sw, sh);
   }

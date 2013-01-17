@@ -139,6 +139,8 @@ class Game {
 
     void onUnitsSelected( std::vector<GameObject*>& u, Player &pl);
     void onUnitDied( GameObject& u, Player &pl);
+
+    void onRender();
   };
 
 #endif // GAME_H

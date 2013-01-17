@@ -119,6 +119,7 @@ class GameObject {
 
     void higlight(int time, GameObjectView::Selection type );
     void setVisible_perf( bool v );
+    bool isVisible_perf() const;
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;
@@ -143,6 +144,7 @@ class GameObject {
       int hp;
 
       bool isSelected, isMouseOwer;
+      bool isVisible_perf;
       } m;
 
     Behavior::Closure bclos;

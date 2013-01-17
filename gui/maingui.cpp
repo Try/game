@@ -14,6 +14,7 @@
 #include "gui/commandspanel.h"
 #include "gui/overlaywidget.h"
 #include "gui/listbox.h"
+#include "graphics/guipass.h"
 
 #include "algo/algo.h"
 #include "ingamecontrols.h"
@@ -41,7 +42,7 @@ MainGui::MainGui( MyGL::Device &,
 
   str += L"/\\|!@#$%^&*()_-=+";
 
-  f.fetch(res, str);  
+  f.fetch(res, str);
   }
 
 MainGui::~MainGui() {
@@ -52,7 +53,9 @@ void MainGui::setFocus() {
   mainwidget->setFocus(1);
   }
 
-void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
+void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {  
+  frame.data = res.pixmap("gui/colors");
+
   mainwidget = new InGameControls(res, msg, prototypes, game);
   mainwidget->renderScene.bind( renderScene );
   mainwidget->setCameraPos.bind( setCameraPos );
@@ -78,17 +81,58 @@ bool MainGui::draw(GUIPass &pass) {
     mainwidget->updateView();
     }
 
+  {
+    PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
+    MyWidget::PaintEvent event(painter);
+
+    MyWidget::Painter p( event );
+    pass.setCurrentBuffer(0);
+    pass.clearBuffers();
+
+    p.setTexture( frame );
+    MyWidget::Rect r = selRect;
+    if( r.w<0 ){
+      r.x += r.w;
+      r.w = -r.w;
+      }
+    if( r.h<0 ){
+      r.y += r.h;
+      r.h = -r.h;
+      }
+    int w = r.w, h = r.h;
+    MyWidget::Rect tex = MyWidget::Rect(0,0, 1,1);
+
+    p.setBlendMode( MyWidget::addBlend );
+    p.drawRect( r, tex );
+
+    r = MyWidget::Rect(r.x, r.y, 1, r.h);
+    p.drawRect( r, tex );
+
+    r = MyWidget::Rect(r.x+w-1, r.y, 1, r.h);
+    p.drawRect( r, tex );
+
+    r = MyWidget::Rect(r.x-w+2, r.y, w-2, 1);
+    p.drawRect( r, tex );
+
+    r = MyWidget::Rect(r.x, r.y+h-1, w-2, 1);
+    p.drawRect( r, tex );
+
+    p.unsetTexture();
+
+    paintObjectsHud( p, central.w(), central.h() );
+  }
+
   if( central.needToUpdate() ){
     PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
     MyWidget::PaintEvent event(painter);
-    central.paintEvent( event );
 
-    //MyWidget::Painter p( event );
-    //paintObjectsHud( p, central.w(), central.h() );
-    return 1;
+    pass.setCurrentBuffer(1);
+    pass.clearBuffers();
+
+    central.paintEvent( event );
     }
 
-  return 0;
+  return 1;
   }
 
 void MainGui::resizeEvent(int w, int h) {
@@ -140,7 +184,7 @@ int MainGui::keyUpEvent(MyWidget::KeyEvent &e) {
   }
 
 MyWidget::Rect &MainGui::selectionRect() {
-  return mainwidget->selection;
+  return selRect;
   }
 
 void MainGui::update() {

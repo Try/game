@@ -77,6 +77,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   gui.load.bind( *this, &Game::load );
 
   graphics.load( resource, gui, w, h );
+  graphics.onRender.bind( *this, &Game::onRender );
 
   gui.renderScene.bind( graphics, &GraphicsSystem::renderSubScene );
 
@@ -175,6 +176,11 @@ void Game::tick() {
   fps.time += int(GetTickCount() - time);
   }
 
+void Game::onRender(){
+  gui.renderMinimap(*world);
+  world->onRender();
+  }
+
 void Game::render( size_t dt ) {
   gui.updateValues();
 
@@ -185,8 +191,6 @@ void Game::render( size_t dt ) {
 
   if( graphics.render( world->getScene(),
                        world->getParticles(), dt )){
-    gui.renderMinimap(*world);
-    world->onRender();
     }
 
   ++fps.n;
@@ -301,7 +305,7 @@ void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
     r.w = e.x - gui.selectionRect().x;
     r.h = e.y - gui.selectionRect().y;
 
-    gui.update();
+    //gui.update();
 
     double ww = w/2.0, hh = h/2.0;
     world->updateMouseOverFlag(    r.x/ww - 1.0,

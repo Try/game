@@ -105,6 +105,9 @@ class MainGui {
 
     void saveGame();
     void loadGame();
+
+    MyWidget::Bind::UserTexture frame;
+    MyWidget::Rect selRect;
   };
 
 #endif // MAINGUI_H
