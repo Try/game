@@ -2,7 +2,7 @@ QT    -= core gui
 
 TARGET = game
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
-QMAKE_LFLAGS   += -pg
+#QMAKE_LFLAGS   += -pg
 
 INCLUDEPATH += include
 
@@ -20,13 +20,16 @@ INCLUDEPATH += "$$(DXSDK_DIR)/include"\
                "$$(CG_INC_PATH)" \
                "$$(BULLET_INCLUDE_PATH)" \
                "$$(FREETYPE_INCLUDE_PATH)" \
-               "$$(FREETYPE_INCLUDE_PATH)/freetype2"
+               "$$(FREETYPE_INCLUDE_PATH)/freetype2" \
+               "$$(BASS_INCLUDE_PATH)"
 
 LIBS += -l"gdi32" -l"ws2_32" -l"comdlg32" -l"pthread"
 
 LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
 LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
 LIBS += -L"$$(DEVIL_LIB_PATH)" -l"DevIL"
+LIBS += -L"$$(BASS_LIB_PATH)" -lbass
+
 LIBS += -L"$$(BULLET_LIB_PATH)" \
         -l"BulletDynamics"   \
         -l"BulletCollision"  \
@@ -132,7 +135,9 @@ HEADERS += \
     util/fileserialize.h \
     util/bytearrayserialize.h \
     threads/mutex.h \
-    gui/progressbar.h
+    gui/progressbar.h \
+    graphics/warfogmaterial.h \
+    sound/sound.h
 
 SOURCES += \
     main.cpp \
@@ -228,7 +233,9 @@ SOURCES += \
     util/fileserialize.cpp \
     util/bytearrayserialize.cpp \
     threads/mutex.cpp \
-    gui/progressbar.cpp
+    gui/progressbar.cpp \
+    graphics/warfogmaterial.cpp \
+    sound/sound.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

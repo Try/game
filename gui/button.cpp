@@ -3,6 +3,8 @@
 #include "resource.h"
 #include "font.h"
 
+#include "sound/sound.h"
+
 Button::Button(Resource &res):hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res) {
   back[0].data = res.pixmap("gui/buttonBack");
   back[1].data = res.pixmap("gui/buttonBackD");
@@ -70,8 +72,10 @@ void Button::mouseMoveEvent(MyWidget::MouseEvent &e) {
   }
 
 void Button::mouseUpEvent(MyWidget::MouseEvent &e) {
-  if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 )
+  if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 ){
     clicked();
+    res.sound("click").play();
+    }
 
   pressed = false;
   update();

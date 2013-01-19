@@ -36,8 +36,8 @@ class WarriorBehavior : public AbstractBehavior  {
 
     bool isAClick; int acX, acY;
 
-    bool mvLock;
-    int lkX, lkY;
+    bool &mvLock;
+    int &lkX, &lkY;
 
     void positionChangeEvent(PositionChangeEvent &m);
 

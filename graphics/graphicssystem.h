@@ -53,6 +53,7 @@ class GraphicsSystem {
                          MyGL::Texture2d & out   );
 
     MyWidget::signal<> onRender;
+    void setFog( const MyGL::Pixmap& p );
   private:
     MyGL::DirectX9 directx;
 
@@ -70,6 +71,7 @@ class GraphicsSystem {
     MyGL::FragmentShaderHolder fsHolder;
 
     MyGL::PostProcessHelper    ppHelper;
+    MyGL::Texture2d    fogView;
 
 
     struct ObjectsClosure{
@@ -129,6 +131,11 @@ class GraphicsSystem {
       MyGL::VertexShader   vs;
       MyGL::FragmentShader fs;
       } glowData;
+
+    struct FogOfWar{
+      MyGL::VertexShader   vs, vsAcept;
+      MyGL::FragmentShader fs, fsAcept;
+      } fogOfWar;
 
     struct Bloom{
       MyGL::Uniform< MyGL::Texture2d > b[3];
@@ -222,6 +229,8 @@ class GraphicsSystem {
     void drawGlow(MyGL::Texture2d &out,
                    MyGL::Texture2d &depth, const MyGL::Scene &scene , int size);
 
+    void aceptFog(MyGL::Texture2d &in_out, const MyGL::Texture2d &fog);
+
     void copy( MyGL::Texture2d &out,
                const MyGL::Texture2d& in );
     void copyDepth(MyGL::Texture2d &out,
@@ -240,6 +249,8 @@ class GraphicsSystem {
 
     void bloom( MyGL::Texture2d &out,
                 const MyGL::Texture2d& in );
+    void drawFogOfWar(MyGL::Texture2d &out , const MyGL::Scene &scene);
+
     void blt(const MyGL::Texture2d &tex);
 
     void waves( MyGL::Texture2d &out,

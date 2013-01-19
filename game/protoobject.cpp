@@ -8,7 +8,7 @@ ProtoObject::ProtoObject()
 
   data.size  = 1;
   data.speed = 60;
-  data.visionRange = 14;
+  data.visionRange = 16;
   data.maxHp       = 100;
 
   data.gold      = 0;

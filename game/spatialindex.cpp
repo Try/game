@@ -9,12 +9,14 @@
 
 #include "world.h"
 
-const int SpatialIndex::detail = 4;
-const int SpatialIndex::qsize  = 4*Terrain::quadSize;
+const int SpatialIndex::detail = 16;
+const int SpatialIndex::qsize  = 16*Terrain::quadSize;
 
 SpatialIndex::SpatialIndex(int iw, int ih):w(iw/detail), h(ih/detail) {
   psum.resize( w*h );
   obj.reserve( w*h );
+
+  //clr.reserve( w*h );
   }
 
 void SpatialIndex::fill(std::vector<PGameObject> &xobj ) {
@@ -22,8 +24,9 @@ void SpatialIndex::fill(std::vector<PGameObject> &xobj ) {
 
   obj.resize( xobj.size() );
 
-  std::fill( psum.begin(), psum.end(), 0 );
+  std::fill( &psum[0], &psum[0]+psum.size(), 0 );
   std::fill( obj.begin(),  obj.end(),  (GameObject*)0 );
+  //clr.clear();
 
   for( size_t i=0; i<xobj.size(); ++i ){
     int x = xobj[i]->x()/qsize;
@@ -33,7 +36,8 @@ void SpatialIndex::fill(std::vector<PGameObject> &xobj ) {
 
     if( 0<=x && x<w &&
         0<=y && y<h ){
-      ++psum[ x+y*w ];
+      size_t & v = psum[ x+y*w ];
+      ++v;
       }
     }
 

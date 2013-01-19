@@ -25,6 +25,7 @@
 #include "graphics/omnimaterial.h"
 #include "graphics/blushmaterial.h"
 #include "graphics/terrainminormaterial.h"
+#include "graphics/warfogmaterial.h"
 
 #include "graphics/particlesystemengine.h"
 
@@ -98,6 +99,12 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
 
     gaussData.vsB = res.vshader("gauss_b");
     gaussData.fsB = res.fshader("gauss_b");
+
+    fogOfWar.vs = res.vshader("fog_of_war");
+    fogOfWar.fs = res.fshader("fog_of_war");
+
+    fogOfWar.vsAcept = gaussData.vs;
+    fogOfWar.fsAcept = res.fshader("aceptFog");
 
     bloomData.vs = gaussData.vs;
     bloomData.brightPass = fsHolder.load("./data/sh/brightPass.frag");
@@ -249,13 +256,18 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
                                 MyGL::Texture2d::Format::RG16 );
 
   renderScene( scene, gbuffer, mainDepth,
-               1024, true );
+               1024, true );  
+
+  MyGL::Texture2d fog;
+  drawFogOfWar(fog, scene);
+  aceptFog( gbuffer[0], fog );
 
   if( widget )
     gui.exec( *widget, gbuffer[0], mainDepth, device );
 
   MyGL::Texture2d glow, bloomTex;
   drawGlow( glow, mainDepth, scene, 512 );
+  aceptFog( glow, fog );
 
   bloom( bloomTex, gbuffer[0] );
   //blt( glow );
@@ -282,7 +294,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
 
     device.setUniform( finalData.fs, finalData.bloom );
     device.setUniform( finalData.fs, finalData.scene );
-    device.setUniform( finalData.fs, finalData.glow );
+    device.setUniform( finalData.fs, finalData.glow  );
 
     ppHelper.drawFullScreenQuad( device, finalData.vs, finalData.fs );
     }
@@ -291,6 +303,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
   //blt( mainDepth );
   //blt( waterWaves );
 //  blt( shadowMap );
+  //blt( fog );
   blt( final );
   //blt( gao );
   //blt( ssaoTexDet );
@@ -438,7 +451,6 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
   drawObjects( transparentData.vs, transparentData.fs,
                gbuffer, mainDepth,
                scene, scene.objects<TransparentMaterial>() );
-
   }
 
 void GraphicsSystem::drawOmni( MyGL::Texture2d *gbuffer,
@@ -853,9 +865,79 @@ void GraphicsSystem::bloom( MyGL::Texture2d &result,
     }
   }
 
+void GraphicsSystem::drawFogOfWar( MyGL::Texture2d &out,
+                                   const MyGL::Scene & scene ) {
+  int size = 256;
+
+  MyGL::Texture2d depth  = this->depth( size, size );
+  MyGL::Texture2d buffer = localTex.create( depth.width(),
+                                            depth.height(),
+                                            MyGL::Texture2d::Format::RGBA );
+  {
+    MyGL::Render render( device,
+                         buffer,
+                         depth,
+                         fogOfWar.vs,
+                         fogOfWar.fs );
+    render.clear( MyGL::Color(0,0,0, 1), 1 );
+    device.setUniform( fogOfWar.fs, fogView, "texture" );
+
+    const MyGL::AbstractCamera & camera = scene.camera();
+    const MyGL::Scene::Objects & v = scene.objects<WarFogMaterialZPass>();
+
+    for( size_t i=0; i<v.size(); ++i ){
+      const MyGL::AbstractGraphicObject& ptr = v[i].object();
+
+      if( scene.viewTester().isVisible( ptr, camera ) ){
+        render.draw( v[i].material(), ptr,
+                     ptr.transform(), camera );
+        }
+      }
+    { const MyGL::Scene::Objects & v = scene.objects<WarFogMaterial>();
+
+      for( size_t i=0; i<v.size(); ++i ){
+        const MyGL::AbstractGraphicObject& ptr = v[i].object();
+
+        if( scene.viewTester().isVisible( ptr, camera ) ){
+          render.draw( v[i].material(), ptr,
+                       ptr.transform(), camera );
+          }
+        }
+      }
+    }
+
+  MyGL::Texture2d tmp;
+  copy ( tmp, buffer,  size, size );
+  gauss( buffer, tmp,  size, size, 2.0, 0.0 );
+  gauss( out,  buffer, size, size, 0.0, 2.0 );
+  }
+
+void GraphicsSystem::aceptFog( MyGL::Texture2d &in_out,
+                               const MyGL::Texture2d &fog ) {
+  MyGL::Texture2d depth = this->depth( in_out.width(),
+                                       in_out.height() );
+  MyGL::Texture2d tmp;
+  copy(tmp, in_out);
+
+  MyGL::Render render( device,
+                       in_out, depth,
+                       fogOfWar.vsAcept,
+                       fogOfWar.fsAcept );
+
+  render.setRenderState( MyGL::RenderState::PostProcess );
+
+  cpyOffset.set( 1.0/tmp.width(), 1.0/tmp.height() );
+  device.setUniform( fogOfWar.vsAcept, cpyOffset );
+
+  device.setUniform( fogOfWar.fsAcept, tmp, "scene" );
+  device.setUniform( fogOfWar.fsAcept, fog, "fog"   );
+
+  ppHelper.drawFullScreenQuad( device, fogOfWar.vsAcept, fogOfWar.fsAcept );
+  }
+
 void GraphicsSystem::waves( MyGL::Texture2d &out,
                             const MyGL::Texture2d& in) {
-  int w = in.width(), h = in.height();
+  int w = 2*in.width(), h = 2*in.height();
 
   out = localTex.create( w,h );
   out.setSampler( reflect );
@@ -1128,6 +1210,8 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
                  gbuffer, mainDepth,
                  scene, scene.objects<TransparentMaterialNoZW>() );
     }
+
+
   }
 
 void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,
@@ -1175,4 +1259,8 @@ void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,
     }
 
   //copy( out, glow );
+  }
+
+void GraphicsSystem::setFog(const MyGL::Pixmap &p) {
+  fogView = localTex.create(p,0);
   }

@@ -35,7 +35,7 @@ bool WaterMaterial::bind( MyGL::RenderState &rs,
   table.add( texture, "texture",      MyGL::UniformTable::Fragment );
   //table.add( normals, "normalMap",    MyGL::UniformTable::Fragment );
   //table.add( *shadowMap, "shadowMap", MyGL::UniformTable::Fragment );
-  table.add( 0.1, "specularFactor", MyGL::UniformTable::Fragment );
+  table.add( 1, "specularFactor", MyGL::UniformTable::Fragment );
 
   if( useAlphaTest ){
     rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
@@ -43,11 +43,4 @@ bool WaterMaterial::bind( MyGL::RenderState &rs,
     }
 
   return true;
-  }
-
-void WaterMaterial::exec( const MyGL::Scene &scene,
-                          const MyGL::Scene::Objects &v,
-                          MyGL::Device &device,
-                          GraphicsSystem &sys ) {
-
   }

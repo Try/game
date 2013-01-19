@@ -206,6 +206,8 @@ void BuilderBehavior::mouseUp(MyWidget::MouseEvent & e ) {
     obj.player().addGold( -proto->data.gold );
     obj.player().addLim ( -proto->data.lim );
 
+    obj.world().game.resources().sound("hammer0").play();
+
     obj.game().message( obj.playerNum(),
                         BuildAt,
                         obj.world().mouseX(),

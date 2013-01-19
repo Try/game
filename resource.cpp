@@ -4,6 +4,8 @@
 #include <MyGL/LocalVertexBufferHolder>
 #include <MyGL/LocalTexturesHolder>
 
+#include "sound/sound.h"
+
 #include <tinyxml.h>
 #include <iostream>
 #include <fstream>
@@ -267,6 +269,10 @@ bool Resource::findTexture(const std::string &key) {
   return textures.contains(key);
   }
 
+Sound &Resource::sound(const std::string &key) const {
+  return *sounds.get(key);
+  }
+
 MyGL::VertexShader &Resource::vshader(const std::string &key) {
   return vs.get(key);
   }
@@ -336,6 +342,23 @@ void Resource::load(PixmapsPool::TexturePtr p, const std::string &f) {
   px.add( f, p );
   }
 
+void Resource::load( Box< std::shared_ptr<Sound> >& sounds,
+                     const std::string &k,
+                     const std::string &f  ){
+  auto it = sounds.loaded.find(f);
+
+  if( it!=sounds.loaded.end() ){
+    sounds.add(k, sounds.get( it->second ) );
+    } else {
+    std::shared_ptr<Sound> s;
+    s.reset( new Sound() );
+    s->load(f);
+
+    sounds.add(k,  s );
+    sounds.loaded[f] = k;
+    }
+  }
+
 void Resource::load( Box<MyGL::Texture2d>& textures,
                      const std::string &k,
                      const std::string &f  ){
@@ -391,6 +414,10 @@ void Resource::readElement( TiXmlNode *node ) {
 
     if( type=="pixmap"){
       XML::loadFile( pixmaps, *this, node->ToElement() );
+      } else
+
+    if( type=="sound"){
+      XML::loadFile( sounds, *this, node->ToElement() );
       } else
 
     dumpAttribs(node->ToElement() );

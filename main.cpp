@@ -175,9 +175,9 @@ int WINAPI WinMain( HINSTANCE hInstance,
 
           ft  = GetTickCount() - ft;
 
-          if( ft< 1000/60 )
-            Sleep(1000/60-ft); else
-            Sleep(0);
+          //if( ft< 1000/60 )
+            //Sleep(1000/60-ft); else
+          Sleep(0);
           }
         }
       }

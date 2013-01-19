@@ -31,6 +31,8 @@ class MoveBehavior : public AbstractBehavior {
     void tick( const Terrain & terrain );
 
     void setWay( const std::vector<Point> & v );
+    void takeWay( const MoveBehavior & v );
+
     bool isSameDirection( const MoveBehavior& other );
 
     void setupMoveHook();

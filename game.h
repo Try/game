@@ -19,6 +19,7 @@
 #include "gui/inputhook.h"
 
 #include "network/netuser.h"
+#include "sound/sound.h"
 
 class GameSerializer;
 
@@ -93,6 +94,8 @@ class Game {
     bool isFullScreen;
 
     GraphicsSystem graphics;
+    SoundDevice    soundDev;
+
     Resource         resource;
     PrototypesLoader proto;
 

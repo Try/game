@@ -4,9 +4,11 @@
 #include <vector>
 #include <MyWidget/signal>
 #include <MyGL/Color>
+#include <MyGL/Pixmap>
 
 class GameObject;
 class ProtoObject;
+class World;
 
 class GameSerializer;
 
@@ -48,6 +50,9 @@ class Player {
     GameObject& unit( size_t id );
 
     int number() const;
+    void tick( World & curW );
+
+    const MyGL::Pixmap& fog() const;
   private:
     struct {
       int num;
@@ -58,7 +63,11 @@ class Player {
       std::vector<GameObject*> objects, selected;
 
       MyGL::Color color;
+      MyGL::Pixmap fog;
       } m;
+
+    void fillFog( MyGL::Pixmap &p, World &wx );
+    void cride(MyGL::Pixmap &p, int x, int y, int r);
 
     static bool compare( const GameObject* a,
                          const GameObject* b );

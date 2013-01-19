@@ -39,16 +39,11 @@ Terrain::Terrain(int w, int h,
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
   chunks.resize( w/chunkSize, h/chunkSize );
-/*
-  for( int i=0; i<busyMapsCount; ++i ){
-    int n = i+1;
-    busyMap[i].resize(w/n,h/n);
-    }
-*/
+
   std::fill( heightMap.begin(),    heightMap.end(),     0 );
   std::fill( waterMap.begin(),     waterMap.end(),      0 );
   std::fill( buildingsMap.begin(), buildingsMap.end(),  0 );
-  //resetBusyMap();
+
   computeEnableMap();
   }
 
@@ -84,6 +79,15 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                                        prototype.get( "water" ),
                                        prototype) );
   waterView.view->loadView( waterGeometry(vboHolder, iboHolder) );
+
+  fogView.view.reset( new GameObjectView( scene,
+                                          world,
+                                          prototype.get( "water" ),
+                                          prototype) );
+  ProtoObject::View v;
+  v.materials.push_back("fog_of_war");
+
+  fogView.view->loadView( fogGeometry(vboHolder, iboHolder), v );
 
   for( int i=0; i<chunks.width(); ++i )
     for( int r=0; r<chunks.height(); ++r )
@@ -289,7 +293,7 @@ MyGL::Model<WaterVertex>
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
 
-  const double texCoordScale = 0.1;
+  const double texCoordScale = 0.1/2.0;
 
   for( int i=0; i+1<heightMap.width(); ++i )
     for( int r=0; r+1<heightMap.height(); ++r )
@@ -340,6 +344,46 @@ MyGL::Model<WaterVertex>
   decl.add( MyGL::Decl::float1, MyGL::Usage::Depth    )
       .add( MyGL::Decl::float2, MyGL::Usage::TexCoord, 1 );
 
+  model.load( vboHolder, iboHolder, land, decl );
+
+  return model;
+  }
+
+Model Terrain::fogGeometry( MyGL::VertexBufferHolder & vboHolder,
+                            MyGL::IndexBufferHolder  & iboHolder) const {
+  Model model;
+  MVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
+
+  std::fill( v.color, v.color+4, 1 );
+
+  std::vector< MVertex > land;
+  const int dx[] = {0, 1, 1, 0, 1, 0},
+            dy[] = {0, 0, 1, 0, 1, 1};
+
+  for( int i=0; i+1<heightMap.width(); ++i )
+    for( int r=0; r+1<heightMap.height(); ++r )
+        for( int q=0; q<6; ++q ){
+          int x = (i+dx[q]),
+              y = (r+dy[q]);
+          v.x = World::coordCast( x*quadSize );
+          v.y = World::coordCast( y*quadSize );
+
+          int dz = waterMap[ i+dx[q] ][ r+dy[q] ];
+          if( dz<0 )
+            v.z = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q] ]-dz ); else
+            v.z = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q] ] );
+
+          v.u = x/double( heightMap.width() );
+          v.v = y/double( heightMap.height() );
+
+          v.normal[0] = 0;
+          v.normal[1] = 0;
+          v.normal[2] = 1;
+
+          land.push_back(v);
+          }
+
+  MyGL::VertexDeclaration::Declarator decl = MVertex::decl();
   model.load( vboHolder, iboHolder, land, decl );
 
   return model;

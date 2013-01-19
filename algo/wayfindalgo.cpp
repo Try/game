@@ -56,22 +56,42 @@ void WayFindAlgo::findWay( std::vector< GameObject* >& objs,
   rx /= Terrain::quadSize;
   ry /= Terrain::quadSize;
 
-  std::vector<bool> claster;
-  claster.resize( clasterNum, 0 );
+  std::vector< std::shared_ptr< std::vector<Point> > > ways( objs.size() );
 
   for( size_t i=0; i<objs.size(); ++i ){
     GameObject & obj = *objs[i];
+    MoveBehavior *bobj = obj.behavior.find<MoveBehavior>();
 
     int x = obj.x()/Terrain::quadSize,
         y = obj.y()/Terrain::quadSize;
 
-    if( clasterMap.validate(x,y) && !claster[ clasterMap[x][y] ] ){
-      claster[ clasterMap[x][y] ] = 1;
+    if( !ways[i] ){
+      findWay( obj, x, y, rx, ry );
+      if( bobj ){
+        bobj->setWay( way );
+        }
+      ways[i] = std::make_shared<std::vector<Point>>( way );
+      }
 
-      findWay( objs, obj, x, y, rx, ry, clasterMap[x][y] );
+    for( size_t r=i+1; r<objs.size(); ++r ){
+      if( !ways[r] ){
+        GameObject & tg = *objs[r];
+        int d = tg.distanceSQ(obj);
+
+        int maxD = (( tg.getClass().data.size +
+                      obj.getClass().data.size )*Terrain::quadSize)/2;
+        maxD = maxD*maxD;
+
+        if( d<=2*maxD ){
+          if( MoveBehavior *btg = tg.behavior.find<MoveBehavior>() ){
+            btg->setWay( *ways[i] );
+            }
+
+          ways[r] = ways[i];
+          }
+        }
       }
     }
-
   }
 
 void WayFindAlgo::dump() {

@@ -55,6 +55,9 @@ class Terrain {
     MyGL::Model<WaterVertex> waterGeometry( MyGL::VertexBufferHolder & vboHolder,
                                             MyGL::IndexBufferHolder  & iboHolder) const;
 
+    Model fogGeometry( MyGL::VertexBufferHolder & vboHolder,
+                       MyGL::IndexBufferHolder  & iboHolder) const;
+
     int width() const;
     int height() const;
 
@@ -91,7 +94,7 @@ class Terrain {
     World                  & world;
     const PrototypesLoader & prototype;
 
-    TerrainChunk::View waterView;
+    TerrainChunk::View waterView, fogView;
 
     std::vector< std::string > aviableTiles;
     struct Tile {

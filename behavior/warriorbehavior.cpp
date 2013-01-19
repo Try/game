@@ -6,7 +6,8 @@
 #include "movebehavior.h"
 
 WarriorBehavior::WarriorBehavior( GameObject &obj,
-                                  Behavior::Closure &c ):obj(obj) {
+                                  Behavior::Closure &c )
+  :obj(obj), mvLock(c.isMVLock), lkX(c.lkX), lkY(c.lkY) {
   isAtk    = false;
   dAtkTime = 0;
   mvLock   = 0;
@@ -245,6 +246,7 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
 
     b.absDmg = absDmg;
     b.tick();
+    obj.world().game.resources().sound("fire_ball").play();
     } else {
     dobj.setHP( dobj.hp() - absDmg );
     }

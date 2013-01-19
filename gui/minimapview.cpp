@@ -96,7 +96,7 @@ void MiniMapView::render( World &wx ) {
       }
 
     fillFog(fog, wx);
-    aceptFog(renderTo, fog);
+    //aceptFog(renderTo, fog);
     cashed = renderTo;
     }
 
@@ -230,32 +230,32 @@ void MiniMapView::fillFog( MyGL::Pixmap &p, World &wx ) {
     }
   }
 
-void MiniMapView::cride(MyGL::Pixmap &p, int x, int y, int r) {
+void MiniMapView::cride(MyGL::Pixmap &p, int x, int y, int R) {
   MyGL::Pixmap::Pixel pix;
   pix.r = 255;
   pix.g = 255;
   pix.b = 255;
   pix.a = 255;
 
-  int lx = x - r,
-      rx = x + r,
-      ly = y - r,
-      ry = y + r;
+  int lx = x - R,
+      rx = x + R,
+      ly = y - R,
+      ry = y + R;
 
-  r*=r;
+  R*=R;
 
   lx = std::max(0,lx);
   ly = std::max(0,ly);
 
-  rx = std::max(p.width()-1,rx);
-  ry = std::max(p.height()-1,ry);
+  rx = std::min(p.width()-1,rx);
+  ry = std::min(p.height()-1,ry);
 
   for( int i=lx; i<=rx; ++i )
     for( int r=ly; r<=ry; ++r ){
       int dx = i-x,
           dy = r-y;
 
-      if( dx*dx+dy*dy <= r )
+      if( dx*dx+dy*dy <= R )
         p.set(i,r, pix);
       }
   }

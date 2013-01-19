@@ -6,6 +6,7 @@
 #include "protoobject.h"
 
 #include "util/gameserializer.h"
+#include "world.h"
 
 Player::Player(int num) {
   editObj  = 0;
@@ -140,6 +141,107 @@ int Player::number() const {
   return m.num;
   }
 
+const MyGL::Pixmap &Player::fog() const {
+  return m.fog;
+  }
+
 bool Player::compare(const GameObject *a, const GameObject *b) {
   return a->getClass().name < b->getClass().name;
+  }
+
+void Player::tick( World &curW ) {
+  fillFog(m.fog, curW);
+  }
+
+void Player::fillFog( MyGL::Pixmap &p, World &wx ) {
+  if( p.width()  != wx.terrain().width() ||
+      p.height() != wx.terrain().height() ){
+    p = MyGL::Pixmap( wx.terrain().width(),
+                      wx.terrain().height(),
+                      true );
+
+    MyGL::Pixmap::Pixel pix;
+    pix.r = 0;
+    pix.g = 0;
+    pix.b = 0;
+    pix.a = 0;
+
+    for( int i=0; i<p.width(); ++i )
+      for( int r=0; r<p.height(); ++r ){
+        p.set(i,r, pix);
+        }
+    }
+
+  MyGL::Pixmap::Pixel pix;
+  pix.r = 128;
+  pix.g = 128;
+  pix.b = 128;
+  pix.a = 128;
+
+  for( int i=0; i<p.width(); ++i )
+    for( int r=0; r<p.height(); ++r ){
+      if( p.at(i,r).a>128 )
+        p.set(i,r, pix);
+      }
+
+  const std::vector<World::PGameObject> & objects = wx.activeObjects();
+  int qs = Terrain::quadSize;
+
+  for( size_t i=0; i<objects.size(); ++i ){
+    const GameObject& obj = *objects[i];
+
+    if( obj.team()==team() )
+      cride( p, obj.x()/qs, obj.y()/qs, obj.getClass().data.visionRange );
+    }
+  }
+
+void Player::cride( MyGL::Pixmap &p, int x, int y, int R ) {
+  MyGL::Pixmap::Pixel pix;
+  pix.r = 255;
+  pix.g = 255;
+  pix.b = 255;
+  pix.a = 255;
+
+  MyGL::Pixmap::Pixel hpix[2] = {pix, pix};
+  hpix[0].a = 128+64;
+  hpix[0].r = hpix[0].a;
+  hpix[0].g = hpix[0].a;
+  hpix[0].b = hpix[0].a;
+
+  hpix[1].a = 128-64;
+  hpix[1].r = hpix[1].a;
+  hpix[1].g = hpix[1].a;
+  hpix[1].b = hpix[1].a;
+
+  int lx = x - R,
+      rx = x + R,
+      ly = y - R,
+      ry = y + R;
+
+  int R1 = (R-2)*(R-2);
+  int R2 = (R-1)*(R-1);
+  int R3 = R*R;
+  //R*=R;
+
+  lx = std::max(2,lx);
+  ly = std::max(2,ly);
+
+  rx = std::min(p.width()-4,rx);
+  ry = std::min(p.height()-4,ry);
+
+  for( int i=lx; i<=rx; ++i )
+    for( int r=ly; r<=ry; ++r ){
+      int dx = i-x,
+          dy = r-y;
+      int dR = dx*dx+dy*dy;
+
+      if( dR <= R1 )
+        p.set(i,r, pix); else
+
+      if( dR <= R2 && p.at(i,r).a<hpix[0].a )
+        p.set(i,r, hpix[0]); else
+
+      if( dR <= R3 && p.at(i,r).a<hpix[1].a )
+        p.set(i,r, hpix[1]);
+      }
   }

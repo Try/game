@@ -33,6 +33,9 @@ class Behavior : public AbstractBehavior {
     struct Closure{
       bool isOnMove, isReposMove, isMoviable, isMineralMove;
       int  colisionDisp[2];
+
+      int  lkX, lkY;
+      bool isMVLock;
       };
 
     template< class T >

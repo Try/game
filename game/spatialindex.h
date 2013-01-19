@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+#include <MyWidget/Utility>
+
 class GameObject;
 
 class SpatialIndex {

@@ -21,6 +21,7 @@
 #include "graphics/omnimaterial.h"
 #include "graphics/blushmaterial.h"
 #include "graphics/terrainminormaterial.h"
+#include "graphics/warfogmaterial.h"
 
 #include "util/gameserializer.h"
 
@@ -33,6 +34,7 @@
 
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   : graphics( ihwnd, iw, ih, isFS, isFS ? 2048:1024 ),
+    soundDev(ihwnd),
     resource( graphics.texHolder,
               graphics.localTex,
               graphics.vboHolder,
@@ -102,6 +104,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   sendDelay = 0;
 
+  //resource.sound("hammer0").play();
+
   //load(L"./save/1.sav");
   }
 
@@ -170,6 +174,9 @@ void Game::tick() {
     }
 
   if( !isLag ){
+    for( size_t i=0; i<players.size(); ++i )
+      players[i]->tick(*world);
+
     world->tick();
     }
 
@@ -178,6 +185,8 @@ void Game::tick() {
 
 void Game::onRender(){
   gui.renderMinimap(*world);
+  graphics.setFog( player().fog() );
+
   world->onRender();
   }
 
@@ -743,6 +752,15 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     OmniMaterial material;
     obj.setupMaterial( material );
     }
+
+  if( contains( src.materials, "fog_of_war" ) ){
+    WarFogMaterial material;
+    material.texture = r.texture( "fog_test" );
+    obj.setupMaterial( material );
+
+    WarFogMaterialZPass zpass;
+    obj.setupMaterial( zpass );
+    }
   }
 
 MyGL::Matrix4x4 &Game::shadowMat() {
@@ -847,7 +865,6 @@ void Game::setupAsServer() {
   }
 
 void Game::setupAsClient(const std::wstring &s ) {
-
   Client * c = new Client();
   netUser.reset( c );
   netUser->onRecv.bind( msg,   &BehaviorMSGQueue::onRecvClient );

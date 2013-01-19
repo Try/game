@@ -40,6 +40,8 @@ struct MVertex {
 
 typedef MyGL::Model<MVertex> Model;
 
+class Sound;
+
 class Resource : public AbstractXMLReader {
   public:
     Resource(
@@ -60,6 +62,8 @@ class Resource : public AbstractXMLReader {
     const MyGL::Texture2d &texture( const std::string & key ) const;
           MyGL::Texture2d &texture( const std::string & key );
           bool findTexture( const std::string & key );
+
+    Sound &sound( const std::string & key ) const;
 
 
     MyGL::VertexShader   & vshader( const std::string & key );
@@ -138,6 +142,9 @@ private:
     void load( Box<MyGL::Texture2d>& textures,
                const std::string &k, const std::string & f );
 
+    void load( Box< std::shared_ptr<Sound> >& sounds,
+               const std::string &k, const std::string & f );
+
     void load( Box<MyGL::VertexShader>& vs,
                const std::string &k, const std::string & f,
                const std::string &def );
@@ -156,6 +163,8 @@ private:
     Box<MyGL::VertexShader>   vs;
     Box<MyGL::FragmentShader> fs;
     Box<PixmapsPool::TexturePtr> px;
+
+    Box< std::shared_ptr<Sound> > sounds;
 
     MyGL::VertexBufferHolder      & vboHolder;
     MyGL::LocalVertexBufferHolder & lvboHolder;

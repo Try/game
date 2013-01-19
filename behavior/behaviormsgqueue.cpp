@@ -100,7 +100,7 @@ void BehaviorMSGQueue::computeWay( World &w, const MSG& m ) {
 
   WayFindAlgo algo( w.terrain() );
 
-  algo.fillClasrerMap( w.player(m.player).selected() );
+  // algo.fillClasrerMap( w.player(m.player).selected() );
   algo.findWay       ( w.player(m.player).selected(), x, y );
 
   remove_if( data, isMoveMSG );

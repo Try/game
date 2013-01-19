@@ -245,7 +245,8 @@ void MoveBehavior::tick(const Terrain &terrain) {
   if( clos.isOnMove || clos.isReposMove ){
     step(terrain, sz);
     } else {
-    if( !terrain.isEnableQuad( x, y, sz ) ){
+    bool lk = clos.isMVLock && x==clos.lkX && y==clos.lkY;
+    if( !terrain.isEnableQuad( x, y, sz ) && !lk ){
       calcWayAndMove( obj.x(), obj.y(), terrain );
       }
     }
@@ -410,6 +411,13 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
     } else {
     nextPoint();
     }
+  }
+
+void MoveBehavior::takeWay(const MoveBehavior &v) {
+  if( this==&v )
+    return;
+
+  setWay(v.way);
   }
 
 bool MoveBehavior::isSameDirection( const MoveBehavior &other ) {
