@@ -52,7 +52,7 @@ class WarriorBehavior : public AbstractBehavior  {
 
     void takeTaget(GameObject *&out, GameObject * tg, int d );
 
-    void mouseDown(MyWidget::MouseEvent &e);
+    void mouseDown( MyWidget::MouseEvent& e );
     void mouseUp  ( MyWidget::MouseEvent& e );
     void onRemoveHook();
   };

@@ -18,7 +18,11 @@ ModalWindow::ModalWindow(Resource &res, Widget *owner) {
 
   w->layout().add( this );
   setFocus(1);
-}
+  }
+
+ModalWindow::~ModalWindow() {
+  onClosed();
+  }
 
 void ModalWindow::mouseDownEvent(MyWidget::MouseEvent &e)
 {

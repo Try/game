@@ -89,8 +89,13 @@ class Game {
     void setupAsClient(const std::wstring &str);
 
     void onUnitRemove( size_t i );
+
+    void pause( bool p );
+    void unsetPause();
+    bool isPaused() const;
   private:
     void* hwnd;
+    bool  paused;
     bool isFullScreen;
 
     GraphicsSystem graphics;

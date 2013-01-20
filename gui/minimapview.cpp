@@ -3,6 +3,7 @@
 #include "resource.h"
 
 #include "game/world.h"
+#include "game.h"
 
 MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
   rtime   = clock();
@@ -95,8 +96,8 @@ void MiniMapView::render( World &wx ) {
           }
       }
 
-    fillFog(fog, wx);
-    //aceptFog(renderTo, fog);
+    //fillFog(fog, wx);
+    aceptFog(renderTo, wx.game.player().fog() );
     cashed = renderTo;
     }
 
@@ -200,64 +201,6 @@ void MiniMapView::mouseDragEvent(MyWidget::MouseEvent &e) {
 void MiniMapView::mouseUpEvent(MyWidget::MouseEvent &e) {
   mouseEvent( e.x/float(w()), e.y/float(h()) );
   pressed = false;
-  }
-
-void MiniMapView::fillFog( MyGL::Pixmap &p, World &wx ) {
-  if( p.width()  != wx.terrain().width() ||
-      p.height() != wx.terrain().height() ){
-    p = MyGL::Pixmap( wx.terrain().width(),
-                      wx.terrain().height(),
-                      false);
-    }
-
-  MyGL::Pixmap::Pixel pix;
-  pix.r = 128;
-  pix.g = 128;
-  pix.b = 128;
-  pix.a = 255;
-
-  for( int i=0; i<p.width(); ++i )
-    for( int r=0; r<p.height(); ++r )
-      p.set(i,r, pix);
-
-  const std::vector<World::PGameObject> & objects = wx.activeObjects();
-  int qs = Terrain::quadSize;
-
-  for( size_t i=0; i<objects.size(); ++i ){
-    const GameObject& obj = *objects[i];
-
-    cride( p, obj.x()/qs, obj.y()/qs, obj.getClass().data.visionRange );
-    }
-  }
-
-void MiniMapView::cride(MyGL::Pixmap &p, int x, int y, int R) {
-  MyGL::Pixmap::Pixel pix;
-  pix.r = 255;
-  pix.g = 255;
-  pix.b = 255;
-  pix.a = 255;
-
-  int lx = x - R,
-      rx = x + R,
-      ly = y - R,
-      ry = y + R;
-
-  R*=R;
-
-  lx = std::max(0,lx);
-  ly = std::max(0,ly);
-
-  rx = std::min(p.width()-1,rx);
-  ry = std::min(p.height()-1,ry);
-
-  for( int i=lx; i<=rx; ++i )
-    for( int r=ly; r<=ry; ++r ){
-      int dx = i-x,
-          dy = r-y;
-
-      if( dx*dx+dy*dy <= R )
-        p.set(i,r, pix);
-      }
   }
 
 void MiniMapView::aceptFog(MyGL::Pixmap &p, const MyGL::Pixmap &f) {

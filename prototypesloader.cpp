@@ -236,6 +236,7 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       readIf( e, "buildTime", obj.data.buildTime );
 
       readIf( e, "isBackground", obj.data.isBackground );
+      readIf( e, "invincible",   obj.data.invincible   );
       }
 
     if( type=="view_size" ){

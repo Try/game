@@ -137,7 +137,8 @@ HEADERS += \
     threads/mutex.h \
     gui/progressbar.h \
     graphics/warfogmaterial.h \
-    sound/sound.h
+    sound/sound.h \
+    behavior/bonusbehavior.h
 
 SOURCES += \
     main.cpp \
@@ -235,7 +236,8 @@ SOURCES += \
     threads/mutex.cpp \
     gui/progressbar.cpp \
     graphics/warfogmaterial.cpp \
-    sound/sound.cpp
+    sound/sound.cpp \
+    behavior/bonusbehavior.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

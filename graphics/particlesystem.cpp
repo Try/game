@@ -47,7 +47,7 @@ void ParticleSystem::exec( int dt ) {
     return;
 
   if( viewInfo().name=="fire" ){
-    if( rand()%4==0 ){
+    if( rand()%2==0 ){
       par.push_back( Point3( x(), y(), z() ) );
       par.back().size = 0.06+0.03*( rand()/float(RAND_MAX) );
 

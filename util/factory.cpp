@@ -10,6 +10,7 @@
 #include "behavior/builderbehavior.h"
 #include "behavior/incompletebuilding.h"
 #include "behavior/warriorbehavior.h"
+#include "behavior/bonusbehavior.h"
 
 void initFactorys(){
 #define behavior(T,N) BehaviorsFactory::addProduct<T>( N )
@@ -22,5 +23,6 @@ void initFactorys(){
   behavior(BuilderBehavior,    "builder"    );
   behavior(IncompleteBuilding, "incomplete" );
   behavior(WarriorBehavior,    "warrior"    );
+  behavior(BonusBehavior,      "bonus"      );
 #undef behavior
   }

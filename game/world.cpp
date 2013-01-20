@@ -14,6 +14,8 @@
 
 #include "util/weakworldptr.h"
 #include "behavior/buildingbehavior.h"
+#include "behavior/movebehavior.h"
+#include "behavior/bonusbehavior.h"
 
 #include "util/gameserializer.h"
 
@@ -513,7 +515,8 @@ void World::paintHUD( MyWidget::Painter & p,
 
   for( size_t plN = 1; plN<game.plCount(); ++plN )
     for( size_t i=0; i<game.player(plN).unitsCount(); ++i )
-      if( game.player(plN).unit(i).isVisible_perf() ) {
+      if( game.player(plN).unit(i).isVisible_perf() &&
+          !game.player(plN).unit(i).behavior.find<BonusBehavior>() ) {
         MyGL::Matrix4x4 m = gmMat;
 
         GameObject & obj = game.player(plN).unit(i);
@@ -788,7 +791,8 @@ void World::tick() {
     }
 
   for( size_t i=0; i<nonBackground.size(); ++i )
-    if( nonBackground[i]->hp() <= 0 ) {
+    if( nonBackground[i]->hp() <= 0 &&
+        nonBackground[i]->behavior.find<MoveBehavior>() ) {
       GameObject & src = *nonBackground[i];
       GameObject & obj = addObjectEnv( nonBackground[i]->getClass().name );
 

@@ -107,6 +107,9 @@ void WarriorBehavior::lookOn( GameObject &tg,
                               GameObject *& rawTgBuild,
                               int & dTg,
                               int & dBuld ) {
+  if( tg.getClass().data.invincible )
+    return;
+
   if( tg.playerNum()==0 )
     return;
 
@@ -175,7 +178,8 @@ bool WarriorBehavior::message( Message msg, size_t id,
                                AbstractBehavior::Modifers md) {
   if( msg==ToUnit || msg==AtackToUnit ){
     WeakWorldPtr ptr = obj.world().objectWPtr(id);
-    if( ptr.value().team()!=obj.team() || msg==AtackToUnit ){
+    if( (ptr.value().team()!=obj.team() || msg==AtackToUnit) &&
+        !ptr.value().getClass().data.invincible ){
       mvTaget = ptr;
       isAClick = true;
       acX = mvTaget.value().x();
@@ -248,6 +252,7 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     b.tick();
     obj.world().game.resources().sound("fire_ball").play();
     } else {
+    obj.world().game.resources().sound("attack-sword-001").play();
     dobj.setHP( dobj.hp() - absDmg );
     }
 

@@ -71,26 +71,40 @@ void WayFindAlgo::findWay( std::vector< GameObject* >& objs,
         bobj->setWay( way );
         }
       ways[i] = std::make_shared<std::vector<Point>>( way );
+      setupWaysGroup( obj, ways[i], objs, ways );
       }
 
-    for( size_t r=i+1; r<objs.size(); ++r ){
-      if( !ways[r] ){
-        GameObject & tg = *objs[r];
-        int d = tg.distanceSQ(obj);
+    }
+  }
 
-        int maxD = (( tg.getClass().data.size +
-                      obj.getClass().data.size )*Terrain::quadSize)/2;
-        maxD = maxD*maxD;
+void WayFindAlgo::setupWaysGroup( GameObject & obj,
+                                  std::shared_ptr<std::vector<Point> >& way,
+                                  std::vector<GameObject*> &objs,
+                                  std::vector<std::shared_ptr<std::vector<Point> > > &w) {
+  std::vector< GameObject* > stk[2], *stk1, *stk2;
+  stk[0].push_back(&obj);
 
-        if( d<=2*maxD ){
-          if( MoveBehavior *btg = tg.behavior.find<MoveBehavior>() ){
-            btg->setWay( *ways[i] );
+  stk1 = &stk[0];
+  stk2 = &stk[1];
+
+  while( stk1->size() ){
+    for( size_t i=0; i<stk1->size(); ++i ){
+      GameObject & ob = *stk1->at(i);
+      for( size_t r=0; r<ob.colisions.size(); ++r )
+        for( size_t q=0; q<objs.size(); ++q ){
+          if( objs[q]==ob.colisions[r] && !w[q] ){
+            w[q] = way;
+            MoveBehavior *bobj = ob.colisions[r]->behavior.find<MoveBehavior>();
+            if( bobj )
+              bobj->setWay( *way );
+
+            stk2->push_back( objs[q] );
             }
-
-          ways[r] = ways[i];
           }
-        }
       }
+
+    std::swap(stk1, stk2);
+    stk2->clear();
     }
   }
 

@@ -31,9 +31,6 @@ class MiniMapView : public TextureView {
     void mouseDragEvent(MyWidget::MouseEvent &e);
     void mouseUpEvent(MyWidget::MouseEvent &e);
 
-    void fillFog( MyGL::Pixmap &p, World &wx  );
-    void cride( MyGL::Pixmap &p, int x, int y, int r );
-
     void aceptFog( MyGL::Pixmap &p, const MyGL::Pixmap &f );
   };
 

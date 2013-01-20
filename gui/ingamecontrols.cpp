@@ -253,10 +253,13 @@ void InGameControls::showFormBuilder() {
   }
 
 void InGameControls::showMenu() {
+  game.pause(1);
+
   InGameMenu *m = new InGameMenu(res, this);
 
   m->save.bind( save );
   m->load.bind( load );
+  m->onClosed.bind( game, &Game::unsetPause );
   }
 
 void InGameControls::addEditorObject( const ProtoObject &p ) {

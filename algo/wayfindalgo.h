@@ -37,6 +37,11 @@ class WayFindAlgo {
 
     int rPointX, rPointY;
     bool isRPoint();
+
+    void setupWaysGroup( GameObject& robj,
+                         std::shared_ptr<std::vector<Point> >& way,
+                         std::vector< GameObject* >& objs,
+                         std::vector< std::shared_ptr< std::vector<Point> > >& w);
   };
 
 #endif // WAYFINDALGO_H

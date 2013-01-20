@@ -33,6 +33,7 @@ class GameObject {
                 const ProtoObject &p,
                 const PrototypesLoader & pl );
     ~GameObject();
+    std::vector<GameObject*> colisions;
 
     int distanceSQ( const GameObject& other ) const;
     int distanceSQ( int x, int y ) const;

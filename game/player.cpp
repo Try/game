@@ -160,11 +160,12 @@ void Player::fillFog( MyGL::Pixmap &p, World &wx ) {
                       wx.terrain().height(),
                       true );
 
+    int cf = 0;
     MyGL::Pixmap::Pixel pix;
-    pix.r = 0;
-    pix.g = 0;
-    pix.b = 0;
-    pix.a = 0;
+    pix.r = cf;
+    pix.g = cf;
+    pix.b = cf;
+    pix.a = cf;
 
     for( int i=0; i<p.width(); ++i )
       for( int r=0; r<p.height(); ++r ){
@@ -172,15 +173,16 @@ void Player::fillFog( MyGL::Pixmap &p, World &wx ) {
         }
     }
 
+  int cf2 = 128;//128;
   MyGL::Pixmap::Pixel pix;
-  pix.r = 128;
-  pix.g = 128;
-  pix.b = 128;
-  pix.a = 128;
+  pix.r = cf2;
+  pix.g = cf2;
+  pix.b = cf2;
+  pix.a = cf2;
 
   for( int i=0; i<p.width(); ++i )
     for( int r=0; r<p.height(); ++r ){
-      if( p.at(i,r).a>128 )
+      if( p.at(i,r).a>cf2 )
         p.set(i,r, pix);
       }
 

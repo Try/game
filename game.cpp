@@ -48,6 +48,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   w = iw;
   h = ih;
   isFullScreen = isFS;
+  paused = false;
 
   curMPos = MyWidget::Point(w/2, h/2);
 
@@ -169,11 +170,13 @@ void Game::tick() {
         }
       }
     } else {
-    msg.serialize( serializator );
-    msg.tick( *this, *world );
+    if( !paused ){
+      msg.serialize( serializator );
+      msg.tick( *this, *world );
+      }
     }
 
-  if( !isLag ){
+  if( !isLag && !paused ){
     for( size_t i=0; i<players.size(); ++i )
       players[i]->tick(*world);
 
@@ -880,6 +883,18 @@ void Game::setupAsClient(const std::wstring &s ) {
 
 void Game::onUnitRemove(size_t i) {
   msg.onUnitRemove(i);
+  }
+
+void Game::pause(bool p) {
+  paused = p;
+  }
+
+void Game::unsetPause() {
+  pause(0);
+  }
+
+bool Game::isPaused() const {
+  return paused;
   }
 
 void Game::setCurrectPlayer(int pl) {

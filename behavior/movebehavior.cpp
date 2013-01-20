@@ -306,7 +306,9 @@ void MoveBehavior::step(const Terrain &terrain, int sz ) {
       int ltx = this->tx, lty = this->ty;
 
       obj.setPositionSmooth( x, y, terrain.heightAt(wx,wy) );
-      obj.setViewDirection( ltx-obj.x(), lty-obj.y() );
+
+      if( !clos.isMVLock )
+        obj.setViewDirection( ltx-obj.x(), lty-obj.y() );
 
       this->tx = ltx;
       this->ty = lty;

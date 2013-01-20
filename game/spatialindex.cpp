@@ -73,6 +73,7 @@ void SpatialIndex::clear() {
 void SpatialIndex::solveColisions() {
   for( size_t i=0; i<obj.size(); ++i ){
     if( obj[i] && obj[i]->isMoviable() && !obj[i]->isMineralMove() ){
+      obj[i]->colisions.clear();
       solveColisions( obj[i], i );
       }
     }
@@ -129,21 +130,26 @@ void SpatialIndex::collision( GameObject &obj, GameObject &m, size_t id ) {
                 obj.getClass().data.size )*Terrain::quadSize)/2;
   maxD = maxD*maxD;
 
-  if( d <= maxD && (&m!=&obj) && hasEffect(m,obj) ){
-    int dx = m.x() - obj.x();
-    int dy = m.y() - obj.y();
+  if( (&m!=&obj) && hasEffect(m,obj) ){
+    if( d <= 4*maxD )
+      obj.colisions.push_back(&m);
 
-    if( dx!=0 || dy!=0 ){
-      m.incColisionDisp( dx, dy );
-      } else {
-      dx = Terrain::quadSize;
-      dy = Terrain::quadSize;
+    if( d <= maxD ){
+      int dx = m.x() - obj.x();
+      int dy = m.y() - obj.y();
 
-      switch( id%4 ){
-        case 0: m.incColisionDisp(  dx, dy ); break;
-        case 1: m.incColisionDisp( -dx, dy ); break;
-        case 2: m.incColisionDisp( -dx,-dy ); break;
-        case 3: m.incColisionDisp(  dx,-dy ); break;
+      if( dx!=0 || dy!=0 ){
+        m.incColisionDisp( dx, dy );
+        } else {
+        dx = Terrain::quadSize;
+        dy = Terrain::quadSize;
+
+        switch( id%4 ){
+          case 0: m.incColisionDisp(  dx, dy ); break;
+          case 1: m.incColisionDisp( -dx, dy ); break;
+          case 2: m.incColisionDisp( -dx,-dy ); break;
+          case 3: m.incColisionDisp(  dx,-dy ); break;
+          }
         }
       }
     }
