@@ -85,6 +85,8 @@ class GraphicsSystem {
     MainGui * widget;
     ParticleSystemEngine * particles;
 
+    bool useFog;
+
     MyGL::Size  screenSize;
     static  float smMatSize( const MyGL::Scene & s );
     static  MyGL::Matrix4x4 makeShadowMatrix(const MyGL::Scene & s , double *dxyz);
@@ -94,6 +96,8 @@ class GraphicsSystem {
     void makeRenderAlgo( Resource &res,
                          MainGui &gui,
                          int w, int h );
+    void blurSm(MyGL::Texture2d &sm , const MyGL::Scene &scene);
+
     struct Sm{
       MyGL::VertexShader   vs;
       MyGL::FragmentShader fs;
@@ -162,6 +166,12 @@ class GraphicsSystem {
       MyGL::FragmentShader fs;
       } omniData;
 
+    struct Volumetric{
+      MyGL::Uniform< MyGL::Texture2d > scene;
+      MyGL::VertexShader   vs;
+      MyGL::FragmentShader fs;
+      } volumetricData;
+
     struct Final{
       MyGL::Uniform< MyGL::Texture2d > scene, bloom, glow;
       MyGL::VertexShader   vs;
@@ -184,8 +194,13 @@ class GraphicsSystem {
                    const MyGL::Texture2d &sm,
                    const MyGL::Scene &scene);
 
+    void renderVolumeLight( const MyGL::Scene &scene,
+                            MyGL::Texture2d &gbuffer,
+                            MyGL::Texture2d &mainDepth,
+                            MyGL::Texture2d &shadowMap );
+
     void drawOmni(MyGL::Texture2d *gbuffer,
-                   MyGL::Texture2d &mainDepth, const MyGL::Scene &scene);
+                   MyGL::Texture2d &mainDepth, MyGL::Texture2d &sm, const MyGL::Scene &scene);
 
     void setupLight( const MyGL::Scene &scene,
                      MyGL::FragmentShader & fs ,
@@ -257,7 +272,7 @@ class GraphicsSystem {
                 const MyGL::Texture2d& in );
 
     void ssao(MyGL::Texture2d &out,
-               const MyGL::Texture2d& in , const MyGL::Scene &scene);
+               const MyGL::Texture2d& in , const MyGL::Texture2d &gao, const MyGL::Scene &scene);
 
     void aceptSsao( const MyGL::Scene &s,
                     MyGL::Texture2d &out,

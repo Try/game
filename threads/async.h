@@ -2,6 +2,8 @@
 #define ASYNC_H
 
 #include "thread.h"
+#include "mutex.h"
+#include <vector>
 
 #include <memory>
 
@@ -33,6 +35,15 @@ class AsyncThread : public Thread {
 
     template< class C, class F >
     friend Future async( C *c, F f, void* args );
+  };
+
+struct Task{
+  void (* foo)(void*);
+  void  * args;
+
+  void run(){
+    foo( args );
+    }
   };
 
 class Future{

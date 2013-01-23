@@ -52,6 +52,8 @@ GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
   time      = 0;
   particles = 0;
 
+  useFog    = true;
+
   lvboHolder.setReserveSize( 64*8092 );
   }
 
@@ -105,6 +107,9 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
 
     fogOfWar.vsAcept = gaussData.vs;
     fogOfWar.fsAcept = res.fshader("aceptFog");
+
+    volumetricData.vs = gaussData.vs;
+    volumetricData.fs = res.fshader("volumetricLight");
 
     bloomData.vs = gaussData.vs;
     bloomData.brightPass = fsHolder.load("./data/sh/brightPass.frag");
@@ -256,7 +261,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
                                 MyGL::Texture2d::Format::RG16 );
 
   renderScene( scene, gbuffer, mainDepth,
-               1024, true );  
+               1024, true );
 
   MyGL::Texture2d fog;
   drawFogOfWar(fog, scene);
@@ -453,8 +458,70 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                scene, scene.objects<TransparentMaterial>() );
   }
 
+void GraphicsSystem::renderVolumeLight( const MyGL::Scene &scene,
+                                        MyGL::Texture2d &gbuffer,
+                                        MyGL::Texture2d &mainDepth,
+                                        MyGL::Texture2d &shadowMap ) {
+  int w = 512,//gbuffer.width(),
+      h = 512;//gbuffer.height();
+
+  MyGL::Texture2d d = depth( w, h );
+  MyGL::Texture2d vlTex = localTex.create(w, h,
+                                          MyGL::AbstractTexture::Format::RGBA );
+
+  { MyGL::Render render( device,
+                         vlTex,
+                         d,
+                         volumetricData.vs,
+                         volumetricData.fs );
+    render.setRenderState( MyGL::RenderState::PostProcess );
+
+    MyGL::Matrix4x4 mat = scene.camera().projective();
+    mat.mul( scene.camera().view() );
+    mat.inverse();
+
+    MyGL::Matrix4x4 smM = closure.shadow.matrix;
+
+    device.setUniform( volumetricData.fs, mat, "invMatrix");
+    device.setUniform( volumetricData.fs, smM,  "shMatrix");
+    device.setUniform( volumetricData.fs, shadowMap, "shadowMap");
+    device.setUniform( volumetricData.fs, mainDepth, "mainDepth");
+
+    cpyOffset.set( 1.0f/vlTex.width(), 1.0f/vlTex.height() );
+    device.setUniform( volumetricData.vs, cpyOffset );
+
+    ppHelper.drawFullScreenQuad( device, volumetricData.vs, volumetricData.fs );
+    }
+
+  { MyGL::Texture2d depth = this->depth( mainDepth.width(),
+                                         mainDepth.height() );
+
+    MyGL::Render render( device,
+                         gbuffer, depth,
+                         bltData.vs, bltData.fs );
+
+    MyGL::RenderState rs = MyGL::RenderState::PostProcess;
+    rs.setBlend(1);
+    /*
+    rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::dst_color,
+                     MyGL::RenderState::AlphaBlendMode::zero );*/
+    rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_alpha,
+                     MyGL::RenderState::AlphaBlendMode::one_minus_src_alpha );
+
+    render.setRenderState( rs );
+
+    bltData.texture.set( &vlTex );
+    cpyOffset.set( 1.0f/gbuffer.width(), 1.0f/gbuffer.height() );
+    device.setUniform( bltData.vs, cpyOffset );
+    device.setUniform( bltData.fs, bltData.texture );
+
+    ppHelper.drawFullScreenQuad( device, bltData.vs, bltData.fs );
+    }
+  }
+
 void GraphicsSystem::drawOmni( MyGL::Texture2d *gbuffer,
                                MyGL::Texture2d &mainDepth,
+                               MyGL::Texture2d & sm,
                                const MyGL::Scene &scene ) {
   MyGL::Render render( device,
                        gbuffer[0],
@@ -474,6 +541,14 @@ void GraphicsSystem::drawOmni( MyGL::Texture2d *gbuffer,
                      gbuffer[2],
                      "normals" );
 
+  device.setUniform( omniData.fs,
+                     sm,
+                     "shadowMap" );
+
+  double dir[3] = {0,0,-1};
+  MyGL::Matrix4x4 shM = makeShadowMatrix(scene,dir);
+
+
   float tc[] = { 1.0f/gbuffer[3].width(), 1.0f/gbuffer[3].height() };
   device.setUniform( omniData.fs, tc, 2, "dTexCoord");
 
@@ -491,6 +566,12 @@ void GraphicsSystem::drawOmni( MyGL::Texture2d *gbuffer,
     mat.inverse();
 
     device.setUniform( omniData.fs, mat, "invMatrix");
+
+    MyGL::Matrix4x4 smat = shM;
+    smat.mul( ptr.transform() );
+    device.setUniform( omniData.fs,
+                       smat,
+                       "shMatrix" );
 
     if( scene.viewTester().isVisible( ptr, camera ) ){
       render.draw( v[i].material(), ptr,
@@ -998,11 +1079,10 @@ void GraphicsSystem::ssaoDetail( MyGL::Texture2d &out,
 
 void GraphicsSystem::ssao( MyGL::Texture2d &out,
                            const MyGL::Texture2d &in,
+                           const MyGL::Texture2d & gao,
                            const MyGL::Scene & scene ) {
   int w = in.width(), h = in.height();
 
-  MyGL::Texture2d gao;
-  ssaoGMap( scene, gao );
   const MyGL::AbstractCamera &camera = scene.camera();
 
   MyGL::Matrix4x4 mat = camera.projective();
@@ -1140,6 +1220,29 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
       }
     }
 
+  return;
+  float s = 6*smMatSize(scene);
+  gauss( tmp,  sm, sm.width(), sm.height(), s, 0 );
+  gauss(  sm, tmp, sm.width(), sm.height(), 0, s );
+
+  gauss_gb( tmp,  sm, sm.width(), sm.height(), s*2, 0 );
+  gauss_gb(  sm, tmp, sm.width(), sm.height(), 0, s*2 );
+
+  gauss_b( tmp,  sm, sm.width(), sm.height(),  s*3, 0 );
+  gauss_b(  sm, tmp, sm.width(), sm.height(),  0, s*3 );
+
+  MyGL::Texture2d::Sampler sampler = reflect;
+  sampler.uClamp = MyGL::Texture2d::ClampMode::Clamp;
+  sampler.vClamp = sampler.uClamp;
+
+  sm.setSampler( sampler );
+  }
+
+void GraphicsSystem::blurSm( MyGL::Texture2d &sm,
+                             const MyGL::Scene & scene ) {
+  MyGL::Texture2d tmp = localTex.create( sm.width(), sm.height(),
+                        MyGL::AbstractTexture::Format::RGB10_A2 );
+
   float s = 6*smMatSize(scene);
   gauss( tmp,  sm, sm.width(), sm.height(), s, 0 );
   gauss(  sm, tmp, sm.width(), sm.height(), 0, s );
@@ -1179,17 +1282,10 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
 
   fillGBuf( gbuffer, mainDepth, shadowMap, scene );
 
-  drawOmni( gbuffer, mainDepth, scene );
+  MyGL::Texture2d topSm;
+  ssaoGMap( scene, topSm );
 
-  if( useAO ){
-    MyGL::Texture2d ssaoTex;
-    ssao( ssaoTex, gbuffer[3], scene );
-    //ssaoDetail( ssaoTexDet, gbuffer[2], ssaoTex );
-
-    MyGL::Texture2d aoAcepted;
-    aceptSsao( scene, aoAcepted, gbuffer[0], gbuffer[1], ssaoTex );
-    gbuffer[0] = aoAcepted;
-    }
+  drawOmni( gbuffer, mainDepth, topSm, scene );
 
   //blt( shadowMap );
   MyGL::Texture2d sceneCopy;
@@ -1203,6 +1299,23 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
              sceneCopy, shadowMap, gbuffer[3],
              scene,
              scene.objects<WaterMaterial>());
+
+  if( useAO ){
+    MyGL::Texture2d ssaoTex;
+    blurSm(topSm, scene);
+    ssao( ssaoTex, gbuffer[3], topSm, scene );
+
+    MyGL::Texture2d aoAcepted;
+    aceptSsao( scene, aoAcepted, gbuffer[0], gbuffer[1], ssaoTex );
+
+    if( useFog )
+      renderVolumeLight( scene,
+                         aoAcepted,
+                         gbuffer[3],
+                         shadowMap );
+
+    gbuffer[0] = aoAcepted;
+    }
 
   if(1){
     setupLight( scene, transparentData.fs, shadowMap );

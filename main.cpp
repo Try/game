@@ -8,9 +8,13 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
+#include <tlhelp32.h>
+
 #include <string>
 
 #include <iostream>
+#include <memory>
+#include <exception>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
                    LPSTR lpCmdLine, int nCmdShow);
@@ -58,6 +62,31 @@ void toogleFullScreen( bool isFullScreen ){
 
   if( isFullScreen )
     mgl_demo->resizeEvent( w, h );
+  }
+
+DWORD GetMainThreadId () {
+  const std::shared_ptr<void> hThreadSnapshot(
+      CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0), CloseHandle);
+
+  if (hThreadSnapshot.get() == INVALID_HANDLE_VALUE) {
+    ;//throw std::runtime_error("GetMainThreadId failed");
+    return 0;
+    }
+
+  THREADENTRY32 tEntry;
+  tEntry.dwSize = sizeof(THREADENTRY32);
+  DWORD result = 0;
+  DWORD currentPID = GetCurrentProcessId();
+
+  for (BOOL success = Thread32First(hThreadSnapshot.get(), &tEntry);
+      !result && success && GetLastError() != ERROR_NO_MORE_FILES;
+      success = Thread32Next(hThreadSnapshot.get(), &tEntry)) {
+    if (tEntry.th32OwnerProcessID == currentPID) {
+      result = tEntry.th32ThreadID;
+      }
+    }
+
+  return result;
   }
 
 int WINAPI WinMain( HINSTANCE hInstance,
@@ -143,6 +172,8 @@ int WINAPI WinMain( HINSTANCE hInstance,
 
       demo.toogleFullScreen.bind( toogleFullScreen );
 
+      DWORD mainTh = GetMainThreadId();
+      SetThreadAffinityMask( (void*)mainTh, 0);
 
       DWORD time = GetTickCount(), gameTime = 0, tickCount = 0;
       const DWORD frameTime = 1000/40;

@@ -514,9 +514,20 @@ void World::paintHUD( MyWidget::Painter & p,
   double data1[4], data2[4];
 
   for( size_t plN = 1; plN<game.plCount(); ++plN )
-    for( size_t i=0; i<game.player(plN).unitsCount(); ++i )
-      if( game.player(plN).unit(i).isVisible_perf() &&
-          !game.player(plN).unit(i).behavior.find<BonusBehavior>() ) {
+    for( size_t i=0; i<game.player(plN).unitsCount(); ++i ){
+      GameObject & obj = game.player(plN).unit(i);
+
+      int x = obj.x()/Terrain::quadSize,
+          y = obj.y()/Terrain::quadSize;
+      const MyGL::Pixmap & fog = game.player().fog();
+
+      bool v = true;
+      if( x>=0 && x<fog.width() &&
+          y>=0 && y<fog.height() )
+        v = (fog.at(x,y).a==255);
+
+      if( v &&
+          obj.isVisible_perf() && !obj.behavior.find<BonusBehavior>() ) {
         MyGL::Matrix4x4 m = gmMat;
 
         GameObject & obj = game.player(plN).unit(i);
@@ -583,6 +594,7 @@ void World::paintHUD( MyWidget::Painter & p,
         //p.drawRect( 0.5*(1+data1[0])*w, 0.5*(1-data1[1])*h, 10, 10 );
         //p.drawRect( 0.5*(1+data2[0])*w, 0.5*(1-data2[1])*h, 10, 10 );
         }
+      }
 
   }
 
@@ -773,8 +785,6 @@ void World::tick() {
     if( obj.getClass().data.isBackground )
       obj.tick( terrain() );
     }
-
-  spatialId.clear();
 
   physics.tick();
 

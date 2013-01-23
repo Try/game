@@ -177,8 +177,11 @@ void Game::tick() {
     }
 
   if( !isLag && !paused ){
-    for( size_t i=0; i<players.size(); ++i )
-      players[i]->tick(*world);
+    { std::vector<Future> plTicks(players.size());
+
+      for( size_t i=0; i<players.size(); ++i )
+        plTicks[i] = async( players[i].get(), &Player::computeFog, world );
+      }
 
     world->tick();
     }
@@ -304,8 +307,8 @@ void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
   curMPos = MyWidget::Point(e.x, e.y);
 
   if( mouseTracking ){
-    //spinX -= (e.x - lastMPos.x);
-    //spinY -= (e.y - lastMPos.y);
+    spinX -= (e.x - lastMPos.x);
+    spinY -= (e.y - lastMPos.y);
 
     lastMPos = MyWidget::Point(e.x, e.y);
     }

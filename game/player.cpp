@@ -150,17 +150,23 @@ bool Player::compare(const GameObject *a, const GameObject *b) {
   }
 
 void Player::tick( World &curW ) {
-  fillFog(m.fog, curW);
+
   }
 
-void Player::fillFog( MyGL::Pixmap &p, World &wx ) {
+void Player::computeFog(void *curW) {
+  fillFog(m.fog, *(World*)curW);
+  }
+
+void Player::fillFog(MyGL::Pixmap &p, World &wx ) {
+  const bool useFog = false;
+
   if( p.width()  != wx.terrain().width() ||
       p.height() != wx.terrain().height() ){
     p = MyGL::Pixmap( wx.terrain().width(),
                       wx.terrain().height(),
                       true );
 
-    int cf = 0;
+    int cf = useFog? 0:255;
     MyGL::Pixmap::Pixel pix;
     pix.r = cf;
     pix.g = cf;
@@ -171,9 +177,12 @@ void Player::fillFog( MyGL::Pixmap &p, World &wx ) {
       for( int r=0; r<p.height(); ++r ){
         p.set(i,r, pix);
         }
+
     }
 
-  int cf2 = 128;//128;
+  //return;
+
+  int cf2 = useFog ? 128:255;//128;
   MyGL::Pixmap::Pixel pix;
   pix.r = cf2;
   pix.g = cf2;
@@ -192,12 +201,17 @@ void Player::fillFog( MyGL::Pixmap &p, World &wx ) {
   for( size_t i=0; i<objects.size(); ++i ){
     const GameObject& obj = *objects[i];
 
-    if( obj.team()==team() )
-      cride( p, obj.x()/qs, obj.y()/qs, obj.getClass().data.visionRange );
+    int x = obj.x()/qs,
+        y = obj.y()/qs;
+
+    if( obj.team()==team() ){
+      cride( p, x, y, obj.getClass().data.visionRange );
+      }
     }
   }
 
-void Player::cride( MyGL::Pixmap &p, int x, int y, int R ) {
+void Player::cride(MyGL::Pixmap &p,
+                    int x, int y, int R ) {
   MyGL::Pixmap::Pixel pix;
   pix.r = 255;
   pix.g = 255;
