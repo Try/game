@@ -52,7 +52,7 @@ GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
   time      = 0;
   particles = 0;
 
-  useFog    = true;
+  useFog    = false;
 
   lvboHolder.setReserveSize( 64*8092 );
   }

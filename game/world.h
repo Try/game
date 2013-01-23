@@ -8,6 +8,7 @@
 #include "graphics/hudanim.h"
 
 #include "spatialindex.h"
+#include "algo/wayfindrequest.h"
 
 #include <MyWidget/Event>
 
@@ -124,6 +125,7 @@ class World {
     const CameraViewBounds& cameraBounds() const;
     void setCameraBounds( const CameraViewBounds& c );
 
+    void wayFind( int x, int y, GameObject* obj );
   private:
     MyGL::Scene scene;
     std::unique_ptr<Terrain> terr;
@@ -158,6 +160,8 @@ class World {
     PrototypesLoader &prototypes;
 
     ParticleSystemEngine particles;
+
+    WayFindRequest wayFindRq;
 
     void initTerrain();
     void createTestMap();

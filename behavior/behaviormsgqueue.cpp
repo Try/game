@@ -9,6 +9,7 @@
 #include "game.h"
 
 #include "recruterbehavior.h"
+#include "game/world.h"
 
 BehaviorMSGQueue::BehaviorMSGQueue( Game & owner )
                  :game(owner) {
@@ -97,11 +98,15 @@ void BehaviorMSGQueue::computeWay( World &w, const MSG& m ) {
     x = obj.x();
     y = obj.y();
     }
-
+/*
   WayFindAlgo algo( w.terrain() );
 
   // algo.fillClasrerMap( w.player(m.player).selected() );
   algo.findWay       ( w.player(m.player).selected(), x, y );
+  */
+  std::vector<GameObject*>& s = w.player(m.player).selected();
+  for( size_t i=0; i<s.size(); ++i )
+    w.wayFind( x, y, s[i] );
 
   remove_if( data, isMoveMSG );
   }

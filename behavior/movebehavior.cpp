@@ -71,6 +71,7 @@ void MoveBehavior::moveEvent(MoveToUnitEvent &m) {
   clos.isReposMove = 0;
 
   taget = obj.world().objectWPtr( m.id );
+  timer = 0;
 
   isWayAcept = 1;
   isMWalk    = 0;
@@ -156,7 +157,9 @@ void MoveBehavior::positionChangeEvent( PositionChangeEvent & ) {
   ty = obj.y();
   }
 
-void MoveBehavior::calcWayAndMove(int tx, int ty, const Terrain & terrain ) {
+void MoveBehavior::calcWayAndMove( int tx, int ty,
+                                   const Terrain & /*terrain*/ ) {
+  /*
   WayFindAlgo algo(terrain);
   algo.findWay( obj,
                 obj.x()/Terrain::quadSize,
@@ -165,6 +168,9 @@ void MoveBehavior::calcWayAndMove(int tx, int ty, const Terrain & terrain ) {
                 ty/Terrain::quadSize );
   isWayAcept = 1;
   setWay( algo.way );
+  */
+  isWayAcept = 1;
+  obj.world().wayFind( tx, ty, &obj );
   }
 
 void MoveBehavior::mouseDown(MyWidget::MouseEvent &e) {
@@ -196,6 +202,9 @@ void MoveBehavior::onRemoveHook() {
   }
 
 void MoveBehavior::tick(const Terrain &terrain) {
+  if( timer>0 )
+    --timer;
+
   if( taget && timer==0 ){
     tx = taget.value().x();
     ty = taget.value().y();
@@ -204,14 +213,10 @@ void MoveBehavior::tick(const Terrain &terrain) {
             taget.value().getClass().data.size;
     d *= Terrain::quadSize;
 
-    if( obj.distanceSQ(tx, ty) > d*d )
-      calcWayAndMove( tx, ty,  terrain );
-
+    calcWayAndMove( tx, ty,  terrain );
     timer = 15;
+    return;
     }
-
-  if( timer>0 )
-    --timer;
 
   int qs = Terrain::quadSize;
   int x = obj.x()/qs,
@@ -248,6 +253,7 @@ void MoveBehavior::tick(const Terrain &terrain) {
     bool lk = clos.isMVLock && x==clos.lkX && y==clos.lkY;
     if( !terrain.isEnableQuad( x, y, sz ) && !lk ){
       calcWayAndMove( obj.x(), obj.y(), terrain );
+      return;
       }
     }
 
@@ -320,6 +326,7 @@ void MoveBehavior::step(const Terrain &terrain, int sz ) {
 
       if( !clos.isReposMove/* && !isMWalk*/ ){
         calcWayAndMove( this->tx, this->ty, terrain );
+        return;
         }
       }
 
@@ -376,10 +383,10 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
                       my == v[id].y );
   way  = v;
 
-  if( v.size()==0 ){
-    tx = obj.x();
-    ty = obj.y();
+  tx = obj.x();
+  ty = obj.y();
 
+  if( v.size()==0 ){
     clos.isReposMove = false;
     clos.isOnMove    = false;
     return;

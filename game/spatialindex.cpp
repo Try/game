@@ -130,10 +130,13 @@ void SpatialIndex::collision( GameObject &obj, GameObject &m, size_t id ) {
                 obj.getClass().data.size )*Terrain::quadSize)/2;
   maxD = maxD*maxD;
 
-  if( (&m!=&obj) && hasEffect(m,obj) ){
-    if( d <= 4*maxD )
-      obj.colisions.push_back(&m);
+  if( &m!=&obj && d <= 4*maxD ){
+    obj.colisions.push_back(&m);
+    m  .colisions.push_back(&obj);
+    }
 
+
+  if( (&m!=&obj) && hasEffect(m,obj) ){
     if( d <= maxD ){
       int dx = m.x() - obj.x();
       int dy = m.y() - obj.y();

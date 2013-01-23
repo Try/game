@@ -1,0 +1,23 @@
+#ifndef WAYFINGREQUEST_H
+#define WAYFINGREQUEST_H
+
+#include <map>
+
+class GameObject;
+
+class WayFingRequest {
+  public:
+    WayFingRequest();
+
+    struct RQ{
+      GameObject* obj;
+      };
+
+    struct Tg{
+      int x,y;
+      };
+
+    std::map<Tg, std::vector<G> > rq;
+  };
+
+#endif // WAYFINGREQUEST_H

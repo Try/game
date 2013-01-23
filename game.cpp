@@ -307,8 +307,8 @@ void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
   curMPos = MyWidget::Point(e.x, e.y);
 
   if( mouseTracking ){
-    spinX -= (e.x - lastMPos.x);
-    spinY -= (e.y - lastMPos.y);
+    //spinX -= (e.x - lastMPos.x);
+    //spinY -= (e.y - lastMPos.y);
 
     lastMPos = MyWidget::Point(e.x, e.y);
     }

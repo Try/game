@@ -138,7 +138,8 @@ HEADERS += \
     gui/progressbar.h \
     graphics/warfogmaterial.h \
     sound/sound.h \
-    behavior/bonusbehavior.h
+    behavior/bonusbehavior.h \
+    algo/wayfindrequest.h
 
 SOURCES += \
     main.cpp \
@@ -237,7 +238,8 @@ SOURCES += \
     gui/progressbar.cpp \
     graphics/warfogmaterial.cpp \
     sound/sound.cpp \
-    behavior/bonusbehavior.cpp
+    behavior/bonusbehavior.cpp \
+    algo/wayfindrequest.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

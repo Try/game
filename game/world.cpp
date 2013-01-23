@@ -88,6 +88,10 @@ void World::setCameraBounds( const CameraViewBounds &c ) {
   cameraVBounds = c;
   }
 
+void World::wayFind(int x, int y, GameObject *obj) {
+  wayFindRq.findWay(x,y,obj);
+  }
+
 void World::createTestMap() {
   return;
 
@@ -785,6 +789,7 @@ void World::tick() {
     if( obj.getClass().data.isBackground )
       obj.tick( terrain() );
     }
+  wayFindRq.tick( terrain() );
 
   physics.tick();
 
