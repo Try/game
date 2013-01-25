@@ -21,6 +21,9 @@
 #include "nativesavedialog.h"
 #include "savedialog.h"
 
+#include "gui/hintsys.h"
+#include "lang/lang.h"
+
 MainGui::MainGui( MyGL::Device &,
                   int w, int h,
                   Resource &r,
@@ -29,7 +32,7 @@ MainGui::MainGui( MyGL::Device &,
   mainwidget = 0;
   central.resize(w,h);
 
-  Font f;
+  Font f, f2(14);
   std::wstring str;
 
   for( wchar_t i='a'; i<='z'; ++i )
@@ -42,7 +45,10 @@ MainGui::MainGui( MyGL::Device &,
 
   str += L"/\\|!@#$%^&*()_-=+";
 
-  f.fetch(res, str);
+  f .fetch(res, str);
+  f2.fetch(res, str);
+
+  Lang::fetch(f2, res);
   }
 
 MainGui::~MainGui() {
@@ -54,7 +60,8 @@ void MainGui::setFocus() {
   }
 
 void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {  
-  frame.data = res.pixmap("gui/colors");
+  frame.data     = res.pixmap("gui/colors");
+  hintFrame.data = res.pixmap("gui/hintFrame");
 
   mainwidget = new InGameControls(res, msg, prototypes, game);
   mainwidget->renderScene.bind( renderScene );
@@ -131,6 +138,66 @@ bool MainGui::draw(GUIPass &pass) {
 
     central.paintEvent( event );
     }
+  {
+    PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
+    MyWidget::PaintEvent event(painter);
+
+    MyWidget::Painter p( event );
+    pass.setCurrentBuffer(2);
+    pass.clearBuffers();
+
+    if( HintSys::time>0 && HintSys::hint().size() ){
+      if( !HintSys::vrect().contains(mousePos) )
+        --HintSys::time;
+
+      p.setFont( Font(14) );
+      MyWidget::Size dpos = Font(14).textSize(res, HintSys::hint());
+      dpos.w += 30;
+      dpos.h += 30;
+
+      MyWidget::Point pos = HintSys::pos() + MyWidget::Point( -dpos.w/2, -dpos.h );
+
+      if( pos.y-dpos.h < 0 )
+        pos.y += 2*dpos.h;
+
+      pos.x = std::max(pos.x,0);
+      pos.x = std::min(pos.x, central.w()-dpos.w);
+
+      p.setTexture( hintFrame );
+      MyWidget::Size s = hintFrame.data.rect.size();
+
+      MyWidget::Rect tex = MyWidget::Rect(0, 0, s.w, s.h);
+      p.setBlendMode( MyWidget::alphaBlend );
+      int b = 10;
+
+      p.drawRect( MyWidget::Rect(pos.x, pos.y, b,b),
+                  MyWidget::Rect(0, 0, b, b) );
+      p.drawRect( MyWidget::Rect(pos.x, pos.y+b, b, dpos.h-2*b),
+                  MyWidget::Rect(0, b, b, tex.h-2*b) );
+      p.drawRect( MyWidget::Rect(pos.x, pos.y+dpos.h-b, b, b),
+                  MyWidget::Rect(0, tex.h-b, b, b) );
+
+      p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y, b,b),
+                  MyWidget::Rect(s.w-b, 0, b, b) );
+      p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y+b, b, dpos.h-2*b),
+                  MyWidget::Rect(s.w-b, b, b, tex.h-2*b) );
+      p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y+dpos.h-b, b, b),
+                  MyWidget::Rect(s.w-b, tex.h-b, b, b) );
+
+      p.drawRect( MyWidget::Rect(pos.x+b, pos.y, dpos.w-2*b, b ),
+                  MyWidget::Rect(b, 0, tex.w-2*b, b ) );
+
+      p.drawRect( MyWidget::Rect(pos.x+b, pos.y+dpos.h-b, dpos.w-2*b, b ),
+                  MyWidget::Rect(b, s.h-b, tex.w-2*b, b ) );
+
+      p.drawRect( MyWidget::Rect(pos.x+b, pos.y+b, dpos.w-2*b, dpos.h-2*b ),
+                  MyWidget::Rect(b, b, tex.w-2*b, tex.h-2*b ) );
+
+      //p.drawRect( MyWidget::Rect(pos.x, pos.y, dpos.w, dpos.h), tex );
+
+      p.drawText( pos.x+15, pos.y+15, HintSys::hint() );
+      }
+    }
 
   return 1;
   }
@@ -150,6 +217,8 @@ int MainGui::mouseUpEvent( MyWidget::MouseEvent &e) {
   }
 
 int MainGui::mouseMoveEvent( MyWidget::MouseEvent &e) {
+  mousePos = e.pos();
+
   central.mouseDragEvent(e);
 
   if( e.isAccepted() )

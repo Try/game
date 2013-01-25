@@ -177,10 +177,14 @@ void Game::tick() {
     }
 
   if( !isLag && !paused ){
-    { std::vector<Future> plTicks(players.size());
+    { /*
+      std::vector<Future> plTicks(players.size());
 
       for( size_t i=0; i<players.size(); ++i )
         plTicks[i] = async( players[i].get(), &Player::computeFog, world );
+      */
+      for( size_t i=0; i<players.size(); ++i )
+        players[i]->computeFog(world);
       }
 
     world->tick();

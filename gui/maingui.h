@@ -106,7 +106,9 @@ class MainGui {
     void saveGame();
     void loadGame();
 
-    MyWidget::Bind::UserTexture frame;
+    MyWidget::Point mousePos;
+
+    MyWidget::Bind::UserTexture frame, hintFrame;
     MyWidget::Rect selRect;
   };
 

@@ -51,3 +51,7 @@ size_t WeakWorldPtr::id() const {
 
   return -1;
   }
+
+bool WeakWorldPtr::operator ==(const WeakWorldPtr &other) const {
+  return v.get()==other.v.get();
+  }

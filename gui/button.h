@@ -24,6 +24,9 @@ class Button : public MyWidget::Widget {
     const std::wstring text() const;
     void setText( const std::wstring& t );
     void setText( const std::string& t );
+
+    void setHint( const std::wstring & str );
+    const std::wstring &hint() const;
   protected:
     void mouseDownEvent(MyWidget::MouseEvent &e);
     void mouseMoveEvent(MyWidget::MouseEvent &e);
@@ -34,7 +37,7 @@ class Button : public MyWidget::Widget {
 
     void focusChange(bool);
     bool pressed, presAnim;
-    std::wstring txt;
+    std::wstring txt, hnt;
 
     MyWidget::Shortcut hotKey;
     Resource & res;

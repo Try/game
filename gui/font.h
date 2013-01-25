@@ -15,6 +15,7 @@ namespace Bind{
   class UserFont{
     public:
       UserFont( const std::string& name, int sz );
+      UserFont( int sz );
       UserFont();
 
       struct Leter{

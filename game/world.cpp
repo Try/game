@@ -573,7 +573,7 @@ void World::paintHUD( MyWidget::Painter & p,
         for( int i=0; i<3; ++i )
           data2[i] /= data2[3];
 
-        int y0 = 0.5*(1-data2[1])*h;
+        int y0 = 0.5*(1-data2[1])*h-10;
         int x0 = 0.5*(1+data2[0])*w;
         int x1 = 0.5*(1+data1[0])*w;
 

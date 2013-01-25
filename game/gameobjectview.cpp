@@ -749,7 +749,8 @@ void GameObjectView::serialize( GameSerializer &s, Obj *g,
     g->setRotation( ax/double(mulI), az/double(mulI) );
 
     if( s.version()>=2 ){
-      g->setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
+      //if( getClass().name!="pikeman" )
+        g->setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
       }
     }
   }

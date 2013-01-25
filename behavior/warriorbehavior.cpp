@@ -46,7 +46,7 @@ void WarriorBehavior::tick( const Terrain & ) {
 
   if( !obj.isOnMove() && isAClick && !taget ){
     obj.behavior.message( AtackMoveContinue, acX, acY );
-    isAClick = obj.isOnMove();
+    //isAClick = obj.isOnMove();
     }
 
   if( isAClick &&

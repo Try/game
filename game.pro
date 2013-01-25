@@ -139,7 +139,9 @@ HEADERS += \
     graphics/warfogmaterial.h \
     sound/sound.h \
     behavior/bonusbehavior.h \
-    algo/wayfindrequest.h
+    algo/wayfindrequest.h \
+    lang/lang.h \
+    gui/hintsys.h
 
 SOURCES += \
     main.cpp \
@@ -239,7 +241,9 @@ SOURCES += \
     graphics/warfogmaterial.cpp \
     sound/sound.cpp \
     behavior/bonusbehavior.cpp \
-    algo/wayfindrequest.cpp
+    algo/wayfindrequest.cpp \
+    lang/lang.cpp \
+    gui/hintsys.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

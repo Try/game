@@ -19,6 +19,8 @@ class WeakWorldPtr {
     operator bool () const;
 
     size_t id() const;
+
+    bool operator == ( const WeakWorldPtr& other) const;
   private:
     std::shared_ptr<GameObject> v;
     World * w;

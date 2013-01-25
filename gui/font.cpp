@@ -46,6 +46,17 @@ MyWidget::Bind::UserFont::UserFont( const std::string &name, int sz)  {
     }
   }
 
+MyWidget::Bind::UserFont::UserFont(int sz) {
+  key.name = "./data/arial.ttf";
+  key.size = sz;
+
+  lt = letterBox[key];
+  if( !lt ){
+    lt = new Leters();
+    letterBox[key] = lt;
+    }
+  }
+
 MyWidget::Bind::UserFont::UserFont() {
   key.name = "./data/arial.ttf";
   key.size = 16;

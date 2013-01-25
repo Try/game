@@ -55,7 +55,10 @@ struct InGameControls::AddUnitButton: public Button{
 InGameControls::InGameControls(Resource &res,
                                 BehaviorMSGQueue &msg,
                                 PrototypesLoader &prototypes, Game &game)
-               :res(res), game(game), prototypes(prototypes) {
+               : res(res),
+                 game(game),
+                 prototypes(prototypes),
+                 showEditPanel(this, MyWidget::KeyEvent::K_F9) {
   isHooksEnabled = true;
   currPl         = 1;
   setFocusPolicy( MyWidget::ClickFocus );
@@ -94,19 +97,25 @@ InGameControls::InGameControls(Resource &res,
 
     gold->icon.data = res.pixmap("gui/icon/gold");
     lim-> icon.data = res.pixmap("gui/icon/house");
+
+    gold->setHint(L"$(gold)");
+    lim ->setHint(L"$(units_limit)");
     }
 
   top->setSizePolicy(p);
 
-  cen->layout().add( createEditPanel() );
+  editPanel = createEditPanel();
+  cen->layout().add( editPanel );
   cen->useScissor( false );
+
+  showEditPanel.activated.bind( *this, &InGameControls::toogleEditPanel );
   }
 
 InGameControls::~InGameControls() {
   }
 
 Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
-  Widget * console = new Widget();
+  Widget* console = new Widget();
   console->setMaximumSize( SizePolicy::maxWidgetSize().w, 220 );
   console->setMinimumSize( 0, 220);
 
@@ -234,6 +243,7 @@ Widget *InGameControls::createEditPanel() {
 
   p->layout().add( lbox );
 
+  tabs->setVisible(0);
   return tabs;
   }
 
@@ -242,6 +252,10 @@ EditTerrainPanel *InGameControls::createLandEdit() {
   p->toogleEditLandMode.bind( toogleEditLandMode );
 
   return p;
+  }
+
+void InGameControls::toogleEditPanel() {
+  editPanel->setVisible( !editPanel->isVisible() );
   }
 
 void InGameControls::setCurrPl(size_t i) {
@@ -279,8 +293,7 @@ void InGameControls::renderMinimap(World &w) {
 
 void InGameControls::paintEvent(PaintEvent &e) {
   Widget::paintEvent(e);
-  //p.setFont( mainFont );
-  //p.drawText(100, 100, L"абвгд" );
+
   paintNested(e);
   }
 

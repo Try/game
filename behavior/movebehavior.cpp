@@ -458,5 +458,7 @@ bool MoveBehavior::isCloseEnough( int x1, int y1,
   int realL = x1*x1 + y1*y1;
   int lc = unitSize*Terrain::quadSize;
 
-  return 2*2*realL <= lc*lc;
+  return abs(x1)<=lc &&
+         abs(x2)<=lc &&
+         2*2*realL <= lc*lc;
   }

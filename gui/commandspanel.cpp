@@ -240,6 +240,14 @@ void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
     "gui/icon/atack"
     };
 
+  const wchar_t* hint[] = {
+    L"$(move)",
+    L"$(stop)",
+    L"$(hold)",
+    L"$(patrul)",
+    L"$(atack)"
+    };
+
   BtnBase* btn[5] = {};
 
   for( int i=0; i<5; ++i ){
@@ -249,6 +257,8 @@ void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
     b->x = i;
     b->y = 0;
     b->icon.data = res.pixmap( icon[i] );
+    b->setHint( hint[i] );
+
     MyWidget::KeyEvent::KeyType t = MyWidget::Event::K_A;
     t = MyWidget::KeyEvent::KeyType( int(t) + k[i] - 'a' );
 

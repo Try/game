@@ -59,6 +59,7 @@ class InGameControls : public MyWidget::Widget {
 
     void updateValues();
     void renderMinimap( World& w );
+
   protected:
     void paintEvent(MyWidget::PaintEvent &p);
 
@@ -80,6 +81,10 @@ class InGameControls : public MyWidget::Widget {
     Game &game;
     PrototypesLoader & prototypes;
 
+    void toogleEditPanel();
+
+    MyWidget::Shortcut showEditPanel;
+    Widget        *editPanel;
     CommandsPanel *commands;
     UnitList      *units;
     Button *gold, *lim;

@@ -5,11 +5,11 @@
 Thread::Thread() {
   pthread_create( &thread, 0, &Thread::runImpl, this );
 
-  std::clog << "Thread::Thread()" << std::endl;
+  //std::clog << "Thread::Thread()" << std::endl;
   }
 
 Thread::~Thread() {
-  std::clog << "Thread::~Thread()" << std::endl;
+  //std::clog << "Thread::~Thread()" << std::endl;
   join();
   }
 

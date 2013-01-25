@@ -1291,6 +1291,17 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
   MyGL::Texture2d sceneCopy;
   copy( sceneCopy, gbuffer[0] );
 
+  if( useAO ){
+    MyGL::Texture2d ssaoTex;
+    blurSm(topSm, scene);
+    ssao( ssaoTex, gbuffer[3], topSm, scene );
+
+    MyGL::Texture2d aoAcepted;
+    aceptSsao( scene, aoAcepted, gbuffer[0], gbuffer[1], ssaoTex );
+
+    gbuffer[0] = aoAcepted;
+    }
+
   drawTranscurent( gbuffer[0], mainDepth, sceneCopy,
                    scene,
                    scene.objects<DisplaceMaterial>());
@@ -1300,22 +1311,11 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
              scene,
              scene.objects<WaterMaterial>());
 
-  if( useAO ){
-    MyGL::Texture2d ssaoTex;
-    blurSm(topSm, scene);
-    ssao( ssaoTex, gbuffer[3], topSm, scene );
-
-    MyGL::Texture2d aoAcepted;
-    aceptSsao( scene, aoAcepted, gbuffer[0], gbuffer[1], ssaoTex );
-
-    if( useFog )
-      renderVolumeLight( scene,
-                         aoAcepted,
-                         gbuffer[3],
-                         shadowMap );
-
-    gbuffer[0] = aoAcepted;
-    }
+  if( useFog )
+    renderVolumeLight( scene,
+                       gbuffer[0],
+                       gbuffer[3],
+                       shadowMap );
 
   if(1){
     setupLight( scene, transparentData.fs, shadowMap );

@@ -2,8 +2,10 @@
 
 #include "resource.h"
 #include "font.h"
+#include "hintsys.h"
 
 #include "sound/sound.h"
+#include <MyWidget/Utility>
 
 Button::Button(Resource &res):hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res) {
   back[0].data = res.pixmap("gui/buttonBack");
@@ -59,6 +61,14 @@ void Button::setText(const std::string &t) {
   setText( txt );
   }
 
+void Button::setHint(const std::wstring &str) {
+  hnt = str;
+  }
+
+const std::wstring &Button::hint() const {
+  return hnt;
+  }
+
 void Button::mouseDownEvent(MyWidget::MouseEvent &) {
   pressed  = true;
   presAnim = true;
@@ -67,8 +77,9 @@ void Button::mouseDownEvent(MyWidget::MouseEvent &) {
   update();
   }
 
-void Button::mouseMoveEvent(MyWidget::MouseEvent &e) {
-  e.accept();
+void Button::mouseMoveEvent( MyWidget::MouseEvent & ) {
+  MyWidget::Point p = mapToRoot(MyWidget::Point());
+  HintSys::setHint( hnt, MyWidget::Rect( p.x, p.y, w(), h() ));
   }
 
 void Button::mouseUpEvent(MyWidget::MouseEvent &e) {

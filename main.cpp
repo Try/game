@@ -16,6 +16,8 @@
 #include <memory>
 #include <exception>
 
+#include "lang/lang.h"
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
                    LPSTR lpCmdLine, int nCmdShow);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -92,7 +94,9 @@ DWORD GetMainThreadId () {
 int WINAPI WinMain( HINSTANCE hInstance,
                     HINSTANCE /*hPrevInstance*/,
                     LPSTR     /*lpCmdLine*/,
-                    int       nCmdShow ) {
+                    int       /*nCmdShow*/ ) {
+    Lang::load("./lang/ru.lang");
+
     WNDCLASSEX winClass; 
     MSG        uMsg;
 
@@ -119,7 +123,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
     /*try*/
     {
 
-    bool isFullScreen = 0;
+    bool isFullScreen = 1;
 
     int w = GetSystemMetrics(SM_CXFULLSCREEN),
         h = GetSystemMetrics(SM_CYFULLSCREEN);
