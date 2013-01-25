@@ -92,6 +92,8 @@ int LocalServer::serverListen( void * ){
         c->thread = async( this, &LocalServer::clientRecieve, (void*)c);
         }
       }
+
+    Sleep(1000);
     }
 
   clientsMut.lock();
