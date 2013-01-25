@@ -237,6 +237,10 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
 
       readIf( e, "isBackground", obj.data.isBackground );
       readIf( e, "invincible",   obj.data.invincible   );
+
+      std::string str;
+      if( find(e, "mouseHint", str ) )
+        obj.mouseHint.assign( str.begin(), str.end() );
       }
 
     if( type=="view_size" ){

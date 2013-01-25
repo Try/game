@@ -50,6 +50,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   isFullScreen = isFS;
   paused = false;
 
+  acceptMouseObj = true;
+
   curMPos = MyWidget::Point(w/2, h/2);
 
   hwnd = ihwnd;
@@ -136,9 +138,13 @@ void Game::tick() {
   world->setMousePos( vx*Terrain::quadSize,
                       vy*Terrain::quadSize,
                       World::coordCastD(v.data[2]) );
-  world->setMouseObject( world->unitUnderMouse( curMPos.x,
-                                                curMPos.y,
-                                                w, h ) );
+  if( acceptMouseObj ){
+    world->setMouseObject( world->unitUnderMouse( curMPos.x,
+                                                  curMPos.y,
+                                                  w, h ) );
+    } else {
+    world->setMouseObject( -1 );
+    }
 
   if( player().editObj ){
     int x = World::coordCastD(v.data[0]),
@@ -305,8 +311,11 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
 
 void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
   if( gui.mouseMoveEvent(e) ){
+    acceptMouseObj = false;
     return;
     }
+
+  acceptMouseObj = true;
 
   curMPos = MyWidget::Point(e.x, e.y);
 

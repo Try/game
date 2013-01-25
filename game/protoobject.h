@@ -58,7 +58,8 @@ struct ProtoObject {
     std::vector<std::string> behaviors;
     double rotateSpeed;
 
-    std::string name;
+    std::string  name;
+    std::wstring mouseHint;
 
     struct CmdButton{
       enum Action{

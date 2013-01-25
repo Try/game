@@ -52,7 +52,7 @@ void Panel::mouseDragEvent(MyWidget::MouseEvent &e) {
 
 void Panel::mouseMoveEvent(MyWidget::MouseEvent &e) {
   if( !dragable ){
-    e.ignore();
+    //e.ignore();
     }
   }
 

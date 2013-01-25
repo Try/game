@@ -170,6 +170,8 @@ class World {
 
     bool isUnitUnderMouse(MyGL::Matrix4x4 & gmMat, const GameObject &obj,
                            int mx, int my, int w, int h , int &dist) const;
+
+    MyWidget::Rect projectUnit(GameObject& obj , const MyGL::Matrix4x4 &gmMat, int w, int h);
 };
 
 #endif // WORLD_H

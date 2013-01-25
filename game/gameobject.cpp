@@ -30,6 +30,8 @@ GameObject::GameObject( MyGL::Scene & s,
   m.y = 0;
   m.z = 0;
 
+  hint = p.mouseHint;
+
   m.isVisible_perf = true;
 
   bclos.colisionDisp[0] = 0;

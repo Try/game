@@ -98,6 +98,8 @@ class Game {
     bool  paused;
     bool isFullScreen;
 
+    bool acceptMouseObj;
+
     GraphicsSystem graphics;
     SoundDevice    soundDev;
 
