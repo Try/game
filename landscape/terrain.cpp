@@ -38,7 +38,7 @@ Terrain::Terrain(int w, int h,
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
-  chunks.resize( w/chunkSize, h/chunkSize );
+  chunks.resize( w/chunkSize+1, h/chunkSize+1 );
 
   std::fill( heightMap.begin(),    heightMap.end(),     0 );
   std::fill( waterMap.begin(),     waterMap.end(),      0 );
@@ -724,7 +724,7 @@ void Terrain::serialize( GameSerializer &s ) {
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
   tileset.resize( w+1, h+1 );
-  chunks. resize( w/chunkSize, h/chunkSize );
+  chunks.resize( w/chunkSize+1, h/chunkSize+1 );
 
   if( s.isReader() )
     for( int i=0; i<chunks.width(); ++i )

@@ -588,8 +588,8 @@ void GraphicsSystem::drawObjects( MyGL::Texture2d* gbuffer,
   drawObjects(gbuf.vs, gbuf.fs, gbuffer, mainDepth, scene, v, clr);
   }
 
-void GraphicsSystem::drawObjects( MyGL::VertexShader   vs,
-                                  MyGL::FragmentShader fs,
+void GraphicsSystem::drawObjects( MyGL::VertexShader   & vs,
+                                  MyGL::FragmentShader & fs,
 
                                   MyGL::Texture2d* gbuffer,
                                   MyGL::Texture2d& mainDepth,

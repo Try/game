@@ -9,7 +9,7 @@ class MainGui;
 
 class OverlayWidget : public MyWidget::Widget {
   public:
-    OverlayWidget( Resource &r );
+    OverlayWidget();
 
     void setupSignals();
 

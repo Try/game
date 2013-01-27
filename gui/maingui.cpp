@@ -24,6 +24,8 @@
 #include "gui/hintsys.h"
 #include "lang/lang.h"
 
+#include "graphics/paintergui.h"
+
 MainGui::MainGui( MyGL::Device &,
                   int w, int h,
                   Resource &r,
@@ -48,6 +50,7 @@ MainGui::MainGui( MyGL::Device &,
   f .fetch(res, str);
   f2.fetch(res, str);
 
+  Lang::fetch(f,  res);
   Lang::fetch(f2, res);
   }
 
@@ -68,7 +71,7 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   mainwidget->setCameraPos.bind( setCameraPos );
   mainwidget->setCameraPosXY.bind( setCameraPosXY );
 
-  updateView.bind( mainwidget->updateView );
+  //updateView.bind( mainwidget->updateView );
 
   mainwidget->addObject.bind( addObject );
   mainwidget->toogleEditLandMode.bind( toogleEditLandMode );
@@ -86,6 +89,7 @@ bool MainGui::draw(GUIPass &pass) {
   if( mainwidget ){
     mainwidget->updateValues();
     mainwidget->updateView();
+    updateView();
     }
 
   {
@@ -164,37 +168,9 @@ bool MainGui::draw(GUIPass &pass) {
       pos.x = std::min(pos.x, central.w()-dpos.w);
 
       p.setTexture( hintFrame );
-      MyWidget::Size s = hintFrame.data.rect.size();
-
-      MyWidget::Rect tex = MyWidget::Rect(0, 0, s.w, s.h);
       p.setBlendMode( MyWidget::alphaBlend );
-      int b = 10;
 
-      p.drawRect( MyWidget::Rect(pos.x, pos.y, b,b),
-                  MyWidget::Rect(0, 0, b, b) );
-      p.drawRect( MyWidget::Rect(pos.x, pos.y+b, b, dpos.h-2*b),
-                  MyWidget::Rect(0, b, b, tex.h-2*b) );
-      p.drawRect( MyWidget::Rect(pos.x, pos.y+dpos.h-b, b, b),
-                  MyWidget::Rect(0, tex.h-b, b, b) );
-
-      p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y, b,b),
-                  MyWidget::Rect(s.w-b, 0, b, b) );
-      p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y+b, b, dpos.h-2*b),
-                  MyWidget::Rect(s.w-b, b, b, tex.h-2*b) );
-      p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y+dpos.h-b, b, b),
-                  MyWidget::Rect(s.w-b, tex.h-b, b, b) );
-
-      p.drawRect( MyWidget::Rect(pos.x+b, pos.y, dpos.w-2*b, b ),
-                  MyWidget::Rect(b, 0, tex.w-2*b, b ) );
-
-      p.drawRect( MyWidget::Rect(pos.x+b, pos.y+dpos.h-b, dpos.w-2*b, b ),
-                  MyWidget::Rect(b, s.h-b, tex.w-2*b, b ) );
-
-      p.drawRect( MyWidget::Rect(pos.x+b, pos.y+b, dpos.w-2*b, dpos.h-2*b ),
-                  MyWidget::Rect(b, b, tex.w-2*b, tex.h-2*b ) );
-
-      //p.drawRect( MyWidget::Rect(pos.x, pos.y, dpos.w, dpos.h), tex );
-
+      MainGui::drawFrame( p, hintFrame, pos, dpos );
       p.drawText( pos.x+15, pos.y+15, HintSys::hint() );
       }
     }
@@ -283,6 +259,47 @@ void MainGui::renderMinimap(World &w) {
 void MainGui::updateValues() {
   MyWidget::CustomEvent e;
   mainwidget->customEvent(e);
+  }
+
+void MainGui::drawFrame(MyWidget::Painter & p,
+                         const MyWidget::Bind::UserTexture &frame,
+                         const MyWidget::Point &pos,
+                         const MyWidget::Size &dpos ) {
+  MyWidget::Rect tex = MyWidget::Rect( 0, 0,
+                                       frame.data.rect.w,
+                                       frame.data.rect.h);
+  p.setBlendMode( MyWidget::alphaBlend );
+  p.setTexture( frame );
+  int b = 10;
+
+  MyWidget::Size s = frame.data.rect.size();
+
+  p.drawRect( MyWidget::Rect(pos.x, pos.y, b,b),
+              MyWidget::Rect(0, 0, b, b) );
+  p.drawRect( MyWidget::Rect(pos.x, pos.y+b, b, dpos.h-2*b),
+              MyWidget::Rect(0, b, b, tex.h-2*b) );
+  p.drawRect( MyWidget::Rect(pos.x, pos.y+dpos.h-b, b, b),
+              MyWidget::Rect(0, tex.h-b, b, b) );
+
+  p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y, b,b),
+              MyWidget::Rect(s.w-b, 0, b, b) );
+  p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y+b, b, dpos.h-2*b),
+              MyWidget::Rect(s.w-b, b, b, tex.h-2*b) );
+  p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y+dpos.h-b, b, b),
+              MyWidget::Rect(s.w-b, tex.h-b, b, b) );
+
+  p.drawRect( MyWidget::Rect(pos.x+b, pos.y, dpos.w-2*b, b ),
+              MyWidget::Rect(b, 0, tex.w-2*b, b ) );
+
+  p.drawRect( MyWidget::Rect(pos.x+b, pos.y+dpos.h-b, dpos.w-2*b, b ),
+              MyWidget::Rect(b, s.h-b, tex.w-2*b, b ) );
+
+  p.drawRect( MyWidget::Rect(pos.x+b, pos.y+b, dpos.w-2*b, dpos.h-2*b ),
+              MyWidget::Rect(b, b, tex.w-2*b, tex.h-2*b ) );
+  }
+
+MainGui::Widget *MainGui::centralWidget() {
+  return mainwidget;
   }
 
 void MainGui::saveGame() {

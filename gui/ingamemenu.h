@@ -6,14 +6,10 @@
 
 class InGameMenu : public ModalWindow {
   public:
-    InGameMenu( Resource & res, MyWidget::Widget* );
+    InGameMenu(Resource &res, MyWidget::Widget* );
 
     MyWidget::signal<> save, load, quit;
-  protected:
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void paintEvent(MyWidget::PaintEvent &p);
-  private:
-    MyWidget::Bind::UserTexture frame;
+
   };
 
 #endif // INGAMEMENU_H

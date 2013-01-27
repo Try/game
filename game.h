@@ -21,7 +21,10 @@
 #include "network/netuser.h"
 #include "sound/sound.h"
 
+#include "game/scenario.h"
+
 class GameSerializer;
+class Scenario;
 
 class Game {
   public:
@@ -50,7 +53,8 @@ class Game {
     size_t plCount() const;
 
     void setPlaylersCount( int c );
-    void addEditorObject(const std::string &p, int pl, int x, int y , size_t unitPl);
+    void addEditorObject( const std::string &p, int pl,
+                          int x, int y , size_t unitPl);
     void moveEditorObject( int pl, int x, int y );
     void rotateEditorObject( int pl, int x );
     void nextEditorObject( int pl );
@@ -71,7 +75,8 @@ class Game {
     void removeHook( InputHookBase* b );
 
     const ProtoObject& prototype( const std::string& s ) const;
-    const Resource& resources() const;
+    Resource &resources();
+    const PrototypesLoader & prototypes() const;
 
     void setupMaterials( MyGL::AbstractGraphicObject &obj,
                          const ProtoObject::View &src,
@@ -141,7 +146,8 @@ class Game {
       } fps;
 
     int     sendDelay;
-    std::unique_ptr<NetUser> netUser;
+    std::unique_ptr<NetUser>  netUser;
+    std::unique_ptr<Scenario> scenario;
 
     void serialize( GameSerializer &s);
 
@@ -151,6 +157,8 @@ class Game {
     void onUnitDied( GameObject& u, Player &pl);
 
     void onRender();
+
+  friend class World;
   };
 
 #endif // GAME_H

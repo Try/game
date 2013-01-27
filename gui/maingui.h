@@ -58,7 +58,7 @@ class MainGui {
     MyWidget::signal< MyWidget::Painter&, int, int> paintObjectsHud;
     MyWidget::signal<> toogleFullScreen;
     MyWidget::signal<const Terrain::EditMode&> toogleEditLandMode;
-    MyWidget::signal<> updateView;
+    //MyWidget::signal<> updateView;
     MyWidget::signal<GameObject&> setCameraPos;
     MyWidget::signal<float, float> setCameraPosXY;
 
@@ -67,6 +67,8 @@ class MainGui {
     MyWidget::signal< const MyGL::Scene &,
                       ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
+
+    MyWidget::signal<> updateView;
 
     bool draw( GUIPass & pass );
     void resizeEvent( int w, int h );
@@ -91,6 +93,13 @@ class MainGui {
 
     void renderMinimap( World& w );
     void updateValues();
+
+    static void drawFrame( MyWidget::Painter & p,
+                           const MyWidget::Bind::UserTexture & tex ,
+                           const MyWidget::Point &pos,
+                           const MyWidget::Size &size );
+
+    MyWidget::Widget* centralWidget();
   private:
     typedef MyWidget::PainterDevice Painter;
     typedef MyWidget::Widget  Widget;

@@ -9,7 +9,7 @@ class Resource;
 class Panel : public MyWidget::Widget {
   public:
     typedef MyWidget::Bind::UserTexture Texture;
-    Panel( Resource & res );
+    Panel(Resource &res );
 
     Texture frame, back;
 

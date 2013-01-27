@@ -9,9 +9,7 @@
 #include <MyWidget/Painter>
 #include "button.h"
 
-InGameMenu::InGameMenu(Resource & res , Widget * ow):ModalWindow(res,ow) {
-  frame.data = res.pixmap("gui/colors");
-
+InGameMenu::InGameMenu( Resource &res , Widget * ow):ModalWindow(res,ow) {
   layout().add( new Widget() );
   Panel *p = new Panel(res);
   UI::InGameMenu menu;
@@ -30,19 +28,4 @@ InGameMenu::InGameMenu(Resource & res , Widget * ow):ModalWindow(res,ow) {
   menu.quit  ->clicked.bind( quit );
   menu.save  ->clicked.bind( save );
   menu.load  ->clicked.bind( load );
-  }
-
-void InGameMenu::mouseDownEvent(MyWidget::MouseEvent &e) {
-  }
-
-void InGameMenu::paintEvent( MyWidget::PaintEvent &e ) {
-  {
-  MyWidget::Painter p(e);
-  p.setTexture( frame );
-  p.setBlendMode( MyWidget::alphaBlend );
-  p.drawRect( 0,0, w(), h(),
-              0,4, 1,1 );
-  }
-
-  paintNested(e);
   }

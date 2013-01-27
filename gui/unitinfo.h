@@ -17,7 +17,9 @@ class UnitInfo : public MyWidget::Widget {
     GameObject* obj;
     Resource &  res;
 
+    struct PanelBase;
     struct Production;
+    struct Stats;
     struct Btn;
   };
 

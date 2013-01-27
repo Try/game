@@ -30,10 +30,7 @@ class World {
   public:
     typedef std::shared_ptr<GameObject> PGameObject;
 
-    World( GraphicsSystem& g,
-           Resource      & r,
-           PrototypesLoader &p,
-           Game & game,
+    World(Game & game,
            int w, int h );
 
     MyWidget::signal< MyGL::AbstractGraphicObject &,
@@ -157,7 +154,7 @@ class World {
 
     GraphicsSystem& graphics;
     Resource      & resource;
-    PrototypesLoader &prototypes;
+    const PrototypesLoader &prototypes;
 
     ParticleSystemEngine particles;
 

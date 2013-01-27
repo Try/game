@@ -151,6 +151,10 @@ int WINAPI WinMain( HINSTANCE hInstance,
     ShowWindow( g_hWnd, isFullScreen ? SW_NORMAL : SW_MAXIMIZE );
     UpdateWindow( g_hWnd );
 
+    RECT rect;
+    GetWindowRect( g_hWnd, &rect );
+    ClipCursor( &rect );
+
     {
       RECT rectWindow;
       GetClientRect( HWND(g_hWnd), &rectWindow);
@@ -215,6 +219,8 @@ int WINAPI WinMain( HINSTANCE hInstance,
           Sleep(0);
           }
         }
+
+      mgl_demo = 0;
       }
 
     }/*
@@ -284,6 +290,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
                              WPARAM wParam, 
                              LPARAM lParam )
 {
+    if( !mgl_demo )
+      return DefWindowProc( hWnd, msg, wParam, lParam );
 
     switch( msg )
     {

@@ -749,7 +749,7 @@ void GameObjectView::serialize( GameSerializer &s, Obj *g,
     g->setRotation( ax/double(mulI), az/double(mulI) );
 
     if( s.version()>=2 ){
-      //if( getClass().name!="pikeman" )
+      //if( getClass().name!="fire_mage" )
         g->setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
       }
     }

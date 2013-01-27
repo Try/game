@@ -10,7 +10,7 @@ namespace UI{
 
 class InGameMenu {
   public:
-    void setupUi( MyWidget::Widget*, Resource & res );
+    void setupUi(MyWidget::Widget*, Resource &res );
     Button * resume;
     Button * save;
     Button * load;

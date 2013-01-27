@@ -18,7 +18,7 @@ void AbstractListBox::showList() {
     r = r->layout().widgets().back();
     }
 
-  OverlayWidget *w = new OverlayWidget(res);
+  OverlayWidget *w = new OverlayWidget();
   overlay = w;
   overlay->onDestroy.bind( *this, &AbstractListBox::rmOverlay );
   r->layout().add(w);

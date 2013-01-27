@@ -56,7 +56,7 @@ void WarriorBehavior::tick( const Terrain & ) {
     isAClick = false;
     }
 
-  dAtkTime = 5;
+  dAtkTime = 10;
 
   GameObject * rawTg      = 0;
   GameObject * rawTgBuild = 0;
@@ -85,7 +85,7 @@ void WarriorBehavior::tick( const Terrain & ) {
 
   taget = mvTaget;
 
-  if( !obj.isOnMove() || isAtk || (obj.distanceQL(lastX, lastY)>1) ){
+  if( !obj.isOnMove() || ( isAtk || isAClick )  ){
     if( mvTaget )
       taget = mvTaget; else
     if( tg )
@@ -288,7 +288,9 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
         }
       } else
     if( d <= vrange || ignoreVrange )
-      move( taget.value().x(), taget.value().y() );
+      if( obj.distanceQL(lastX, lastY)>0 || !obj.isOnMove() ){
+        move( taget.value().x(), taget.value().y() );
+        }
     } else {
     if( mvLock ){
       obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );

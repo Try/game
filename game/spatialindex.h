@@ -48,11 +48,12 @@ class SpatialIndex {
     std::vector<GameObject*> obj;
 
     int w,h, sizeMax;
+    int rndVec;
 
     void solveColisions(GameObject* , size_t id);
 
     static bool hasEffect(GameObject &tg, GameObject &obj );
-    static void collision(GameObject &obj , GameObject &m, size_t id);
+    static void collision(GameObject &obj , GameObject &m, int &id);
 
     static const int qsize;
     static const int detail;

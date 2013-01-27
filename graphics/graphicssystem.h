@@ -218,8 +218,8 @@ class GraphicsSystem {
                       const MyGL::Scene &scene,
                       const MyGL::Scene::Objects &v, bool clr );
 
-    void drawObjects( MyGL::VertexShader   vs,
-                      MyGL::FragmentShader fs,
+    void drawObjects(MyGL::VertexShader &vs,
+                      MyGL::FragmentShader &fs,
 
                       MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,

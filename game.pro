@@ -141,7 +141,9 @@ HEADERS += \
     behavior/bonusbehavior.h \
     algo/wayfindrequest.h \
     lang/lang.h \
-    gui/hintsys.h
+    gui/hintsys.h \
+    game/scenario.h \
+    game/missions/scenariomission1.h
 
 SOURCES += \
     main.cpp \
@@ -243,7 +245,9 @@ SOURCES += \
     behavior/bonusbehavior.cpp \
     algo/wayfindrequest.cpp \
     lang/lang.cpp \
-    gui/hintsys.cpp
+    gui/hintsys.cpp \
+    game/scenario.cpp \
+    game/missions/scenariomission1.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

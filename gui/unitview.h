@@ -11,6 +11,10 @@
 #include "game/gameobjectview.h"
 #include "graphics/particlesystemengine.h"
 
+#include "game/world.h"
+
+class Game;
+
 class UnitView : public TextureView {
   public:
     UnitView( Resource & res );
@@ -21,6 +25,8 @@ class UnitView : public TextureView {
                       MyGL::Texture2d & > renderScene;
 
     void setupUnit( GameObject * obj );
+    void setupUnit( Game &game,
+                    const std::string & proto );
     void updateView();
 
     MyWidget::signal<GameObject&> setCameraPos;
@@ -28,12 +34,16 @@ class UnitView : public TextureView {
     void mouseDownEvent(MyWidget::MouseEvent &e);
     void mouseUpEvent(MyWidget::MouseEvent &e);
 
+    void paintEvent(MyWidget::PaintEvent &e);
+
     MyGL::Scene   scene;
     Resource    & res;
 
-    bool folowMode;
+    bool  folowMode, rotateMode;
+    float rotAngle;
     GameObject * curUnit;
 
+    std::unique_ptr<World> world;
     std::unique_ptr<ParticleSystemEngine> pEng;
     std::unique_ptr<GameObjectView> view;
 

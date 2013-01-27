@@ -37,7 +37,8 @@ void Lang::load(const char *f) {
   leters.assign( let.begin(), let.end() );
   }
 
-std::wstring Lang::tr(const std::wstring &text) {
+template< class String >
+std::wstring Lang::tr_impl(const String &text) {
   std::wstring out;
 
   size_t sz = text.size()-1;
@@ -58,9 +59,9 @@ std::wstring Lang::tr(const std::wstring &text) {
         if( kv!=lang.end() ){
           out += kv->second;
           } else {
-          out += L"$(";
+          //out += L"$(";
           out += key;
-          out += L")";
+          //out += L")";
           }
 
         } else {
@@ -74,6 +75,14 @@ std::wstring Lang::tr(const std::wstring &text) {
     }
 
   return out;
+  }
+
+std::wstring Lang::tr(const std::wstring &text) {
+  return tr_impl(text);
+  }
+
+std::wstring Lang::tr(const std::string &text) {
+  return tr_impl(text);
   }
 
 void Lang::fetch(Font &f, Resource &res) {

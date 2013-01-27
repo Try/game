@@ -2,7 +2,7 @@
 
 #include "resource.h"
 
-Panel::Panel( Resource & res ) {
+Panel::Panel( Resource &res ) {
   back .data = res.pixmap("gui/background");
   frame.data = res.pixmap("gui/frame2");
 

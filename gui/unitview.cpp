@@ -17,6 +17,9 @@ UnitView::UnitView( Resource &res )
 
   folowMode = 0;
   curUnit   = 0;
+
+  rotateMode = true;
+  rotAngle   = 0;
   }
 
 UnitView::~UnitView() {
@@ -24,26 +27,40 @@ UnitView::~UnitView() {
 
 void UnitView::setupUnit(GameObject *obj) {
   curUnit = obj;
-
   view.reset(0);
 
-  if( obj ){
-    if( !pEng ){
-      pEng.reset( new ParticleSystemEngine(scene, obj->prototypes, res) );
-      pEng->setupMaterial.bind( obj->game(), &Game::setupMaterials );
-      }
-
-    const ProtoObject & p = obj->game().prototype( obj->getClass().name );
-
-    view.reset( new GameObjectView( scene,
-                                    obj->world(),
-                                    *pEng,
-                                    p,
-                                    obj->prototypes ) );
-    view->loadView( obj->game().resources(), obj->world().physics, 0 );
-    view->teamColor = MyGL::Color(1, 1, 0, 1);
-    setupCamera();
+  if( obj ) {
+    setupUnit( obj->game(),
+               obj->getClass().name );
     }
+  }
+
+void UnitView::setupUnit( Game &game,
+                          const std::string & proto ) {
+  const PrototypesLoader & prototypes = game.prototypes();
+
+  if( !world ){
+    world.reset( new World(game, 1, 1) );
+    }
+
+  if( !pEng ){
+    pEng.reset( new ParticleSystemEngine(scene, prototypes, res) );
+    pEng->setupMaterial.bind( game, &Game::setupMaterials );
+    }
+
+  const ProtoObject & p = game.prototype( proto );
+
+  view.reset( new GameObjectView( scene,
+                                  *world,
+                                  *pEng,
+                                  p,
+                                  prototypes ) );
+  view->loadView( res, world->physics, 0 );
+  view->teamColor = MyGL::Color(1, 1, 0, 1);
+
+  view->setViewPosition(0,0,0);
+
+  setupCamera();
   }
 
 void UnitView::updateView() {
@@ -53,11 +70,12 @@ void UnitView::updateView() {
 
   if( texture.width()!=w() || texture.height()!=h() ){
     texture = res.texHolder.create( w(), h() );
-    setupCamera();
     }
 
-  if( pEng )
+  if( pEng ){
+    setupCamera();
     renderScene( scene, *pEng, texture );
+    }
   }
 
 void UnitView::mouseDownEvent(MyWidget::MouseEvent &) {
@@ -66,6 +84,11 @@ void UnitView::mouseDownEvent(MyWidget::MouseEvent &) {
 
 void UnitView::mouseUpEvent(MyWidget::MouseEvent &) {
   folowMode = (0);
+  }
+
+void UnitView::paintEvent(MyWidget::PaintEvent &e) {
+  //updateView();
+  TextureView::paintEvent(e);
   }
 
 void UnitView::setupCamera() {
@@ -80,17 +103,21 @@ void UnitView::setupCamera() {
       if( view->getClass().behaviors[i]=="move" )
         mv = 1;
 
-    camera.setPosition( 0, 0, view->viewHeight()*0.5 );
+    camera.setPosition( 0, 0, 2*view->radius() );
+    }
+
+  if( rotateMode ){
+    rotAngle += 1;
     }
 
   if( mv )
-    camera.setSpinX(-15-180-90); else
-    camera.setSpinX(-15-180);
+    camera.setSpinX(-15-180-90+rotAngle); else
+    camera.setSpinX(-15-180+rotAngle);
 
   camera.setSpinY(-130);
 
   if( view )
-    camera.setZoom( 0.8/view->radius() );
+    camera.setZoom( 0.7/view->radius() );
 
   scene.setCamera( camera );
   }

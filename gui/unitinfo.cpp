@@ -8,6 +8,10 @@
 
 #include "game/gameobject.h"
 #include "behavior/recruterbehavior.h"
+#include "behavior/warriorbehavior.h"
+
+#include "maingui.h"
+#include "lang/lang.h"
 
 #include <MyWidget/Layout>
 #include <sstream>
@@ -24,8 +28,77 @@ struct UnitInfo::Btn : public Button{
 
   };
 
-struct UnitInfo::Production : public MyWidget::Widget {
-  Production( Resource & res, GameObject& obj ):res(res), obj(obj){
+struct UnitInfo::PanelBase : public MyWidget::Widget {
+  PanelBase( Resource & res ): res(res) {
+    frame.data = res.pixmap("gui/hintFrame");
+    layout().setMargin(15);
+    }
+
+  void paintEvent(MyWidget::PaintEvent &e){
+    MyWidget::Painter p(e);
+    p.setBlendMode( MyWidget::alphaBlend );
+    p.setTexture( frame );
+
+    MainGui::drawFrame(p, frame, MyWidget::Point(), size() );
+
+    paintNested(e);
+    }
+
+  Resource  & res;
+  MyWidget::Bind::UserTexture frame;
+  };
+
+struct UnitInfo::Stats : public PanelBase {
+  Stats( Resource & res, GameObject& obj ):PanelBase(res), res(res), obj(obj){
+    setLayout( MyWidget::Vertical );
+
+    Widget *w = new Widget();
+    w->setLayout(MyWidget::Horizontal);
+    LineEdit *le = new LineEdit(res);
+    std::string name = "$(" +obj.getClass().name+")";
+    le->setText( Lang::tr( name ) );
+    le->setEditable( false );
+
+    w->layout().add( new Widget() );
+    w->layout().add(le);
+    w->layout().add( new Widget() );
+    layout().add(w);
+
+    w = new Widget();
+    layout().add(w);
+
+    w->setLayout( MyWidget::Horizontal );
+
+    const char* icon[2] = {
+      "gui/icon/atack",
+      "gui/item/shield"
+      };
+
+    const wchar_t* hint[2] = {
+      L"$(weapon0)",
+      L"$(armor0)"
+      };
+
+    for( size_t i=0; i<2; ++i ){
+      btns.push_back( std::unique_ptr<Btn>(new Btn(res)) );
+      btns.back()->icon.data = res.pixmap(icon[i]);
+      btns.back()->setHint( hint[i] );
+
+      w->layout().add( btns.back().get() );
+      }
+    }
+
+  void customEvent( MyWidget::CustomEvent & ){
+    }
+
+  Resource  & res;
+  GameObject& obj;
+
+  std::vector< std::unique_ptr<Btn> > btns;
+  };
+
+struct UnitInfo::Production : public PanelBase {
+  Production( Resource & res, GameObject& obj ):PanelBase(res), res(res), obj(obj){
     le = new ProgressBar(res);
 
     setLayout( MyWidget::Vertical );
@@ -100,24 +173,13 @@ UnitInfo::UnitInfo(Resource &res):res(res) {
 void UnitInfo::setup(GameObject *nobj) {
   obj = nobj;
   layout().removeAll();
+
   if( obj==0 )
     return;
 
   if( obj->behavior.find<RecruterBehavior>() )
     layout().add( new Production(res, *obj) );
-/*
-  UI::UnitInfo ui;
-  ui.setupUi(this, res);
 
-  ui.hpBox->setSizePolicy( ui.hp->sizePolicy() );
-  ui.hpBox->setMaximumSize(500, 35);
-  ui.hpBox->layout().setMargin(8);
-
-  ui.hp->setEditable(0);
-  ui.caption->setEditable(0);
-
-  std::wstring s;
-  s.assign( obj->getClass().name.begin(),
-            obj->getClass().name.end() );
-  ui.caption->setText( s );*/
+  if( obj->behavior.find<WarriorBehavior>() )
+    layout().add( new Stats(res, *obj) );
   }

@@ -56,7 +56,7 @@ void RecruterBehavior::tick( const Terrain &terrain ) {
   if( queue.size()==0 )
     return;
 
-  if( time==0 ){
+  if( queueLim || time==0 ){
     if( queueLim || create( queue[0], terrain ) ){
       if( !queueLim ){
         for( size_t i=1; i<queue.size(); ++i )
@@ -66,8 +66,9 @@ void RecruterBehavior::tick( const Terrain &terrain ) {
 
       if( queue.size() ){
         const ProtoObject& p = obj.world().game.prototype( queue[0] );
+        time = p.data.buildTime;
+
         if( p.data.lim <= obj.player().lim() ){
-          time = p.data.buildTime;
           obj.player().addLim( -p.data.lim );
           queueLim = false;
           } else {

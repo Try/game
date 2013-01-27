@@ -9,7 +9,7 @@ OverlayWidget::ContainerLayout::ContainerLayout() {
   used = false;
   }
 
-OverlayWidget::OverlayWidget( Resource &r ) {
+OverlayWidget::OverlayWidget() {
   setLayout( new ContainerLayout() );
 //  layout().add( new Panel(r) );
 

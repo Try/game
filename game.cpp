@@ -30,6 +30,8 @@
 #include "network/localserver.h"
 #include "network/client.h"
 
+#include "game/missions/scenariomission1.h"
+
 #include <cmath>
 
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
@@ -69,8 +71,6 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   //MyGL::Model<>::saveRawData( "./sphere.mx", MyGL::TessObject::sphere(3, 1) );
 
-  setPlaylersCount(1);
-
   gui.createControls( msg, *this );
   gui.enableHooks( !serializator.isReader() );
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
@@ -86,9 +86,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   gui.renderScene.bind( graphics, &GraphicsSystem::renderSubScene );
 
-  worlds.push_back( std::unique_ptr<World>( new World(graphics, resource,
-                                                      proto,
-                                                      *this,
+  worlds.push_back( std::unique_ptr<World>( new World(*this,
                                                       256, 256) ) );
 
   world = worlds[0].get();
@@ -109,7 +107,11 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   //resource.sound("hammer0").play();
 
-  //load(L"./save/1.sav");
+  setPlaylersCount(1);
+
+  load(L"./save/0.sav");
+  scenario.reset( new ScenarioMission1(*this, gui) );
+  scenario->onStartGame();
   }
 
 void Game::tick() {
@@ -463,8 +465,12 @@ const ProtoObject &Game::prototype(const std::string &s) const {
   return proto.get(s);
  }
 
-const Resource &Game::resources() const {
+Resource &Game::resources() {
   return resource;
+  }
+
+const PrototypesLoader &Game::prototypes() const {
+  return proto;
   }
 
 void Game::addPlayer() {
@@ -476,6 +482,8 @@ void Game::addPlayer() {
 
   players.back()->onUnitSelected.bind( *this, &Game::onUnitsSelected );
   players.back()->onUnitDied    .bind( *this, &Game::onUnitDied );
+  if( world )
+    players.back()->computeFog(world);
   }
 
 Player &Game::player(int i) {
@@ -827,6 +835,7 @@ void Game::serialize( GameSerializer &s ) {
   s + currentPlayer;
 
   if( s.isReader() ){
+    world = 0;
     setPlaylersCount( plCount );
     }
 
@@ -843,9 +852,7 @@ void Game::serialize( GameSerializer &s ) {
 
   if( s.isReader() ){
     for( int i=0; i<wCount; ++i ){
-      worlds.push_back( std::unique_ptr<World>( new World(graphics, resource,
-                                                          proto,
-                                                          *this,
+      worlds.push_back( std::unique_ptr<World>( new World(*this,
                                                           128, 128) ) );
       world = worlds.back().get();
       world->camera.setPerespective( true, w, h );
@@ -865,6 +872,9 @@ void Game::serialize( GameSerializer &s ) {
 
   for( size_t i=0; i<worlds.size(); ++i )
     worlds[i]->serialize(s);
+
+  for( size_t i=0; i<players.size(); ++i )
+    players[i]->computeFog(world);
   }
 
 void Game::log(const std::string &l) {

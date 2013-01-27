@@ -16,10 +16,13 @@ SpatialIndex::SpatialIndex(int iw, int ih):w(iw/detail), h(ih/detail) {
   psum.resize( w*h );
   obj.reserve( w*h );
 
+  rndVec = 0;
+
   //clr.reserve( w*h );
   }
 
 void SpatialIndex::fill(std::vector<PGameObject> &xobj ) {
+  rndVec  = 0;
   sizeMax = 0;
 
   obj.resize( xobj.size() );
@@ -79,7 +82,7 @@ void SpatialIndex::solveColisions() {
     }
   }
 
-void SpatialIndex::solveColisions( GameObject * m, size_t id ) {
+void SpatialIndex::solveColisions(GameObject * m, size_t /*id*/ ) {
   m->setColisionDisp(0,0);
 
   if( m->x() <= 0 )
@@ -97,7 +100,7 @@ void SpatialIndex::solveColisions( GameObject * m, size_t id ) {
   int x = m->x();
   int y = m->y();
 
-  visit( x, y, 0, &collision, *m, id );
+  visit( x, y, 0, &collision, *m, rndVec );
   }
 
 bool SpatialIndex::hasEffect(GameObject &tg, GameObject &obj) {
@@ -123,7 +126,8 @@ bool SpatialIndex::hasEffect(GameObject &tg, GameObject &obj) {
   return 0;
   }
 
-void SpatialIndex::collision( GameObject &obj, GameObject &m, size_t id ) {
+void SpatialIndex::collision(GameObject &obj, GameObject &m,
+                              int &id ) {
   int d = m.distanceSQ(obj);
 
   int maxD = (( m.getClass().data.size +
@@ -153,6 +157,8 @@ void SpatialIndex::collision( GameObject &obj, GameObject &m, size_t id ) {
           case 2: m.incColisionDisp( -dx,-dy ); break;
           case 3: m.incColisionDisp(  dx,-dy ); break;
           }
+
+        ++id;
         }
       }
     }

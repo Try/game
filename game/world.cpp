@@ -20,22 +20,21 @@
 #include "util/gameserializer.h"
 #include "gui/hintsys.h"
 
-World::World( GraphicsSystem& g,
-              Resource & r,
-              PrototypesLoader &p,
-              Game & gm,
+World::World( Game & gm,
               int w, int h )
-  : game(gm), physics(w,h),
+  : game(gm),
+    physics(w,h),
     spatialId(w,h),
-    graphics(g),
-    resource(r), prototypes(p),
-    particles(scene, p, r) {
+    graphics( gm.graphics ),
+    resource( gm.resources() ),
+    prototypes( gm.prototypes() ),
+    particles(scene, prototypes, resource) {
   tx = ty = 0;
   mouseObject = 0;
 
   memset(&lcamBds, 0, sizeof(lcamBds) );
 
-  terr.reset( new Terrain( w,h, r, scene, *this, p) );
+  terr.reset( new Terrain( w,h, resource, scene, *this, prototypes) );
 
   particles.setupMaterial.bind( setupMaterial );
 

@@ -7,7 +7,8 @@
 #include "sound/sound.h"
 #include <MyWidget/Utility>
 
-Button::Button(Resource &res):hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res) {
+Button::Button(Resource &res)
+       :hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res) {
   back[0].data = res.pixmap("gui/buttonBack");
   back[1].data = res.pixmap("gui/buttonBackD");
 
