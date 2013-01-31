@@ -143,7 +143,9 @@ HEADERS += \
     lang/lang.h \
     gui/hintsys.h \
     game/scenario.h \
-    game/missions/scenariomission1.h
+    game/missions/scenariomission1.h \
+    game/ability.h \
+    game/spell.h
 
 SOURCES += \
     main.cpp \
@@ -247,7 +249,9 @@ SOURCES += \
     lang/lang.cpp \
     gui/hintsys.cpp \
     game/scenario.cpp \
-    game/missions/scenariomission1.cpp
+    game/missions/scenariomission1.cpp \
+    game/ability.cpp \
+    game/spell.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
@@ -261,5 +265,8 @@ OTHER_FILES += \
     ../game-build-desktop/data/shaders.xml \
     ../game-build-desktop/data/pixmaps.xml \
     ../game-build-desktop/data/icons.xml \
-    gui/gen/ui_loaddialog.xml
+    gui/gen/ui_loaddialog.xml \
+    ../game-build-desktop/data/land.xml \
+    ../game-build-desktop/data/spell.xml \
+    ../game-build-desktop/data/hud.xml
 

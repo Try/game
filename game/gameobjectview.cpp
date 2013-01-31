@@ -441,8 +441,10 @@ void GameObjectView::setVisible(bool v) {
   }
 
 void GameObjectView::rotate( int delta ) {
+  double a = 0;
+
   for( size_t i=0; i<view.size(); ++i ){
-    double a = view[i].angleZ() + delta;
+    a = view[i].angleZ() + delta;
     m.intentDirX = 10000*cos( M_PI*a/180.0 );
     m.intentDirY = 10000*sin( M_PI*a/180.0 );
 
@@ -450,12 +452,18 @@ void GameObjectView::rotate( int delta ) {
     }
 
   for( size_t i=0; i<smallViews.size(); ++i ){
-    double a = smallViews[i]->angleZ() + delta;
+    a = smallViews[i]->angleZ() + delta;
     m.intentDirX = 10000*cos( M_PI*a/180.0 );
     m.intentDirY = 10000*sin( M_PI*a/180.0 );
 
     smallViews[i]->setRotation( 0, a );
     }
+
+  if( form.sphere.isValid() )
+    form.sphere.setAngle(0, delta);
+
+  if( form.box.isValid() )
+    form.box.setAngle(0, delta);
   }
 
 void GameObjectView::setRotation( int a ) {
@@ -469,6 +477,12 @@ void GameObjectView::setRotation( int a ) {
   for( size_t i=0; i<smallViews.size(); ++i ){
     smallViews[i]->setRotation( 0, a );
     }
+
+  if( form.sphere.isValid() )
+    form.sphere.setAngle(0,a);
+
+  if( form.box.isValid() )
+    form.box.setAngle(0, a);
   }
 
 void GameObjectView::setViewDirection(int lx, int ly) {
@@ -749,7 +763,7 @@ void GameObjectView::serialize( GameSerializer &s, Obj *g,
     g->setRotation( ax/double(mulI), az/double(mulI) );
 
     if( s.version()>=2 ){
-      //if( getClass().name!="fire_mage" )
+      if( getClass().name!="incvisitor" )
         g->setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
       }
     }

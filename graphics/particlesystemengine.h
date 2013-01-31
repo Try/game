@@ -39,11 +39,14 @@ class ParticleSystemEngine {
 
     std::vector<MyGL::GraphicObject> view;
     std::vector<ParticleSystem*> particles, visible;
+    std::vector< std::unique_ptr<ParticleSystem> > dispath;
 
-    void emitParticle(Model::Raw &v,
-                       float x, float y, float z , float sz, MyGL::Color &color);
+    void emitParticle( Model::Raw &v,
+                       float x, float y, float z , float sz,
+                       MyGL::Color &color );
 
-    void emitParticle(float x, float y, float z , float sz, MyGL::Color &color);
+    void emitParticle( float x, float y, float z, float sz,
+                       MyGL::Color &color );
 
     double left[3], top[3], norm[3];
     Model::Raw raw;

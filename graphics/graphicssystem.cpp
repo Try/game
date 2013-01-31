@@ -1163,14 +1163,11 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
   sm = localTex.create( 256, 256,
                         MyGL::AbstractTexture::Format::RGB10_A2 );
 
-  MyGL::Texture2d tmp = localTex.create( sm.width(), sm.height(),
-                        MyGL::AbstractTexture::Format::RGB10_A2 );
-
   MyGL::RenderState rstate;
   rstate.setCullFaceMode( MyGL::RenderState::CullMode::front );
 
+  MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
   { const MyGL::Scene::Objects &v = scene.objects<MyGL::ShadowMapPassMaterial>();
-    MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
     MyGL::Render render( device,
                          sm, depthSm,
                          smap.vs, smap.fs );
@@ -1196,7 +1193,6 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
     }
 
   { const MyGL::Scene::Objects &v = scene.objects<BlushShMaterial>();
-    MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
     MyGL::Render render( device,
                          sm, depthSm,
                          smap.vs, smap.fs );
@@ -1210,7 +1206,8 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
     for( size_t i=0; i<v.size(); ++i ){
       const MyGL::AbstractGraphicObject& ptr = v[i].object();
       MyGL::Matrix4x4 m = matrix;
-      m.mul( ptr.transform() );
+      //m.mul( ptr.transform() );
+      m.mul( BlushMaterial::animateObjMatrix( ptr.transform() ) );
 
       if( scene.viewTester().isVisible( ptr, m ) ){
         device.setUniform( smap.vs, m, "mvpMatrix" );
@@ -1220,22 +1217,6 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
       }
     }
 
-  return;
-  float s = 6*smMatSize(scene);
-  gauss( tmp,  sm, sm.width(), sm.height(), s, 0 );
-  gauss(  sm, tmp, sm.width(), sm.height(), 0, s );
-
-  gauss_gb( tmp,  sm, sm.width(), sm.height(), s*2, 0 );
-  gauss_gb(  sm, tmp, sm.width(), sm.height(), 0, s*2 );
-
-  gauss_b( tmp,  sm, sm.width(), sm.height(),  s*3, 0 );
-  gauss_b(  sm, tmp, sm.width(), sm.height(),  0, s*3 );
-
-  MyGL::Texture2d::Sampler sampler = reflect;
-  sampler.uClamp = MyGL::Texture2d::ClampMode::Clamp;
-  sampler.vClamp = sampler.uClamp;
-
-  sm.setSampler( sampler );
   }
 
 void GraphicsSystem::blurSm( MyGL::Texture2d &sm,

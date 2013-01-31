@@ -4,23 +4,34 @@
 
 #include <cmath>
 
-ParticleSystem::ParticleSystem(ParticleSystemEngine & e,
+ParticleSystem::ParticleSystem() {
+  setPosition(0,0,0);
+  proto  = 0;
+  engine = 0;
+  dispathMode = false;
+  }
+
+ParticleSystem::ParticleSystem( ParticleSystemEngine & e,
                                 const ProtoObject::View &p ):engine(&e){
   setPosition(0,0,0);
   proto = &p;
+  dispathMode = false;
   engine->particles.push_back( this );
   }
 
 ParticleSystem::ParticleSystem(const ParticleSystem &other) {
   *this = other;
+  dispathMode = false;
   engine->particles.push_back( this );
   }
 
 ParticleSystem &ParticleSystem::operator =  (const ParticleSystem &other) {
   engine = other.engine;
   proto  = other.proto;
+  dispathMode = other.dispathMode;
 
   setPosition( other.x(), other.y(), other.z() );
+  par = other.par;
 
   return *this;
   }
@@ -30,6 +41,13 @@ ParticleSystem::~ParticleSystem() {
     if( engine->particles[i]==this ){
       engine->particles[i] = engine->particles.back();
       engine->particles.pop_back();
+
+      ParticleSystem *p = new ParticleSystem();
+      *p = *this;
+      p->dispathMode = true;
+
+      engine->dispath.push_back( std::unique_ptr<ParticleSystem>(p) );
+      return;
       }
   }
 
@@ -47,7 +65,7 @@ void ParticleSystem::exec( int dt ) {
     return;
 
   if( viewInfo().name=="fire" ){
-    if( rand()%2==0 ){
+    if( !dispathMode && rand()%2==0 ){
       par.push_back( Point3( x(), y(), z() ) );
       par.back().size = 0.06+0.03*( rand()/float(RAND_MAX) );
 
@@ -71,7 +89,7 @@ void ParticleSystem::exec( int dt ) {
     }
 
   if( viewInfo().name=="smoke" ){
-    if( rand()%6==0 ){
+    if( !dispathMode &&  rand()%6==0 ){
       par.push_back( Point3( x(), y(), z() ) );
       par.back().size = 0.05;
       }
@@ -121,7 +139,6 @@ float ParticleSystem::z() const {
 const ProtoObject::View &ParticleSystem::viewInfo() const {
   return *proto;
   }
-
 
 ParticleSystem::Point3::Point3(float x, float y, float z):
   x(x), y(y), z(z), size(0) {

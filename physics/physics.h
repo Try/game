@@ -39,7 +39,9 @@ class Physics {
         bool isValid() const;
         void activate();
         bool isActive();
+
         void setPosition( float x, float y, float z );
+        void setAngle( float rx, float ry );
       private:
         RigidBody* data;
 

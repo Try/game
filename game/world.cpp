@@ -597,9 +597,12 @@ MyWidget::Rect World::projectUnit( GameObject& obj,
 
   double x = 0,//obj.x(),
          y = 0,//obj.y(),
-         z = 0.5*obj.rawRadius();//obj.z();
+         z = 0;//0.5*obj.rawRadius();//obj.z();
 
   double r = 0.5*obj.rawRadius();
+
+  if( obj.getClass().view.size() )
+    z = obj.rawRadius()*( obj.getClass().view[0].align[2]*0.5 + 0.5 );
 
   m.project( x+r*left[0], y+r*left[1], z+r*left[2], 1,
              data1[0], data1[1], data1[2], data1[3] );
@@ -836,6 +839,7 @@ void World::tick() {
       obj.setTeamColor( cl );
 
       obj.setPosition( src.x(), src.y(), src.z()+100 );
+      obj.rotate( src.rAngle()*180.0/M_PI );
       //obj.rotate();
       }
 

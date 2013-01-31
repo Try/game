@@ -328,7 +328,7 @@ void InGameControls::keyUpEvent(KeyEvent &e) {
   }
 
 bool InGameControls::instalHook(InputHookBase *h) {
-  if( isHooksEnabled )
+  if( isHooksEnabled && hooks.size()==0 )
     hooks.push_back( h );
 
   return isHooksEnabled;

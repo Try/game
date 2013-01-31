@@ -193,7 +193,7 @@ void MoveBehavior::mouseUp( MyWidget::MouseEvent &e ) {
       }
     }
 
-  onRemoveHook();
+  //onRemoveHook();
   obj.game().removeHook( &hook );
   }
 

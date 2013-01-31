@@ -51,11 +51,70 @@ class CommandsPanel::PageBtn: public BtnBase{
     MyWidget::signal< int > clicked;
   };
 
+class CommandsPanel::SpellBtn: public BtnBase{
+  public:
+    SpellBtn( Resource& r ):BtnBase(r){
+      this->Button::clicked.bind( *this, &SpellBtn::proxyClick );
+      texture.data = r.pixmap("gui/colors");
+
+      coolDown = 0;
+      }
+
+    void proxyClick(){
+      clicked( taget );
+      }
+
+    void paintEvent(MyWidget::PaintEvent &e){
+      BtnBase::paintEvent(e);
+
+      MyWidget::Painter p(e);
+      p.setTexture( texture );
+      p.setBlendMode( MyWidget::alphaBlend );
+
+      p.drawRect( 0, h()-coolDown, w(), coolDown,
+                  2,        4, 1, 1 );
+      }
+
+    void customEvent( MyWidget::CustomEvent & ){
+      assert(u0);
+      int maxT = u0->game().prototypes().spell(taget).coolDown;
+
+      int mcoolDown = maxT;
+
+      auto s = u0->player().selected();
+      for( auto i=s.begin(); i!=s.end(); ++i ){
+        GameObject & obj = **i;
+        int t = obj.coolDown( tagetID );
+        if( t>=0 )
+          mcoolDown = std::min(t,mcoolDown);
+        }
+
+      mcoolDown = mcoolDown*h()/maxT;
+      if( mcoolDown!=coolDown ){
+        coolDown = mcoolDown;
+        update();
+        }
+      }
+
+    std::string taget;
+    size_t      tagetID;
+    GameObject  *  u0;
+    MyWidget::Bind::UserTexture texture;
+    int coolDown;
+
+    MyWidget::signal< const std::string& > clicked;
+  };
+
 CommandsPanel::CommandsPanel( Resource & r, BehaviorMSGQueue &q )
               :Panel( r ), res(r), msg(q) {
   setLayout( new Layout() );
   layout().setMargin( 8 );
   u0 = 0;
+
+  instaled = false;
+  hook.mouseDown.bind( *this, &CommandsPanel::mouseDown    );
+  hook.mouseUp  .bind( *this, &CommandsPanel::mouseUp      );
+  hook.onRemove .bind( *this, &CommandsPanel::onRemoveHook );
   }
 
 void CommandsPanel::Layout::applyLayout() {
@@ -120,6 +179,9 @@ void CommandsPanel::bind(GameObject *u ) {
     return;
   u0 = u;
 
+  if( instaled )
+    msg.game.removeHook( &hook );
+
   for( size_t i=0; i<layout().widgets().size(); ++i )
     layout().widgets()[i]->deleteLater();
 
@@ -159,7 +221,22 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       b = btn;
       }
 
+    if( p.btn[i].action == ProtoObject::CmdButton::CastToGround ){
+      SpellBtn * btn   = new SpellBtn(res);
+      btn->taget       = p.btn[i].taget;
+      btn->tagetID     = msg.game.prototypes().spell( btn->taget ).id;
+      btn->u0          = u0;
+
+      if( p.btn[i].icon.size() )
+        btn->icon.data = res.pixmap( p.btn[i].icon ); else
+        btn->icon.data = res.pixmap( "gui/icon/castle" );
+
+      btn->clicked.bind(*this, &CommandsPanel::setupHook );
+      b = btn;
+      }
+
     if( b ){
+      b->setHint( p.btn[i].hint );
       b->x = p.btn[i].x;
       b->y = p.btn[i].y;
       b->setShortcut( MyWidget::Shortcut(b,p.btn[i].hotkey) );
@@ -287,4 +364,32 @@ void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
 
   if( p )
     bindPage(*p);
+  }
+
+void CommandsPanel::setupHook(const std::string &s) {
+  if( !instaled && u0 ){
+    instaled    = u0->game().instalHook( &hook );
+    spellToCast = s;
+    }
+  }
+
+void CommandsPanel::mouseDown(MyWidget::MouseEvent &e) {
+  e.accept();
+  }
+
+void CommandsPanel::mouseUp(MyWidget::MouseEvent &e) {
+  if( e.button==MyWidget::MouseEvent::ButtonLeft && u0 ){
+    u0->game().message( u0->playerNum(),
+                        BehaviorMSGQueue::SpellCast,
+                        u0->world().mouseX(),
+                        u0->world().mouseY(),
+                        spellToCast
+                        );
+    }
+
+  u0->game().removeHook( &hook );
+  }
+
+void CommandsPanel::onRemoveHook() {
+  instaled = false;
   }

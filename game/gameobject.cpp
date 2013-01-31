@@ -54,6 +54,9 @@ GameObject::GameObject( MyGL::Scene & s,
   for( auto i=p.behaviors.begin(); i!=p.behaviors.end(); ++i ){
     behavior.add( *i );
     }
+
+  for( auto i=p.ability.begin(); i!=p.ability.end(); ++i )
+    setCoolDown( pl.spell(*i).id, 0 );
   }
 
 GameObject::~GameObject() {
@@ -368,6 +371,10 @@ void GameObject::tick( const Terrain &terrain ) {
       } else {
       ++i;
       }
+
+  for( auto i=coolDowns.begin(); i!=coolDowns.end(); ++i )
+    if( i->second>0 )
+      --i->second;
   }
 
 std::shared_ptr<Bullet> GameObject::reciveBulldet( const std::string &v ){
@@ -434,4 +441,16 @@ void GameObject::setVisible_perf(bool v) {
 
 bool GameObject::isVisible_perf() const {
   return m.isVisible_perf;
+  }
+
+void GameObject::setCoolDown(size_t spellID, int v) {
+  coolDowns[spellID] = v;
+  }
+
+int GameObject::coolDown(size_t spellID) const {
+  std::unordered_map<size_t, int>::const_iterator i = coolDowns.find(spellID);
+
+  if( i==coolDowns.end() )
+    return -1; else
+    return i->second;
   }

@@ -70,6 +70,10 @@ void ScenarioMission1::onStartGame() {
 
   intro->onClosed.bind( game,  &Game::unsetPause );
   intro->onClosed.bind( *this, &ScenarioMission1::closeIntro);
+
+  if( game.player().unitsCount() ){
+    game.setCameraPos( game.player().unit(0) );
+    }
   }
 
 void ScenarioMission1::updateView() {

@@ -108,7 +108,7 @@ bool SpatialIndex::hasEffect(GameObject &tg, GameObject &obj) {
     return 0;
 
   if( tg.playerNum()!=obj.playerNum() )
-    return 1;
+    return 0;
 
   if( !tg.isOnMove() ){
     return 1;

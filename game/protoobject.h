@@ -56,6 +56,7 @@ struct ProtoObject {
 
     std::vector<View>        view;
     std::vector<std::string> behaviors;
+    std::vector<std::string> ability;
     double rotateSpeed;
 
     std::string  name;
@@ -67,10 +68,12 @@ struct ProtoObject {
         Buy,
         Build,
         Page,
+        CastToGround,
         Count
         } action;
 
-      std::string taget, icon;
+      std::string  taget, icon;
+      std::wstring hint;
       MyWidget::KeyEvent::KeyType hotkey;
       int x,y;
       };

@@ -25,5 +25,6 @@ int Math::sqrt( int arg ) {
 int Math::distance(int x0, int y0, int x1, int y1) {
   x0 -= x1;
   y0 -= y1;
+
   return sqrt( x0*x0 + y0*y0 );
   }

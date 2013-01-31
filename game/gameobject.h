@@ -123,6 +123,9 @@ class GameObject {
     void higlight(int time, GameObjectView::Selection type );
     void setVisible_perf( bool v );
     bool isVisible_perf() const;
+
+    void setCoolDown( size_t spellID, int v );
+    int  coolDown   ( size_t spellID ) const;
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;
@@ -152,6 +155,8 @@ class GameObject {
 
     Behavior::Closure bclos;
     std::vector< std::shared_ptr<Bullet> > bullets;
+
+    std::unordered_map<size_t, int> coolDowns;
 
     void setupMaterials( MyGL::AbstractGraphicObject &obj,
                          const ProtoObject::View &src );

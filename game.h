@@ -68,6 +68,13 @@ class Game {
 
     bool message( int pl,
                   AbstractBehavior::Message m,
+                  int x,
+                  int y,
+                  const std::string & spell,
+                  AbstractBehavior::Modifers md = BehaviorEvent::NoModifer );
+
+    bool message( int pl,
+                  AbstractBehavior::Message m,
                   size_t id,
                   AbstractBehavior::Modifers md = BehaviorEvent::NoModifer );
 
@@ -98,6 +105,9 @@ class Game {
     void pause( bool p );
     void unsetPause();
     bool isPaused() const;
+
+    void setCameraPos( GameObject& obj );
+    void setCameraPosXY( float x, float y );
   private:
     void* hwnd;
     bool  paused;
@@ -138,8 +148,6 @@ class Game {
     F3 project( float x, float y, float z );
 
     void moveCamera();
-    void setCameraPos( GameObject& obj );
-    void setCameraPosXY( float x, float y );
 
     struct Fps{
       int n, time;

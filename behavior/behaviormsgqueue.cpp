@@ -11,6 +11,8 @@
 #include "recruterbehavior.h"
 #include "game/world.h"
 
+#include "game/ability.h"
+
 BehaviorMSGQueue::BehaviorMSGQueue( Game & owner )
                  :game(owner) {
   recvBuf.isRdy = false;
@@ -154,9 +156,15 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
 
       if( obj.isSelected() && obj.playerNum() ){
         bool a = 0;
+
         if( m.msg==Buy ){
           a = buyMsgRecv( game, w, obj, m );
-          } else
+          }
+          else
+        if( m.msg==SpellCast ){
+          a = spellMsgRecv( game, w, obj, m );
+          }
+          else
         if( m.msg==ToUnit || m.msg==AtackToUnit ){
           GameObject& tg = w.object( m.begin );
 
@@ -171,7 +179,7 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
 
         acepted |= a;
 
-        if( (m.msg==Buy || m.msg==BuildAt) && a )
+        if( (m.msg==Buy || m.msg==BuildAt || m.msg==SpellCast) && a )
           break;
         }
       }
@@ -271,6 +279,12 @@ bool BehaviorMSGQueue::buyMsgRecv( Game &game,
   if( id<v.size() )
     return v[id]->behavior.message( m.msg, m.str, m.modifers ); else
     return obj.behavior.message( m.msg, m.str, m.modifers );
+  }
+
+bool BehaviorMSGQueue::spellMsgRecv( Game &game, World &w,
+                                     GameObject &obj,
+                                     const BehaviorMSGQueue::MSG &m ) {
+  return Ability::spell( game, w, obj, m );
   }
 
 void BehaviorMSGQueue::serialize( Serialize &s ) {

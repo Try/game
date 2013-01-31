@@ -158,7 +158,7 @@ void Player::computeFog(void *curW) {
   }
 
 void Player::fillFog(MyGL::Pixmap &p, World &wx ) {
-  const bool useFog = true;
+  const bool useFog = 1;
 
   if( p.width()  != wx.terrain().width() ||
       p.height() != wx.terrain().height() ){

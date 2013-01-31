@@ -6,6 +6,7 @@
 #include <MyWidget/Layout>
 
 #include "game/protoobject.h"
+#include "gui/inputhook.h"
 
 class GameObject;
 class BehaviorMSGQueue;
@@ -21,13 +22,18 @@ class CommandsPanel : public Panel {
       };
 
     MyWidget::signal<> onPageCanged;
-private:
+  private:
     Resource & res;
     BehaviorMSGQueue & msg;
+
+    InputHook hook;
+    bool  instaled;
+    std::string spellToCast;
 
     class BtnBase;
     class BuyBtn;
     class PageBtn;
+    class SpellBtn;
 
     int pl;
     GameObject * u0;
@@ -42,6 +48,11 @@ private:
 
     void bindStartPage(const ProtoObject::Commans::Page *p );
     void bindPage( const ProtoObject::Commans::Page &p );
+
+    void setupHook( const std::string& unit );
+    void mouseDown( MyWidget::MouseEvent& e );
+    void mouseUp  ( MyWidget::MouseEvent& e );
+    void onRemoveHook();
   };
 
 #endif // COMMANDSPANEL_H

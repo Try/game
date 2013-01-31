@@ -71,7 +71,21 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
 
     if( scene.viewTester().isVisible( bds1, mvp ) )
       visible.push_back( &p );
-      //p.exec();
+    }
+
+  for( size_t i=0; i<dispath.size(); ++i ){
+    ParticleSystem &p = *dispath[i];
+    MyGL::ModelBounds bds1 = bds;
+
+    float dpos[3] = {p.x(), p.y(), p.z()};
+    for( int r=0; r<3; ++r ){
+      bds1.min[r] += dpos[r];
+      bds1.mid[r] += dpos[r];
+      bds1.max[r] += dpos[r];
+      }
+
+    if( scene.viewTester().isVisible( bds1, mvp ) )
+      visible.push_back( &p );
     }
 
   std::sort( visible.begin(), visible.end(), cmpMat );
@@ -103,6 +117,15 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
     obj.setModel( res.model( raw ) );
     setupMaterial( obj, *currView, MyGL::Color() );
     view.push_back( obj );
+    }
+
+  for( size_t i=0; i<dispath.size(); ){
+    if( dispath[i]->par.size()==0 ){
+      std::swap( dispath[i],dispath.back() );
+      dispath.pop_back();
+      } else {
+      ++i;
+      }
     }
   }
 

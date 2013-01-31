@@ -258,7 +258,7 @@ void MainGui::renderMinimap(World &w) {
 
 void MainGui::updateValues() {
   MyWidget::CustomEvent e;
-  mainwidget->customEvent(e);
+  central.customEvent(e);
   }
 
 void MainGui::drawFrame(MyWidget::Painter & p,

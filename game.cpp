@@ -312,14 +312,14 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
   }
 
 void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
+  curMPos = MyWidget::Point(e.x, e.y);
+
   if( gui.mouseMoveEvent(e) ){
     acceptMouseObj = false;
     return;
     }
 
   acceptMouseObj = true;
-
-  curMPos = MyWidget::Point(e.x, e.y);
 
   if( mouseTracking ){
     //spinX -= (e.x - lastMPos.x);
@@ -442,6 +442,16 @@ bool Game::message( int pl,
                     int y,
                     BehaviorMSGQueue::Modifers md ) {
   msg.message(pl, m, x, y, md);
+  return 1;
+  }
+
+bool Game::message( int pl,
+                    AbstractBehavior::Message m,
+                    int x,
+                    int y,
+                    const std::string &spell,
+                    AbstractBehavior::Modifers md ) {
+  msg.message(pl, m, x, y, spell, 0, md);
   return 1;
   }
 

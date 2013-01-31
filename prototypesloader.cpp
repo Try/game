@@ -32,6 +32,16 @@ std::vector< PrototypesLoader::PProtoObject>
   return obj;
   }
 
+const Spell &PrototypesLoader::spell(const std::string &obj) const {
+  auto i = dataSpells.find(obj);
+
+  if( i!=dataSpells.end() ){
+    return *i->second.get();
+    } else {
+    assert(0);
+    }
+  }
+
 void PrototypesLoader::readElement(TiXmlNode *node) {
   if ( !node )
     return;
@@ -67,6 +77,25 @@ void PrototypesLoader::readElement(TiXmlNode *node) {
         } else {
         error("class name not specified");
         }
+      } else
+
+    if( type=="spell"){
+      std::string name;
+
+      if( find(node->ToElement(), "name", name) ){
+        PSpell p = PSpell( new Spell() );
+        p->name = name;
+        dataSpells[ name ] = p;
+        p->id = spells.size();
+        spells.push_back( p );
+
+        for ( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
+          readSpellMember( *p.get(), n );
+          }
+
+        } else {
+        error("spell name not specified");
+        }
 
       } else
 
@@ -88,8 +117,9 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
     std::string type = node->Value();
 
     if( type=="speed" ){
-      const std::string err1 =  "object rotate speed not declarated, set to 5.0";
-      const std::string err2 =  "object move   speed not declarated, set to 15";
+      const std::string err1 = "object rotate speed not declarated, set to 5.0";
+      const std::string err2 = "object move   speed not declarated, set to 15";
+
       obj.rotateSpeed = Lexical::cast<double>( findStr( e, "rotate", "5", err1 ) );
       obj.data.speed  = Lexical::cast<int>( findStr( e, "move", "15", err2 ) );
       }
@@ -220,6 +250,14 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
         }
       }
 
+    if( type=="ability" ){
+      std::string tmp;
+
+      if( find( e, "name", tmp) ){
+        obj.ability.push_back( tmp );
+        }
+      }
+
     if( type=="property" ){
       readIf( e, "size", obj.data.size );
       obj.data.size = std::max(1, obj.data.size);
@@ -333,7 +371,9 @@ void PrototypesLoader::readButton(ProtoObject::CmdButton &b, TiXmlNode *node) {
     if( str=="build" )
       b.action = ProtoObject::CmdButton::Build; else
     if( str=="page" )
-      b.action = ProtoObject::CmdButton::Page;
+      b.action = ProtoObject::CmdButton::Page; else
+    if( str=="castToGround" )
+      b.action = ProtoObject::CmdButton::CastToGround;
     }
 
   if( find(e, "x", str ) )
@@ -346,6 +386,10 @@ void PrototypesLoader::readButton(ProtoObject::CmdButton &b, TiXmlNode *node) {
 
   if( find(e, "hotkey", str ) && str.size() ){
     b.hotkey = MyWidget::KeyEvent::KeyType( MyWidget::KeyEvent::K_A + str[0] - 'a' );
+    }
+
+  if( find(e, "hint", str ) && str.size() ){
+    b.hint.assign( str.begin(), str.end() );
     }
   }
 
@@ -370,6 +414,25 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &b,
     b.bullet = "bullets/pike";
     }
 
+  }
+
+void PrototypesLoader::readSpellMember( Spell &obj, TiXmlNode *node) {
+  if ( node->Type()!=TiXmlNode::TINYXML_ELEMENT )
+    return;
+
+  std::string type = node->Value();
+
+  if( type=="property" ){
+    std::string str;
+    TiXmlElement * e = node->ToElement();
+
+    if( find(e, "coolDown", str ) ){
+      obj.coolDown = Lexical::cast<int>(str);
+      }
+    if( find(e, "manaCost",  str ) ){
+      obj.manaCost  = Lexical::cast<int>(str);
+      }
+    }
   }
 
 bool PrototypesLoader::cmp( const std::shared_ptr<ProtoObject> &a,

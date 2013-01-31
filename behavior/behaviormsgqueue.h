@@ -59,8 +59,8 @@ class BehaviorMSGQueue : public AbstractBehavior {
     void onNewClient(NetUser&, LocalServer::Client & lc );
     void onDelClient(NetUser&, LocalServer::Client & lc );
 
-  private:
     Game & game;
+  private:
 
     struct MSG{
       Message msg;
@@ -111,6 +111,9 @@ class BehaviorMSGQueue : public AbstractBehavior {
     void sysMSG( Game & game, World & w );
 
     bool buyMsgRecv(Game & game, World & w, GameObject &obj, const MSG & m );
+    bool spellMsgRecv(Game & game, World & w, GameObject &obj, const MSG & m );
+
+  friend class Ability;
   };
 
 #endif // BEHAVIORMSGQUEUE_H

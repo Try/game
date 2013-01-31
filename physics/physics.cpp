@@ -66,7 +66,7 @@ struct Physics::RigidBody{
               )
             ) {
     body.setActivationState( DISABLE_DEACTIVATION );
-    // body.setDeactivationTime(8);
+    body.setDeactivationTime(8000);
     }
 
   RigidBody( float  x, float  y, float  z,
@@ -321,6 +321,18 @@ void Physics::Rigid::setPosition(float x, float y, float z) {
   btTransform tr;
   data->body.getMotionState()->getWorldTransform(tr);
   tr.setOrigin( btVector3(x,y,z) );
+
+  data->mstate.setWorldTransform( tr );
+  data->body.setCenterOfMassTransform( tr );
+  }
+
+void Physics::Rigid::setAngle(float rx, float ry) {
+  rx = rx*M_PI/180.0;
+  ry = ry*M_PI/180.0;
+
+  btTransform tr;
+  data->body.getMotionState()->getWorldTransform(tr);
+  tr.setRotation( btQuaternion(0, rx, ry));
 
   data->mstate.setWorldTransform( tr );
   data->body.setCenterOfMassTransform( tr );

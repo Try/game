@@ -25,7 +25,10 @@ class ParticleSystem {
     float z() const;
 
     const ProtoObject::View& viewInfo() const;
+
   private:
+    ParticleSystem();
+
     float mx, my, mz;
     ParticleSystemEngine * engine;
     const ProtoObject::View* proto;
@@ -39,6 +42,9 @@ class ParticleSystem {
       };
 
     std::vector<Point3> par;
+    bool dispathMode;
+
+  friend class ParticleSystemEngine;
   };
 
 #endif // PARTICLESYSTEM_H
