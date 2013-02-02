@@ -13,6 +13,11 @@ struct Spell {
     std::string name;
 
     size_t id;
+
+    enum Mode{
+      CastToCoord,
+      CastToUnit
+      } mode;
   };
 
 #endif // SPELL_H

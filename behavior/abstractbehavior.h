@@ -83,6 +83,7 @@ class AbstractBehavior {
       StopMove,
 
       SpellCast,
+      SpellCastU,
 
       /* signals */
       onPositionChange,

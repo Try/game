@@ -38,6 +38,11 @@ class CommandsPanel : public Panel {
     int pl;
     GameObject * u0;
 
+    enum Mode{
+      CastToCoord,
+      CastToUnit
+      } mode;
+
     void bind( const ProtoObject::Commans::Page &u );
     void buyEvent( const std::string& unit );
     void moveClick();
@@ -49,7 +54,9 @@ class CommandsPanel : public Panel {
     void bindStartPage(const ProtoObject::Commans::Page *p );
     void bindPage( const ProtoObject::Commans::Page &p );
 
-    void setupHook( const std::string& unit );
+    void setupHook ( const std::string& unit );
+    void setupHookU( const std::string& unit );
+
     void mouseDown( MyWidget::MouseEvent& e );
     void mouseUp  ( MyWidget::MouseEvent& e );
     void onRemoveHook();

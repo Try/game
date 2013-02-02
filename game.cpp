@@ -168,7 +168,8 @@ void Game::tick() {
 
   if( netUser ){
     if( netUser->isConnected() &&
-        sendDelay >=10 ){
+        sendDelay >=10 &&
+        !paused  ){
       isLag = !msg.syncByNet( *netUser );
 
       if( !isLag ){
@@ -185,15 +186,8 @@ void Game::tick() {
     }
 
   if( !isLag && !paused ){
-    { /*
-      std::vector<Future> plTicks(players.size());
-
-      for( size_t i=0; i<players.size(); ++i )
-        plTicks[i] = async( players[i].get(), &Player::computeFog, world );
-      */
-      for( size_t i=0; i<players.size(); ++i )
-        players[i]->computeFog(world);
-      }
+    for( size_t i=0; i<players.size(); ++i )
+      players[i]->computeFog(world);
 
     world->tick();
     }
@@ -452,6 +446,15 @@ bool Game::message( int pl,
                     const std::string &spell,
                     AbstractBehavior::Modifers md ) {
   msg.message(pl, m, x, y, spell, 0, md);
+  return 1;
+  }
+
+bool Game::message( int pl,
+                    AbstractBehavior::Message m,
+                    size_t id,
+                    const std::string &spell,
+                    AbstractBehavior::Modifers md ) {
+  msg.message(pl, m, 0, 0, spell, id, md);
   return 1;
   }
 

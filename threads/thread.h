@@ -18,6 +18,7 @@ class Thread {
 
   private:
     pthread_t thread;
+    bool      valid;
 
     static void *runImpl( void* t );
   };

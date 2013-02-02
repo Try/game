@@ -49,6 +49,7 @@ void WayFindRequest::makeGroup( GameObject * obj,
                                 std::vector<GameObject *> &gr ) {
   gr.clear();
   gr.push_back(obj);
+  //return;
 
   std::vector< GameObject* > stk[2], *stk1, *stk2;
   stk[0].push_back(obj);

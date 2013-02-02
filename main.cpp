@@ -123,7 +123,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
     /*try*/
     {
 
-    bool isFullScreen = 1;
+    bool isFullScreen = 0;
 
     int w = GetSystemMetrics(SM_CXFULLSCREEN),
         h = GetSystemMetrics(SM_CYFULLSCREEN);

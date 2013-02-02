@@ -8,6 +8,7 @@
 #include "behavior/movebehavior.h"
 
 #include "world.h"
+#include "util/math.h"
 
 const int SpatialIndex::detail = 16;
 const int SpatialIndex::qsize  = 16*Terrain::quadSize;
@@ -146,7 +147,10 @@ void SpatialIndex::collision(GameObject &obj, GameObject &m,
       int dy = m.y() - obj.y();
 
       if( dx!=0 || dy!=0 ){
-        m.incColisionDisp( dx, dy );
+        int l = Math::distance(dx,dy,0,0);
+
+        if( l>0 )
+          m.incColisionDisp( 5*dx/l, 5*dy/l );
         } else {
         dx = Terrain::quadSize;
         dy = Terrain::quadSize;

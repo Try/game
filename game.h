@@ -78,6 +78,12 @@ class Game {
                   size_t id,
                   AbstractBehavior::Modifers md = BehaviorEvent::NoModifer );
 
+    bool message( int pl,
+                  AbstractBehavior::Message m,
+                  size_t id,
+                  const std::string & spell,
+                  AbstractBehavior::Modifers md = BehaviorEvent::NoModifer );
+
     bool instalHook( InputHookBase* b );
     void removeHook( InputHookBase* b );
 

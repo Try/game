@@ -231,7 +231,14 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
         btn->icon.data = res.pixmap( p.btn[i].icon ); else
         btn->icon.data = res.pixmap( "gui/icon/castle" );
 
-      btn->clicked.bind(*this, &CommandsPanel::setupHook );
+      Spell::Mode m = msg.game.prototypes().spell( btn->taget ).mode;
+
+      if( m==Spell::CastToCoord )
+        btn->clicked.bind(*this, &CommandsPanel::setupHook );
+
+      if( m==Spell::CastToUnit )
+        btn->clicked.bind(*this, &CommandsPanel::setupHookU );
+
       b = btn;
       }
 
@@ -370,6 +377,17 @@ void CommandsPanel::setupHook(const std::string &s) {
   if( !instaled && u0 ){
     instaled    = u0->game().instalHook( &hook );
     spellToCast = s;
+
+    mode        = CastToCoord;
+    }
+  }
+
+void CommandsPanel::setupHookU(const std::string &s) {
+  if( !instaled && u0 ){
+    instaled    = u0->game().instalHook( &hook );
+    spellToCast = s;
+
+    mode        = CastToUnit;
     }
   }
 
@@ -379,12 +397,24 @@ void CommandsPanel::mouseDown(MyWidget::MouseEvent &e) {
 
 void CommandsPanel::mouseUp(MyWidget::MouseEvent &e) {
   if( e.button==MyWidget::MouseEvent::ButtonLeft && u0 ){
-    u0->game().message( u0->playerNum(),
-                        BehaviorMSGQueue::SpellCast,
-                        u0->world().mouseX(),
-                        u0->world().mouseY(),
-                        spellToCast
-                        );
+    if( mode==CastToCoord ){
+      u0->game().message( u0->playerNum(),
+                          BehaviorMSGQueue::SpellCast,
+                          u0->world().mouseX(),
+                          u0->world().mouseY(),
+                          spellToCast
+                          );
+      }
+
+    if( mode==CastToUnit && u0->world().mouseObj() ){
+      WeakWorldPtr p =u0->world().objectWPtr( u0->world().mouseObj() );
+
+      u0->game().message( u0->playerNum(),
+                          BehaviorMSGQueue::SpellCast,
+                          p.id(),
+                          spellToCast
+                          );
+      }
     }
 
   u0->game().removeHook( &hook );

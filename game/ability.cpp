@@ -84,8 +84,10 @@ bool Ability::fog( Game &g,
                    World &w,
                    GameObject &obj,
                    const BehaviorMSGQueue::MSG &m) {
-  if( w.mouseObj()==0 )
+  if( m.size == size_t(-1) )
     return 0;
+
+  GameObject & tg = w.object( m.size );
 
   const Spell & s = g.prototypes().spell(m.str);
 
@@ -104,16 +106,16 @@ bool Ability::fog( Game &g,
                      0.01 );
 
       w.emitHudAnim( "smoke",
-                     World::coordCast( w.mouseObj()->x() ),
-                     World::coordCast( w.mouseObj()->y() ),
+                     World::coordCast( tg.x() ),
+                     World::coordCast( tg.y() ),
                      0.01 );
 
       w.emitHudAnim( "fire",
-                     World::coordCast( w.mouseObj()->x() ),
-                     World::coordCast( w.mouseObj()->y() ),
+                     World::coordCast( tg.x() ),
+                     World::coordCast( tg.y() ),
                      0.01 );
 
-      auto bul = w.mouseObj()->reciveBulldet( "bullets/fire_large" );
+      auto bul = tg.reciveBulldet( "bullets/fire_large" );
       Bullet& b = *bul;
 
       b.x = u.x();
@@ -121,7 +123,7 @@ bool Ability::fog( Game &g,
       b.view.teamColor = u.teamColor();
 
       b.z   = u.viewHeight()/2;
-      b.tgZ = w.mouseObj()->viewHeight()/2;
+      b.tgZ = tg.viewHeight()/2;
 
       b.absDmg = 150;
       b.speed  = 250;

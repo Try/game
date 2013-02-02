@@ -433,6 +433,18 @@ void PrototypesLoader::readSpellMember( Spell &obj, TiXmlNode *node) {
       obj.manaCost  = Lexical::cast<int>(str);
       }
     }
+
+  if( type=="info" ){
+    std::string str;
+    TiXmlElement * e = node->ToElement();
+
+    if( find(e, "type", str ) ){
+      if( str=="castToUnit")
+        obj.mode = Spell::CastToUnit;
+      if( str=="castToCoord")
+        obj.mode = Spell::CastToCoord;
+      }
+    }
   }
 
 bool PrototypesLoader::cmp( const std::shared_ptr<ProtoObject> &a,

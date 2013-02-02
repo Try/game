@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Thread::Thread() {
+Thread::Thread():valid(1) {
   pthread_create( &thread, 0, &Thread::runImpl, this );
 
   //std::clog << "Thread::Thread()" << std::endl;
@@ -14,11 +14,19 @@ Thread::~Thread() {
   }
 
 void Thread::join() {
+  if( !valid )
+    return;
+
   pthread_join(thread,0);
+  valid = false;
   }
 
 void Thread::cancel() {
+  if( !valid )
+    return;
+
   pthread_cancel(thread);
+  valid = false;
   }
 
 void Thread::run() {

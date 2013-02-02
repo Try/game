@@ -57,6 +57,8 @@ class Future{
     void cancel(){
       if( th )
         th->cancel();
+
+      th.reset();
       }
 
   private:

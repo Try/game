@@ -19,6 +19,9 @@ WarriorBehavior::WarriorBehavior( GameObject &obj,
   acX = 0;
   acY = 0;
 
+  lkX = 0;
+  lkY = 0;
+
   instaled = 0;
   hook.mouseDown.bind( *this, &WarriorBehavior::mouseDown    );
   hook.mouseUp  .bind( *this, &WarriorBehavior::mouseUp      );
@@ -46,6 +49,7 @@ void WarriorBehavior::tick( const Terrain & ) {
 
   if( !obj.isOnMove() && isAClick && !taget ){
     obj.behavior.message( AtackMoveContinue, acX, acY );
+
     //isAClick = obj.isOnMove();
     }
 
@@ -207,7 +211,7 @@ void WarriorBehavior::aClick() {
     }
   }
 
-void WarriorBehavior::move(int x, int y) {
+void WarriorBehavior::move( int x, int y ) {
   int qs = Terrain::quadSize;
 
   x /= qs;

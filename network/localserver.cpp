@@ -69,7 +69,7 @@ int LocalServer::serverListen( void * ){
     FD_ZERO(&readSet);
     FD_SET(listenSocket, &readSet);
     timeval timeout;
-    timeout.tv_sec = 0;  // Zero timeout (poll)
+    timeout.tv_sec  = 0;  // Zero timeout (poll)
     timeout.tv_usec = 0;
 
     if( select(listenSocket, &readSet, NULL, NULL, &timeout) == 1 ) {
@@ -136,21 +136,25 @@ int LocalServer::clientRecieve( void* data ){
     //sendToClients( (void*)&buffer );
     }  
 
+  Client* cdel = 0;
   clientsMut.lock();
   for( size_t i = 0; i<clients.size(); ){
     if (clients[i] == client){
       clients[i] = clients.back();
       clients.pop_back();
+      cdel = client;
       } else {
       ++i;
       }
     }
   clientsMut.unlock();
 
-  onDisConnected(*this, *client);
-  closesocket(client->sock);
+  if( cdel ){
+    onDisConnected(*this, *cdel);
+    closesocket(cdel->sock);
 
-  delete client;
+    delete cdel;
+    }
   return 0;
   }
 
