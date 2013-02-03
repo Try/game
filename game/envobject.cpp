@@ -3,7 +3,8 @@
 #include <MyGL/Render>
 
 EnvObject::EnvObject(MyGL::Scene &s):MyGL::AbstractGraphicObject(s){
-}
+  viewID = -1;
+  }
 
 void EnvObject::setModel(const Model &m){
   m_model = m;

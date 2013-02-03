@@ -20,6 +20,8 @@ UnitView::UnitView( Resource &res )
 
   rotateMode = true;
   rotAngle   = 0;
+
+  onResize.bind( *this, &UnitView::resizeEvent );
   }
 
 UnitView::~UnitView() {
@@ -73,7 +75,9 @@ void UnitView::updateView() {
     }
 
   if( pEng ){
-    setupCamera();
+    if( view )
+      view->rotate(1.5);
+
     renderScene( scene, *pEng, texture );
     }
   }
@@ -107,7 +111,7 @@ void UnitView::setupCamera() {
     }
 
   if( rotateMode ){
-    rotAngle += 1;
+    //rotAngle += 1;
     }
 
   if( mv )
@@ -120,4 +124,8 @@ void UnitView::setupCamera() {
     camera.setZoom( 0.7/view->radius() );
 
   scene.setCamera( camera );
+  }
+
+void UnitView::resizeEvent( int /*x*/, int /*y*/ ) {
+  setupCamera();
   }

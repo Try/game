@@ -106,59 +106,6 @@ struct Resource::XML{
     }
   };
 
-
-
-MyGL::VertexDeclaration::Declarator MVertex::decl() {
-  MyGL::VertexDeclaration::Declarator d;
-  d   .add( MyGL::Decl::float3, MyGL::Usage::Position )
-      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
-      .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
-      .add( MyGL::Decl::float4, MyGL::Usage::Color    )
-      .add( MyGL::Decl::float4, MyGL::Usage::BiNormal );
-
-  return d;
-  }
-
-void Resource::computeBiNormal( MVertex &va, MVertex &vb, MVertex &vc ) {
-  float a[3] = { va.x-vc.x, va.y-vc.y, va.z-vc.z };
-  float b[3] = { vb.x-vc.x, vb.y-vc.y, vb.z-vc.z };
-
-  float t1[2] = { va.u-vc.u, va.v-vc.v };
-  float t2[2] = { vb.u-vc.u, vb.v-vc.v };
-
-  if( fabs(t2[1]) > 0.00001 ){
-    float k = t1[1]/t2[1];
-    float m = ( t1[0]-t2[0]*k );
-
-    float u[4] = { a[0]-b[0]*k, a[1]-b[1]*k, a[2]-b[2]*k, 0 };
-    for( int i=0; i<3; ++i )
-      u[i] /= m;
-    /*
-    float l = 0;
-    for( int i=0; i<3; ++i )
-      l += u[i]*u[i];//u[i]*=m;
-    l = sqrt(l);
-    for( int i=0; i<3; ++i )
-      u[i]/= l;
-      */
-
-    for( int i=0; i<4; ++i ){
-      va.bnormal[i] = -u[i];
-      vb.bnormal[i] = -u[i];
-      vc.bnormal[i] = -u[i];
-      }
-    //float v[3] = {};
-    } else {
-    float u[4] = { b[0]/t2[0], b[1]/t2[0], b[2]/t2[0], 0 };
-
-    for( int i=0; i<4; ++i ){
-      va.bnormal[i] = -u[i];
-      vb.bnormal[i] = -u[i];
-      vc.bnormal[i] = -u[i];
-      }
-    }
-  }
-
 Resource::Resource( MyGL::TextureHolder       & tx,
                     MyGL::LocalTexturesHolder & ltx,
 
@@ -177,26 +124,8 @@ Resource::Resource( MyGL::TextureHolder       & tx,
     fsHolder(fsh),
     pixmaps( ltexHolder ){
   Model model;
-  MyGL::Model<>::Raw raw = MyGL::Model<>::loadRawData("./data/models/model.mx");
 
-  Model::Raw rawN;
-  rawN.vertex.resize( raw.vertex.size() );
-  for( size_t i=0; i<rawN.vertex.size(); ++i ){
-    MVertex             &v = rawN.vertex[i];
-    MyGL::DefaultVertex &d = raw.vertex[i];
-
-    memcpy( &v, &d, sizeof(d) );
-    std::fill( v.color, v.color+4, 1) ;
-    }
-
-  for( size_t i=0; i<rawN.vertex.size(); i+=3 ){
-    computeBiNormal( rawN.vertex[i  ],
-                     rawN.vertex[i+1],
-                     rawN.vertex[i+2] );
-    }
-
-  model.load( vboHolder, iboHolder, rawN, MVertex::decl() );
-  //model.load( vboHolder, iboHolder, "./data/models/model.mx" );
+  model.loadMX( vboHolder, iboHolder, "./data/models/model.mx" );
 
   models  .add("null", model);
   textures.add("null",      texHolder.load("./data/textures/w.png") );
@@ -309,29 +238,7 @@ void Resource::load( Box<Model> &m,
     m.add(k, m.get( it->second ) );
     } else {
     Model model;
-
-    MyGL::Model<>::Raw raw = MyGL::Model<>::loadRawData( f );
-
-    Model::Raw rawN;
-    rawN.vertex.resize( raw.vertex.size() );
-    for( size_t i=0; i<rawN.vertex.size(); ++i ){
-      MVertex             &v = rawN.vertex[i];
-      MyGL::DefaultVertex &d = raw.vertex[i];
-
-      memcpy( &v, &d, sizeof(d) );
-      std::fill( v.color, v.color+4, 1) ;
-      }
-
-    for( size_t i=0; i<rawN.vertex.size(); i+=3 ){
-      computeBiNormal( rawN.vertex[i  ],
-                       rawN.vertex[i+1],
-                       rawN.vertex[i+2] );
-      }
-
-    model.load( vboHolder, iboHolder, rawN, MVertex::decl() );
-    /*
-    Model model;
-    model.load( vboHolder, iboHolder, f );*/
+    model.loadMX( vboHolder, iboHolder, f );
 
     m.add(k, model );
     m.loaded[f] = k;

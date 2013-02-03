@@ -14,7 +14,8 @@ GUIPass::GUIPass( const MyGL::VertexShader   & vsh,
   : vs(vsh), fs(fsh), vbHolder(vbo), size(s) {
   MyGL::VertexDeclaration::Declarator decl;
   decl.add( MyGL::Decl::float2, MyGL::Usage::Position )
-      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord );
+      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord, 0 )
+      .add( MyGL::Decl::float4, MyGL::Usage::TexCoord, 1 );
 
   vdecl = MyGL::VertexDeclaration( vbo.device(), decl );
 
@@ -24,10 +25,13 @@ GUIPass::GUIPass( const MyGL::VertexShader   & vsh,
   //testTex   = res.texture("gui/frame");
   layers.reserve(8);
   setCurrentBuffer(0);
+
+  setColor(1,1,1,1);
   }
 
 void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
                     MyGL::Texture2d &depth, MyGL::Device &device ) {
+  setColor(1,1,1,1);
   dev = &device;
 
   if( gui.draw( *this ) ){
@@ -81,6 +85,8 @@ void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
 
   device.endPaint();
   device.setRenderState( MyGL::RenderState() );
+
+  stateStk.clear();
   }
 
 void GUIPass::rect( int x0, int y0, int x1, int y1,
@@ -113,6 +119,8 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
 
     v[i].u /= texSize.w;
     v[i].v /= texSize.h;
+
+    std::copy( state.color, state.color+4, v[i].color );
     }
 
   Layer& lay = layers[curLay];
@@ -221,6 +229,27 @@ void GUIPass::setCurrentBuffer(int i) {
     layers.back().needToUpdate = false;
     layers.back().guiRawData.reserve( 4*2048 );
     }
+  }
+
+void GUIPass::setColor(float r, float g, float b, float a) {
+  state.color[0] = r;
+  state.color[1] = g;
+  state.color[2] = b;
+  state.color[3] = a;
+  }
+
+void GUIPass::pushState() {
+  stateStk.push_back( state );
+  }
+
+void GUIPass::popState() {
+  state = stateStk.back();
+  stateStk.pop_back();
+
+  setColor( state.color[0],
+            state.color[1],
+            state.color[2],
+            state.color[3] );
   }
 
 MyGL::RenderState GUIPass::makeRS(MyWidget::BlendMode m) {

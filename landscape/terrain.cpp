@@ -414,8 +414,8 @@ void Terrain::brushHeight( int x, int y,
   double R = m.R, dh = 800;
 
   int iR = int(R+2);
-  int lx = std::max(0, x-iR), rx = std::min(width()-1, x+iR);
-  int ly = std::max(0, y-iR), ry = std::min(height()-1, y+iR);
+  int lx = std::max(0, x-iR), rx = std::min(width(),  x+iR);
+  int ly = std::max(0, y-iR), ry = std::min(height(), y+iR);
 
   if( alternative )
     dh = -dh;
@@ -434,7 +434,10 @@ void Terrain::brushHeight( int x, int y,
         factor = (1.0-factor)*(1.0-factor);
         factor = 1.0 - std::max(factor-0.8, 0.0)/0.2;
 
-        chunks[i/chunkSize][r/chunkSize].needToUpdate = true;
+        for( int dx = 0; dx<2; ++dx)
+          for( int dy = 0; dy<2; ++dy )
+            if( chunks.validate(i/chunkSize+dx, r/chunkSize+dy) )
+              chunks[i/chunkSize+dx][r/chunkSize+dy].needToUpdate = true;
 
         heightMap[i][r] += (h -heightMap[i][r])*factor;
         waterMap [i][r] += (hW- waterMap[i][r])*factor;
@@ -447,7 +450,10 @@ void Terrain::brushHeight( int x, int y,
                                  (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
         factor = 1.0-(1.0-factor)*(1.0-factor);
 
-        chunks[i/chunkSize][r/chunkSize].needToUpdate = true;
+        for( int dx = 0; dx<2; ++dx)
+          for( int dy = 0; dy<2; ++dy )
+            if( chunks.validate(i/chunkSize+dx, r/chunkSize+dy) )
+              chunks[i/chunkSize+dx][r/chunkSize+dy].needToUpdate = true;
 
         if( m.wmap ){
           heightMap[i][r] += dh*factor;
@@ -474,7 +480,11 @@ void Terrain::brushHeight( int x, int y,
         if( factor>0 ){
           tileset[i][r].textureID[texID] = id;
           }
-        chunks[i/chunkSize][r/chunkSize].needToUpdate = true;
+
+        for( int dx = 0; dx<2; ++dx)
+          for( int dy = 0; dy<2; ++dy )
+            if( chunks.validate(i/chunkSize+dx, r/chunkSize+dy) )
+              chunks[i/chunkSize+dx][r/chunkSize+dy].needToUpdate = true;
         }
     }
 

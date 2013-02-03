@@ -91,8 +91,8 @@ class GameObjectView {
     MyGL::Matrix4x4 _transform() const;
 
   private:
-    void setForm(const Physics::Sphere &f);
-    void setForm(const Physics::Box &f);
+    void setForm( EnvObject &obj, const Physics::Sphere &f );
+    void setForm( EnvObject &obj, const Physics::Box &f    );
     void setForm(const Physics::AnimatedSphere &f);
     void setForm(const Physics::AnimatedBox &f);
 
@@ -118,11 +118,6 @@ class GameObjectView {
 
       int intentDirX, intentDirY;
       } m;
-
-    struct {
-      Physics::Sphere sphere;
-      Physics::Box    box;
-      } form;
 
     struct {
       Physics::AnimatedSphere sphere;

@@ -44,10 +44,16 @@ class GUIPass : public MyGL::AbstractRenderPass {
     void setBlendMode( MyWidget::BlendMode m );
 
     void setCurrentBuffer( int i );
+
+    void setColor( float r, float g, float b, float a );
+
+    void pushState();
+    void popState();
   private:
     struct Vertex{
       float x,y;
       float u,v;
+      float color[4];
       };
     MyWidget::Rect texRect;
 
@@ -80,6 +86,13 @@ class GUIPass : public MyGL::AbstractRenderPass {
     MyWidget::Size       texSize;
 
     float dTexCoord[2];
+
+    struct State{
+      MyGL::Texture2d tex;
+      float color[4];
+      } state;
+
+    std::vector<State> stateStk;
 
     MyGL::Device *dev;
 

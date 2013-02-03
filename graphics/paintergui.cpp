@@ -39,6 +39,18 @@ MyWidget::PaintTextEngine &PainterGUI::textEngine() {
   return te;
   }
 
+void PainterGUI::setColor( float r, float g, float b, float a ) {
+  drawer.setColor(r, g, b, a);
+  }
+
+void PainterGUI::pushState() {
+  drawer.pushState();
+  }
+
+void PainterGUI::popState() {
+  drawer.popState();
+  }
+
 PainterGUI::TextEngine::TextEngine(PainterGUI &p, Resource &res)
                        :p(p), res(res), font(0) {
 

@@ -48,6 +48,8 @@ class UnitView : public TextureView {
     std::unique_ptr<GameObjectView> view;
 
     void setupCamera();
+
+    void resizeEvent( int x, int y );
   };
 
 #endif // UNITVIEW_H

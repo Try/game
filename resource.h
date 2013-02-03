@@ -12,6 +12,7 @@
 
 #include "xml/abstractxmlreader.h"
 #include "pixmapspool.h"
+#include "model_mx.h"
 
 #include <memory>
 
@@ -26,19 +27,6 @@ namespace MyGL{
   class VertexShaderHolder;
   class FragmentShaderHolder;
   }
-
-struct MVertex {
-  float x,y,z;
-  float u,v;
-  float normal[3];
-  float color[4];
-
-  float bnormal[4];
-
-  static MyGL::VertexDeclaration::Declarator decl();
-  };
-
-typedef MyGL::Model<MVertex> Model;
 
 class Sound;
 
@@ -157,7 +145,7 @@ private:
                const std::string &k, const std::string & f );
     void load( PixmapsPool::TexturePtr p, const std::string & f );
 
-    Box<Model > models;
+    Box< Model > models;
     mutable Box< std::shared_ptr<Model::Raw> > rawModels;
     Box<MyGL::Texture2d> textures;
     Box<MyGL::VertexShader>   vs;
@@ -178,10 +166,6 @@ private:
     struct XML;
     PixmapsPool pixmaps;
     std::string loadSrc( const std::string & f );
-
-    static void computeBiNormal( MVertex & a,
-                                 MVertex & b,
-                                 MVertex & c );
   };
 
 #endif // RESOURCE_H

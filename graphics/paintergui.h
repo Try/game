@@ -38,6 +38,11 @@ class PainterGUI: public MyWidget::PainterDevice {
 
     void setBlendMode(MyWidget::BlendMode m);
     MyWidget::PaintTextEngine& textEngine();
+
+    void setColor(float r, float g, float b, float a );
+
+    void pushState();
+    void popState();
   private:
     GUIPass & drawer;
     struct TextEngine:public MyWidget::PaintTextEngine{

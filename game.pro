@@ -145,7 +145,9 @@ HEADERS += \
     game/scenario.h \
     game/missions/scenariomission1.h \
     game/ability.h \
-    game/spell.h
+    game/spell.h \
+    gui/richtext.h \
+    model_mx.h
 
 SOURCES += \
     main.cpp \
@@ -251,7 +253,9 @@ SOURCES += \
     game/scenario.cpp \
     game/missions/scenariomission1.cpp \
     game/ability.cpp \
-    game/spell.cpp
+    game/spell.cpp \
+    gui/richtext.cpp \
+    model_mx.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

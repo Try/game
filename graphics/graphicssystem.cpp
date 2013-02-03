@@ -261,7 +261,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
                                 MyGL::Texture2d::Format::RG16 );
 
   renderScene( scene, gbuffer, mainDepth,
-               1024, true );
+               2*1024, true );
 
   MyGL::Texture2d fog;
   drawFogOfWar(fog, scene);
@@ -1270,7 +1270,6 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
 
   //blt( shadowMap );
   MyGL::Texture2d sceneCopy;
-  copy( sceneCopy, gbuffer[0] );
 
   if( useAO ){
     MyGL::Texture2d ssaoTex;
@@ -1282,6 +1281,8 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
 
     gbuffer[0] = aoAcepted;
     }
+
+  copy( sceneCopy, gbuffer[0] );
 
   drawTranscurent( gbuffer[0], mainDepth, sceneCopy,
                    scene,

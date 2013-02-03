@@ -36,8 +36,13 @@ MyWidget::Bind::UserFont::FreeTypeLib& MyWidget::Bind::UserFont::ft(){
   }
 
 MyWidget::Bind::UserFont::UserFont( const std::string &name, int sz)  {
-  key.name = name;
+  key.name     = name+".ttf";
+  key.baseName = name;
+
   key.size = sz;
+
+  key.bold   = false;
+  key.italic = false;
 
   lt = letterBox[key];
   if( !lt ){
@@ -48,7 +53,11 @@ MyWidget::Bind::UserFont::UserFont( const std::string &name, int sz)  {
 
 MyWidget::Bind::UserFont::UserFont(int sz) {
   key.name = "./data/arial.ttf";
+  key.baseName = "./data/arial";
+
   key.size = sz;
+  key.bold   = false;
+  key.italic = false;
 
   lt = letterBox[key];
   if( !lt ){
@@ -58,8 +67,12 @@ MyWidget::Bind::UserFont::UserFont(int sz) {
   }
 
 MyWidget::Bind::UserFont::UserFont() {
-  key.name = "./data/arial.ttf";
+  key.name     = "./data/arial.ttf";
+  key.baseName = "./data/arial";
+
   key.size = 16;
+  key.bold   = false;
+  key.italic = false;
 
   lt = letterBox[key];
   if( !lt ){
@@ -110,11 +123,11 @@ const MyWidget::Bind::UserFont::Leter&
 
   //pixmap.save("./l.png");
   letter.surf.data = res.pixmap( pixmap, false );
-  letter.size = MyWidget::Size( pixmap.width(), pixmap.height() );
-  letter.advance = MyWidget::Point( slot->advance.x >> 6,
-                                    slot->advance.y >> 6 );
+  letter.size      = MyWidget::Size( pixmap.width(), pixmap.height() );
+  letter.advance   = MyWidget::Point( slot->advance.x >> 6,
+                                      slot->advance.y >> 6 );
 
-  FT_Done_Face    ( face );
+  FT_Done_Face( face );
 
   Leter &ref = leters[ch];
   ref = letter;
@@ -147,9 +160,50 @@ int MyWidget::Bind::UserFont::size() const {
   return key.size;
   }
 
+void MyWidget::Bind::UserFont::setBold(bool b) {
+  key.bold = b;
+  update();
+  }
+
+bool MyWidget::Bind::UserFont::isBold() const {
+  return key.bold;
+  }
+
+void MyWidget::Bind::UserFont::setItalic(bool b) {
+  key.italic = b;
+  update();
+  }
+
+bool MyWidget::Bind::UserFont::isItalic() const {
+  return key.italic;
+  }
+
+void MyWidget::Bind::UserFont::setSize(int s) {
+  key.size = s;
+  update();
+  }
+
 const MyWidget::Bind::UserFont::Leter&
   MyWidget::Bind::UserFont::leter(Resource &res, wchar_t ch) const {
   const MyWidget::Bind::UserFont::Leter& tmp = fetchLeter(res, ch);
   res.flushPixmaps();
   return tmp;
+  }
+
+void MyWidget::Bind::UserFont::update() {
+  key.name = key.baseName;
+
+  if( key.bold )
+    key.name +=  "b";
+
+  if( key.italic )
+    key.name +=  "i";
+
+  key.name +=  ".ttf";
+
+  lt = letterBox[key];
+  if( !lt ){
+    lt = new Leters();
+    letterBox[key] = lt;
+    }
   }

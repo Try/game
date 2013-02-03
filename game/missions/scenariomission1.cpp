@@ -5,6 +5,8 @@
 #include "gui/panel.h"
 #include "gui/unitview.h"
 
+#include "gui/richtext.h"
+
 #include <iostream>
 
 class ScenarioMission1::IntroWidget:public ModalWindow{
@@ -36,9 +38,12 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
       v->setupUnit( game, "fire_mage" );
       p->layout().add( v );
 
+      p2->setLayout( MyWidget::Vertical );
       Button * btn = new Button(res);
       btn->clicked.bind( *this, &MyWidget::Widget::deleteLater );
       p2->layout().add( btn );
+
+      p2->layout().add( new RichText(res) );
       }
 
     MyWidget::signal< const MyGL::Scene &,

@@ -9,6 +9,8 @@
 
 Button::Button(Resource &res)
        :hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res) {
+  font = Font(15);
+
   back[0].data = res.pixmap("gui/buttonBack");
   back[1].data = res.pixmap("gui/buttonBackD");
 
@@ -49,8 +51,7 @@ const std::wstring Button::text() const {
 void Button::setText(const std::wstring &t) {
   if( txt!=t ){
     txt = t;
-    Font f;
-    f.fetch(res, txt);
+    font.fetch(res, txt);
     update();
     }
   }
@@ -154,7 +155,7 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
 
   p.setBlendMode( MyWidget::alphaBlend );
   p.setTexture( icon );
-  Font f;
+  Font f = font;
 
   int sz = std::min(w(), h());
 

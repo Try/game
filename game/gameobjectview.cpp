@@ -69,8 +69,10 @@ GameObjectView::~GameObjectView() {
 
 void GameObjectView::freePhysic(){
   if( physic ){
-    physic->free(form.sphere);
-    physic->free(form.box);
+    for( size_t i=0; i<env.size(); ++i ){
+      physic->free( env[i].form.sphere);
+      physic->free( env[i].form.box);
+      }
 
     physic->free(anim.box);
     physic->free(anim.sphere);
@@ -93,27 +95,11 @@ void GameObjectView::loadView( const Resource &r, Physics & p, bool env ) {
   for( size_t i=0; i<getClass().view.size(); ++i ){
     const ProtoObject::View &v = getClass().view[i];
 
-    loadView( r, v, env );
+    size_t envC = this->env.size();
+    loadView( r, v, env );    
 
-    if( v.physModel==ProtoObject::View::Sphere ){
-      if( env ){
-        setForm( p.createSphere( x(), y(), 0,
-                                 getClass().view[i].sphereDiameter ) );
-        } else {
-        setForm( p.createAnimatedSphere
-                 ( x(), y(), 0, getClass().view[i].sphereDiameter ));
-        }
-      }
-
-    if( v.physModel==ProtoObject::View::Box ){
-      if( env ){
-        const double *bs = getClass().view[i].boxSize;
-        setForm( p.createBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
-        } else {
-        const double *bs = getClass().view[i].boxSize;
-        setForm( p.createAnimatedBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
-        }
-      }
+    for( size_t r=envC; r<this->env.size(); ++r )
+      this->env[r].viewID = i;
     }
 
   bool res = false;
@@ -163,13 +149,59 @@ void GameObjectView::loadView( const Resource & r,
 
   MyGL::AbstractGraphicObject * obj = 0;
 
+  Physics& p = *physic;
+
   if( isEnv ){
     if( !src.isParticle ){
-      EnvObject object( scene );
-      object.setModel( model );
+      if( model.groups.size() ){
+        for( size_t i=0; i<model.groups.size(); ++i ){
+          EnvObject object( scene );
+          object.setModel( model.groups[i] );
 
-      env.push_back( object );
-      obj = &env.back();
+          env.push_back( object );
+          float dp[3] = { object.model().cenX(),
+                          object.model().cenY(),
+                          object.model().cenZ() };
+
+          for( int r=0; r<3; ++r ){
+            dp[r] = World::coordCastD( dp[r] );
+            }
+
+          if( src.physModel==ProtoObject::View::Sphere ){
+            setForm( this->env.back(),
+                     p.createSphere( x()+dp[0], y()+dp[1], +dp[2],
+                                     src.sphereDiameter ) );
+            }
+
+          if( src.physModel==ProtoObject::View::Box ){
+            const double *bs = src.boxSize;
+            setForm( this->env.back(),
+                     p.createBox( x()+dp[0], y()+dp[1], dp[2],
+                                  bs[0], bs[1], bs[2] ));
+            }
+
+          setupMaterials( env.back(), src );
+          }
+        } else {
+        EnvObject object( scene );
+        object.setModel( model );
+
+        env.push_back( object );
+
+        if( src.physModel==ProtoObject::View::Sphere ){
+          setForm( this->env.back(),
+                   p.createSphere( x(), y(), 0,
+                                   src.sphereDiameter ) );
+          }
+
+        if( src.physModel==ProtoObject::View::Box ){
+          const double *bs = src.boxSize;
+          setForm( this->env.back(),
+                   p.createBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
+          }
+
+        obj = &env.back();
+        }
       }else {
       ParticleSystem sys( psysEngine, src );
       particles.push_back( sys );
@@ -212,6 +244,20 @@ void GameObjectView::loadView( const Resource & r,
     }
 
   m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
+
+  if( src.physModel==ProtoObject::View::Sphere ){
+    if( !isEnv ){
+      setForm( p.createAnimatedSphere
+               ( x(), y(), 0, src.sphereDiameter ));
+      }
+    }
+
+  if( src.physModel==ProtoObject::View::Box ){
+    if( !isEnv ){
+      const double *bs = src.boxSize;
+      setForm( p.createAnimatedBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
+      }
+    }
   }
 
 void GameObjectView::loadView( const Model &model,
@@ -251,6 +297,13 @@ void GameObjectView::setViewPosition( float x, float y, float z,
                                       float interp ) {
   for( size_t i=0; i<env.size(); ++i ){
     //setViewPosition( env[i], getClass().view[i], x, y, z );
+    EnvObject::Form & form = env[i].form;
+
+    if( form.sphere.isValid() )
+      form.sphere.setPosition(x,y,z);
+
+    if( form.box.isValid() )
+      form.box.setPosition(x,y,z);
     }
 
   for( size_t i=0; i<view.size(); ++i ){
@@ -273,12 +326,6 @@ void GameObjectView::setViewPosition( float x, float y, float z,
 
   for( int i=0; i<selectModelsCount; ++i )
     selection[i]->setPosition( x, y, zland+0.01 );
-
-  if( form.sphere.isValid() )
-    form.sphere.setPosition(x,y,z);
-
-  if( form.box.isValid() )
-    form.box.setPosition(x,y,z);
 
   float dx = 0, dy = 0, dz = 0;
   if( view.size() ){
@@ -376,13 +423,13 @@ void GameObjectView::setViewSize( Object &obj,
                s[2]*z*m.rndSize[2] );
   }
 
-void GameObjectView::setForm(const Physics::Sphere &f) {
-  form.sphere = f;
+void GameObjectView::setForm( EnvObject &obj, const Physics::Sphere &f) {
+  obj.form.sphere = f;
   //animForm = Physics::AnimatedSphere();
   }
 
-void GameObjectView::setForm(const Physics::Box &f) {
-  form.box = f;
+void GameObjectView::setForm(EnvObject &obj, const Physics::Box &f) {
+  obj.form.box = f;
   //animForm = Physics::AnimatedSphere();
   }
 
@@ -409,12 +456,14 @@ void GameObjectView::updatePos() {
     }
 
   //rigid bodyes
-  if( form.sphere.isValid() ){
-    updatePosRigid(form.sphere);
-    }
+  for( size_t i=0; i<env.size(); ++i ){
+    EnvObject::Form & form = env[i].form;
 
-  if( form.box.isValid() ){
-    updatePosRigid(form.box);
+    if( form.sphere.isValid() )
+      updatePosRigid(form.sphere, i);
+
+    if( form.box.isValid() )
+      updatePosRigid(form.box, i);
     }
   }
 
@@ -459,11 +508,15 @@ void GameObjectView::rotate( int delta ) {
     smallViews[i]->setRotation( 0, a );
     }
 
-  if( form.sphere.isValid() )
-    form.sphere.setAngle(0, delta);
+  for( size_t i=0; i<env.size(); ++i ){
+    EnvObject::Form & form = env[i].form;
 
-  if( form.box.isValid() )
-    form.box.setAngle(0, delta);
+    if( form.sphere.isValid() )
+      form.sphere.setAngle(0, delta);
+
+    if( form.box.isValid() )
+      form.box.setAngle(0, delta);
+    }
   }
 
 void GameObjectView::setRotation( int a ) {
@@ -478,11 +531,16 @@ void GameObjectView::setRotation( int a ) {
     smallViews[i]->setRotation( 0, a );
     }
 
-  if( form.sphere.isValid() )
-    form.sphere.setAngle(0,a);
+  for( size_t i=0; i<env.size(); ++i ){
+    EnvObject::Form & form = env[i].form;
 
-  if( form.box.isValid() )
-    form.box.setAngle(0, a);
+    if( form.sphere.isValid() )
+      form.sphere.setAngle(0,a);
+
+    if( form.box.isValid() )
+      form.box.setAngle(0, a);
+    }
+
   }
 
 void GameObjectView::setViewDirection(int lx, int ly) {
@@ -557,7 +615,7 @@ void GameObjectView::tick() {
 template< class Rigid >
 void GameObjectView::updatePosRigid( Rigid &rigid ){
   // rigid.activate();
-  setViewPosition( rigid.x(), rigid.y(), rigid.z() );
+  // setViewPosition( rigid.x(), rigid.y(), rigid.z() );
 
   for( size_t i=0; i<env.size(); ++i ){
     updatePosRigid(rigid, i);
@@ -571,18 +629,22 @@ void GameObjectView::updatePosRigid( Physics::Sphere &rigid, size_t i ) {
   m.mul  ( rigid.transform() );
   m.scale( rigid.diameter()  );
 
-  if( i<getClass().view.size() ){
-    double sphereDiameter = getClass().view[i].sphereDiameter;
+  if( env[i].viewID < getClass().view.size() ){
+    int id = env[i].viewID;
+    double sphereDiameter = getClass().view[id].sphereDiameter;
 
-    m.scale( getClass().view[i].size[0]/sphereDiameter,
-             getClass().view[i].size[1]/sphereDiameter,
-             getClass().view[i].size[2]/sphereDiameter );
+    m.scale( getClass().view[id].size[0]/sphereDiameter,
+             getClass().view[id].size[1]/sphereDiameter,
+             getClass().view[id].size[2]/sphereDiameter );
 
     //if( getClass().view[i].align[2] )
       //m.translate( 0, 0, -getClass().view[i].size[2]/sphereDiameter );
     }
   //m.translate( 0, 0, -0.8 );
 
+  m.translate( -env[i].model().cenX(),
+               -env[i].model().cenY(),
+               -env[i].model().cenZ() );
   env[i].setTransform( m );
   }
 

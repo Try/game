@@ -4,6 +4,7 @@
 #include <MyWidget/Widget>
 #include <MyWidget/Shortcut>
 #include "graphics/paintergui.h"
+#include "font.h"
 
 #include <ctime>
 
@@ -41,6 +42,8 @@ class Button : public MyWidget::Widget {
 
     MyWidget::Shortcut hotKey;
     Resource & res;
+
+    Font font;
 
     void onShortcut();
 

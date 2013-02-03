@@ -6,6 +6,8 @@
 
 #include "resource.h"
 
+#include "physics/physics.h"
+
 class EnvObject : public MyGL::AbstractGraphicObject {
   public:
     EnvObject( MyGL::Scene & s );
@@ -22,6 +24,12 @@ class EnvObject : public MyGL::AbstractGraphicObject {
                 const MyGL::Matrix4x4 &object,
                 const MyGL::AbstractCamera &camera) const;
 
+    struct Form {
+      Physics::Sphere sphere;
+      Physics::Box    box;
+      } form;
+
+    size_t viewID;
   private:
     Model m_model;
     MyGL::Matrix4x4 mat;

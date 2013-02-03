@@ -30,7 +30,15 @@ namespace Bind{
       Size textSize( Resource &res,
                      const std::wstring& );
 
-      int size() const;
+      int  size() const;
+
+      void setBold( bool b );
+      bool isBold() const;
+
+      void setItalic( bool b );
+      bool isItalic() const;
+
+      void setSize( int s );
     private:
       typedef std::unordered_map< wchar_t, Leter > Leters;
       Leters * lt;
@@ -39,8 +47,9 @@ namespace Bind{
       static FreeTypeLib& ft();
 
       struct Key{
-        std::string name;
+        std::string name, baseName;
         int size;
+        bool bold, italic;
 
         bool operator < ( const Key& other ) const{
           if( size < other.size )
@@ -54,6 +63,8 @@ namespace Bind{
 
       static std::map<Key, Leters*> letterBox;
       const Leter& fetchLeter( Resource &res, wchar_t ch ) const;
+
+      void update();
     };
   }
 

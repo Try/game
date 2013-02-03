@@ -24,6 +24,8 @@
 #include "gui/hintsys.h"
 #include "lang/lang.h"
 
+#include "gui/richtext.h"
+
 #include "graphics/paintergui.h"
 
 MainGui::MainGui( MyGL::Device &,
@@ -34,7 +36,6 @@ MainGui::MainGui( MyGL::Device &,
   mainwidget = 0;
   central.resize(w,h);
 
-  Font f, f2(14);
   std::wstring str;
 
   for( wchar_t i='a'; i<='z'; ++i )
@@ -47,11 +48,18 @@ MainGui::MainGui( MyGL::Device &,
 
   str += L"/\\|!@#$%^&*()_-=+";
 
-  f .fetch(res, str);
-  f2.fetch(res, str);
+  for( int i=10; i<=16; ++i ){
+    Font f(i);
 
-  Lang::fetch(f,  res);
-  Lang::fetch(f2, res);
+    for( int bold = 0; bold<=1; ++bold )
+      for( int italic=0; italic<=1; ++italic ){
+        f.setBold(bold);
+        f.setItalic(italic);
+
+        f .fetch(res, str);
+        Lang::fetch(f,  res);
+        }
+    }
   }
 
 MainGui::~MainGui() {
@@ -155,7 +163,8 @@ bool MainGui::draw(GUIPass &pass) {
         --HintSys::time;
 
       p.setFont( Font(14) );
-      MyWidget::Size dpos = Font(14).textSize(res, HintSys::hint());
+      MyWidget::Size dpos = RichText::bounds( res, HintSys::hint() );
+      //Font(14).textSize(res, HintSys::hint());
       dpos.w += 30;
       dpos.h += 30;
 
@@ -171,7 +180,8 @@ bool MainGui::draw(GUIPass &pass) {
       p.setBlendMode( MyWidget::alphaBlend );
 
       MainGui::drawFrame( p, hintFrame, pos, dpos );
-      p.drawText( pos.x+15, pos.y+15, HintSys::hint() );
+      RichText::renderText( pos.x+15, pos.y+15, res, p, HintSys::hint() );
+      //p.drawText( pos.x+15, pos.y+15, HintSys::hint() );
       }
     }
 
