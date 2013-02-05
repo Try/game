@@ -805,6 +805,11 @@ void World::tick() {
     obj.tick( terrain() );
     }
 
+  for( size_t i=0; i<nonBackground.size(); ++i ){
+    GameObject & obj = *nonBackground[i];
+    obj.tickMv( terrain() );
+    }
+
   for( size_t i=0; i<resouces.size(); ++i ){
     GameObject & obj = *resouces[i];
     if( obj.getClass().data.isBackground )
@@ -838,8 +843,8 @@ void World::tick() {
       cl.set( cl.r()*k, cl.g()*k, cl.b()*k, cl.a() );
       obj.setTeamColor( cl );
 
-      obj.setPosition( src.x(), src.y(), src.z()+100 );
       obj.rotate( src.rAngle()*180.0/M_PI );
+      obj.setPosition( src.x(), src.y(), src.z()+100 );
       //obj.rotate();
       }
 
@@ -858,7 +863,7 @@ void World::tick() {
     eviObjects[i]->updatePos();
   }
 
-const MyGL::Scene &World::getScene() const {
+MyGL::Scene &World::getScene() {
   return scene;
   }
 

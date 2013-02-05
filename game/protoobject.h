@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <MyWidget/Shortcut>
 
 struct ProtoObject {
@@ -27,6 +28,9 @@ struct ProtoObject {
         };
 
       std::vector<Atack> atk;
+      std::map< std::string, std::string > propertyStr;
+
+      const std::string &propStr( const std::string & s ) const;
       } data;
 
     struct View{

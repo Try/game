@@ -279,6 +279,10 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       std::string str;
       if( find(e, "mouseHint", str ) )
         obj.mouseHint.assign( str.begin(), str.end() );
+
+      if( find(e, "key", str ) ){
+        readIf( e, "val", obj.data.propertyStr[str] );
+        }
       }
 
     if( type=="view_size" ){

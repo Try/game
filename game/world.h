@@ -49,7 +49,7 @@ class World {
     void tick();
 
     MyGL::Camera   camera;
-    const MyGL::Scene& getScene() const;
+    MyGL::Scene &getScene();
     ParticleSystemEngine & getParticles();
 
     GameObject& addObject( const std::string & proto,

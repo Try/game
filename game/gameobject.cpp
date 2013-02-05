@@ -16,6 +16,7 @@
 #include "bullet.h"
 
 #include "util/gameserializer.h"
+#include "behavior/movebehavior.h"
 
 GameObject::GameObject( MyGL::Scene & s,
                         World &w,
@@ -375,6 +376,11 @@ void GameObject::tick( const Terrain &terrain ) {
   for( auto i=coolDowns.begin(); i!=coolDowns.end(); ++i )
     if( i->second>0 )
       --i->second;
+  }
+
+void GameObject::tickMv(const Terrain &terrain) {
+  if( MoveBehavior *b = behavior.find<MoveBehavior>() )
+    b->updatePos(terrain);
   }
 
 std::shared_ptr<Bullet> GameObject::reciveBulldet( const std::string &v ){

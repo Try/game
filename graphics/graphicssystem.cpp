@@ -144,10 +144,11 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
     bltData.vs = vsHolder.load("./data/sh/blitShader.vert");
     bltData.fs = fsHolder.load("./data/sh/blitShader.frag");
 
-    ssaoData.vs     = gaussData.vs;
-    ssaoData.fs     = fsHolder.load("./data/sh/ssao_macro.frag");
-    ssaoData.detail = fsHolder.load("./data/sh/ssao_detail.frag");
-    ssaoData.accept = fsHolder.load("./data/sh/ssao_accept.frag");
+    ssaoData.vs       = gaussData.vs;
+    ssaoData.fs       = fsHolder.load("./data/sh/ssao_macro.frag");
+    ssaoData.detail   = fsHolder.load("./data/sh/ssao_detail.frag");
+    ssaoData.accept   = fsHolder.load("./data/sh/ssao_accept.frag");
+    ssaoData.acceptGI = fsHolder.load("./data/sh/gi_accept.frag");
 
     ssaoData.texture.setName("texture");
     ssaoData.blured. setName("blured");
@@ -234,8 +235,9 @@ MyGL::Texture2d GraphicsSystem::depth( const MyGL::Size & sz ) {
   return localTex.create( sz.w, sz.h, MyGL::AbstractTexture::Format::Depth24 );
   }
 
-bool GraphicsSystem::render( const MyGL::Scene &scene,
+bool GraphicsSystem::render( MyGL::Scene &scene,
                              ParticleSystemEngine & par,
+                             MyGL::Camera   camera,
                              size_t dt) {
   if( !device.startRender() )
     return false;
@@ -250,7 +252,7 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
 
   particles = &par;
 
-  MyGL::Texture2d gbuffer[4];
+  MyGL::Texture2d gbuffer[4], rsm[4];
   MyGL::Texture2d mainDepth = depth( screenSize );
 
   for( int i=0; i<3; ++i ){
@@ -260,7 +262,15 @@ bool GraphicsSystem::render( const MyGL::Scene &scene,
   gbuffer[3] = localTex.create( screenSize.w, screenSize.h,
                                 MyGL::Texture2d::Format::RG16 );
 
-  renderScene( scene, gbuffer, mainDepth,
+  //buildRSM( scene, rsm, 512, 0 );
+  scene.setCamera( camera );
+  /*
+  blt( rsm[0] );
+  device.present();
+  return 1;
+  */
+
+  renderScene( scene, gbuffer, mainDepth, rsm,
                2*1024, true );
 
   MyGL::Texture2d fog;
@@ -350,11 +360,16 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
                        smap.vs, smap.fs );
   if( clr ){
     render.clear( MyGL::Color(1.0), 1 );
-    MyGL::Matrix4x4 proj;
-    proj.identity();
+    if( !(sm.width()==1 && sm.height()==1) ){
+      MyGL::Matrix4x4 proj;
+      proj.identity();
 
-    particles->exec( matrix, proj, 0, true );
+      particles->exec( matrix, proj, 0, true );
+      }
     }
+
+  if( sm.width()==1 && sm.height()==1 )
+    return;
 
   render.setRenderState( rstate );
   //return;
@@ -1119,6 +1134,69 @@ void GraphicsSystem::ssao( MyGL::Texture2d &out,
   ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.fs );
   }
 
+void GraphicsSystem::aceptGI(   const MyGL::Scene & s,
+                                MyGL::Texture2d &out,
+                                const MyGL::Texture2d &scene,
+                                const MyGL::Texture2d &diff,
+                                const MyGL::Texture2d &norm,
+                                const MyGL::Texture2d &sdepth,
+                                const MyGL::Texture2d gi[4] ) {
+  //ssaoData.lightAblimient.set(1,1,1);
+
+  if( s.lights().direction().size()>0 ){
+    MyGL::DirectionLight l = s.lights().direction()[0];
+    ssaoData.lightAblimient.set( l, MyGL::LightAblimient );
+    }
+
+  int w = scene.width(), h = scene.height();
+
+  out = localTex.create( w,h );
+  out.setSampler( reflect );
+
+  MyGL::Texture2d depth = this->depth( w,h );
+
+  MyGL::Render render( device,
+                       out, depth,
+                       ssaoData.vs, ssaoData.accept );
+
+  render.setRenderState( MyGL::RenderState::PostProcess );
+
+  cpyOffset.set( 1.0f/w, 1.0f/h );
+  device.setUniform( ssaoData.vs, cpyOffset );
+
+  const MyGL::AbstractCamera &camera = s.camera();
+  MyGL::Matrix4x4 mat = camera.projective();
+  mat.mul( camera.view() );
+  mat.inverse();
+
+  MyGL::DirectionLight light;
+  if( s.lights().direction().size() > 0 )
+    light = s.lights().direction()[0];
+
+  double dir[3] = { light.xDirection(),
+                    light.yDirection(),
+                    light.zDirection() };
+  MyGL::Matrix4x4 shMatrix = makeShadowMatrix(s, dir);
+
+  device.setUniform( ssaoData.acceptGI, mat,      "invMatrix" );
+  device.setUniform( ssaoData.acceptGI, shMatrix, "shMatrix"  );
+  shMatrix.inverse();
+  device.setUniform( ssaoData.acceptGI, shMatrix, "invShMatrix"  );
+  device.setUniform( ssaoData.acceptGI, sdepth,   "depth"     );
+
+  ssaoData.scene.set( &scene );
+  ssaoData.diff .set( &diff  );
+  ssaoData.ssao .set( &gi[0]  );
+  device.setUniform( ssaoData.acceptGI, gi[2],   "ssaoN"    );
+  device.setUniform( ssaoData.acceptGI, gi[3],   "ssaoD"     );
+  device.setUniform( ssaoData.acceptGI, ssaoData.scene );
+  device.setUniform( ssaoData.acceptGI, ssaoData.diff  );
+  device.setUniform( ssaoData.acceptGI, ssaoData.ssao  );
+  device.setUniform( ssaoData.acceptGI, ssaoData.lightAblimient  );
+
+  ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.acceptGI );
+  }
+
 void GraphicsSystem::aceptSsao( const MyGL::Scene & s,
                                 MyGL::Texture2d &out,
                                 const MyGL::Texture2d &scene,
@@ -1241,9 +1319,45 @@ void GraphicsSystem::blurSm( MyGL::Texture2d &sm,
   sm.setSampler( sampler );
   }
 
+void GraphicsSystem::buildRSM( MyGL::Scene &scene,
+                               MyGL::Texture2d gbuffer[4],
+                               int shadowMapSize,
+                               bool useAO ) {
+  for( int i=0; i<3; ++i ){
+    gbuffer[i] = localTex.create( shadowMapSize, shadowMapSize,
+                                  MyGL::Texture2d::Format::RGBA );
+    }
+  gbuffer[3] = localTex.create( shadowMapSize, shadowMapSize,
+                                MyGL::Texture2d::Format::RG16 );
+  MyGL::Texture2d mainDepth = depth( shadowMapSize, shadowMapSize );
+
+  //MyGL::Camera &c = scene.camera();
+
+  MyGL::DirectionLight light;
+  if( scene.lights().direction().size() > 0 )
+    light = scene.lights().direction()[0];
+
+  double dir[3] = { light.xDirection(),
+                    light.yDirection(),
+                    light.zDirection() };
+  RSMCamera c;
+  c.v = makeShadowMatrix( scene, dir );
+  c.p.setData( 1, 0, 0, 0,
+               0,-1, 0, 0,
+               0, 0, 1, 0,
+               0, 0, 0, 1 );
+
+  scene.setCamera( c );
+
+  MyGL::Texture2d rsmNo[4];
+  renderScene( scene, gbuffer, mainDepth, rsmNo, 1, 0 );
+  }
+
 void GraphicsSystem::renderScene( const MyGL::Scene &scene,
                                   MyGL::Texture2d gbuffer[4],
                                   MyGL::Texture2d &mainDepth,
+
+                                  MyGL::Texture2d rsm[4],
                                   int shadowMapSize,
                                   bool useAO ) {
   MyGL::DirectionLight light;
@@ -1277,7 +1391,11 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
     ssao( ssaoTex, gbuffer[3], topSm, scene );
 
     MyGL::Texture2d aoAcepted;
-    aceptSsao( scene, aoAcepted, gbuffer[0], gbuffer[1], ssaoTex );
+
+    if( rsm[0].width()>0 )
+      aceptGI  ( scene, aoAcepted, gbuffer[0], gbuffer[1],
+                                   gbuffer[2], gbuffer[3], rsm ); else
+      aceptSsao( scene, aoAcepted, gbuffer[0], gbuffer[1], ssaoTex );
 
     gbuffer[0] = aoAcepted;
     }
@@ -1317,7 +1435,7 @@ void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,
   int w = out.width(),
       h = out.height();
 
-  MyGL::Texture2d gbuffer[4];
+  MyGL::Texture2d gbuffer[4], rsm[4];
   MyGL::Texture2d mainDepth = this->depth(w,h);
 
   for( int i=0; i<3; ++i ){
@@ -1327,7 +1445,7 @@ void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,
   gbuffer[3] = localTex.create( w, h,
                                 MyGL::Texture2d::Format::RG16 );
 
-  renderScene( scene, gbuffer, mainDepth, 256, 0 );
+  renderScene( scene, gbuffer, mainDepth, rsm, 256, 0 );
   MyGL::Texture2d glow;
   drawGlow( glow, mainDepth, scene, 128 );
 

@@ -27,6 +27,8 @@ class Model : public MyGL::Model<MVertex> {
     float cenX() const;
     float cenY() const;
     float cenZ() const;
+
+    float radius() const;
   private:
     static void computeBiNormal( MVertex & a,
                                  MVertex & b,
@@ -34,7 +36,7 @@ class Model : public MyGL::Model<MVertex> {
 
     void setModelData(const MyGL::Model<MVertex>& md);
 
-    float cen[3];
+    float cen[3], r;
   };
 
 #endif // MODEL_MX_H

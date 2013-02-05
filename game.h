@@ -114,6 +114,8 @@ class Game {
 
     void setCameraPos( GameObject& obj );
     void setCameraPosXY( float x, float y );
+
+    Scenario& scenario();
   private:
     void* hwnd;
     bool  paused;
@@ -161,7 +163,7 @@ class Game {
 
     int     sendDelay;
     std::unique_ptr<NetUser>  netUser;
-    std::unique_ptr<Scenario> scenario;
+    std::unique_ptr<Scenario> mscenario;
 
     void serialize( GameSerializer &s);
 

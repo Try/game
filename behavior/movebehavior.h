@@ -39,6 +39,7 @@ class MoveBehavior : public AbstractBehavior {
 
     static bool isCloseEnough(int x1, int y1, int x2, int y2 , int unitSize);
 
+    void updatePos( const Terrain &t );
   private:
     GameObject & obj;
     Behavior::Closure & clos;
@@ -49,12 +50,14 @@ class MoveBehavior : public AbstractBehavior {
 
     //std::vector<Pos> wayPoints;
     int tx, ty, curentSpeed;
+    int intentPos[2];
+
     WeakWorldPtr taget;
 
     bool isWayAcept, & isMWalk;
     std::vector<Point> way;
 
-    void step(const Terrain & terrain, int sz);
+    void step(const Terrain & terrain);
     bool nextPoint();
 
     void calcWayAndMove( int tx, int ty, const Terrain & terrain );

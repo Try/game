@@ -13,6 +13,7 @@ class ScenarioMission1 : public Scenario {
 
   protected:
     void onStartGame();
+    void onItemEvent( GameObject & obj );
 
   private:
     MainGui & ui;

@@ -4,6 +4,9 @@
 #include "game/world.h"
 #include "game/spatialindex.h"
 
+#include "game.h"
+#include "game/scenario.h"
+
 BonusBehavior::BonusBehavior( GameObject & obj,
                               Behavior::Closure & )
               :obj(obj) {
@@ -14,13 +17,23 @@ void BonusBehavior::tick(const Terrain &) {
                                obj.getClass().data.visionRange,
                                &BonusBehavior::lookOn,
                                obj );
-  if( obj.hp()<=0 )
-    obj.world().spatial().visit( obj.x(), obj.y(),
-                                 obj.getClass().data.visionRange,
-                                 &BonusBehavior::hillOn,
-                                 obj );
-  obj.rotate(3);
-  //obj.setHP(0);
+
+  if( obj.hp()<=0 ){
+    if( obj.getClass().data.propStr("bonusType")=="hill" ){
+      obj.world().spatial().visit( obj.x(), obj.y(),
+                                   obj.getClass().data.visionRange,
+                                   &BonusBehavior::hillOn,
+                                   obj );
+      }
+
+    if( obj.getClass().data.propStr("bonusType")=="event" ){
+      obj.game().scenario().onItemEvent( obj );
+      }
+    }
+
+  if( obj.getClass().data.propStr("bonusAnim")=="rotate"  )
+    obj.rotate(3);
+
   }
 
 void BonusBehavior::lookOn( GameObject &tg , GameObject &obj ){

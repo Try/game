@@ -41,8 +41,8 @@ class GraphicsSystem {
   public:
     GraphicsSystem( void *hwnd, int w, int h, bool isFullScreen, int smSize );
 
-    bool render( const MyGL::Scene &scene,
-                 ParticleSystemEngine &e,
+    bool render(MyGL::Scene &scene,
+                 ParticleSystemEngine &e, MyGL::Camera camera,
                  size_t dt );
     void resizeEvent( int w, int h, bool isFullScreen );
 
@@ -184,7 +184,7 @@ class GraphicsSystem {
       MyGL::Uniform<float[3]> lightAblimient;
 
       MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs, detail, accept;
+      MyGL::FragmentShader fs, detail, accept, acceptGI;
       } ssaoData;
 
     MyGL::Uniform<float[2]> scrOffset, cpyOffset;
@@ -280,6 +280,12 @@ class GraphicsSystem {
                     const MyGL::Texture2d &diff,
                     const MyGL::Texture2d &ssao);
 
+    void aceptGI(const MyGL::Scene &s,
+                  MyGL::Texture2d &out,
+                  const MyGL::Texture2d& scene,
+                  const MyGL::Texture2d &diff, const MyGL::Texture2d &norm, const MyGL::Texture2d &depth,
+                  const MyGL::Texture2d gi[4] );
+
     void ssaoDetail( MyGL::Texture2d &out,
                      const MyGL::Texture2d& in , const MyGL::Texture2d &macro);
 
@@ -292,7 +298,11 @@ class GraphicsSystem {
 
     void renderScene(const MyGL::Scene &scene,
                       MyGL::Texture2d gbuffer[4],
-                      MyGL::Texture2d & depthBuffer , int shadowMapSize, bool useAO);
+                      MyGL::Texture2d & depthBuffer, MyGL::Texture2d rsm[],
+                      int shadowMapSize, bool useAO);
+    void buildRSM(MyGL::Scene &scene,
+                   MyGL::Texture2d gbuffer[4],
+                   int shadowMapSize, bool useAO);
 
     unsigned int time;
 
@@ -300,6 +310,22 @@ class GraphicsSystem {
     friend class GlowMaterial;
     friend class TransparentMaterial;
     friend class WaterMaterial;
+
+    struct RSMCamera : public MyGL::AbstractCamera {
+      RSMCamera(){
+        p.identity();
+        }
+
+      MyGL::Matrix4x4 view() const {
+        return v;
+        }
+
+      MyGL::Matrix4x4 projective() const{
+        return p;
+        }
+
+      MyGL::Matrix4x4 v, p;
+      };
   };
 
 

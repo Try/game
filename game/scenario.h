@@ -1,13 +1,16 @@
 #ifndef SCENARIO_H
 #define SCENARIO_H
 
-class Scenario {
-  public:
-    virtual ~Scenario(){}
+class GameObject;
 
-    virtual void onStartGame() {}
-    virtual void tick()        {}
-    virtual void onEndGame()   {}
+struct Scenario {
+  virtual ~Scenario(){}
+
+  virtual void onStartGame() {}
+  virtual void tick()        {}
+  virtual void onEndGame()   {}
+
+  virtual void onItemEvent( GameObject & obj )   {}
   };
 
 #endif // SCENARIO_H

@@ -22,6 +22,9 @@ MoveBehavior::MoveBehavior( GameObject &object,
 
   curentSpeed = 0;
 
+  intentPos[0] = 0;
+  intentPos[1] = 0;
+
   clos.colisionDisp[0] = 0;
   clos.colisionDisp[1] = 0;
 
@@ -202,6 +205,9 @@ void MoveBehavior::onRemoveHook() {
   }
 
 void MoveBehavior::tick(const Terrain &terrain) {
+  intentPos[0] = obj.x();
+  intentPos[1] = obj.y();
+
   if( timer>0 )
     --timer;
 
@@ -222,18 +228,12 @@ void MoveBehavior::tick(const Terrain &terrain) {
   int x = obj.x()/qs,
       y = obj.y()/qs;
 
-  int sz = 1;//obj.getClass().data.size;
-
-  int bm = 1;
-
   if( !(clos.colisionDisp[0]==0 && clos.colisionDisp[1]==0) ){
     if( !clos.isOnMove && !clos.isReposMove ){
-      bm = 2;
-
       int l = Math::distance( clos.colisionDisp[0], clos.colisionDisp[1],
                               0, 0 );
       l = std::max(l, 1);
-      int s = obj.getClass().data.size*Terrain::quadSize/2;
+      int s = obj.getClass().data.size*Terrain::quadSize;
 
       tx = obj.x() + clos.colisionDisp[0]*s/l;
       ty = obj.y() + clos.colisionDisp[1]*s/l;
@@ -248,10 +248,10 @@ void MoveBehavior::tick(const Terrain &terrain) {
     }
 
   if( clos.isOnMove || clos.isReposMove ){
-    step(terrain, sz);
+    step(terrain);
     } else {
     bool lk = clos.isMVLock && x==clos.lkX && y==clos.lkY;
-    if( !terrain.isEnableQuad( x, y, sz ) && !lk ){
+    if( !terrain.isEnableQuad( x, y, 1 ) && !lk ){
       calcWayAndMove( obj.x(), obj.y(), terrain );
       return;
       }
@@ -259,15 +259,15 @@ void MoveBehavior::tick(const Terrain &terrain) {
 
   }
 
-void MoveBehavior::step(const Terrain &terrain, int sz ) {
+void MoveBehavior::step(const Terrain &terrain ) {
   int acseleration = 8;
 
   int tx = this->tx,
       ty = this->ty;
 
   if( !clos.isReposMove ){
-    tx = this->tx + clos.colisionDisp[0];
-    ty = this->ty + clos.colisionDisp[1];
+    tx = this->tx;// + clos.colisionDisp[0];
+    ty = this->ty;// + clos.colisionDisp[1];
 
     if( !terrain.isEnableQuad( tx/Terrain::quadSize,
                                ty/Terrain::quadSize, 1 ) ){
@@ -296,8 +296,8 @@ void MoveBehavior::step(const Terrain &terrain, int sz ) {
       y = ty;
       }
 
-    float wx = x/Terrain::quadSizef,
-          wy = y/Terrain::quadSizef;
+    //float wx = x/Terrain::quadSizef,
+    //      wy = y/Terrain::quadSizef;
 
     int iwx = x/Terrain::quadSize,
         iwy = y/Terrain::quadSize;
@@ -311,7 +311,9 @@ void MoveBehavior::step(const Terrain &terrain, int sz ) {
     if( ienable || !penable ){
       int ltx = this->tx, lty = this->ty;
 
-      obj.setPositionSmooth( x, y, terrain.heightAt(wx,wy) );
+      //obj.setPositionSmooth( x, y, terrain.heightAt(wx,wy) );
+      intentPos[0] = x;
+      intentPos[1] = y;
 
       if( !clos.isMVLock )
         obj.setViewDirection( ltx-obj.x(), lty-obj.y() );
@@ -460,5 +462,27 @@ bool MoveBehavior::isCloseEnough( int x1, int y1,
 
   return abs(x1)<=lc &&
          abs(y1)<=lc &&
-         2*2*realL <= lc*lc;
+      2*2*realL <= lc*lc;
+  }
+
+void MoveBehavior::updatePos(const Terrain &t ) {
+  if( !clos.isOnMove )
+    return;
+
+  int x = intentPos[0],
+      y = intentPos[1],
+
+      tx = x + clos.colisionDisp[0],
+      ty = y + clos.colisionDisp[1];
+
+  if( t.isEnableQuad( tx/Terrain::quadSize,
+                      ty/Terrain::quadSize, 1 ) ){
+    x = tx;
+    y = ty;
+    }
+
+  float wx = x/Terrain::quadSizef,
+        wy = y/Terrain::quadSizef;
+
+  obj.setPositionSmooth( x, y, t.heightAt(wx,wy) );
   }

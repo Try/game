@@ -139,6 +139,19 @@ void Model::loadMX( MyGL::VertexBufferHolder & vboHolder,
 
       for( int r=0; r<3; ++r )
         groups[i].cen[r] /= sz;
+
+      float maxR = 0, minR = 1000000;
+      for( size_t r=begin; r<begin+sz; ++r ){
+        float dx = groups[i].cen[0] - rawN.vertex[r].x;
+        float dy = groups[i].cen[1] - rawN.vertex[r].y;
+        float dz = groups[i].cen[2] - rawN.vertex[r].z;
+
+        float l = sqrt(dx*dx+dy*dy+dz*dz);
+        maxR = std::max(maxR, l);
+        minR = std::min(minR, l);
+        }
+
+      groups[i].r = (maxR*0.25+minR*0.75);
       }
     }
 
@@ -155,4 +168,8 @@ float Model::cenY() const {
 
 float Model::cenZ() const {
   return cen[2];
+  }
+
+float Model::radius() const {
+  return r;
   }

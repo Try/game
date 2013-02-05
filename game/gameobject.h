@@ -59,6 +59,7 @@ class GameObject {
 
     void updatePos();
     void tick( const Terrain & terrain );
+    void tickMv( const Terrain & terrain );
 
     const ProtoObject & getClass() const;
 

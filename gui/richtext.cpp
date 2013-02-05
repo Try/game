@@ -4,7 +4,7 @@
 #include "font.h"
 
 RichText::RichText( Resource & res ):res(res) {
-  txt = L"qwerty\n <b>12<i>3</b> <size = 10/> \nqwerty <size=16/> rtyui</i>op";
+  txt = L"";
   }
 
 void RichText::renderText( int x, int y,
@@ -21,6 +21,11 @@ MyWidget::Size RichText::bounds( Resource & res,
   rText(0, 0, res, 0, txt, r);
 
   return r;
+  }
+
+void RichText::setText(const std::wstring &text) {
+  txt = text;
+  update();
   }
 
 void RichText::rText( int dx, int dy,

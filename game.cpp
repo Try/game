@@ -110,8 +110,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   setPlaylersCount(1);
 
   load(L"./save/0.sav");
-  scenario.reset( new ScenarioMission1(*this, gui) );
-  scenario->onStartGame();
+  mscenario.reset( new ScenarioMission1(*this, gui) );
+  mscenario->onStartGame();
   }
 
 void Game::tick() {
@@ -211,7 +211,10 @@ void Game::render( size_t dt ) {
   DWORD time = GetTickCount();
 
   if( graphics.render( world->getScene(),
-                       world->getParticles(), dt )){
+                       world->getParticles(),
+                       world->camera,
+                       dt )){
+
     }
 
   ++fps.n;
@@ -657,6 +660,10 @@ void Game::setCameraPosXY(float fx, float fy) {
         z = world->camera.z();
 
   world->camera.setPosition( x+(x1-x)*k, y+(y1-y)*k, z+(z1-z)*k );
+  }
+
+Scenario &Game::scenario() {
+  return *mscenario;
   }
 
 void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,

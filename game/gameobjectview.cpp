@@ -159,24 +159,17 @@ void GameObjectView::loadView( const Resource & r,
           object.setModel( model.groups[i] );
 
           env.push_back( object );
-          float dp[3] = { object.model().cenX(),
-                          object.model().cenY(),
-                          object.model().cenZ() };
-
-          for( int r=0; r<3; ++r ){
-            dp[r] = World::coordCastD( dp[r] );
-            }
 
           if( src.physModel==ProtoObject::View::Sphere ){
             setForm( this->env.back(),
-                     p.createSphere( x()+dp[0], y()+dp[1], +dp[2],
-                                     src.sphereDiameter ) );
+                     p.createSphere( x(), y(), 0,
+                                     object.model().radius() ) );
             }
 
           if( src.physModel==ProtoObject::View::Box ){
             const double *bs = src.boxSize;
             setForm( this->env.back(),
-                     p.createBox( x()+dp[0], y()+dp[1], dp[2],
+                     p.createBox( x(), y(), 0,
                                   bs[0], bs[1], bs[2] ));
             }
 
@@ -299,11 +292,25 @@ void GameObjectView::setViewPosition( float x, float y, float z,
     //setViewPosition( env[i], getClass().view[i], x, y, z );
     EnvObject::Form & form = env[i].form;
 
+    float dp[3] = { env[i].model().cenX(),
+                    env[i].model().cenY(),
+                    env[i].model().cenZ() };
+
+    for( int r=0; r<3; ++r ){
+      dp[r] = dp[r]*getClass().view[ env[i].viewID ].size[r];
+      }
+
+    float a = atan2( m.intentDirY, m.intentDirX );
+    float s = sin(a), c = cos(a);
+    float ax = dp[0], ay = dp[1];
+    dp[0] = c*ax - s*ay;
+    dp[1] = s*ax + c*ay;
+
     if( form.sphere.isValid() )
-      form.sphere.setPosition(x,y,z);
+      form.sphere.setPosition(x+dp[0], y+dp[1], z+dp[2] );
 
     if( form.box.isValid() )
-      form.box.setPosition(x,y,z);
+      form.box.setPosition( x+dp[0], y+dp[1], z+dp[2] );
     }
 
   for( size_t i=0; i<view.size(); ++i ){
@@ -490,21 +497,15 @@ void GameObjectView::setVisible(bool v) {
   }
 
 void GameObjectView::rotate( int delta ) {
-  double a = 0;
+  double a = atan2( m.intentDirY, m.intentDirX ) + delta;
 
   for( size_t i=0; i<view.size(); ++i ){
     a = view[i].angleZ() + delta;
-    m.intentDirX = 10000*cos( M_PI*a/180.0 );
-    m.intentDirY = 10000*sin( M_PI*a/180.0 );
-
     view[i].setRotation( 0, a );
     }
 
   for( size_t i=0; i<smallViews.size(); ++i ){
     a = smallViews[i]->angleZ() + delta;
-    m.intentDirX = 10000*cos( M_PI*a/180.0 );
-    m.intentDirY = 10000*sin( M_PI*a/180.0 );
-
     smallViews[i]->setRotation( 0, a );
     }
 
@@ -517,6 +518,9 @@ void GameObjectView::rotate( int delta ) {
     if( form.box.isValid() )
       form.box.setAngle(0, delta);
     }
+
+  m.intentDirX = 10000*cos( M_PI*a/180.0 );
+  m.intentDirY = 10000*sin( M_PI*a/180.0 );
   }
 
 void GameObjectView::setRotation( int a ) {
@@ -627,11 +631,11 @@ void GameObjectView::updatePosRigid( Physics::Sphere &rigid, size_t i ) {
   m.identity();
 
   m.mul  ( rigid.transform() );
-  m.scale( rigid.diameter()  );
+  //m.scale( rigid.diameter()  );
 
   if( env[i].viewID < getClass().view.size() ){
     int id = env[i].viewID;
-    double sphereDiameter = getClass().view[id].sphereDiameter;
+    double sphereDiameter = 1;//getClass().view[id].sphereDiameter;
 
     m.scale( getClass().view[id].size[0]/sphereDiameter,
              getClass().view[id].size[1]/sphereDiameter,

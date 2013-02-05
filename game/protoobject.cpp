@@ -52,3 +52,12 @@ ProtoObject::View::View() {
 
   isParticle = 0;
   }
+
+const std::string& ProtoObject::GameSpecific::propStr(const std::string &s) const {
+  std::map< std::string, std::string >::const_iterator i = propertyStr.find(s);
+  if( i!=propertyStr.end() )
+    return i->second;
+
+  static std::string nullStr;
+  return nullStr;
+  }

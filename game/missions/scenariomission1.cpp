@@ -7,6 +7,8 @@
 
 #include "gui/richtext.h"
 
+#include "lang/lang.h"
+
 #include <iostream>
 
 class ScenarioMission1::IntroWidget:public ModalWindow{
@@ -15,7 +17,7 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
                  Resource &res,
                  MyWidget::Widget* ow ):ModalWindow(res, ow){
       Panel *p = new Panel(res);
-      p->setMinimumSize(400, 300);
+      p->setMinimumSize(550, 300);
       p->setSizePolicy( MyWidget::FixedMin );
 
       layout().add( new Widget() );
@@ -35,15 +37,20 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
       v->renderScene.bind( renderScene );
       updateView.bind( *v, &UnitView::updateView );
 
-      v->setupUnit( game, "fire_mage" );
+      v->setupUnit( game, "chest" );
       p->layout().add( v );
 
       p2->setLayout( MyWidget::Vertical );
+      p2->layout().setMargin(16);
+
+      RichText * t = new RichText(res);
+      t->setText( Lang::tr(L"$(mission1/intro)") );
+      p2->layout().add( t );
+
       Button * btn = new Button(res);
+      btn->setText( Lang::tr(L"$(play)") );
       btn->clicked.bind( *this, &MyWidget::Widget::deleteLater );
       p2->layout().add( btn );
-
-      p2->layout().add( new RichText(res) );
       }
 
     MyWidget::signal< const MyGL::Scene &,
@@ -79,6 +86,13 @@ void ScenarioMission1::onStartGame() {
   if( game.player().unitsCount() ){
     game.setCameraPos( game.player().unit(0) );
     }
+  }
+
+void ScenarioMission1::onItemEvent( GameObject &b ) {
+  GameObject & obj = b.world().addObject("skeleton_mage");
+
+  obj.setPosition( b.x(), b.y() - World::coordCastD(3), b.z() );
+  obj.setPlayer(3);
   }
 
 void ScenarioMission1::updateView() {

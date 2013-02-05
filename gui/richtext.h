@@ -18,6 +18,8 @@ class RichText : public MyWidget::Widget {
                             const std::wstring& txt );
     static MyWidget::Size bounds( Resource & res,
                                   const std::wstring& txt );
+
+    void setText( const std::wstring & text );
   protected:
     void paintEvent(MyWidget::PaintEvent &e);
 
