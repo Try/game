@@ -414,10 +414,7 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &b,
 
   if( find(e, "bullet", str ) ){
     b.bullet = str;
-    } else {
-    b.bullet = "bullets/pike";
     }
-
   }
 
 void PrototypesLoader::readSpellMember( Spell &obj, TiXmlNode *node) {

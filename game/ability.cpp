@@ -122,8 +122,8 @@ bool Ability::fog( Game &g,
       b.y = u.y();
       b.view.teamColor = u.teamColor();
 
-      b.z   = u.viewHeight()/2;
-      b.tgZ = tg.viewHeight()/2;
+      b.z   = u.viewHeight()/2  + World::coordCast(u.z());
+      b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
 
       b.absDmg = 150;
       b.speed  = 250;

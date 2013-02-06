@@ -51,3 +51,8 @@ void ModalWindow::paintEvent(MyWidget::PaintEvent &e) {
 
   paintNested(e);
   }
+
+void ModalWindow::shortcutEvent(MyWidget::KeyEvent &e) {
+  Widget::shortcutEvent(e);
+  e.accept();
+  }

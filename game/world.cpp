@@ -845,7 +845,12 @@ void World::tick() {
 
       obj.rotate( src.rAngle()*180.0/M_PI );
       obj.setPosition( src.x(), src.y(), src.z()+100 );
-      //obj.rotate();
+
+      float f = 0.03,
+            s = f*sin( src.rAngle() ),
+            c = f*cos( src.rAngle() );
+
+      obj.applyForce( -c, -s, 0 );
       }
 
   for( size_t i=0; i<nonBackground.size(); ){

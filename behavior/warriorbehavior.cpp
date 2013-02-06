@@ -249,8 +249,8 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     b.y = obj.y();
     b.view.teamColor = obj.teamColor();
 
-    b.z   = obj.viewHeight()/2;
-    b.tgZ = dobj.viewHeight()/2;
+    b.z   = obj.viewHeight()/2  + World::coordCast(obj.z() );
+    b.tgZ = dobj.viewHeight()/2 + World::coordCast(dobj.z());
 
     b.absDmg = absDmg;
     b.tick();

@@ -338,6 +338,10 @@ void Physics::Rigid::setAngle(float rx, float ry) {
   data->body.setCenterOfMassTransform( tr );
   }
 
+void Physics::Rigid::applyForce(float x, float y, float z) {
+  data->body.applyForce( btVector3(x,y,z), btVector3(0,0,1) );
+  }
+
 float Physics::AnimatedSphere::diameter() const {
   return data->sphere.getRadius()*2;
   }

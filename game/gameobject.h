@@ -16,6 +16,8 @@ namespace MyGL{
 #include "game/protoobject.h"
 #include "game/gameobjectview.h"
 
+#include <MyWidget/signal>
+
 class WaterVertex;
 class Resource;
 class ProtoObject;
@@ -33,6 +35,8 @@ class GameObject {
                 const ProtoObject &p,
                 const PrototypesLoader & pl );
     ~GameObject();
+    MyWidget::signal<GameObject&> onDied;
+
     std::vector<GameObject*> colisions;
 
     std::wstring hint;
@@ -127,6 +131,8 @@ class GameObject {
 
     void setCoolDown( size_t spellID, int v );
     int  coolDown   ( size_t spellID ) const;
+
+    void applyForce( float x, float y, float z );
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;

@@ -151,7 +151,7 @@ void Model::loadMX( MyGL::VertexBufferHolder & vboHolder,
         minR = std::min(minR, l);
         }
 
-      groups[i].r = (maxR*0.25+minR*0.75);
+      groups[i].r = (maxR*0.7+minR*0.3);
       }
     }
 

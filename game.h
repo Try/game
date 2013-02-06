@@ -116,6 +116,9 @@ class Game {
     void setCameraPosXY( float x, float y );
 
     Scenario& scenario();
+    MyWidget::signal<> updateMissionTargets;
+
+    MyWidget::signal<> exitGame;
   private:
     void* hwnd;
     bool  paused;

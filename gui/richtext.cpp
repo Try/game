@@ -41,7 +41,10 @@ void RichText::rText( int dx, int dy,
     }
 
   int x = 0, y = 0, w = 0, h = 0;
+  float r = 1, g = 1, b = 1,a = 1;
   int ddy = 0;
+
+  bool sh = 0;
 
   for( size_t i=0; i<txt.size(); ++i ){
     size_t pr = 0;
@@ -71,6 +74,16 @@ void RichText::rText( int dx, int dy,
     else
     if( (pr = prefix( txt, i, L"</i>" )) != size_t(-1) ){
       font.setItalic(0);
+      i = pr;
+      }
+    else
+    if( (pr = prefix( txt, i, L"<s>" )) != size_t(-1) ){
+      sh = 1;
+      i = pr;
+      }
+    else
+    if( (pr = prefix( txt, i, L"</s>" )) != size_t(-1) ){
+      sh = 0;
       i = pr;
       }
     else
@@ -117,11 +130,10 @@ void RichText::rText( int dx, int dy,
         }
 
       if( p && color.size()==8 ){
-        float r = cToInt(color[0], color[1])/255.0;
-        float g = cToInt(color[2], color[3])/255.0;
-        float b = cToInt(color[4], color[5])/255.0;
-        float a = cToInt(color[6], color[7])/255.0;
-
+        r = cToInt(color[0], color[1])/255.0;
+        g = cToInt(color[2], color[3])/255.0;
+        b = cToInt(color[4], color[5])/255.0;
+        a = cToInt(color[6], color[7])/255.0;
 
         PainterGUI &pg = (PainterGUI&)p->device();
         pg.setColor(r,g,b,a);
@@ -137,6 +149,21 @@ void RichText::rText( int dx, int dy,
 
       if( p ){
         p->setTexture( l.surf );
+        PainterGUI &pg = (PainterGUI&)p->device();
+
+        if( sh ){
+          pg.setColor(0,0,0, 0.15);
+          int dpos[2] = {-2, 2};
+
+          for( int i=0; i<2; ++i )
+            for( int r=0; r<2; ++r )
+              p->drawRect( x+l.dpos.x+dx + dpos[i],
+                           y+l.dpos.y+dy + dpos[r],
+                           l.size.w, l.size.h,
+                           0, 0, l.size.w, l.size.h );
+          }
+
+        pg.setColor(r,g,b,a);
         p->drawRect( x+l.dpos.x+dx,
                      y+l.dpos.y+dy,
                      l.size.w, l.size.h,

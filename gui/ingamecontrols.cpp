@@ -28,6 +28,7 @@
 
 #include "gui/tabwidget.h"
 #include "editterrainpanel.h"
+#include "missiontargets.h"
 
 #include <sstream>
 
@@ -91,6 +92,8 @@ InGameControls::InGameControls(Resource &res,
     p.setupUi( top, res );
     //p.fullScr->clicked.bind( toogleFullScreen );
     p.menu->clicked.bind( *this, &InGameControls::showMenu );
+    p.menu->setShortcut( MyWidget::Shortcut(p.menu, MyWidget::KeyEvent::K_ESCAPE) );
+
     p.frmEdit->clicked.bind( *this, &InGameControls::showFormBuilder );
     gold = p.gold;
     lim  = p.lim;
@@ -100,13 +103,23 @@ InGameControls::InGameControls(Resource &res,
 
     gold->setHint(L"$(gold)");
     lim ->setHint(L"$(units_limit)");
+
+    p.frmEdit->setVisible(0);
+    p.fullScr->setVisible(0);
     }
 
   top->setSizePolicy(p);
 
   editPanel = createEditPanel();
-  cen->layout().add( editPanel );
+  cen->setLayout( MyWidget::Horizontal );
+  cen->layout().add( new MissionTargets(game, res) );
+
+  MyWidget::Widget * box = new MyWidget::Widget();
+  box->layout().add( editPanel );
+  cen->layout().add( box );
+
   cen->useScissor( false );
+  box->useScissor( false );
 
   showEditPanel.activated.bind( *this, &InGameControls::toogleEditPanel );
   }
@@ -184,8 +197,8 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   commands->onPageCanged.bind( *this, &InGameControls::removeAllHooks );
 
   commands->setSizePolicy( img->sizePolicy() );
-  commands->setMinimumSize(270, 200);
-  commands->setMaximumSize(270, 200);
+  commands->setMinimumSize(270, 220);
+  commands->setMaximumSize(270, 220);
   console->layout().add( commands );
 
   return console;
@@ -274,6 +287,7 @@ void InGameControls::showMenu() {
   m->save.bind( save );
   m->load.bind( load );
   m->onClosed.bind( game, &Game::unsetPause );
+  m->quit.bind( game.exitGame );
   }
 
 void InGameControls::addEditorObject( const ProtoObject &p ) {

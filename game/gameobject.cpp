@@ -62,6 +62,7 @@ GameObject::GameObject( MyGL::Scene & s,
 
 GameObject::~GameObject() {
   //if( behavior.size() )
+  onDied( *this );
   wrld.player( m.pl ).delUnit(this);
   }
 
@@ -459,4 +460,8 @@ int GameObject::coolDown(size_t spellID) const {
   if( i==coolDowns.end() )
     return -1; else
     return i->second;
+  }
+
+void GameObject::applyForce(float x, float y, float z) {
+  view.applyForce(x,y,z);
   }

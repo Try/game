@@ -90,6 +90,7 @@ class GameObjectView {
     const ProtoObject &getClass() const;
     MyGL::Matrix4x4 _transform() const;
 
+    void applyForce( float x, float y, float z );
   private:
     void setForm( EnvObject &obj, const Physics::Sphere &f );
     void setForm( EnvObject &obj, const Physics::Box &f    );

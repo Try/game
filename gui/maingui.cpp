@@ -271,7 +271,7 @@ void MainGui::updateValues() {
   central.customEvent(e);
   }
 
-void MainGui::drawFrame(MyWidget::Painter & p,
+void MainGui::drawFrame( MyWidget::Painter & p,
                          const MyWidget::Bind::UserTexture &frame,
                          const MyWidget::Point &pos,
                          const MyWidget::Size &dpos ) {

@@ -69,6 +69,8 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   resource.load("./data/data.xml");
   proto   .load("./data/game.xml");
 
+  mscenario.reset( new ScenarioMission1(*this, gui) );
+
   //MyGL::Model<>::saveRawData( "./sphere.mx", MyGL::TessObject::sphere(3, 1) );
 
   gui.createControls( msg, *this );
@@ -110,7 +112,6 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   setPlaylersCount(1);
 
   load(L"./save/0.sav");
-  mscenario.reset( new ScenarioMission1(*this, gui) );
   mscenario->onStartGame();
   }
 
@@ -190,6 +191,7 @@ void Game::tick() {
       players[i]->computeFog(world);
 
     world->tick();
+    mscenario->tick();
     }
 
   fps.time += int(GetTickCount() - time);

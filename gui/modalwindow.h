@@ -19,6 +19,7 @@ class ModalWindow : public MyWidget::Widget {
 
     void paintEvent(MyWidget::PaintEvent &e);
 
+    void shortcutEvent(MyWidget::KeyEvent &e);
   private:
     MyWidget::Bind::UserTexture frame;
   };

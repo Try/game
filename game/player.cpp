@@ -146,6 +146,12 @@ const MyGL::Pixmap &Player::fog() const {
   }
 
 bool Player::compare(const GameObject *a, const GameObject *b) {
+  if( a->getClass().ability.size() < b->getClass().ability.size() )
+    return 0;
+
+  if( a->getClass().ability.size() > b->getClass().ability.size() )
+    return 1;
+
   return a->getClass().name < b->getClass().name;
   }
 
@@ -154,11 +160,12 @@ void Player::tick( World &curW ) {
   }
 
 void Player::computeFog(void *curW) {
-  fillFog(m.fog, *(World*)curW);
+  if( hasHostControl() )
+    fillFog(m.fog, *(World*)curW);
   }
 
 void Player::fillFog(MyGL::Pixmap &p, World &wx ) {
-  const bool useFog = 0;
+  const bool useFog = 1;
 
   if( p.width()  != wx.terrain().width() ||
       p.height() != wx.terrain().height() ){

@@ -66,6 +66,10 @@ void toogleFullScreen( bool isFullScreen ){
     mgl_demo->resizeEvent( w, h );
   }
 
+void exitGame(){
+  PostQuitMessage(0);
+  }
+
 DWORD GetMainThreadId () {
   const std::shared_ptr<void> hThreadSnapshot(
       CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0), CloseHandle);
@@ -123,7 +127,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
     /*try*/
     {
 
-    bool isFullScreen = 0;
+    bool isFullScreen = 1;
 
     int w = GetSystemMetrics(SM_CXFULLSCREEN),
         h = GetSystemMetrics(SM_CYFULLSCREEN);
@@ -179,6 +183,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
         }
 
       demo.toogleFullScreen.bind( toogleFullScreen );
+      demo.exitGame.bind( exitGame );
 
       DWORD mainTh = GetMainThreadId();
       SetThreadAffinityMask( (void*)mainTh, 0);
@@ -238,7 +243,7 @@ MyWidget::KeyEvent makeKeyEvent( WPARAM k,
   MyWidget::KeyEvent::KeyType e = MyWidget::KeyEvent::K_NoKey;
 
   if( k==VK_ESCAPE )
-    PostQuitMessage(0);
+    e = MyWidget::KeyEvent::K_ESCAPE;//PostQuitMessage(0);
 
   if( k==VK_BACK ){
     e = MyWidget::KeyEvent::K_Back;

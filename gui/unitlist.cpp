@@ -14,17 +14,48 @@
 #include "game.h"
 #include "util/weakworldptr.h"
 
+#include <MyWidget/Painter>
+
 struct UnitList::Btn : public Button {
   Btn( Resource & res ):Button(res){
     Button::clicked.bind(*this, &Btn::onClick );
+    oldHp = 255;
     }
 
   void onClick(){
     clicked(owner);
     }
 
+  void paintEvent(MyWidget::PaintEvent &e){
+    Button::paintEvent(e);
+
+    MyWidget::Painter p(e);
+
+    PainterGUI& pt = (PainterGUI&)p.device();
+    pt.setColor( 1, 1-std::max(1-oldHp/200.0, 0.0), 1-std::max(1-oldHp/128.0, 0.0), 1 );
+
+    p.setBlendMode( MyWidget::alphaBlend );
+    p.setTexture( icon );
+    p.drawRect( 0, 0, w(), h(),
+                0, 0, icon.data.rect.w, icon.data.rect.h );
+    }
+
+  void customEvent(MyWidget::CustomEvent &){
+    if( owner==0 )
+      return;
+
+    int nHp = (255*owner->hp())/std::max(1, owner->getClass().data.maxHp);
+    if( nHp!=oldHp ){
+      oldHp = nHp;
+      update();
+      }
+    }
+
   GameObject * owner;
   MyWidget::signal<GameObject*> clicked;
+
+  Texture icon;
+  int oldHp;
   };
 
 struct UnitList::Lay : public MyWidget::Layout {

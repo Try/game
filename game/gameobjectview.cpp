@@ -150,6 +150,10 @@ void GameObjectView::loadView( const Resource & r,
   MyGL::AbstractGraphicObject * obj = 0;
 
   Physics& p = *physic;
+  float szMid = 0;
+  for( int i=0; i<3; ++i )
+    szMid += src.size[i];
+  szMid /= 3;
 
   if( isEnv ){
     if( !src.isParticle ){
@@ -163,7 +167,7 @@ void GameObjectView::loadView( const Resource & r,
           if( src.physModel==ProtoObject::View::Sphere ){
             setForm( this->env.back(),
                      p.createSphere( x(), y(), 0,
-                                     object.model().radius() ) );
+                                     object.model().radius()*szMid ) );
             }
 
           if( src.physModel==ProtoObject::View::Box ){
@@ -832,5 +836,17 @@ void GameObjectView::serialize( GameSerializer &s, Obj *g,
       if( getClass().name!="incvisitor" )
         g->setSize( sz[0]/10000.0, sz[1]/10000.0, sz[2]/10000.0 );
       }
+    }
+  }
+
+void GameObjectView::applyForce(float x, float y, float z) {
+  for( size_t i=0; i<env.size(); ++i ){
+    EnvObject::Form & form = env[i].form;
+
+    if( form.sphere.isValid() )
+      form.sphere.applyForce(x,y,z);
+
+    if( form.box.isValid() )
+      form.box.applyForce(x,y,z);
     }
   }
