@@ -9,6 +9,7 @@
 
 #include "lang/lang.h"
 
+#include "util/gameserializer.h"
 #include <iostream>
 
 class ScenarioMission1::IntroWidget:public ModalWindow{
@@ -135,15 +136,17 @@ void ScenarioMission1::onStartGame() {
 
 void ScenarioMission1::onItemEvent( GameObject &b ) {
   if( b.getClass().name=="chest" ){
+    game.player().setGold( 100500 );
     GameObject & obj = b.world().addObject("skeleton_mage");
 
     obj.setPosition( b.x(), b.y() - World::coordCastD(4), b.z() );
     obj.setPlayer(5);
+    obj.setViewDirection(0, 100);
 
     for( size_t i=0; i<3; ++i ){
       GameObject & obj2 = b.world().addObject("incvisitor_t");
 
-      obj2.setPosition( obj.x(), obj.y()+100, obj.z() );
+      obj2.setPosition( obj.x(), obj.y()+Terrain::quadSize*2, obj.z() );
       obj2.setPlayer( obj.playerNum() );
       }
 
@@ -160,6 +163,17 @@ void ScenarioMission1::onItemEvent( GameObject &b ) {
     tg.done = 0;
 
     mtagets.push_back(tg);
+
+    cutScene.active = true;
+    cutScene.t      = 0;
+    cutScene.camera = b.world().camera;
+
+    float x1 = World::coordCast(b.x()),
+          y1 = World::coordCast(b.y()),
+          z1 = World::coordCast(b.z());
+
+    cutScene.camera.setPosition(x1, y1, z1);
+    ui.setCutsceneMode(1);
     }
 
   if( b.getClass().name=="chest_small" ){
@@ -197,6 +211,40 @@ void ScenarioMission1::onItemEvent( GameObject &b ) {
   }
 
 void ScenarioMission1::tick() {
+  if( cutScene.active ){
+    cutScene.t += 0.01;
+
+    for( size_t i=0; i<game.player(5).unitsCount(); ++i ){
+      GameObject & obj = game.player(5).unit(i);
+
+      if( obj.getClass().name=="skeleton_mage" ){
+        float x1 = World::coordCast(obj.x()),
+              y1 = World::coordCast(obj.y()),
+              z1 = World::coordCast(obj.z())+0.4,
+              t  = std::min(1.0f, cutScene.t);
+
+        x1 = cutScene.camera.x()*(1-t) + t*x1;
+        y1 = cutScene.camera.y()*(1-t) + t*y1;
+        z1 = cutScene.camera.z()*(1-t) + t*z1;
+
+        obj.world().camera.setPosition(x1, y1, z1);
+        obj.world().camera.setSpinY( cutScene.camera.spinY()*(1-t) + (-110)*t );
+
+        obj.world().camera.setDistance( cutScene.camera.distance()*(1-t) + (1.5)*t );
+        }
+      }
+
+    if( cutScene.t>=1.3 ){
+      cutScene.active = false;
+      if( game.player().unitsCount() )
+        game.player().unit(0).world().camera = cutScene.camera;
+
+      ui.setCutsceneMode(0);
+      }
+
+    return;
+    }
+
   if( game.player(1).unitsCount()==0 && isInGame ){
     defeat();
     isInGame = false;
@@ -215,7 +263,7 @@ void ScenarioMission1::tick() {
 
         obj2.setPosition( obj.x(), obj.y(), obj.z() );
         obj2.setPlayer( obj.playerNum() );
-        }
+        }      
       }
 
   if( mtagets[0].done && isInGame ){
@@ -245,8 +293,13 @@ void ScenarioMission1::closeIntro() {
   }
 
 void ScenarioMission1::start() {
+  // ui.setCutsceneMode(1);
+  game.player().setGold(0);
+
   isInGame = true;
   lChest   = 0;
+  cutScene.active = false;
+  mtagets.clear();
 
   game.pause(1);
 
@@ -280,7 +333,7 @@ void ScenarioMission1::defeat() {
   }
 
 void ScenarioMission1::restartGame() {
-  game.load(L"./save/0.sav");
+  game.load(L"./campagin/0.sav");
   mtagets.clear();
   start();
   }
@@ -301,4 +354,25 @@ void ScenarioMission1::winGame() {
                        game.resources(),
                        ui.centralWidget(),
                        true );
+  }
+
+void ScenarioMission1::serialize( GameSerializer &s ) {
+  if( s.version()<6 )
+    return;
+
+  size_t sz = mtagets.size();
+  s + sz;
+
+  if( s.isReader() ){
+    mtagets.resize( sz );
+    }
+
+  for( size_t i=0; i<mtagets.size(); ++i ){
+    s + mtagets[i].hint;
+    s + mtagets[i].done;
+    }
+
+  s + isInGame + lChest;
+
+  game.updateMissionTargets();
   }

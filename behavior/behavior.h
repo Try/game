@@ -36,6 +36,9 @@ class Behavior : public AbstractBehavior {
 
       int  lkX, lkY;
       bool isMVLock;
+
+      int intentToHold;
+      bool isPatrul;
       };
 
     template< class T >

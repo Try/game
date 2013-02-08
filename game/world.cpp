@@ -56,6 +56,11 @@ World::World( Game & gm,
   light.setAblimient( MyGL::Color( 0.23, 0.23,  0.35) );
   //scene.lights().direction()[0] = light;
 
+  camera.setPerespective( true, w, h );
+  camera.setPosition( 2, 3, 0 );
+  camera.setDistance( 4 );
+  camera.setSpinX(0);
+  camera.setSpinY(-150);
   }
 
 void World::emitHudAnim( const std::string &s,
@@ -228,7 +233,6 @@ GameObject &World::addObject( const ProtoObject &p,
   }
 
 void World::deleteObject(GameObject *obj) {
-  // TOFIX: mgsq index
   for( size_t i=0; i<game.plCount(); ++i )
     if( game.player(i).editObj==obj )
       game.player(i).editObj = 0;
@@ -792,6 +796,9 @@ void World::onRender() {
         obj.setVisible_perf(false);
       }
     }
+
+  for( size_t i=0; i<nonBackground.size(); ++i )
+    nonBackground[i]->syncView();
   }
 
 void World::tick() {

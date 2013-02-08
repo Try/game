@@ -180,13 +180,15 @@ MyGL::Matrix4x4 GraphicsSystem::makeShadowMatrix( const MyGL::Scene & scene,
                                                   double * dir ){
     MyGL::Matrix4x4 mat;
 
-    float dist = 0.4, x = 2, y = 2, s = 0.3, cs = 0.3;
+    float dist = 0.4, x = 2, y = 2, z = 0, s = 0.3, cs = 0.3;
 
     const MyGL::Camera &view =
         reinterpret_cast<const MyGL::Camera&>( scene.camera() );
 
     x = view.x();
     y = view.y();
+    z = view.z();
+
     s = smMatSize(scene);
 
     double l = sqrt( dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] );
@@ -198,7 +200,7 @@ MyGL::Matrix4x4 GraphicsSystem::makeShadowMatrix( const MyGL::Scene & scene,
        s, 0,  0, 0,
        0, s,  0, 0,
        s*dir[0], s*dir[1], cs*dir[2], 0,
-       -s*x, -s*y, dist, 1,
+       -s*x, -s*y, s*z+dist, 1,
        };
 
     mat.setData( m );

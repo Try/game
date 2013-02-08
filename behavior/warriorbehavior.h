@@ -26,6 +26,8 @@ class WarriorBehavior : public AbstractBehavior  {
 
     InputHook hook;
     bool instaled;
+    int& intentToHold;
+    bool& isPatrul;
 
     void move(int, int);
 
@@ -55,6 +57,9 @@ class WarriorBehavior : public AbstractBehavior  {
     void mouseDown( MyWidget::MouseEvent& e );
     void mouseUp  ( MyWidget::MouseEvent& e );
     void onRemoveHook();
+
+    void lockGround();
+    void unlockGround();
   };
 
 #endif // WARRIORBEHAVIOR_H

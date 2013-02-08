@@ -4,14 +4,18 @@
 #include <cstdio>
 #include <winsock2.h>
 
-FileSerialize::FileSerialize( const std::string &s, OpenMode m ) {
+#include <cassert>
+
+FileSerialize::FileSerialize( const std::wstring &s, OpenMode m ) {
+  /*
   static const char * modes[] = {
     "rb",
     "wb",
     "wb+"
     };
+  */
 
-  f = fopen( s.data(), modes[m] );
+  f = fopen( s.data(), m==Read );
   mode = m;
   }
 
@@ -71,6 +75,22 @@ void FileSerialize::read(std::string &val) {
     }
   }
 
+void FileSerialize::write(const std::wstring &val) {
+  write( val.size() );
+  fwrite( val.data(), sizeof(wchar_t), val.size(), f );
+  }
+
+void FileSerialize::read(std::wstring &val) {
+  size_t s;
+  read( s );
+
+  if( s<100000 ){
+    val.resize(s);
+
+    fread ( &val[0], sizeof(wchar_t), val.size(), f );
+    }
+  }
+
 void FileSerialize::write(char val) {
   fwrite( &val, 1, 1, f );
   }
@@ -89,4 +109,54 @@ bool FileSerialize::isOpen() const {
 
 bool FileSerialize::isReader() const {
   return mode==Read;
+  }
+
+
+FileSerialize::File *FileSerialize::fopen(const wchar_t *f, bool r) {
+  HANDLE hFile = 0;
+
+  if( r ){
+    hFile = CreateFile( f,
+                        GENERIC_READ|GENERIC_WRITE,
+                        FILE_SHARE_READ, NULL,
+                        OPEN_ALWAYS,
+                        FILE_ATTRIBUTE_NORMAL,
+                        NULL );
+    } else {
+    hFile = CreateFile( f,
+                        GENERIC_READ|GENERIC_WRITE,
+                        FILE_SHARE_READ, NULL,
+                        OPEN_ALWAYS,
+                        FILE_ATTRIBUTE_NORMAL,
+                        NULL );
+    }
+
+  return (FileSerialize::File*)hFile;
+  }
+
+void FileSerialize::fclose( FileSerialize::File *f ) {
+  CloseHandle( f );
+  }
+
+bool FileSerialize::feof( FileSerialize::File * ) const {
+  return false;
+  }
+
+size_t FileSerialize::fwrite( const void * data,
+                              size_t s,
+                              size_t c,
+                              FileSerialize::File *f) {
+  DWORD wmWritten = 0;
+  WriteFile( f, data, s*c, &wmWritten, NULL );
+  assert( s*c==wmWritten );
+  return wmWritten;
+  }
+
+size_t FileSerialize::fread( void *data,
+                             size_t s, size_t c,
+                             FileSerialize::File *f) {
+  DWORD wmWritten = 0;
+  ReadFile(f, data, s*c, &wmWritten, NULL);
+  assert( s*c==wmWritten );
+  return wmWritten;
   }

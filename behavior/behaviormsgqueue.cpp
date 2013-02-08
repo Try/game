@@ -81,12 +81,21 @@ void BehaviorMSGQueue::tick(const Terrain &) {
 void BehaviorMSGQueue::onUnitRemove( size_t id ) {
   for( size_t i=0; i<data.size(); ++i ){
     MSG & m = data[i];
+
     if( m.msg==SelectAdd || m.msg==Select ){
       if( m.begin+m.size > id )
         --m.size;
 
       if( m.begin > id )
         --m.begin;
+      }
+
+    if( m.msg==SpellCastU ){
+      if( m.size==id )
+        m.size = -1;
+
+      if( m.size > id )
+        --m.size;
       }
     }
   }

@@ -49,7 +49,14 @@ struct PositionChangeEvent : BehaviorEvent{
   int x,y;
   };
 
+struct PatrulEvent : BehaviorEvent{
+  int  x,  y;
+  };
+
 struct StopEvent : BehaviorEvent{
+  };
+
+struct HoldEvent : BehaviorEvent{
   };
 
 struct CancelEvent : BehaviorEvent{
@@ -79,6 +86,8 @@ class AbstractBehavior {
       Atack,
       Buy,
       BuildAt,
+
+      Patrul,
 
       StopMove,
 
@@ -114,10 +123,12 @@ class AbstractBehavior {
 
     virtual void moveEvent  ( MoveEvent & m );
     virtual void moveEvent  ( MoveToUnitEvent & m );
+    virtual void moveEvent  ( PatrulEvent &m );
 
     virtual void moveEvent  ( MoveSingleEvent &m );
     virtual void moveEvent  ( MineralMoveEvent &m );
     virtual void stopEvent  ( StopEvent &m );
+    virtual void holdEvent  ( HoldEvent &m );
     virtual void cancelEvent( CancelEvent &m );
 
     virtual void repositionEvent( RepositionEvent &m );

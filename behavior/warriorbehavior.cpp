@@ -7,7 +7,9 @@
 
 WarriorBehavior::WarriorBehavior( GameObject &obj,
                                   Behavior::Closure &c )
-  :obj(obj), mvLock(c.isMVLock), lkX(c.lkX), lkY(c.lkY) {
+  : obj(obj), intentToHold(c.intentToHold),
+    isPatrul(c.isPatrul),
+    mvLock(c.isMVLock), lkX(c.lkX), lkY(c.lkY) {
   isAtk    = false;
   dAtkTime = 0;
   mvLock   = 0;
@@ -28,10 +30,8 @@ WarriorBehavior::WarriorBehavior( GameObject &obj,
   hook.onRemove .bind( *this, &WarriorBehavior::onRemoveHook );
   }
 
-WarriorBehavior::~WarriorBehavior() {
-  if( mvLock ){
-    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
-    }
+WarriorBehavior::~WarriorBehavior() {  
+  unlockGround();
   }
 
 void WarriorBehavior::tick( const Terrain & ) {
@@ -48,8 +48,8 @@ void WarriorBehavior::tick( const Terrain & ) {
     return;
 
   if( !obj.isOnMove() && isAClick && !taget ){
-    obj.behavior.message( AtackMoveContinue, acX, acY );
-
+    if( intentToHold==0 )
+      obj.behavior.message( AtackMoveContinue, acX, acY );
     //isAClick = obj.isOnMove();
     }
 
@@ -96,11 +96,8 @@ void WarriorBehavior::tick( const Terrain & ) {
       taget = obj.world().objectWPtr( tg );
 
     tickAtack( mvTaget==taget );
-    } else {
-    if( mvLock ){
-      obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
-      mvLock = 0;
-      }
+    } else {    
+    unlockGround();
     }
   }
 
@@ -160,10 +157,7 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
     isAtk    = false;
     isAClick = false;
 
-    if( mvLock ){
-      obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
-      mvLock = 0;
-      }
+    unlockGround();
     }
 
   if( msg==AtackMove ||
@@ -196,10 +190,7 @@ bool WarriorBehavior::message( Message msg, size_t id,
     isAtk    = false;
     isAClick = false;
 
-    if( mvLock ){
-      obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
-      mvLock = 0;
-      }
+    unlockGround();
     }
 
   return AbstractBehavior::message(msg, id, md);
@@ -212,14 +203,19 @@ void WarriorBehavior::aClick() {
   }
 
 void WarriorBehavior::move( int x, int y ) {
+  if( intentToHold!=0 )
+    return;
+
   int qs = Terrain::quadSize;
 
   x /= qs;
   y /= qs;
 
   bool isAClickP = isAClick;
+  bool isPat     = isPatrul;
   obj.behavior.message( AtackMoveContinue, x*qs + qs/2, y*qs + qs/2 );
   isAClick = isAClickP;
+  isPatrul = isPat;
 
   isAtk = true;
 
@@ -260,14 +256,15 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     dobj.setHP( dobj.hp() - absDmg );
     }
 
-  obj.behavior.message( StopMove, 0,0 );
+  if( intentToHold==0 ){
+    bool isPat     = isPatrul;
+    obj.behavior.message( StopMove, 0,0 );
+    isPatrul = isPat;
+    }
   }
 
 void WarriorBehavior::positionChangeEvent(PositionChangeEvent &) {
-  if( mvLock ){
-    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
-    mvLock = 0;
-    }
+  unlockGround();
   }
 
 void WarriorBehavior::tickAtack( bool ignoreVrange ) {
@@ -283,23 +280,14 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
 
     if( d <= arange ){
       damageTo( taget.value() );
-      if( !mvLock ){
-        lkX = obj.x()/Terrain::quadSize;
-        lkY = obj.y()/Terrain::quadSize;
-
-        obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, +1 );
-        mvLock = 1;
-        }
+      lockGround();
       } else
     if( d <= vrange || ignoreVrange )
       if( obj.distanceQL(lastX, lastY)>0 || !obj.isOnMove() ){
         move( taget.value().x(), taget.value().y() );
         }
     } else {
-    if( mvLock ){
-      obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
-      mvLock = 0;
-      }
+    unlockGround();
     }
   }
 
@@ -329,4 +317,21 @@ void WarriorBehavior::mouseUp( MyWidget::MouseEvent &e ) {
 
 void WarriorBehavior::onRemoveHook() {
   instaled = 0;
+  }
+
+void WarriorBehavior::lockGround() {
+  if( !mvLock ){
+    lkX = obj.x()/Terrain::quadSize;
+    lkY = obj.y()/Terrain::quadSize;
+
+    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, +1 );
+    mvLock = 1;
+    }
+  }
+
+void WarriorBehavior::unlockGround() {
+  if( mvLock && intentToHold!=2 ){
+    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
+    mvLock = 0;
+    }
   }

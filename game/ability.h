@@ -18,7 +18,7 @@ class Ability {
     static bool blink( Game &game, World &w,
                        GameObject &obj,
                        const BehaviorMSGQueue::MSG &m );
-    static bool fog  ( Game &game, World &w,
+    static bool fireStrike  ( Game &game, World &w,
                        GameObject &obj,
                        const BehaviorMSGQueue::MSG &m );
   };

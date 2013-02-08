@@ -46,7 +46,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
               graphics.fsHolder ),
     gui( graphics.device, iw, ih, resource, proto ),
     msg(*this),
-    serializator("./serialize_tmp.obj", Serialize::Write ){
+    serializator(L"./serialize_tmp.obj", Serialize::Write ){
   w = iw;
   h = ih;
   isFullScreen = isFS;
@@ -59,8 +59,6 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   hwnd = ihwnd;
   currentPlayer = 1;
 
-  spinX =  0;
-  spinY =  -150;
   mouseTracking         = 0;
   selectionRectTracking = 0;
 
@@ -78,7 +76,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
   gui.addObject.bind( *this, &Game::createEditorObject );
   gui.setCameraPos.bind(*this, &Game::setCameraPos );
-  gui.setCameraPosXY.bind(*this, &Game::setCameraPosXY );
+  gui.minimapEvent.bind(*this, &Game::minimapEvent );
 
   gui.save.bind( *this, &Game::save );
   gui.load.bind( *this, &Game::load );
@@ -95,11 +93,6 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   world->setupMaterial.bind(*this, &Game::setupMaterials );
 
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
-
-  world->camera.setPerespective( true, w, h );
-  world->camera.setPosition( 2, 3, 0 );
-  world->camera.setDistance( 4 );
-
   gui.paintObjectsHud.bind( *world, &World::paintHUD );
 
   fps.n    = 0;
@@ -111,7 +104,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   setPlaylersCount(1);
 
-  load(L"./save/0.sav");
+  load(L"./campagin/0.sav");
   mscenario->onStartGame();
   }
 
@@ -199,7 +192,20 @@ void Game::tick() {
 
 void Game::onRender(){
   gui.renderMinimap(*world);
-  graphics.setFog( player().fog() );
+
+  if( gui.isCutsceneMode() ){
+    MyGL::Pixmap p(1,1, false);
+    MyGL::Pixmap::Pixel pix;
+    pix.r = 255;
+    pix.g = 255;
+    pix.b = 255;
+    pix.a = 255;
+
+    p.set(0,0, pix);
+    graphics.setFog( p );
+    } else {
+    graphics.setFog( player().fog() );
+    }
 
   world->onRender();
   }
@@ -207,8 +213,8 @@ void Game::onRender(){
 void Game::render( size_t dt ) {
   gui.updateValues();
 
-  world->camera.setSpinX(spinX);
-  world->camera.setSpinY(spinY);
+  //world->camera.setSpinX(spinX);
+  //world->camera.setSpinY(spinY);
 
   DWORD time = GetTickCount();
 
@@ -268,7 +274,7 @@ void Game::mouseDownEvent( MyWidget::MouseEvent &e) {
   }
 
 void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
-  if( gui.mouseUpEvent(e) )
+  if( !selectionRectTracking && gui.mouseUpEvent(e) )
     return;
 
   gui.setFocus();
@@ -313,7 +319,7 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
 void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
   curMPos = MyWidget::Point(e.x, e.y);
 
-  if( gui.mouseMoveEvent(e) ){
+  if( !selectionRectTracking && gui.mouseMoveEvent(e) ){
     acceptMouseObj = false;
     return;
     }
@@ -321,8 +327,8 @@ void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
   acceptMouseObj = true;
 
   if( mouseTracking ){
-    //spinX -= (e.x - lastMPos.x);
-    //spinY -= (e.y - lastMPos.y);
+    //world->camera.setSpinX( world->camera.spinX() - (e.x - lastMPos.x) );
+    //world->camera.setSpinY( world->camera.spinY() - (e.y - lastMPos.y) );
 
     lastMPos = MyWidget::Point(e.x, e.y);
     }
@@ -649,19 +655,42 @@ void Game::setCameraPos(GameObject &obj) {
   k = std::min(0.3+l0, 1.0);
 
   world->camera.setPosition( x+(x1-x)*k, y+(y1-y)*k, z+(z1-z)*k );
+  world->moveCamera(0,0);
   }
 
-void Game::setCameraPosXY(float fx, float fy) {
+void Game::minimapEvent( float fx, float fy,
+                         MyWidget::Event::MouseButton b,
+                         MiniMapView::Mode m ) {
+  world->setMousePos( fx*world->terrain().width() *Terrain::quadSizef,
+                      fy*world->terrain().height()*Terrain::quadSizef,
+                      0 );
+  if( gui.minimapMouseEvent( fx*world->terrain().width() *Terrain::quadSizef,
+                             fy*world->terrain().height()*Terrain::quadSizef,
+                             b,
+                             m ) ){
+    return;
+    }
+
   float x1 = World::coordCast(fx*world->terrain().width() *Terrain::quadSizef),
         y1 = World::coordCast(fy*world->terrain().height()*Terrain::quadSizef),
         z1 = world->camera.z();
 
-  float k = 1;//0.3;
-  float x = world->camera.x(),
-        y = world->camera.y(),
-        z = world->camera.z();
+  if( b==MyWidget::MouseEvent::ButtonLeft ){
+    float k = 1;//0.3;
+    float x = world->camera.x(),
+          y = world->camera.y(),
+          z = world->camera.z();
 
-  world->camera.setPosition( x+(x1-x)*k, y+(y1-y)*k, z+(z1-z)*k );
+    world->camera.setPosition( x+(x1-x)*k, y+(y1-y)*k, z+(z1-z)*k );
+    world->moveCamera(0,0);
+    }
+
+  if( b==MyWidget::MouseEvent::ButtonRight ){
+    msg.message( currentPlayer,
+                 AbstractBehavior::Move,
+                 fx*world->terrain().width() *Terrain::quadSizef,
+                 fy*world->terrain().height()*Terrain::quadSizef );
+    }
   }
 
 Scenario &Game::scenario() {
@@ -818,20 +847,14 @@ MyGL::Matrix4x4 &Game::shadowMat() {
 
 
 void Game::save( const std::wstring& f ) {
-  std::string str;
-  str.assign(f.begin(), f.end());
-
-  GameSerializer s( str, Serialize::Write );
+  GameSerializer s( f, Serialize::Write );
 
   if( s.isOpen() )
     serialize(s);
   }
 
 void Game::load( const std::wstring& f ) {
-  std::string str;
-  str.assign(f.begin(), f.end());
-
-  GameSerializer s( str, Serialize::Read );
+  GameSerializer s( f, Serialize::Read );
 
   if( s.isOpen() )
     serialize(s);
@@ -897,6 +920,8 @@ void Game::serialize( GameSerializer &s ) {
 
   for( size_t i=0; i<players.size(); ++i )
     players[i]->computeFog(world);
+
+  mscenario->serialize(s);
   }
 
 void Game::log(const std::string &l) {

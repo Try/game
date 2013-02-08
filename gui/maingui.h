@@ -60,7 +60,9 @@ class MainGui {
     MyWidget::signal<const Terrain::EditMode&> toogleEditLandMode;
     //MyWidget::signal<> updateView;
     MyWidget::signal<GameObject&> setCameraPos;
-    MyWidget::signal<float, float> setCameraPosXY;
+    MyWidget::signal< float, float,
+                      MyWidget::MouseEvent::MouseButton,
+                      MiniMapView::Mode> minimapEvent;
 
     MyWidget::signal< const std::wstring& > save, load;    
 
@@ -81,6 +83,7 @@ class MainGui {
     int scutEvent   ( MyWidget::KeyEvent & e );
     int keyDownEvent( MyWidget::KeyEvent & e );
     int keyUpEvent  ( MyWidget::KeyEvent & e );
+    bool minimapMouseEvent(float x, float y, MyWidget::Event::MouseButton btn , MiniMapView::Mode m);
 
     MyWidget::Rect& selectionRect();
     void update();
@@ -94,12 +97,16 @@ class MainGui {
     void renderMinimap( World& w );
     void updateValues();
 
+    bool isCutsceneMode();
+
     static void drawFrame( MyWidget::Painter & p,
                            const MyWidget::Bind::UserTexture & tex ,
                            const MyWidget::Point &pos,
                            const MyWidget::Size &size );
 
     MyWidget::Widget* centralWidget();
+
+    void setCutsceneMode( bool cs );
   private:
     typedef MyWidget::PainterDevice Painter;
     typedef MyWidget::Widget  Widget;

@@ -77,7 +77,7 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   mainwidget = new InGameControls(res, msg, prototypes, game);
   mainwidget->renderScene.bind( renderScene );
   mainwidget->setCameraPos.bind( setCameraPos );
-  mainwidget->setCameraPosXY.bind( setCameraPosXY );
+  mainwidget->minimapEvent.bind( minimapEvent );
 
   //updateView.bind( mainwidget->updateView );
 
@@ -139,6 +139,17 @@ bool MainGui::draw(GUIPass &pass) {
     p.unsetTexture();
 
     paintObjectsHud( p, central.w(), central.h() );
+
+    if( isCutsceneMode() ){
+      p.setTexture( frame );
+      MyWidget::Rect tex = MyWidget::Rect(4,0, 1,1);
+
+      p.setBlendMode( MyWidget::noBlend );
+      p.drawRect( MyWidget::Rect(0,0, central.w(), 80), tex );
+      p.drawRect( MyWidget::Rect(0, central.h()-80, central.w(), 80), tex );
+
+      p.unsetTexture();
+      }
   }
 
   if( central.needToUpdate() ){
@@ -238,6 +249,12 @@ int MainGui::keyUpEvent(MyWidget::KeyEvent &e) {
   return e.isAccepted();
   }
 
+bool MainGui::minimapMouseEvent( float x, float y,
+                                 MyWidget::Event::MouseButton btn,
+                                 MiniMapView::Mode m ) {
+  return mainwidget->minimapMouseEvent(x,y,btn,m);
+  }
+
 MyWidget::Rect &MainGui::selectionRect() {
   return selRect;
   }
@@ -269,6 +286,10 @@ void MainGui::renderMinimap(World &w) {
 void MainGui::updateValues() {
   MyWidget::CustomEvent e;
   central.customEvent(e);
+  }
+
+bool MainGui::isCutsceneMode() {
+  return !mainwidget->isVisible();
   }
 
 void MainGui::drawFrame( MyWidget::Painter & p,
@@ -310,6 +331,10 @@ void MainGui::drawFrame( MyWidget::Painter & p,
 
 MainGui::Widget *MainGui::centralWidget() {
   return mainwidget;
+  }
+
+void MainGui::setCutsceneMode(bool cs) {
+  mainwidget->setVisible(cs==0);
   }
 
 void MainGui::saveGame() {

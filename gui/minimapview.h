@@ -16,7 +16,12 @@ class MiniMapView : public TextureView {
 
     void render( World& w );
 
-    MyWidget::signal<float, float> mouseEvent;
+    enum Mode{
+      Up,
+      Drag,
+      Down
+      };
+    MyWidget::signal<float, float, MyWidget::Event::MouseButton, Mode> mouseEvent;
   private:
     MyGL::Pixmap renderTo, cashed, fog;
     Resource &res;

@@ -4,6 +4,8 @@
 #include <MyWidget/Event>
 #include <MyWidget/signal>
 
+#include "gui/minimapview.h"
+
 class InputHookBase {
   public:
     virtual ~InputHookBase(){}
@@ -20,12 +22,19 @@ class InputHookBase {
     virtual void keyDownEvent( MyWidget::KeyEvent & e ) { e.ignore(); }
     virtual void keyUpEvent  ( MyWidget::KeyEvent & e ) { e.ignore(); }
 
+    virtual bool minimapMouseEvent( float /*x*/, float /*y*/,
+                                    MyWidget::Event::MouseButton /*btn*/,
+                                    MiniMapView::Mode /*m*/ ){return 0; }
   };
 
 struct InputHook : public InputHookBase {
   virtual void mouseDownEvent ( MyWidget::MouseEvent & );
   virtual void mouseUpEvent   ( MyWidget::MouseEvent & );
   virtual void mouseMoveEvent ( MyWidget::MouseEvent & );
+
+  virtual bool minimapMouseEvent(float x, float y,
+                                 MyWidget::Event::MouseButton btn,
+                                 MiniMapView::Mode m );
 
   virtual void mouseWheelEvent ( MyWidget::MouseEvent & );
 

@@ -43,6 +43,8 @@ class Player {
     void addLim( int l );
     void incLim( int l );
 
+    void setGold( int g );
+
     bool canBuild(const ProtoObject &p) const;
 
     int  limMax()  const;    

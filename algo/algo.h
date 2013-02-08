@@ -80,6 +80,15 @@ void incMapPoint( array2d<Val> &  map,
   map[taget.x][taget.y] = 1+map[src.x][src.y];
   }
 
+template< class Val >
+void incMapPointR( array2d<Val> &  map,
+                  Point taget,
+                  Point src ){
+  if( abs(taget.x-src.x)+abs(taget.y-src.y) >= 2 )
+    map[taget.x][taget.y] = 3+map[src.x][src.y]; else
+    map[taget.x][taget.y] = 2+map[src.x][src.y];
+  }
+
 inline Point* dXY(){
   static Point d[8*2] =
   { {1, 0}, {-1, 0},
@@ -122,13 +131,13 @@ void wave( array2d<Val> &  map, int x, int y, Val val,
   while( stk1->size() && !isEnd() ){
     for( size_t i=0; i<stk1->size(); ++i ){
       for( int r=0; r<dimCount; ++r ){
-        Point p = (*stk1)[i];
+        Point p  = (*stk1)[i];
         p.x += dxy[r].x;
         p.y += dxy[r].y;
 
         if( 0<= p.x && p.x < map.width() &&
             0<= p.y && p.y < map.height() ){
-          if( test( map, p, (*stk1)[i] ) ){
+          if( test( map,  p, (*stk1)[i] )   ){
             edit( map, p, (*stk1)[i] );
             stk2->push_back( p );
             }

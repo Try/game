@@ -115,6 +115,10 @@ void Player::incLim(int l) {
   m.limMax += l;
   }
 
+void Player::setGold(int g) {
+  m.gold = g;
+  }
+
 bool Player::canBuild( const ProtoObject &p ) const {
   return (  m.gold>= p.data.gold &&
            (m.lim >= p.data.lim || p.data.lim<=0));

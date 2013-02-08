@@ -144,7 +144,7 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
 
   minimap = new MiniMapView(res);
   minimap->setTexture( res.texture("grass/diff") );
-  minimap->mouseEvent.bind( setCameraPosXY );
+  minimap->mouseEvent.bind( minimapEvent );
 
   img->setLayout( Vertical );
   img->layout().add( minimap );
@@ -305,6 +305,19 @@ void InGameControls::renderMinimap(World &w) {
   minimap->render(w);
   }
 
+bool InGameControls::minimapMouseEvent( float x, float y,
+                                        Event::MouseButton btn,
+                                        MiniMapView::Mode m) {
+  for( size_t i=0; i<hooks.size(); ++i ){
+    InputHookBase &b = *hooks[hooks.size()-i-1];
+
+    if( b.minimapMouseEvent(x,y,btn, m) )
+      return 1;
+    }
+
+  return 0;
+  }
+
 void InGameControls::paintEvent(PaintEvent &e) {
   Widget::paintEvent(e);
 
@@ -345,7 +358,7 @@ bool InGameControls::instalHook(InputHookBase *h) {
   if( isHooksEnabled && hooks.size()==0 )
     hooks.push_back( h );
 
-  return isHooksEnabled;
+  return isHooksEnabled && hooks.size()==0;
   }
 
 void InGameControls::removeHook(InputHookBase *h) {

@@ -4,6 +4,8 @@
 #include "game/scenario.h"
 #include <MyWidget/signal>
 
+#include <MyGL/Camera>
+
 class Game;
 class MainGui;
 
@@ -20,10 +22,18 @@ class ScenarioMission1 : public Scenario {
 
     const std::vector<MissionTaget>& tagets();
 
+    void serialize( GameSerializer &s );
   private:
     MainGui & ui;
     Game& game;
     bool  isInGame;
+
+    struct CutScene{
+      bool active;
+      float t;
+
+      MyGL::Camera camera;
+      } cutScene;
 
     class IntroWidget;
     class EndScreenWidget;

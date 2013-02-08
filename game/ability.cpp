@@ -20,7 +20,7 @@ bool Ability::spell( Game &g,
     }
 
   if( m.str=="fire_strike" ){
-    return fog(g,w,obj,m);
+    return fireStrike(g,w,obj,m);
     }
 
   return 0;
@@ -80,10 +80,10 @@ bool Ability::blink( Game &g,
   return 1;
   }
 
-bool Ability::fog( Game &g,
-                   World &w,
-                   GameObject &obj,
-                   const BehaviorMSGQueue::MSG &m) {
+bool Ability::fireStrike( Game &g,
+                          World &w,
+                          GameObject &obj,
+                          const BehaviorMSGQueue::MSG &m) {
   if( m.size == size_t(-1) )
     return 0;
 

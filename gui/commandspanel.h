@@ -47,6 +47,8 @@ class CommandsPanel : public Panel {
     void buyEvent( const std::string& unit );
     void moveClick();
     void stopClick();
+    void holdClick();
+    void patrulClick();
     void atkClick();
 
     void setPage( int p );

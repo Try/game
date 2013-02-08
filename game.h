@@ -113,7 +113,9 @@ class Game {
     bool isPaused() const;
 
     void setCameraPos( GameObject& obj );
-    void setCameraPosXY( float x, float y );
+    void minimapEvent( float x, float y,
+                       MyWidget::Event::MouseButton b,
+                       MiniMapView::Mode m);
 
     Scenario& scenario();
     MyWidget::signal<> updateMissionTargets;
@@ -143,7 +145,7 @@ class Game {
     std::vector< std::unique_ptr<World> >  worlds;
     World * world;
 
-    double spinX, spinY;
+    //double spinX, spinY;
     int w, h;
     bool mouseTracking;
     int  selectionRectTracking;

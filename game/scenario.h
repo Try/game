@@ -6,6 +6,8 @@ class GameObject;
 #include <string>
 #include <vector>
 
+class GameSerializer;
+
 struct Scenario {
   virtual ~Scenario(){}
 
@@ -15,6 +17,8 @@ struct Scenario {
   virtual void restartGame() {}
 
   virtual void onItemEvent( GameObject & obj )   {}
+
+  virtual void serialize( GameSerializer &s ){}
 
   struct MissionTaget{
     bool done;

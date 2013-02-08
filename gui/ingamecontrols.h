@@ -6,6 +6,7 @@
 #include "inputhook.h"
 
 #include "landscape/terrain.h"
+#include "gui/minimapview.h"
 
 class Resource;
 class BehaviorMSGQueue;
@@ -18,7 +19,6 @@ class Game;
 class Button;
 
 class UnitList;
-class MiniMapView;
 class World;
 
 class EditTerrainPanel;
@@ -42,7 +42,9 @@ class InGameControls : public MyWidget::Widget {
     MyWidget::signal<> save, load;
     MyWidget::signal<> updateView;
     MyWidget::signal<GameObject&>  setCameraPos;
-    MyWidget::signal<float, float> setCameraPosXY;
+    MyWidget::signal< float, float,
+                      MyWidget::MouseEvent::MouseButton,
+                      MiniMapView::Mode > minimapEvent;
 
     MyWidget::signal< const MyGL::Scene &,
                       ParticleSystemEngine &,
@@ -60,6 +62,7 @@ class InGameControls : public MyWidget::Widget {
     void updateValues();
     void renderMinimap( World& w );
 
+    bool minimapMouseEvent(float x, float y, MyWidget::Event::MouseButton btn , MiniMapView::Mode m);
   protected:
     void paintEvent(MyWidget::PaintEvent &p);
 

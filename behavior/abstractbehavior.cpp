@@ -24,6 +24,10 @@ void AbstractBehavior::moveEvent(MoveToUnitEvent &m) {
   m.ignore();
   }
 
+void AbstractBehavior::moveEvent( PatrulEvent &m) {
+  m.ignore();
+  }
+
 void AbstractBehavior::moveEvent(MoveSingleEvent &m) {
   m.ignore();
   }
@@ -33,6 +37,10 @@ void AbstractBehavior::moveEvent(MineralMoveEvent &m) {
   }
 
 void AbstractBehavior::stopEvent(StopEvent &m) {
+  m.ignore();
+  }
+
+void AbstractBehavior::holdEvent(HoldEvent &m) {
   m.ignore();
   }
 
@@ -101,6 +109,16 @@ bool AbstractBehavior::message( AbstractBehavior::Message m,
     return mm.isAccepted();
     }
 
+  if( m==Patrul ){
+    PatrulEvent mm;
+    mm.modif = md;
+    mm.x = x;
+    mm.y = y;
+
+    moveEvent(mm);
+    return mm.isAccepted();
+    }
+
   if( m==MineralMove ){
     MineralMoveEvent mm;
     mm.modif = md;
@@ -134,6 +152,12 @@ bool AbstractBehavior::message( AbstractBehavior::Message m,
   if( m==StopMove ){
     StopEvent mm;
     stopEvent(mm);
+    return mm.isAccepted();
+    }
+
+  if( m==Hold ){
+    HoldEvent mm;
+    holdEvent(mm);
     return mm.isAccepted();
     }
 

@@ -37,6 +37,8 @@ GameObject::GameObject( MyGL::Scene & s,
 
   bclos.colisionDisp[0] = 0;
   bclos.colisionDisp[1] = 0;
+  bclos.isPatrul        = false;
+  bclos.isMVLock        = false;
 
   m.hp = p.data.maxHp;
 
@@ -183,16 +185,27 @@ void GameObject::setPosition(int x, int y, int z) {
   }
 
 void GameObject::setPositionSmooth(int x, int y, int z) {
-  setViewPosition( World::coordCast(x),
-                   World::coordCast(y),
-                   World::coordCast(z),
-                   0.3 );
+  if( getClass().data.isBackground ){
+    setViewPosition( World::coordCast(m.x),
+                     World::coordCast(m.y),
+                     World::coordCast(m.z),
+                     1 );
+    }
+
   m.x = x;
   m.y = y;
   m.z = z;//world.terrain().heightAt(x, y);
   view.setPosition(x,y);
 
   behavior.message( Behavior::onPositionChange, x, y );
+  }
+
+void GameObject::syncView() {
+  //return;
+  setViewPosition( World::coordCast(m.x),
+                   World::coordCast(m.y),
+                   World::coordCast(m.z),
+                   0.5 );
   }
 
 void GameObject::setViewSize(float s) {
@@ -354,10 +367,12 @@ bool GameObject::isMineralMove() const {
   }
 
 void GameObject::tick( const Terrain &terrain ) {
+  /*
   setViewPosition( World::coordCast(m.x),
                    World::coordCast(m.y),
                    World::coordCast(m.z),
                    0.3 );
+                   */
 
   view.tick();
   behavior.tick( terrain );

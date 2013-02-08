@@ -36,7 +36,15 @@ struct UnitList::Btn : public Button {
 
     p.setBlendMode( MyWidget::alphaBlend );
     p.setTexture( icon );
-    p.drawRect( 0, 0, w(), h(),
+
+    int sz = std::min(w(), h());
+    float k = std::min( sz/float(icon.data.rect.w),
+                        sz/float(icon.data.rect.h) );
+
+    int icW = icon.data.rect.w*k,
+        icH = icon.data.rect.h*k;
+
+    p.drawRect( (w()-icW)/2, (h()-icH)/2, icW, icH,
                 0, 0, icon.data.rect.w, icon.data.rect.h );
     }
 

@@ -23,7 +23,10 @@ class MoveBehavior : public AbstractBehavior {
     void moveEvent( MoveToUnitEvent & m );
     void moveEvent( MoveSingleEvent  &m );
     void moveEvent( MineralMoveEvent &m );
+    void moveEvent( PatrulEvent &m );
+
     void stopEvent(StopEvent &m);
+    void holdEvent(HoldEvent &m);
     void cancelEvent(CancelEvent &m);
     void repositionEvent( RepositionEvent &m );
     void positionChangeEvent(PositionChangeEvent &);
@@ -40,22 +43,29 @@ class MoveBehavior : public AbstractBehavior {
     static bool isCloseEnough(int x1, int y1, int x2, int y2 , int unitSize);
 
     void updatePos( const Terrain &t );
+    void setupPatrul();
   private:
     GameObject & obj;
     Behavior::Closure & clos;
 
     InputHook hook;
     bool instaled;
+    enum Mode{
+      inMove,
+      inPatrul
+      } inputMode;
     int timer;
 
     //std::vector<Pos> wayPoints;
     int tx, ty, curentSpeed;
     int intentPos[2];
+    int& intentToHold;
 
     WeakWorldPtr taget;
 
     bool isWayAcept, & isMWalk;
-    std::vector<Point> way;
+    std::vector<Point> way, patrulWay;
+    size_t patrulPoint;
 
     void step(const Terrain & terrain);
     bool nextPoint();
@@ -65,6 +75,8 @@ class MoveBehavior : public AbstractBehavior {
     void mouseDown(MyWidget::MouseEvent &e);
     void mouseUp  ( MyWidget::MouseEvent& e );
     void onRemoveHook();
+
+    void unHold();
   };
 
 #endif // MOVEBEHAVIOR_H

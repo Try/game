@@ -8,7 +8,7 @@
 
 class FileSerialize : public Serialize {
   public:
-    FileSerialize( const std::string & s, OpenMode m );
+    FileSerialize(const std::wstring &s, OpenMode m );
     ~FileSerialize();
 
     FileSerialize( const FileSerialize&  )              = delete;
@@ -25,6 +25,9 @@ class FileSerialize : public Serialize {
 
     void write( const std::string& val );
     void read ( std::string& val );
+
+    void write( const std::wstring& val );
+    void read ( std::wstring& val );
 
     void write( char  val );
     void read ( char& val );
@@ -43,7 +46,17 @@ class FileSerialize : public Serialize {
       }
 
   private:
-    FILE * f;
+    //FILE * f;
+
+    struct File;
+    File * f;
+
+    File *fopen(const wchar_t*, bool r );
+    void  fclose( File *  );
+    bool  feof( File *  ) const;
+
+    size_t fwrite( const void*, size_t, size_t, File* f );
+    size_t fread ( void*,       size_t, size_t, File* f);
 };
 
 #endif // FILESERIALIZE_H

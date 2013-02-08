@@ -282,6 +282,18 @@ void CommandsPanel::stopClick() {
                       0, 0 );
   }
 
+void CommandsPanel::holdClick() {
+  u0->game().message( u0->playerNum(),
+                      AbstractBehavior::Hold,
+                      0, 0 );
+  }
+
+void CommandsPanel::patrulClick() {
+  if( MoveBehavior * m = u0->behavior.find<MoveBehavior>() ){
+    m->setupPatrul();
+    }
+  }
+
 void CommandsPanel::atkClick() {
   if( WarriorBehavior * m = u0->behavior.find<WarriorBehavior>() ){
     m->aClick();
@@ -354,7 +366,9 @@ void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
 
   btn[0]->clicked.bind(*this, &CommandsPanel::moveClick );
   btn[1]->clicked.bind(*this, &CommandsPanel::stopClick );
+  btn[2]->clicked.bind(*this, &CommandsPanel::holdClick );
 
+  btn[3]->clicked.bind(*this, &CommandsPanel::patrulClick );
   btn[4]->clicked.bind(*this, &CommandsPanel::atkClick  );
 
   if( obj.behavior.find<WarriorBehavior>()==0 ){

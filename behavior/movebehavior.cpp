@@ -11,7 +11,7 @@
 
 MoveBehavior::MoveBehavior( GameObject &object,
                             Behavior::Closure & c )
-  :obj(object), clos(c), isMWalk(c.isMineralMove) {
+  :obj(object), clos(c), intentToHold(c.intentToHold), isMWalk(c.isMineralMove) {
   tx = 0;
   ty = 0;
 
@@ -21,6 +21,7 @@ MoveBehavior::MoveBehavior( GameObject &object,
   isMWalk    = 0;
 
   curentSpeed = 0;
+  intentToHold = 0;
 
   intentPos[0] = 0;
   intentPos[1] = 0;
@@ -29,6 +30,7 @@ MoveBehavior::MoveBehavior( GameObject &object,
   clos.colisionDisp[1] = 0;
 
   clos.isMoviable = true;
+  inputMode = inMove;
 
   instaled = 0;
   hook.mouseDown.bind( *this, &MoveBehavior::mouseDown    );
@@ -47,6 +49,7 @@ MoveBehavior::~MoveBehavior() {
 
 void MoveBehavior::atackMoveEvent( MoveSingleEvent &m ) {
   taget = WeakWorldPtr();
+  unHold();
 
   clos.isReposMove = 0;
   clos.isOnMove    = true;
@@ -62,8 +65,11 @@ void MoveBehavior::atackContinueEvent(MoveSingleEvent &m) {
   }
 
 void MoveBehavior::moveEvent( MoveEvent &m ) {
+  clos.isPatrul = false;
+
   clos.isReposMove = 0;
   taget = WeakWorldPtr();
+  unHold();
 
   isWayAcept = 1;
   isMWalk    = 0;
@@ -71,7 +77,10 @@ void MoveBehavior::moveEvent( MoveEvent &m ) {
   }
 
 void MoveBehavior::moveEvent(MoveToUnitEvent &m) {
+  clos.isPatrul = false;
+
   clos.isReposMove = 0;
+  unHold();
 
   taget = obj.world().objectWPtr( m.id );
   timer = 0;
@@ -85,6 +94,8 @@ void MoveBehavior::moveEvent(MoveToUnitEvent &m) {
   }
 
 void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
+  clos.isPatrul = false;
+
   taget = WeakWorldPtr();
 
   clos.isOnMove    = true;
@@ -95,7 +106,10 @@ void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
   }
 
 void MoveBehavior::moveEvent( MineralMoveEvent &m ) {
+  clos.isPatrul = false;
+
   taget = WeakWorldPtr();
+  unHold();
 
   clos.isReposMove = 0;
 
@@ -109,8 +123,24 @@ void MoveBehavior::moveEvent( MineralMoveEvent &m ) {
   clos.isReposMove = false;
   }
 
+void MoveBehavior::moveEvent( PatrulEvent &m ) {
+  Point p1 = { obj.x(), obj.y() },
+        p2 = { m.x,     m.y     };
+
+  patrulWay.clear();
+  patrulWay.push_back(p1);
+  patrulWay.push_back(p2);
+  patrulPoint = 0;
+
+  clos.isPatrul = true;
+  }
+
 void MoveBehavior::stopEvent(StopEvent &) {
+  //patrulWay.clear();
+
   clos.isReposMove = 0;
+  clos.isPatrul = false;
+  unHold();
 
   way.clear();
   taget = WeakWorldPtr();
@@ -124,8 +154,31 @@ void MoveBehavior::stopEvent(StopEvent &) {
   clos.isReposMove = false;
   }
 
-void MoveBehavior::cancelEvent(CancelEvent &) {
+void MoveBehavior::holdEvent( HoldEvent & ) {
+  clos.isPatrul = false;
+
   clos.isReposMove = 0;
+  unHold();
+
+  way.clear();
+  taget = WeakWorldPtr();
+
+  isMWalk = 0;
+
+  tx = obj.x();
+  ty = obj.y();
+
+  clos.isOnMove    = false;
+  clos.isReposMove = false;
+
+  intentToHold = 1;
+  }
+
+void MoveBehavior::cancelEvent(CancelEvent &) {
+  clos.isPatrul = false;
+
+  clos.isReposMove = 0;
+  unHold();
 
   way.clear();
   taget = WeakWorldPtr();
@@ -162,16 +215,6 @@ void MoveBehavior::positionChangeEvent( PositionChangeEvent & ) {
 
 void MoveBehavior::calcWayAndMove( int tx, int ty,
                                    const Terrain & /*terrain*/ ) {
-  /*
-  WayFindAlgo algo(terrain);
-  algo.findWay( obj,
-                obj.x()/Terrain::quadSize,
-                obj.y()/Terrain::quadSize,
-                tx/Terrain::quadSize,
-                ty/Terrain::quadSize );
-  isWayAcept = 1;
-  setWay( algo.way );
-  */
   isWayAcept = 1;
   obj.world().wayFind( tx, ty, &obj );
   }
@@ -182,17 +225,34 @@ void MoveBehavior::mouseDown(MyWidget::MouseEvent &e) {
 
 void MoveBehavior::mouseUp( MyWidget::MouseEvent &e ) {
   if( e.button==MyWidget::MouseEvent::ButtonLeft ){
-    if( obj.world().mouseObj()==0 ){
+    patrulWay.clear();
+    if( inputMode==inMove ){
+      if( obj.world().mouseObj()==0 ){
+        obj.game().message( obj.playerNum(),
+                            Move,
+                            obj.world().mouseX(),
+                            obj.world().mouseY()
+                            );
+        } else {
+        GameObject *tg = obj.world().mouseObj();
+        obj.game().message( obj.playerNum(),
+                            ToUnit,
+                            obj.world().objectWPtr(tg).id() );
+        }
+      } else {
       obj.game().message( obj.playerNum(),
-                          Move,
+                          Patrul,
                           obj.world().mouseX(),
                           obj.world().mouseY()
                           );
-      } else {
-      GameObject *tg = obj.world().mouseObj();
-      obj.game().message( obj.playerNum(),
-                          ToUnit,
-                          obj.world().objectWPtr(tg).id() );
+      obj.world().emitHudAnim( "hud/blink",
+                               World::coordCast(obj.x()),
+                               World::coordCast(obj.y()),
+                               0.1);
+      obj.world().emitHudAnim( "hud/blink",
+                               World::coordCast(obj.world().mouseX()),
+                               World::coordCast(obj.world().mouseY()),
+                               0.1);
       }
     }
 
@@ -202,6 +262,15 @@ void MoveBehavior::mouseUp( MyWidget::MouseEvent &e ) {
 
 void MoveBehavior::onRemoveHook() {
   instaled = 0;
+  }
+
+void MoveBehavior::unHold() {
+  if( intentToHold==2 && clos.isMVLock ){
+    clos.isMVLock = false;
+    obj.world().terrain().editBuildingsMap( clos.lkX, clos.lkY, 2, 2, -1 );
+    }
+
+  intentToHold  = 0;
   }
 
 void MoveBehavior::tick(const Terrain &terrain) {
@@ -222,6 +291,15 @@ void MoveBehavior::tick(const Terrain &terrain) {
     calcWayAndMove( tx, ty,  terrain );
     timer = 15;
     return;
+    }
+
+  if( !clos.isOnMove && clos.isPatrul && !clos.isMVLock ){
+    patrulPoint = (patrulPoint+1)%patrulWay.size();
+
+    Point &p = patrulWay[patrulPoint];
+    //calcWayAndMove( p.x, p.y, terrain );
+    obj.behavior.message( AtackMoveContinue, p.x, p.y );
+    clos.isPatrul = true;
     }
 
   int qs = Terrain::quadSize;
@@ -447,6 +525,7 @@ bool MoveBehavior::isSameDirection( const MoveBehavior &other ) {
 void MoveBehavior::setupMoveHook() {
   if( !instaled ){
     instaled = obj.game().instalHook( &hook );
+    inputMode = inMove;
     }
   }
 
@@ -465,8 +544,24 @@ bool MoveBehavior::isCloseEnough( int x1, int y1,
       2*2*realL <= lc*lc;
   }
 
-void MoveBehavior::updatePos(const Terrain &t ) {
+void MoveBehavior::updatePos(const Terrain &t ) {  
+  if( intentToHold==1 ){
+    int x = obj.x()/Terrain::quadSize,
+        y = obj.y()/Terrain::quadSize;
+
+    if( clos.isMVLock==0 && t.isEnableQuad( x, y, 1 ) ){
+      clos.isMVLock = true;
+      clos.lkX = x;
+      clos.lkY = y;
+      obj.world().terrain().editBuildingsMap( clos.lkX, clos.lkY, 2, 2, 1 );
+      intentToHold = 2;
+      }
+    }
+
   if( !clos.isOnMove )
+    return;
+
+  if( intentToHold==2 )
     return;
 
   int x = intentPos[0],
@@ -485,4 +580,11 @@ void MoveBehavior::updatePos(const Terrain &t ) {
         wy = y/Terrain::quadSizef;
 
   obj.setPositionSmooth( x, y, t.heightAt(wx,wy) );
+  }
+
+void MoveBehavior::setupPatrul() {
+  if( !instaled ){
+    instaled  = obj.game().instalHook( &hook );
+    inputMode = inPatrul;
+    }
   }

@@ -190,16 +190,16 @@ void MiniMapView::lineTo( MyGL::Pixmap &renderTo,
   }
 
 void MiniMapView::mouseDownEvent(MyWidget::MouseEvent &e) {
-  mouseEvent( e.x/float(w()), e.y/float(h()) );
+  mouseEvent( e.x/float(w()), e.y/float(h()), e.button, MiniMapView::Down );
   pressed = true;
   }
 
 void MiniMapView::mouseDragEvent(MyWidget::MouseEvent &e) {
-  mouseEvent( e.x/float(w()), e.y/float(h()) );
+  mouseEvent( e.x/float(w()), e.y/float(h()), e.button, MiniMapView::Drag );
   }
 
 void MiniMapView::mouseUpEvent(MyWidget::MouseEvent &e) {
-  mouseEvent( e.x/float(w()), e.y/float(h()) );
+  mouseEvent( e.x/float(w()), e.y/float(h()), e.button, MiniMapView::Up );
   pressed = false;
   }
 
