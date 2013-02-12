@@ -4,6 +4,8 @@
 #include "game.h"
 #include "algo/algo.h"
 
+#include <cmath>
+
 SmallGraphicsObject::SmallGraphicsObject( MyGL::Scene &s,
                                           Game &g,
                                           Terrain &t,
@@ -44,7 +46,8 @@ void SmallGraphicsObject::setPosition(float ix, float iy, float iz) {
   if( mx==ix && my==iy && mz==iz )
     return;
 
-  bool rm = ( &chunkBase(mx,my)!=&chunkBase(ix,iy) );
+  bool rm = ( &chunkBase(mx,my)!=&chunkBase(ix,iy) ||
+               fabs( chunk().zView - mz )<0.001 );
 
   if( rm && visible )
     remove( chunkBase().polishObj, this );
@@ -173,12 +176,12 @@ void SmallGraphicsObject::applyTransform() {
   MyGL::Matrix4x4& mat = transformV;
 
   mat.identity();
-  mat.translate( mx, my, mz );
-
-  mat.scale( sx,sy,sz );
+  mat.translate( mx, my, mz - vx.zView );
 
   mat.rotate( ax, 1, 0, 0 );
   mat.rotate( az, 0, 0, 1 );
+
+  mat.scale( sx,sy,sz );
 
   Model::Vertex *v = &vx.geometry.vertex[glocation];
   double x, y, z, w = 1;
@@ -206,11 +209,15 @@ TerrainChunk::PolishView &SmallGraphicsObject::chunk() {
   TerrainChunk &c = chunkBase();
 
   for( size_t i=0; i<c.polish.size(); ++i )
-    if( c.polish[i]->baseView==&view ){
+    if( c.polish[i]->baseView==&view &&
+        fabs(c.polish[i]->zView - z()) < 0.001 ){
       return *c.polish[i].get();
       }
 
   TerrainChunk::PolishView *vx = new TerrainChunk::PolishView(scene, &view);
+  vx->zView = z();
+  vx->obj.setPosition(0,0, z());
+
   game.setupMaterials( vx->obj, view, MyGL::Color() );
   c.polish.push_back( std::shared_ptr<TerrainChunk::PolishView>(vx) );
   glocation = 0;

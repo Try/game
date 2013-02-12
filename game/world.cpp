@@ -716,6 +716,7 @@ void World::toogleEditLandMode(const Terrain::EditMode &m) {
   }
 
 void World::initTerrain() {
+  //terr->loadFromPixmap( MyGL::Pixmap("./terrImg/h.png") );
   terr->buildGeometry( graphics.lvboHolder,
                        graphics.iboHolder );
   physics.setTerrain( terrain() );
@@ -748,7 +749,7 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
     }
   }
 
-void World::onRender() {
+void World::onRender( double dt ) {
   scene.setCamera( camera );
   terr->updatePolish();
 
@@ -798,7 +799,7 @@ void World::onRender() {
     }
 
   for( size_t i=0; i<nonBackground.size(); ++i )
-    nonBackground[i]->syncView();
+    nonBackground[i]->syncView(dt);
   }
 
 void World::tick() {
@@ -840,7 +841,8 @@ void World::tick() {
 
   for( size_t i=0; i<nonBackground.size(); ++i )
     if( nonBackground[i]->hp() <= 0 &&
-        nonBackground[i]->behavior.find<MoveBehavior>() ) {
+        nonBackground[i]->getClass().deathAnim==ProtoObject::Physic
+        /*nonBackground[i]->behavior.find<MoveBehavior>()*/ ) {
       GameObject & src = *nonBackground[i];
       GameObject & obj = addObjectEnv( nonBackground[i]->getClass().name );
 

@@ -52,7 +52,7 @@ class GraphicsSystem {
                          ParticleSystemEngine &e,
                          MyGL::Texture2d & out   );
 
-    MyWidget::signal<> onRender;
+    MyWidget::signal<double> onRender;
     void setFog( const MyGL::Pixmap& p );
   private:
     MyGL::DirectX9 directx;
@@ -304,7 +304,7 @@ class GraphicsSystem {
                    MyGL::Texture2d gbuffer[4],
                    int shadowMapSize, bool useAO);
 
-    unsigned int time;
+    size_t time;
 
     friend class DisplaceMaterial;
     friend class GlowMaterial;

@@ -29,6 +29,16 @@ class Model : public MyGL::Model<MVertex> {
     float cenZ() const;
 
     float radius() const;
+
+    enum PhysicType{
+      Sphere,
+      Box
+      } physicType;
+
+
+    float boxSzX() const;
+    float boxSzY() const;
+    float boxSzZ() const;
   private:
     static void computeBiNormal( MVertex & a,
                                  MVertex & b,
@@ -36,7 +46,7 @@ class Model : public MyGL::Model<MVertex> {
 
     void setModelData(const MyGL::Model<MVertex>& md);
 
-    float cen[3], r;
+    float cen[3], r, pbounds[3][2];
   };
 
 #endif // MODEL_MX_H

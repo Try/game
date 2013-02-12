@@ -123,9 +123,17 @@ ScenarioMission1::ScenarioMission1( Game &game,
                                     MainGui & ui )
                  :ui(ui), game(game) {
   isInGame = true;
+
+  intro    = 0;
+  lChest   = 0;
+  cutScene.active = false;
+  mtagets.clear();
+
+  ui.updateView.bind( *this, &ScenarioMission1::updateView );
   }
 
 ScenarioMission1::~ScenarioMission1() {
+  ui.updateView.ubind( *this, &ScenarioMission1::updateView );
   delete intro;
   }
 
@@ -307,7 +315,6 @@ void ScenarioMission1::start() {
                            game.resources(),
                            ui.centralWidget() );
   intro->renderScene.bind( ui.renderScene );
-  ui.updateView.bind( *this, &ScenarioMission1::updateView );
 
   intro->onClosed.bind( game,  &Game::unsetPause );
   intro->onClosed.bind( *this, &ScenarioMission1::closeIntro);

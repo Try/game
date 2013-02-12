@@ -164,14 +164,19 @@ void GameObjectView::loadView( const Resource & r,
 
           env.push_back( object );
 
-          if( src.physModel==ProtoObject::View::Sphere ){
+          if( model.groups[i].physicType==Model::Sphere ){
             setForm( this->env.back(),
                      p.createSphere( x(), y(), 0,
                                      object.model().radius()*szMid ) );
             }
 
-          if( src.physModel==ProtoObject::View::Box ){
-            const double *bs = src.boxSize;
+          if( model.groups[i].physicType==Model::Box ){
+            const double bs[] = {
+              model.groups[i].boxSzX()*src.size[0],
+              model.groups[i].boxSzY()*src.size[1],
+              model.groups[i].boxSzZ()*src.size[2],
+              };
+
             setForm( this->env.back(),
                      p.createBox( x(), y(), 0,
                                   bs[0], bs[1], bs[2] ));
@@ -335,8 +340,13 @@ void GameObjectView::setViewPosition( float x, float y, float z,
   //                                          wrld.terrain().atF(wx,wy) ) );
   float zland = World::coordCast( wrld.terrain().heightAt(wx,wy) );
 
-  for( int i=0; i<selectModelsCount; ++i )
-    selection[i]->setPosition( x, y, zland+0.01 );
+  for( int i=0; i<selectModelsCount; ++i ){
+    float x1 = selection[i]->x() + (x-selection[i]->x())*interp;
+    float y1 = selection[i]->y() + (y-selection[i]->y())*interp;
+
+    selection[i]->setPosition( x1, y1, zland+0.01 );
+    }
+    //selection[i]->setPosition( x, y, zland+0.01, interp );
 
   float dx = 0, dy = 0, dz = 0;
   if( view.size() ){
@@ -661,21 +671,27 @@ void GameObjectView::updatePosRigid( Physics::Box &rigid, size_t i ) {
   m.identity();
 
   m.mul  ( rigid.transform() );
-  const double * bs = getClass().view[i].boxSize;
-  m.scale( bs[0], bs[1], bs[2] );
+  //const double * bs = getClass().view[i].boxSize;
+  //m.scale( bs[0], bs[1], bs[2] );
 
-  if( i<getClass().view.size() ){
-    const double * lbs = getClass().view[i].boxSize;
+  size_t id = env[i].viewID;
+  if( id < getClass().view.size() ){
+    const double lbs[3] = {1,1,1};//getClass().view[i].boxSize;
 
-    m.scale( getClass().view[i].size[0]/lbs[0],
-             getClass().view[i].size[1]/lbs[1],
-             getClass().view[i].size[2]/lbs[2] );
+
+    m.scale( getClass().view[id].size[0]/lbs[0],
+             getClass().view[id].size[1]/lbs[1],
+             getClass().view[id].size[2]/lbs[2] );
+
 
     //if( getClass().view[i].align[2] )
       //m.translate( 0, 0, -getClass().view[i].size[2]/sphereDiameter );
     }
   //m.translate( 0, 0, -0.8 );
 
+  m.translate( -env[i].model().cenX(),
+               -env[i].model().cenY(),
+               -env[i].model().cenZ() );
   env[i].setTransform( m );
   }
 

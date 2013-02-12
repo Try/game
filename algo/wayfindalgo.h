@@ -31,6 +31,7 @@ class WayFindAlgo {
                   int x, int y, int rx, int ry, int cls );
 
     bool isQuadEnable(const array2d<int> &map, Point p, Point src);
+    bool isQuadEnable( Point p, Point src );
 
     void optimizeWay();
     bool optimizeWay( Point a, Point b );

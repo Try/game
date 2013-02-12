@@ -21,6 +21,8 @@ ProtoObject::ProtoObject()
     sizeBounds.min[i] = 1;
     sizeBounds.max[i] = 1;
     }
+
+  deathAnim = NoAnim;
   }
 
 bool ProtoObject::isLandTile() const {

@@ -24,7 +24,17 @@ MyGL::Matrix4x4 BlushMaterial::animateObjMatrix(const MyGL::Matrix4x4 &object) {
     };
 
   MyGL::Matrix4x4 mobj( (MyGL::Float*)mx );
-  mobj.mul( object );
+  //mobj.mul( object );
+  MyGL::Matrix4x4 objR = object;
+  objR.set(3,0, 0);
+  objR.set(3,1, 0);
+  objR.set(3,2, 0);
+
+  mobj.mul( objR );
+
+  mobj.set(3,0, object.at(3,0));
+  mobj.set(3,1, object.at(3,1));
+  mobj.set(3,2, object.at(3,2));
 
   return mobj;
   }

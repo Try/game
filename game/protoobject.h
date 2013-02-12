@@ -51,7 +51,7 @@ struct ProtoObject {
       double sphereDiameter, specularFactor;
       double boxSize[3];
 
-      bool randRotate, isParticle;
+      bool randRotate, isParticle;      
       };
 
     struct SizeBounds{
@@ -62,6 +62,11 @@ struct ProtoObject {
     std::vector<std::string> behaviors;
     std::vector<std::string> ability;
     double rotateSpeed;
+
+    enum DeathAnim{
+      NoAnim,
+      Physic
+      } deathAnim;
 
     std::string  name;
     std::wstring mouseHint;

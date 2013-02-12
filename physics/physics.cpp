@@ -65,8 +65,7 @@ struct Physics::RigidBody{
               Data::localInertion( mass, sphere )
               )
             ) {
-    body.setActivationState( DISABLE_DEACTIVATION );
-    body.setDeactivationTime(8000);
+    init();
     }
 
   RigidBody( float  x, float  y, float  z,
@@ -84,7 +83,15 @@ struct Physics::RigidBody{
               Data::localInertion( mass, box )
               )
             ) {
+    init();
+    }
 
+  void init(){
+    //body.setActivationState( DISABLE_DEACTIVATION );
+    body.setDeactivationTime(8000);
+    body.setFriction(0.5);
+    body.setDamping( 0.7, 0.7 );
+    //body.setRestitution(0.5);
     }
 
   btDefaultMotionState mstate;

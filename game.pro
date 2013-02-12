@@ -148,7 +148,8 @@ HEADERS += \
     game/spell.h \
     gui/richtext.h \
     model_mx.h \
-    gui/missiontargets.h
+    gui/missiontargets.h \
+    game/missions/deatmachscenarion.h
 
 SOURCES += \
     main.cpp \
@@ -257,7 +258,8 @@ SOURCES += \
     game/spell.cpp \
     gui/richtext.cpp \
     model_mx.cpp \
-    gui/missiontargets.cpp
+    gui/missiontargets.cpp \
+    game/missions/deatmachscenarion.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

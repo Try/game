@@ -74,21 +74,6 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
       }
     }
 
-  waterView.view.reset( new GameObjectView( scene,
-                                       world,
-                                       prototype.get( "water" ),
-                                       prototype) );
-  waterView.view->loadView( waterGeometry(vboHolder, iboHolder) );
-
-  fogView.view.reset( new GameObjectView( scene,
-                                          world,
-                                          prototype.get( "water" ),
-                                          prototype) );
-  ProtoObject::View v;
-  v.materials.push_back("fog_of_war");
-
-  fogView.view->loadView( fogGeometry(vboHolder, iboHolder), v );
-
   for( int i=0; i<chunks.width(); ++i )
     for( int r=0; r<chunks.height(); ++r )
       chunks[i][r].needToUpdate  = false;
@@ -222,6 +207,21 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
 
     chunk.landView.push_back( view );
     }
+
+  chunk.waterView.view.reset( new GameObjectView( scene,
+                                                  world,
+                                                  prototype.get( "water" ),
+                                                  prototype) );
+  chunk.waterView.view->loadView( waterGeometry(vboHolder, iboHolder, cX, cY) );
+
+  chunk.fogView.view.reset( new GameObjectView( scene,
+                                                world,
+                                                prototype.get( "water" ),
+                                                prototype) );
+  ProtoObject::View vf;
+  vf.materials.push_back("fog_of_war");
+
+  chunk.fogView.view->loadView( fogGeometry(vboHolder, iboHolder, cX, cY), vf );
   }
 
 void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
@@ -280,7 +280,8 @@ void Terrain::computePlanes() {
 
 MyGL::Model<WaterVertex>
       Terrain::waterGeometry( MyGL::VertexBufferHolder & vboHolder,
-                              MyGL::IndexBufferHolder  & iboHolder) const {
+                              MyGL::IndexBufferHolder  & iboHolder,
+                              int cX, int cY ) const {
   MyGL::Model<WaterVertex> model;
   WaterVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
   v.h = 0;
@@ -295,8 +296,17 @@ MyGL::Model<WaterVertex>
 
   const double texCoordScale = 0.1/2.0;
 
-  for( int i=0; i+1<heightMap.width(); ++i )
-    for( int r=0; r+1<heightMap.height(); ++r )
+  int lx = (heightMap.width()* cX   )/chunks.width(),
+      rx = (heightMap.width()*(cX+1))/chunks.width()+1;
+
+  int ly = (heightMap.height()* cY   )/chunks.height(),
+      ry = (heightMap.height()*(cY+1))/chunks.height()+1;
+
+  rx = std::min(rx, heightMap.width() );
+  ry = std::min(ry, heightMap.height());
+
+  for( int i=lx; i+1<rx; ++i )
+    for( int r=ly; r+1<ry; ++r )
       if( depthAt(i,r  )>0 || depthAt(i+1,r  )>0 ||
           depthAt(i,r+1)>0 || depthAt(i+1,r+1)>0 )
         for( int q=0; q<6; ++q ){
@@ -350,7 +360,8 @@ MyGL::Model<WaterVertex>
   }
 
 Model Terrain::fogGeometry( MyGL::VertexBufferHolder & vboHolder,
-                            MyGL::IndexBufferHolder  & iboHolder) const {
+                            MyGL::IndexBufferHolder  & iboHolder,
+                            int cX, int cY ) const {
   Model model;
   MVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
 
@@ -360,8 +371,17 @@ Model Terrain::fogGeometry( MyGL::VertexBufferHolder & vboHolder,
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
 
-  for( int i=0; i+1<heightMap.width(); ++i )
-    for( int r=0; r+1<heightMap.height(); ++r )
+  int lx = (heightMap.width()* cX   )/chunks.width(),
+      rx = (heightMap.width()*(cX+1))/chunks.width()+1;
+
+  int ly = (heightMap.height()* cY   )/chunks.height(),
+      ry = (heightMap.height()*(cY+1))/chunks.height()+1;
+
+  rx = std::min(rx, heightMap.width() );
+  ry = std::min(ry, heightMap.height());
+
+  for( int i=lx; i+1<rx; ++i )
+    for( int r=ly; r+1<ry; ++r )
         for( int q=0; q<6; ++q ){
           int x = (i+dx[q]),
               y = (r+dy[q]);
@@ -792,6 +812,21 @@ void Terrain::updatePolish() {
   for( int i=0; i<chunks.width(); ++i )
     for( int r=0; r<chunks.height(); ++r )
       chunks[i][r].update( res );
+  }
+
+void Terrain::loadFromPixmap(const MyGL::Pixmap &p) {
+  for( int i=0; i<p.width(); ++i )
+    for( int r=0; r<p.height(); ++r ){
+      MyGL::Pixmap::Pixel px = p.at(i,r);
+      //if( px.b>0 )
+        //px.b = 32;
+
+      heightMap[i][r] = 64*(32);
+      waterMap[i][r]  = 64*(-px.r+px.b);
+      //heightMap[i][r] -= 64*(px.b);
+      }
+
+  computeEnableMap();
   }
 
 

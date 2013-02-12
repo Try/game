@@ -24,7 +24,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 Game * mgl_demo;
 HWND g_hWnd;
-bool isAppActive = true;
+bool isAppActive = true, resizeIntent = false;
+int winW = 0, winH = 0;
 
 std::wstring toStr( const char* c ){
   std::wstring re;
@@ -127,7 +128,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
     /*try*/
     {
 
-    bool isFullScreen = 1;
+    bool isFullScreen = 0;
 
     int w = GetSystemMetrics(SM_CXFULLSCREEN),
         h = GetSystemMetrics(SM_CYFULLSCREEN);
@@ -189,7 +190,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
       SetThreadAffinityMask( (void*)mainTh, 0);
 
       DWORD time = GetTickCount(), gameTime = 0, tickCount = 0;
-      const DWORD frameTime = 1000/40;
+      const DWORD frameTime = 1000/35;
 
       while( uMsg.message != WM_QUIT ) {
         if( PeekMessage( &uMsg, NULL, 0, 0, PM_REMOVE ) ) {
@@ -199,6 +200,12 @@ int WINAPI WinMain( HINSTANCE hInstance,
           DWORD ft = GetTickCount();
 
           if( isAppActive ){
+            if( resizeIntent ){
+              if( winW*winH ){
+                mgl_demo->resizeEvent( winW, winH );
+                resizeIntent = false;
+                }
+              }
             demo.render( GetTickCount() );
             }
 
@@ -361,16 +368,22 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         }
         break;
 
-        case WM_SIZE:
+        case WM_SIZE:{
+            winW = LOWORD (lParam),
+            winH = HIWORD (lParam);
+
             if( mgl_demo && isAppActive ){
               RECT rectWindow;
               GetWindowRect( hWnd, &rectWindow);
 
-              if( LOWORD (lParam)*HIWORD (lParam) ){
-                mgl_demo->resizeEvent( LOWORD (lParam),
-                                       HIWORD (lParam) );
+              if( winW*winH ){
+                mgl_demo->resizeEvent( winW, winH );
+                resizeIntent = false;
                 }
+              } else {
+              resizeIntent = true;
               }
+            }
         break;
 
         case WM_MOUSEWHEEL:{

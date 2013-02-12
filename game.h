@@ -53,8 +53,8 @@ class Game {
     size_t plCount() const;
 
     void setPlaylersCount( int c );
-    void addEditorObject( const std::string &p, int pl,
-                          int x, int y , size_t unitPl);
+    void addEditorObject(const std::string &p, int pl,
+                          int x, int y , int rAngle, size_t unitPl);
     void moveEditorObject( int pl, int x, int y );
     void rotateEditorObject( int pl, int x );
     void nextEditorObject( int pl );
@@ -177,7 +177,7 @@ class Game {
     void onUnitsSelected( std::vector<GameObject*>& u, Player &pl);
     void onUnitDied( GameObject& u, Player &pl);
 
-    void onRender();
+    void onRender(double dt);
 
   friend class World;
   };

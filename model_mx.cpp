@@ -16,6 +16,9 @@ MyGL::VertexDeclaration::Declarator MVertex::decl() {
 
 Model::Model() {
   std::fill( cen, cen+3, 0 );
+  r = 0;
+
+  physicType = Sphere;
   }
 
 void Model::computeBiNormal( MVertex &va, MVertex &vb, MVertex &vc ) {
@@ -131,27 +134,46 @@ void Model::loadMX( MyGL::VertexBufferHolder & vboHolder,
 
       groups[i].setModelData( this->slice( begin, sz ) );
 
-      for( size_t r=begin; r<begin+sz; ++r ){
-        groups[i].cen[0] += rawN.vertex[r].x;
-        groups[i].cen[1] += rawN.vertex[r].y;
-        groups[i].cen[2] += rawN.vertex[r].z;
+      if( ver<=1 ){
+        for( size_t r=begin; r<begin+sz; ++r ){
+          groups[i].cen[0] += rawN.vertex[r].x;
+          groups[i].cen[1] += rawN.vertex[r].y;
+          groups[i].cen[2] += rawN.vertex[r].z;
+          }
+
+        for( int r=0; r<3; ++r )
+          groups[i].cen[r] /= sz;
+
+        float maxR = 0, minR = 1000000;
+        for( size_t r=begin; r<begin+sz; ++r ){
+          float dx = groups[i].cen[0] - rawN.vertex[r].x;
+          float dy = groups[i].cen[1] - rawN.vertex[r].y;
+          float dz = groups[i].cen[2] - rawN.vertex[r].z;
+
+          float l = sqrt(dx*dx+dy*dy+dz*dz);
+          maxR = std::max(maxR, l);
+          minR = std::min(minR, l);
+          }
+
+        groups[i].r = (maxR*0.7+minR*0.3);
+        } else {
+        uint16_t type = 0;
+        fin.read( (char*)&type,  sizeof(type)  );
+
+        if( type==0 ){
+          groups[i].physicType = Sphere;
+          fin.read( (char*)&groups[i].r,  sizeof(groups[i].r)  );
+          fin.read( (char*)&groups[i].cen,  sizeof(groups[i].cen)*3  );
+          }
+
+        if( type==1 ){
+          groups[i].physicType = Box;
+          fin.read( (char*)&groups[i].pbounds,  sizeof(groups[i].pbounds[0][0])*6  );
+          for( int r=0; r<3; ++r ){
+            groups[i].cen[r] = 0.5*( groups[i].pbounds[r][0]+groups[i].pbounds[r][1] );
+            }
+          }
         }
-
-      for( int r=0; r<3; ++r )
-        groups[i].cen[r] /= sz;
-
-      float maxR = 0, minR = 1000000;
-      for( size_t r=begin; r<begin+sz; ++r ){
-        float dx = groups[i].cen[0] - rawN.vertex[r].x;
-        float dy = groups[i].cen[1] - rawN.vertex[r].y;
-        float dz = groups[i].cen[2] - rawN.vertex[r].z;
-
-        float l = sqrt(dx*dx+dy*dy+dz*dz);
-        maxR = std::max(maxR, l);
-        minR = std::min(minR, l);
-        }
-
-      groups[i].r = (maxR*0.7+minR*0.3);
       }
     }
 
@@ -172,4 +194,16 @@ float Model::cenZ() const {
 
 float Model::radius() const {
   return r;
+  }
+
+float Model::boxSzX() const {
+  return pbounds[0][0] - pbounds[0][1];
+  }
+
+float Model::boxSzY() const {
+  return pbounds[1][0] - pbounds[1][1];
+  }
+
+float Model::boxSzZ() const {
+  return pbounds[2][0] - pbounds[2][1];
   }

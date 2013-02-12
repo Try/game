@@ -53,10 +53,12 @@ class Terrain {
                         MyGL::IndexBufferHolder  & iboHolder );
 
     MyGL::Model<WaterVertex> waterGeometry( MyGL::VertexBufferHolder & vboHolder,
-                                            MyGL::IndexBufferHolder  & iboHolder) const;
+                                            MyGL::IndexBufferHolder  & iboHolder,
+                                            int cX, int cY ) const;
 
     Model fogGeometry( MyGL::VertexBufferHolder & vboHolder,
-                       MyGL::IndexBufferHolder  & iboHolder) const;
+                       MyGL::IndexBufferHolder  & iboHolder,
+                       int cX, int cY ) const;
 
     int width() const;
     int height() const;
@@ -89,12 +91,11 @@ class Terrain {
     void serialize( GameSerializer &s );
 
     void updatePolish();
+    void loadFromPixmap( const MyGL::Pixmap& p );
   private:
     MyGL::Scene            & scene;
     World                  & world;
     const PrototypesLoader & prototype;
-
-    TerrainChunk::View waterView, fogView;
 
     std::vector< std::string > aviableTiles;
     struct Tile {

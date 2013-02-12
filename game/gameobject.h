@@ -54,7 +54,7 @@ class GameObject {
 
     void setPosition( int x, int y, int z );
     void setPositionSmooth( int x, int y, int z );
-    void syncView();
+    void syncView(double dt);
 
     void setViewSize( float x, float y, float z );
     void setViewSize( float s );

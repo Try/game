@@ -207,6 +207,8 @@ void MoveBehavior::repositionEvent(RepositionEvent &m) {
   }
 
 void MoveBehavior::positionChangeEvent( PositionChangeEvent & ) {
+  return;
+
   clos.isReposMove = 0;
 
   tx = obj.x();

@@ -38,7 +38,7 @@ class World {
                       const MyGL::Color & > setupMaterial;
 
     void clickEvent( int x, int y, const MyWidget::MouseEvent &e );
-    void onRender();
+    void onRender(double dt);
 
     static double coordCast( int icoord );
     static double coordCastP( double icoord );

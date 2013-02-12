@@ -200,12 +200,12 @@ void GameObject::setPositionSmooth(int x, int y, int z) {
   behavior.message( Behavior::onPositionChange, x, y );
   }
 
-void GameObject::syncView() {
+void GameObject::syncView( double dt ) {
   //return;
   setViewPosition( World::coordCast(m.x),
                    World::coordCast(m.y),
                    World::coordCast(m.z),
-                   0.5 );
+                   std::max(0.004, std::min(1.0, 0.006*dt) ) );
   }
 
 void GameObject::setViewSize(float s) {

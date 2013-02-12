@@ -31,6 +31,7 @@
 #include "network/client.h"
 
 #include "game/missions/scenariomission1.h"
+#include "game/missions/deatmachscenarion.h"
 
 #include <cmath>
 
@@ -67,7 +68,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   resource.load("./data/data.xml");
   proto   .load("./data/game.xml");
 
-  mscenario.reset( new ScenarioMission1(*this, gui) );
+  mscenario.reset( new DeatmachScenarion() );
 
   //MyGL::Model<>::saveRawData( "./sphere.mx", MyGL::TessObject::sphere(3, 1) );
 
@@ -90,6 +91,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
                                                       256, 256) ) );
 
   world = worlds[0].get();
+  world->camera.setPerespective( true, w, h );
   world->setupMaterial.bind(*this, &Game::setupMaterials );
 
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
@@ -104,7 +106,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   setPlaylersCount(1);
 
-  load(L"./campagin/0.sav");
+  //load(L"./campagin/0.sav");
   mscenario->onStartGame();
   }
 
@@ -190,7 +192,7 @@ void Game::tick() {
   fps.time += int(GetTickCount() - time);
   }
 
-void Game::onRender(){
+void Game::onRender( double dt ){
   gui.renderMinimap(*world);
 
   if( gui.isCutsceneMode() ){
@@ -207,7 +209,7 @@ void Game::onRender(){
     graphics.setFog( player().fog() );
     }
 
-  world->onRender();
+  world->onRender(dt);
   }
 
 void Game::render( size_t dt ) {
@@ -359,7 +361,11 @@ void Game::mouseWheelEvent( MyWidget::MouseEvent &e ) {
 
   if( (player().editObj && !serializator.isReader() ) &&
       lastKEvent!=MyWidget::KeyEvent::K_Down ){
-    msg.message( currentPlayer, Behavior::EditRotate, e.delta, 0 );
+    int dR = 10;
+    if( e.delta<0 )
+      dR = -10;
+
+    msg.message( currentPlayer, Behavior::EditRotate, dR, 0 );
     } else {
     if( e.delta<0 )
       world->camera.setDistance( world->camera.distance() * 1.1 ); else
@@ -398,11 +404,17 @@ void Game::setPlaylersCount(int c) {
     addPlayer();
   }
 
-void Game::addEditorObject(const std::string &p, int pl, int x, int y,
+void Game::addEditorObject(const std::string &p,
+                           int pl, int x, int y,
+                           int rAngle,
                            size_t unitPl ) {
   GameObject *obj = &world->addObject( p, unitPl );
 
   obj->setPosition( x, y, 200 );
+
+  if( obj->getClass().view.size() && !obj->getClass().view[0].randRotate )
+    obj->rotate( rAngle );
+
   obj->updatePos();
 
   if( player(pl).editObj )
@@ -423,7 +435,7 @@ void Game::moveEditorObject( int pl, int x, int y) {
 
 void Game::rotateEditorObject(int pl, int x) {
   if( player(pl).editObj )
-    player(pl).editObj->rotate( x/10 );
+    player(pl).editObj->rotate( x );
   }
 
 void Game::nextEditorObject(int pl) {
@@ -432,7 +444,9 @@ void Game::nextEditorObject(int pl) {
 
   GameObject * obj = player(pl).editObj;
   player(pl).editObj = 0;
-  addEditorObject( obj->getClass().name, pl, obj->x(), obj->y(),
+  addEditorObject( obj->getClass().name, pl,
+                   obj->x(), obj->y(),
+                   180+obj->rAngle()*180/M_PI,
                    obj->playerNum() );
   }
 
@@ -921,7 +935,25 @@ void Game::serialize( GameSerializer &s ) {
   for( size_t i=0; i<players.size(); ++i )
     players[i]->computeFog(world);
 
-  mscenario->serialize(s);
+  if( s.version()>=7 ){
+    bool isScenario = mscenario->isCampagin();
+    s + isScenario;
+
+    if( s.isReader() ){
+      if( isScenario ){
+        mscenario.reset( new ScenarioMission1(*this, gui) );
+        } else {
+        mscenario.reset( new DeatmachScenarion() );
+        }
+      }
+    mscenario->serialize(s);
+    } else {
+    mscenario.reset( new DeatmachScenarion() );
+    //mscenario.reset( new ScenarioMission1(*this, gui) );
+    mscenario->serialize(s);
+    }
+
+  updateMissionTargets();
   }
 
 void Game::log(const std::string &l) {

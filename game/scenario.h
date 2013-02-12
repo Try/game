@@ -26,6 +26,7 @@ struct Scenario {
     };
 
   virtual const std::vector<MissionTaget>& tagets();
+  virtual bool isCampagin() { return true; }
   };
 
 #endif // SCENARIO_H

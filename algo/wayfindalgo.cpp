@@ -198,7 +198,7 @@ void WayFindAlgo::findWay(GameObject & obj, int x, int y, int rx, int ry) {
 
   int dimCount = 8;
   wave( wayMap, x, y, 1, func, incMapPointR<int>, isEnd, dimCount );
-  //dump();
+  // dump();
 
   if( wayMap.at(rx,ry)==-1 )
     return;
@@ -213,9 +213,13 @@ void WayFindAlgo::findWay(GameObject & obj, int x, int y, int rx, int ry) {
 
     for( int i=0; i<dimCount; ++i ){
       Point p = {re.x+dxy[i].x, re.y+dxy[i].y };
-      int pVal  = wayMap[ p.x][ p.y];
+
+      int pVal = 0;
+      if( wayMap.validate(p.x, p.y) )
+        pVal = wayMap[ p.x][ p.y];
 
       if( wayMap.validate(p.x, p.y) &&
+          isQuadEnable( p, re) &&
           pVal > 0 &&
           pVal < wayMap[re.x][re.y] ){
         maxR = std::max( maxR, wayMap[re.x][re.y]-pVal );
@@ -225,9 +229,13 @@ void WayFindAlgo::findWay(GameObject & obj, int x, int y, int rx, int ry) {
 
     for( int i=0; i<dimCount; ++i ){
       Point p = {re.x+dxy[i].x, re.y+dxy[i].y };
-      int pVal  = wayMap[ p.x][ p.y];
+
+      int pVal = 0;
+      if( wayMap.validate(p.x, p.y) )
+        pVal  = wayMap[ p.x][ p.y];
 
       if( wayMap.validate(p.x, p.y) &&
+          isQuadEnable( p, re) &&
           pVal > 0 &&
           wayMap[re.x][re.y]-pVal==maxR ){
         way.push_back(re);
@@ -244,6 +252,15 @@ void WayFindAlgo::findWay(GameObject & obj, int x, int y, int rx, int ry) {
   //dump();
   optimizeWay();
   //dump();
+  }
+
+bool WayFindAlgo::isQuadEnable( Point p,
+                                Point s ) {
+  //int v1 = map[s.x][s.y];
+
+  return terrain.isEnable( p.x, p.y ) &&
+         terrain.isEnable( s.x, p.y ) &&
+         terrain.isEnable( p.x, s.y );
   }
 
 bool WayFindAlgo::isQuadEnable( const array2d<int> &  map,

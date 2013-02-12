@@ -242,7 +242,7 @@ void BehaviorMSGQueue::sysMSG( Game &game, World &w ){
       } else
 
     if( m.msg == EditAdd ){
-      game.addEditorObject( m.str, m.player, m.x, m.y, m.size );
+      game.addEditorObject( m.str, m.player, m.x, m.y, 0, m.size );
       } else
 
     if( m.msg == EditMove ){

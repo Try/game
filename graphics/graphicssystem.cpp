@@ -49,7 +49,7 @@ GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
          lvboHolder,
          screenSize  ) {
   widget    = 0;
-  time      = 0;
+  time      = -1;
   particles = 0;
 
   useFog    = false;
@@ -245,7 +245,7 @@ bool GraphicsSystem::render( MyGL::Scene &scene,
     return false;
 
   //return false;
-  onRender();
+  onRender( std::max<size_t>(dt-time, 0) );
 
   time = dt;//(time+dt);
   unsigned tx = time%(16*1024);
@@ -277,6 +277,7 @@ bool GraphicsSystem::render( MyGL::Scene &scene,
 
   MyGL::Texture2d fog;
   drawFogOfWar(fog, scene);
+
   aceptFog( gbuffer[0], fog );
 
   if( widget )
@@ -1012,6 +1013,9 @@ void GraphicsSystem::drawFogOfWar( MyGL::Texture2d &out,
 
 void GraphicsSystem::aceptFog( MyGL::Texture2d &in_out,
                                const MyGL::Texture2d &fog ) {
+  if( !(fogView.width()>1 || fogView.height()>1 ) )
+    return;
+
   MyGL::Texture2d depth = this->depth( in_out.width(),
                                        in_out.height() );
   MyGL::Texture2d tmp;

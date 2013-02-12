@@ -195,11 +195,15 @@ void MiniMapView::mouseDownEvent(MyWidget::MouseEvent &e) {
   }
 
 void MiniMapView::mouseDragEvent(MyWidget::MouseEvent &e) {
-  mouseEvent( e.x/float(w()), e.y/float(h()), e.button, MiniMapView::Drag );
+  mouseEvent( e.x/float(w()), e.y/float(h()),
+              MyWidget::MouseEvent::ButtonLeft,
+              MiniMapView::Drag );
   }
 
 void MiniMapView::mouseUpEvent(MyWidget::MouseEvent &e) {
-  mouseEvent( e.x/float(w()), e.y/float(h()), e.button, MiniMapView::Up );
+  mouseEvent( e.x/float(w()), e.y/float(h()),
+              e.button,
+              MiniMapView::Up );
   pressed = false;
   }
 

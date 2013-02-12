@@ -14,6 +14,7 @@ struct TerrainChunk {
       std::shared_ptr<GameObjectView> view;
       };
     std::vector<View> landView;
+    View waterView, fogView;
 
     struct PolishView {
       PolishView( MyGL::Scene& s,
@@ -21,7 +22,9 @@ struct TerrainChunk {
 
       MyGL::GraphicObject obj;
       Model::Raw          geometry;
+
       const ProtoObject::View  *baseView;
+      float zView;
 
       bool needToUpdate;
       };

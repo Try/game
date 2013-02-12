@@ -1,6 +1,6 @@
 #include "gameserializer.h"
 
-const unsigned GameSerializer::currentVersion = 6;
+const unsigned GameSerializer::currentVersion = 7;
 
 GameSerializer::GameSerializer(const std::wstring &s, OpenMode m )
                :FileSerialize(s,m){

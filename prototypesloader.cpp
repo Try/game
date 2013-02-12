@@ -283,6 +283,15 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       if( find(e, "key", str ) ){
         readIf( e, "val", obj.data.propertyStr[str] );
         }
+
+      if( find(e, "deathAnim", str ) ){
+        //readIf( e, "anim", str );
+
+        obj.deathAnim = ProtoObject::NoAnim;
+
+        if( str=="physic" )
+          obj.deathAnim = ProtoObject::Physic;
+        }
       }
 
     if( type=="view_size" ){
