@@ -149,7 +149,8 @@ HEADERS += \
     gui/richtext.h \
     model_mx.h \
     gui/missiontargets.h \
-    game/missions/deatmachscenarion.h
+    game/missions/deatmachscenarion.h \
+    game/particlesystemdeclaration.h
 
 SOURCES += \
     main.cpp \
@@ -259,7 +260,8 @@ SOURCES += \
     gui/richtext.cpp \
     model_mx.cpp \
     gui/missiontargets.cpp \
-    game/missions/deatmachscenarion.cpp
+    game/missions/deatmachscenarion.cpp \
+    game/particlesystemdeclaration.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
@@ -276,5 +278,6 @@ OTHER_FILES += \
     gui/gen/ui_loaddialog.xml \
     ../game-build-desktop/data/land.xml \
     ../game-build-desktop/data/spell.xml \
-    ../game-build-desktop/data/hud.xml
+    ../game-build-desktop/data/hud.xml \
+    ../game-build-desktop/data/particle.xml
 

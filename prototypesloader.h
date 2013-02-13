@@ -7,6 +7,7 @@
 #include <memory>
 #include "game/protoobject.h"
 #include "game/spell.h"
+#include "game/particlesystemdeclaration.h"
 
 class PrototypesLoader : public AbstractXMLReader {
   public:
@@ -14,10 +15,13 @@ class PrototypesLoader : public AbstractXMLReader {
     typedef std::shared_ptr<ProtoObject> PProtoObject;
     typedef std::shared_ptr<Spell>       PSpell;
 
+    typedef std::shared_ptr<ParticleSystemDeclaration> PParticle;
+
     const ProtoObject& get( const std::string & obj ) const;
     std::vector< PProtoObject> allClasses() const;
 
     const Spell& spell( const std::string & obj ) const;
+    const ParticleSystemDeclaration& particle( const std::string & obj ) const;
   protected:
     void readElement(TiXmlNode *node);
     void readClassMember(ProtoObject &obj, TiXmlNode *node);
@@ -29,9 +33,12 @@ class PrototypesLoader : public AbstractXMLReader {
 
 
     void readSpellMember(Spell &obj, TiXmlNode *node);
+    void readParticleMember(ParticleSystemDeclaration &obj, TiXmlNode *node);
+    void readParticleMember(ParticleSystemDeclaration::D &obj, TiXmlNode *node);
 
     std::unordered_map<std::string, PProtoObject> data;
-    std::unordered_map<std::string, PSpell> dataSpells;
+    std::unordered_map<std::string, PSpell>       dataSpells;
+    std::unordered_map<std::string, PParticle>    dataParticles;
     std::vector<PSpell> spells;
 
     static bool cmp( const std::shared_ptr<ProtoObject>& a,

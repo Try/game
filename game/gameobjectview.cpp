@@ -156,7 +156,7 @@ void GameObjectView::loadView( const Resource & r,
   szMid /= 3;
 
   if( isEnv ){
-    if( !src.isParticle ){
+    if( src.isParticle.size()==0 ){
       if( model.groups.size() ){
         for( size_t i=0; i<model.groups.size(); ++i ){
           EnvObject object( scene );
@@ -205,12 +205,12 @@ void GameObjectView::loadView( const Resource & r,
         obj = &env.back();
         }
       }else {
-      ParticleSystem sys( psysEngine, src );
+      ParticleSystem sys( psysEngine, src, prototypes.particle(src.isParticle) );
       particles.push_back( sys );
       }
 
     } else {
-    if( !src.isParticle ){
+    if( src.isParticle.size()==0 ){
       if( model.size() > 64*3 || !getClass().data.isBackground ){
         MyGL::GraphicObject object( scene );
         object.setModel( model );
@@ -236,7 +236,7 @@ void GameObjectView::loadView( const Resource & r,
 
       //view.back().setSize( sz[0], sz[1], sz[2] );
       } else {
-      ParticleSystem sys( psysEngine, src );
+      ParticleSystem sys( psysEngine, src, prototypes.particle(src.isParticle) );
       particles.push_back( sys );
       }
     }

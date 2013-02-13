@@ -72,6 +72,9 @@ class Terrain {
     int  heightAt( int x, int y ) const;
     int  heightAt( float x, float y ) const;
 
+    void normalAt( int x, int y, float *out );
+    MyGL::Color colorAt( int x, int y );
+
     bool isEnableW( int x, int y ) const;
     bool isEnable( int x, int y ) const;
     bool isEnableForBuilding( int x, int y ) const;
@@ -92,16 +95,22 @@ class Terrain {
 
     void updatePolish();
     void loadFromPixmap( const MyGL::Pixmap& p );
+
+    int  depthAt( int x, int y ) const;
+    int  heightAtNoDepth( int x, int y ) const;
   private:
     MyGL::Scene            & scene;
     World                  & world;
     const PrototypesLoader & prototype;
 
     std::vector< std::string > aviableTiles;
+    std::vector< MyGL::Color > aviableColors;
+
     struct Tile {
       int plane;
       size_t textureID[2];
       float normal[3];
+      MyGL::Color color;
       };
     array2d<Tile> tileset;
     array2d<TerrainChunk> chunks;
@@ -117,9 +126,6 @@ class Terrain {
     int clampY( int y ) const;
 
     void computeEnableMap();
-
-    int heightAtNoDepth( int x, int y ) const;
-    int  depthAt( int x, int y ) const;
 
     void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                         MyGL::IndexBufferHolder  & iboHolder,

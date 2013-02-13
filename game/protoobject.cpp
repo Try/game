@@ -52,7 +52,7 @@ ProtoObject::View::View() {
   specularFactor = 0;
   alignSize = 0;
 
-  isParticle = 0;
+  //isParticle = 0;
   }
 
 const std::string& ProtoObject::GameSpecific::propStr(const std::string &s) const {

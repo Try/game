@@ -12,8 +12,8 @@
 #include <cmath>
 
 struct Resource::XML{
-  template< class Box >
-  static void loadFile( Box & b, Resource &r, TiXmlElement* pElement ){
+  template< class Box, class ... Args >
+  static void loadFile( Box & b, Resource &r, TiXmlElement* pElement, Args...args ){
     if ( !pElement )
       return;
 
@@ -31,7 +31,7 @@ struct Resource::XML{
         name = pAttrib->Value();
       }
 
-    r.load(b, name, file );
+    r.load(b, name, file, args... );
     }
 
   template< class Box, class Box1 >
@@ -130,6 +130,7 @@ Resource::Resource( MyGL::TextureHolder       & tx,
   models  .add("null", model);
   textures.add("null",      texHolder.load("./data/textures/w.png") );
   textures.add("null/norm", texHolder.load("./data/textures/norm.png") );
+  texturesAvg.add( "null", MyGL::Color() );
 
   vs.add("null", vsHolder.load("./data/sh/main_material.vert") );
   fs.add("null", fsHolder.load("./data/sh/main_material.frag") );
@@ -192,6 +193,10 @@ MyGL::Texture2d &Resource::texture(const std::string &key) {
   if( norm )
     return textures.get(key, textures.get("null/norm") ); else
     return textures.get(key, textures.get("null") );
+  }
+
+MyGL::Color Resource::textureAVG(const std::string &key) const {
+  return texturesAvg.get(key);
   }
 
 bool Resource::findTexture(const std::string &key) {
@@ -268,7 +273,8 @@ void Resource::load( Box< std::shared_ptr<Sound> >& sounds,
 
 void Resource::load( Box<MyGL::Texture2d>& textures,
                      const std::string &k,
-                     const std::string &f  ){
+                     const std::string &f,
+                     bool avg ){
   auto it = textures.loaded.find(f);
 
   if( it!=textures.loaded.end() ){
@@ -276,6 +282,29 @@ void Resource::load( Box<MyGL::Texture2d>& textures,
     } else {
     textures.add(k,  texHolder.load(f) );
     textures.loaded[f] = k;
+    }
+
+  if( avg ){
+    MyGL::Pixmap pm(f);
+    int cl[4] = {};
+    for( int i=0; i<pm.width(); ++i )
+      for( int r=0; r<pm.height(); ++r ){
+        MyGL::Pixmap::Pixel px = pm.at(i,r);
+        cl[0] += px.r;
+        cl[1] += px.g;
+        cl[2] += px.b;
+        cl[3] += px.a;
+        }
+
+    if( pm.width()!=0 && pm.height()!=0 ){
+      for( int i=0; i<4; ++i )
+        cl[i] /= (pm.width()*pm.height());
+      }
+
+    texturesAvg.add(k, MyGL::Color( cl[0]/255.0,
+                                    cl[1]/255.0,
+                                    cl[2]/255.0,
+                                    cl[3]/255.0 ) );
     }
   }
 
@@ -312,7 +341,11 @@ void Resource::readElement( TiXmlNode *node ) {
       } else
 
     if( type=="texture"){
-      XML::loadFile( textures, *this, node->ToElement() );
+      XML::loadFile( textures, *this, node->ToElement(), false );
+      } else
+
+    if( type=="texture_with_avg"){
+      XML::loadFile( textures, *this, node->ToElement(), true );
       } else
 
     if( type=="shader"){

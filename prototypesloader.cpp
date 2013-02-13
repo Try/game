@@ -42,6 +42,16 @@ const Spell &PrototypesLoader::spell(const std::string &obj) const {
     }
   }
 
+const ParticleSystemDeclaration &PrototypesLoader::particle(const std::string &obj) const {
+  auto i = dataParticles.find(obj);
+
+  if( i!=dataParticles.end() ){
+    return *i->second.get();
+    } else {
+    assert(0);
+    }
+  }
+
 void PrototypesLoader::readElement(TiXmlNode *node) {
   if ( !node )
     return;
@@ -93,19 +103,30 @@ void PrototypesLoader::readElement(TiXmlNode *node) {
           readSpellMember( *p.get(), n );
           }
 
-        } else {
-        error("spell name not specified");
         }
-
       } else
+    if( type=="particle"){
+      std::string name;
 
+      if( find(node->ToElement(), "name", name) ){
+        PParticle p = PParticle( new ParticleSystemDeclaration() );
+        //p->name = name;
+        dataParticles[ name ] = p;
+
+        for ( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
+          readParticleMember( *p.get(), n );
+          }
+
+        }
+      } else {
+      error("spell name not specified");
+      }
+
+    } else {
     dumpAttribs(node->ToElement() );
     }
-/*
-  for ( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
-    readElement( n );
-    } */
-}
+
+  }
 
 void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
   if ( !node )
@@ -156,9 +177,9 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
         v.alignSize = 0.5;
 
       if( find( e, "isParticle", tmp) ){
-        v.isParticle =  !(tmp=="false" || tmp=="0");
+        v.isParticle = tmp;
         } else {
-        v.isParticle = false;
+        v.isParticle = "";
         }
 
       if( find( e, "specular", tmp) ){
@@ -454,6 +475,89 @@ void PrototypesLoader::readSpellMember( Spell &obj, TiXmlNode *node) {
       if( str=="castToCoord")
         obj.mode = Spell::CastToCoord;
       }
+    }
+  }
+
+void PrototypesLoader::readParticleMember( ParticleSystemDeclaration &obj,
+                                           TiXmlNode *node ) {
+  if ( node->Type()!=TiXmlNode::TINYXML_ELEMENT )
+    return;
+
+  std::string type = node->Value();
+
+  if( type=="init" ){
+    for( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
+      if( n->Type()==TiXmlNode::TINYXML_ELEMENT ){
+        std::string type = n->Value();
+        if( type=="min" )
+          readParticleMember( obj.initMin, n );
+        if( type=="max" )
+          readParticleMember( obj.initMax, n );
+        }
+      }
+    }
+
+  if( type=="velocity" ){
+    for( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
+      if( n->Type()==TiXmlNode::TINYXML_ELEMENT ){
+        std::string type = n->Value();
+        if( type=="min" )
+          readParticleMember( obj.dmin, n );
+        if( type=="max" )
+          readParticleMember( obj.dmax, n );
+        }
+      }
+    }
+
+  if( type=="acceleration" ){
+    obj.hasDD = true;
+
+    for( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
+      if( n->Type()==TiXmlNode::TINYXML_ELEMENT ){
+        std::string type = n->Value();
+        if( type=="min" )
+          readParticleMember( obj.ddmin, n );
+        if( type=="max" )
+          readParticleMember( obj.ddmax, n );
+        }
+      }
+    }
+
+  std::string str;
+  if( find(node->ToElement(), "density", str ) ){
+    obj.density = Lexical::cast<int>(str);
+    }
+  }
+
+void PrototypesLoader::readParticleMember( ParticleSystemDeclaration::D &obj,
+                                           TiXmlNode *node ) {
+  std::string str;
+  TiXmlElement * e = node->ToElement();
+
+  if( find(e, "x", str ) ){
+    obj.x = Lexical::cast<float>(str);
+    }
+  if( find(e, "y",  str ) ){
+    obj.y = Lexical::cast<float>(str);
+    }
+  if( find(e, "z",  str ) ){
+    obj.z = Lexical::cast<float>(str);
+    }
+  if( find(e, "size",  str ) ){
+    obj.size = Lexical::cast<float>(str);
+    }
+
+  if( find(e, "r",  str ) ){
+    obj.r = Lexical::cast<float>(str);
+    }
+  if( find(e, "g",  str ) ){
+    obj.g = Lexical::cast<float>(str);
+    }
+  if( find(e, "b",  str ) ){
+    obj.b = Lexical::cast<float>(str);
+    }
+  if( find(e, "a",  str ) ){
+    obj.a = Lexical::cast<float>(str);
     }
   }
 

@@ -27,6 +27,11 @@ Terrain::Terrain(int w, int h,
   aviableTiles.push_back("land.rock" );
   aviableTiles.push_back("land.sand" );
 
+  for( size_t i=0; i<aviableTiles.size(); ++i ){
+    MyGL::Color cl = res.textureAVG(prototype.get(aviableTiles[i]).view[0].name+"/diff");
+    aviableColors.push_back( cl );
+    }
+
   tileset.resize( w+1, h+1 );
 
   for( int i=0; i<=w; ++i )
@@ -263,6 +268,9 @@ void Terrain::computePlanes() {
         nplane = 0;
 
       tileset[i][r].plane = nplane;
+
+      int id = tileset[i][r].textureID[0];
+      tileset[i][r].color = aviableColors[id];
       std::copy( v.normal, v.normal+3, tileset[i][r].normal );
       }
 
@@ -489,6 +497,8 @@ void Terrain::brushHeight( int x, int y,
               - aviableTiles.begin();
     if( size_t(id)==aviableTiles.size() ){
       aviableTiles.push_back( m.texture );
+      MyGL::Color cl = res.textureAVG(prototype.get(m.texture).view[0].name+"/diff");
+      aviableColors.push_back( cl );
       }
 
     for( int i=lx; i<rx; ++i )
@@ -570,8 +580,22 @@ int Terrain::heightAt( float fx, float fy ) const {
     if( lx<1 )
       return mid + ((ly-lx)/(1-lx))*(m2-mid); else
       return m2;
+    }
   }
-}
+
+void Terrain::normalAt(int x, int y, float *out) {
+  x = std::max(0, std::min(x, width()-1) );
+  y = std::max(0, std::min(y, height()-1) );
+
+  std::copy( tileset[x][y].normal, tileset[x][y].normal+3, out );
+  }
+
+MyGL::Color Terrain::colorAt(int x, int y) {
+  x = std::max(0, std::min(x, width()-1) );
+  y = std::max(0, std::min(y, height()-1) );
+
+  return tileset[x][y].color;
+  }
 
 bool Terrain::isEnableW(int x, int y) const {
   return isEnable( World::coordCast(x),
@@ -783,6 +807,12 @@ void Terrain::serialize( GameSerializer &s ) {
 
     for( size_t i=0; i<aviableTiles.size(); ++i )
       s + aviableTiles[i];
+
+    aviableColors.clear();
+    for( size_t i=0; i<aviableTiles.size(); ++i ){
+      MyGL::Color cl = res.textureAVG(prototype.get(aviableTiles[i]).view[0].name+"/diff");
+      aviableColors.push_back( cl );
+      }
 
     for( int i=0; i<=w; ++i )
       for( int r=0; r<=h; ++r ){

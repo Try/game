@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "game/protoobject.h"
+#include "game/particlesystemdeclaration.h"
 
 #include <MyGL/Color>
 
@@ -11,7 +12,8 @@ class ParticleSystemEngine;
 class ParticleSystem {
   public:
     ParticleSystem( ParticleSystemEngine & engine,
-                    const ProtoObject::View& proto );
+                    const ProtoObject::View& proto,
+                    const ParticleSystemDeclaration& decl );
     ParticleSystem( const ParticleSystem& other );
     virtual ~ParticleSystem();
 
@@ -28,6 +30,7 @@ class ParticleSystem {
 
   private:
     ParticleSystem();
+    ParticleSystemDeclaration decl;
 
     float mx, my, mz;
     ParticleSystemEngine * engine;
@@ -43,6 +46,9 @@ class ParticleSystem {
 
     std::vector<Point3> par;
     bool dispathMode;
+
+    void evalute( Point3& p );
+    void evalute( Point3& p, ParticleSystemDeclaration::D& d );
 
   friend class ParticleSystemEngine;
   };

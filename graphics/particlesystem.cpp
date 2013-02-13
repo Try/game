@@ -11,8 +11,29 @@ ParticleSystem::ParticleSystem() {
   dispathMode = false;
   }
 
+void ParticleSystem::evalute( ParticleSystem::Point3 &p ) {
+  ParticleSystemDeclaration::D d = ParticleSystemDeclaration::mix(decl.dmin, decl.dmax);
+  evalute(p, d);
+  }
+
+void ParticleSystem::evalute( ParticleSystem::Point3 &p,
+                              ParticleSystemDeclaration::D& d ) {
+  p.x += d.x;
+  p.y += d.y;
+  p.z += d.z;
+
+  p.size += d.size;
+
+  p.color.set( p.color.r() + d.r,
+               p.color.g() + d.g,
+               p.color.b() + d.b,
+               p.color.a() + d.a );
+  }
+
 ParticleSystem::ParticleSystem( ParticleSystemEngine & e,
-                                const ProtoObject::View &p ):engine(&e){
+                                const ProtoObject::View &p,
+                                const ParticleSystemDeclaration &decl )
+               :decl(decl), engine(&e){
   setPosition(0,0,0);
   proto = &p;
   dispathMode = false;
@@ -31,7 +52,8 @@ ParticleSystem &ParticleSystem::operator =  (const ParticleSystem &other) {
   dispathMode = other.dispathMode;
 
   setPosition( other.x(), other.y(), other.z() );
-  par = other.par;
+  par  = other.par;
+  decl = other.decl;
 
   return *this;
   }
@@ -64,56 +86,30 @@ void ParticleSystem::exec( int dt ) {
   if( dt==0 )
     return;
 
-  if( viewInfo().name=="fire" ){
-    if( !dispathMode && rand()%2==0 ){
+  if( !dispathMode ){
+    int c = decl.density;
+    if( decl.density<0 && rand()%(-decl.density) )
+      c = 1;
+
+    for( int i=0; i<c; ++i ){
       par.push_back( Point3( x(), y(), z() ) );
-      par.back().size = 0.06+0.03*( rand()/float(RAND_MAX) );
-
-      par.back().x += 0.1*( rand()/float(RAND_MAX) - 0.5);
-      par.back().y += 0.1*( rand()/float(RAND_MAX) - 0.5);
-      }
-
-    for( size_t i=0; i<par.size(); ++i ){
-      par[i].z    += 0.015;
-      par[i].size -= 0.001;
-      }
-
-    for( size_t i=0; i<par.size(); ){
-      if( par[i].size<0.005 ){
-        par[i] = par.back();
-        par.pop_back();
-        } else {
-        ++i;
-        }
+      ParticleSystemDeclaration::D d = ParticleSystemDeclaration::mix( decl.initMin,
+                                                                       decl.initMax );
+      evalute(par.back(), d);
+      par.back().color.set( d.r, d.g, d.b, d.a );
       }
     }
 
-  if( viewInfo().name=="smoke" ){
-    if( !dispathMode &&  rand()%6==0 ){
-      par.push_back( Point3( x(), y(), z() ) );
-      par.back().size = 0.05;
-      }
+  for( size_t i=0; i<par.size(); ++i ){
+    evalute( par[i] );
+    }
 
-    for( size_t i=0; i<par.size(); ++i ){
-      par[i].z    += 0.015;
-      par[i].size += 0.001;
-
-      par[i].x += 0.01*( rand()/float(RAND_MAX) - 0.5);
-      par[i].y += 0.01*( rand()/float(RAND_MAX) - 0.5);
-
-      par[i].color.set( par[i].color.r(),
-                        par[i].color.g(),
-                        par[i].color.b(),
-                        1.0 - pow(par[i].size/0.15, 4.0) );
-      }
-
-    for( size_t i=0; i<par.size(); ){
-      if( par[i].size>0.15 ){
-        par[i] = par.back();
-        par.pop_back();
-        } else {
-        ++i;
-        }
+  for( size_t i=0; i<par.size(); ){
+    if( par[i].size<0.005 || par[i].color.a()<0.01 ){
+      par[i] = par.back();
+      par.pop_back();
+      } else {
+      ++i;
       }
     }
   }

@@ -49,6 +49,7 @@ class Resource : public AbstractXMLReader {
 
     const MyGL::Texture2d &texture( const std::string & key ) const;
           MyGL::Texture2d &texture( const std::string & key );
+          MyGL::Color textureAVG( const std::string & key ) const;
           bool findTexture( const std::string & key );
 
     Sound &sound( const std::string & key ) const;
@@ -127,8 +128,8 @@ private:
       std::unordered_map< std::string, std::string > loaded;
       };
 
-    void load( Box<MyGL::Texture2d>& textures,
-               const std::string &k, const std::string & f );
+    void load(Box<MyGL::Texture2d>& textures,
+               const std::string &k, const std::string & f , bool avg);
 
     void load( Box< std::shared_ptr<Sound> >& sounds,
                const std::string &k, const std::string & f );
@@ -148,6 +149,7 @@ private:
     Box< Model > models;
     mutable Box< std::shared_ptr<Model::Raw> > rawModels;
     Box<MyGL::Texture2d> textures;
+    Box<MyGL::Color>     texturesAvg;
     Box<MyGL::VertexShader>   vs;
     Box<MyGL::FragmentShader> fs;
     Box<PixmapsPool::TexturePtr> px;

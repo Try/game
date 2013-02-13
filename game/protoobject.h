@@ -51,7 +51,8 @@ struct ProtoObject {
       double sphereDiameter, specularFactor;
       double boxSize[3];
 
-      bool randRotate, isParticle;      
+      bool randRotate;
+      std::string isParticle;
       };
 
     struct SizeBounds{

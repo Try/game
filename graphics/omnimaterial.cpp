@@ -15,8 +15,10 @@ bool OmniMaterial::bind( MyGL::RenderState &rs,
 
   rs.setZWriting(0);
   rs.setBlend(1);
-  //rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::Greater );
-  rs.setAlphaTestRef(0.01);
+
+  rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::Greater );
+  rs.setAlphaTestRef(0.0);
+
   rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::one,
                    MyGL::RenderState::AlphaBlendMode::one );
 

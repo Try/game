@@ -276,5 +276,13 @@ MyGL::RenderState GUIPass::makeRS(MyWidget::BlendMode m) {
     rs.setZWriting(0);
     }
 
+  if( m==MyWidget::multiplyBlend ){
+    rs.setBlend(1);
+    rs.setZWriting(0);
+
+    rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_color,
+                     MyGL::RenderState::AlphaBlendMode::dst_color );
+    }
+
   return rs;
   }
