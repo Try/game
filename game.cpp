@@ -22,6 +22,7 @@
 #include "graphics/blushmaterial.h"
 #include "graphics/terrainminormaterial.h"
 #include "graphics/warfogmaterial.h"
+#include "graphics/grassmaterial.h"
 
 #include "util/gameserializer.h"
 
@@ -501,7 +502,7 @@ void Game::removeHook(InputHookBase *b) {
 
 const ProtoObject &Game::prototype(const std::string &s) const {
   return proto.get(s);
- }
+  }
 
 Resource &Game::resources() {
   return resource;
@@ -748,6 +749,16 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     obj.setupMaterial( tz );
     }
 
+  if( contains( src.materials, "grass" )  ){
+    GrassMaterial material( c.shadow.matrix );
+    material.diffuseTexture   = r.texture( src.name+"/diff" );
+    smMaterial.diffuseTexture = material.diffuseTexture;
+
+    material.useAlphaTest = smMaterial.useAlphaTest = true;
+
+    obj.setupMaterial( material );
+    }
+
   if( contains( src.materials, "unit" )  ){
     MainMaterial material( c.shadow.matrix,
                            teamColor );
@@ -797,6 +808,8 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
 
   if( contains( src.materials, "displace" ) ){
     DisplaceMaterial material( c.shadow.matrix );
+    material.normalMap        = r.texture( src.name+"/norm" );
+
     obj.setupMaterial( material );
     }
 

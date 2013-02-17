@@ -28,11 +28,7 @@ class DisplaceMaterial : public MyGL::AbstractMaterial {
     bool  useAlphaTest;
     float alphaTrestRef;
 
-    static void exec( const MyGL::Scene & scene,
-                      const MyGL::Scene::Objects &v,
-                      MyGL::Device & device,
-                      GraphicsSystem &rt );
-
+    MyGL::Texture2d normalMap;
   protected:
     const MyGL::Matrix4x4 * shadowMatrix;
   };

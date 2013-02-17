@@ -44,8 +44,13 @@ struct UnitList::Btn : public Button {
     int icW = icon.data.rect.w*k,
         icH = icon.data.rect.h*k;
 
+    MyWidget::Rect s = p.scissor();
+    p.setScissor( viewRect() );
     p.drawRect( (w()-icW)/2, (h()-icH)/2, icW, icH,
                 0, 0, icon.data.rect.w, icon.data.rect.h );
+    p.setScissor(s);
+
+    drawFrame(p);
     }
 
   void customEvent(MyWidget::CustomEvent &){

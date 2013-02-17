@@ -211,7 +211,7 @@ void GameObjectView::loadView( const Resource & r,
 
     } else {
     if( src.isParticle.size()==0 ){
-      if( model.size() > 64*3 || !getClass().data.isBackground ){
+      if( model.size() > 32*3 || !getClass().data.isBackground ){
         MyGL::GraphicObject object( scene );
         object.setModel( model );
 
@@ -289,6 +289,13 @@ void GameObjectView::loadView(const MyGL::Model<WaterVertex> &model ){
 
   setupMaterials( object, getClass().view[0] );
   view.push_back( object );
+  }
+
+void GameObjectView::setViewPosition(float x, float y) {
+  int z = wrld.terrain().heightAt( x/Terrain::quadSizef,
+                                   y/Terrain::quadSizef );
+
+  setViewPosition( x, y, World::coordCast(z) );
   }
 
 void GameObjectView::setViewPosition( float x, float y, float z ) {

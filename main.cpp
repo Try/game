@@ -27,15 +27,6 @@ HWND g_hWnd;
 bool isAppActive = true, resizeIntent = false;
 int winW = 0, winH = 0;
 
-std::wstring toStr( const char* c ){
-  std::wstring re;
-
-  for( int i=0; c[i]; ++i )
-    re.push_back(c[i]);
-
-  return re;
-  }
-
 void toogleFullScreen( bool isFullScreen ){
   int w,h;
 
@@ -107,7 +98,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
 
     memset(&uMsg,0,sizeof(uMsg));
 
-    static std::wstring wclass = toStr("game");
+    static std::wstring wclass = L"game";
 
     winClass.lpszClassName = wclass.data();
     winClass.cbSize        = sizeof(WNDCLASSEX);

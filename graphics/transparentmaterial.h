@@ -22,7 +22,7 @@ class TransparentMaterial : public MyGL::AbstractMaterial {
     float specular;
   private:
     const MyGL::Matrix4x4 * shadowMatrix;
-};
+  };
 
 class TransparentMaterialNoZW : public TransparentMaterial {
   public:

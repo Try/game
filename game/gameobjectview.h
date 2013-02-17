@@ -46,6 +46,7 @@ class GameObjectView {
     void loadView(const Model &model, const ProtoObject::View &view);
     void loadView(const MyGL::Model<WaterVertex> &model);
 
+    void setViewPosition(float x, float y );
     void setViewPosition(float x, float y, float z );
     void setViewPosition(float x, float y, float z,
                          float interp );

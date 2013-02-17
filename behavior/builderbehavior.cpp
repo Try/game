@@ -135,6 +135,7 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
       TransparentMaterialZPass zpass;
       //AddMaterial mat;
       mat.texture   = obj.game().resources().texture("util/blue");
+      mat.normalMap = obj.game().resources().texture( proto->view[0].name+"/norm" );
       zpass.texture = mat.texture;
 
       hudIntent.setupMaterial(mat);
@@ -144,7 +145,7 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
     }
 
   //instaled = 1;
-  return 1;
+  return instaled;
   }
 
 bool BuilderBehavior::message( AbstractBehavior::Message msg,

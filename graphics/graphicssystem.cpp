@@ -26,6 +26,7 @@
 #include "graphics/blushmaterial.h"
 #include "graphics/terrainminormaterial.h"
 #include "graphics/warfogmaterial.h"
+#include "graphics/grassmaterial.h"
 
 #include "graphics/particlesystemengine.h"
 
@@ -68,6 +69,9 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
 
     gbuf.vs     = res.vshader("unit_main_material");
     gbuf.fs     = res.fshader("unit_main_material");
+
+    gbuf.grassVs   = res.vshader("grass_material");
+    gbuf.grassFs   = res.fshader("grass_material");
 
     gbuf.terrainVs = res.vshader("terrain_minor_main_material");
     gbuf.terrainFs = res.fshader("terrain_minor_main_material");
@@ -172,6 +176,7 @@ float GraphicsSystem::smMatSize(const MyGL::Scene &scene) {
         reinterpret_cast<const MyGL::Camera&>( scene.camera() );
 
     s /= std::max( view.distance(), 1.0 )/3.0;
+    s = std::min(s, 0.4f);
 
     return s;
     }
@@ -273,7 +278,7 @@ bool GraphicsSystem::render( MyGL::Scene &scene,
   */
 
   renderScene( scene, gbuffer, mainDepth, rsm,
-               2*1024, true );
+               2048, true );
 
   MyGL::Texture2d fog;
   drawFogOfWar(fog, scene);
@@ -461,6 +466,11 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
 
   drawObjects( gbuffer, mainDepth,
                scene, scene.objects<BlushMaterial>(), false );
+
+  setupLight( scene, gbuf.grassFs, sm );
+  drawObjects( gbuf.grassVs, gbuf.grassFs,
+               gbuffer, mainDepth,
+               scene, scene.objects<GrassMaterial>() );
 
   drawObjects( transparentData.vsAdd, transparentData.fsAdd,
                gbuffer, mainDepth,
@@ -1042,7 +1052,7 @@ void GraphicsSystem::waves( MyGL::Texture2d &out,
   int w = 2*in.width(), h = 2*in.height();
 
   out = localTex.create( w,h );
-  out.setSampler( reflect );
+  //out.setSampler( reflect );
 
   MyGL::Texture2d depth = this->depth(w,h);
   MyGL::Render render( device,

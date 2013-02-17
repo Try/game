@@ -208,7 +208,7 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       btn->taget     = p.btn[i].taget;
       if( p.btn[i].icon.size() )
         btn->icon.data = res.pixmap( p.btn[i].icon ); else
-        btn->icon.data = res.pixmap( "gui/icon/castle" );
+        btn->icon.data = res.pixmap( "gui/icon/build" );
       btn->clicked.bind(*this, &CommandsPanel::setPage );
       b = btn;
       }

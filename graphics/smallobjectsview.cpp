@@ -176,7 +176,7 @@ void SmallGraphicsObject::applyTransform() {
   MyGL::Matrix4x4& mat = transformV;
 
   mat.identity();
-  mat.translate( mx, my, mz - vx.zView );
+  mat.translate( mx, my, mz );
 
   mat.rotate( ax, 1, 0, 0 );
   mat.rotate( az, 0, 0, 1 );
@@ -189,7 +189,7 @@ void SmallGraphicsObject::applyTransform() {
   for( size_t i=0; i<model->vertex.size(); ++i, ++v ){
     const Model::Vertex & s = model->vertex[i];
     *v = s;
-    mat.project( s.x, s.y, s.z, 1, x, y, z, w );
+    mat.project( s.x, s.y, s.z-vx.zView/sz, 1, x, y, z, w );
 
     v->x = x;
     v->y = y;

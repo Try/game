@@ -3,13 +3,10 @@
 
 #include <MyGL/AbstractMaterial>
 #include <MyGL/Texture2d>
-#include <MyGL/Scene>
 #include <MyGL/VertexShader>
 #include <MyGL/FragmentShader>
 
 #include <MyGL/Color>
-
-class GraphicsSystem;
 
 class MainMaterial : public MyGL::AbstractMaterial {
   public:

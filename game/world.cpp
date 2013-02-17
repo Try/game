@@ -49,9 +49,8 @@ World::World( Game & gm,
   light.setAblimient( MyGL::Color( 0.33, 0.33,  0.35) );
   scene.lights().direction()[0] = light;
 
-
   //MyGL::DirectionLight light;
-  light.setDirection( -2, 1, -2.0 );
+  light.setDirection( -2, 1, -2 );
   light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
   light.setAblimient( MyGL::Color( 0.23, 0.23,  0.35) );
   //scene.lights().direction()[0] = light;
@@ -921,6 +920,50 @@ void World::serialize(GameSerializer &s) {
       gameObjects[i]->serialize(s);
       }
 
+    }
+
+  if( s.version()>=8 ){
+    int sz = scene.lights().direction().size();
+    s + sz;
+
+    scene.lights().direction().resize(sz);
+    for( int i=0; i<sz; ++i ){
+      MyGL::DirectionLight& l = scene.lights().direction()[i];
+      float ks = 10000;
+      int dir[] = {
+        int(l.xDirection()*ks),
+        int(l.yDirection()*ks),
+        int(l.zDirection()*ks),
+        };
+
+      int cl[] = {
+        int(l.color().r()*ks),
+        int(l.color().g()*ks),
+        int(l.color().b()*ks),
+        };
+
+      int ab[] = {
+        int(l.ablimient().r()*ks),
+        int(l.ablimient().g()*ks),
+        int(l.ablimient().b()*ks),
+        };
+
+      s + dir[0] + dir[1] + dir[2]
+        +  cl[0] +  cl[1] +  cl[2]
+        +  ab[0] +  ab[1] +  ab[2];
+      l.setDirection( dir[0]/ks, dir[1]/ks, dir[2]/ks );
+      l.setColor    ( MyGL::Color(cl[0]/ks, cl[1]/ks, cl[2]/ks, 1) );
+      l.setAblimient( MyGL::Color(ab[0]/ks, ab[1]/ks, ab[2]/ks, 1) );
+      }
+    } else {
+    scene.lights().direction().resize(1);
+
+    MyGL::DirectionLight light;
+    light.setDirection( -2, -1, -2.0 );
+    light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
+    light.setAblimient( MyGL::Color( 0.33, 0.33,  0.35) );
+
+    scene.lights().direction()[0] = light;
     }
   }
 

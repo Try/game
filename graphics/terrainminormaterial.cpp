@@ -3,6 +3,7 @@
 #include <MyGL/RenderState>
 
 #include <MyGL/UniformTable>
+#include <MyGL/Camera>
 
 TerrainMinorMaterial::TerrainMinorMaterial(const MyGL::Matrix4x4 &sm)
                      :MainMaterial(sm){

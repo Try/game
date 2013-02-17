@@ -29,6 +29,10 @@ class Button : public MyWidget::Widget {
     void setHint( const std::wstring & str );
     const std::wstring &hint() const;
   protected:
+    void drawFrame(MyWidget::Painter &p);
+
+    MyWidget::Rect viewRect() const;
+
     void mouseDownEvent(MyWidget::MouseEvent &e);
     void mouseMoveEvent(MyWidget::MouseEvent &e);
     void mouseUpEvent(MyWidget::MouseEvent &e);

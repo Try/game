@@ -104,8 +104,8 @@ class GraphicsSystem {
       } smap;
 
     struct GBuf{
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      MyGL::VertexShader   vs, grassVs;
+      MyGL::FragmentShader fs, grassFs;
 
       MyGL::VertexShader   terrainVs;
       MyGL::FragmentShader terrainFs;

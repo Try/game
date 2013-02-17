@@ -25,9 +25,13 @@ bool WaterMaterial::bind( MyGL::RenderState &rs,
   m.mul( c.view() );
   m.mul( object );
 
+  MyGL::Matrix4x4 vp = c.projective();
+  vp.mul( c.view() );
+
   MyGL::Matrix4x4 sh = *shadowMatrix;
   sh.mul( object );
 
+  table.add( vp,      "mvpMatrix",    MyGL::UniformTable::Fragment );
   table.add( m,       "mvpMatrix",    MyGL::UniformTable::Vertex   );
   table.add( object,  "objectMatrix", MyGL::UniformTable::Vertex   );
   table.add( sh,     "shadowMatrix",  MyGL::UniformTable::Vertex );

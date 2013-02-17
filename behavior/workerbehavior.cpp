@@ -35,8 +35,7 @@ void WorkerBehavior::tick( const Terrain &/*terrain*/ ) {
 
   mineral.setPosition( x, y );
   mineral.setViewPosition( World::coordCast(x+vx),
-                           World::coordCast(y+vy),
-                           0 );
+                           World::coordCast(y+vy) );
   mineral.setViewDirection(vx,vy);
   mineral.setVisible( bank>0 );
   mineral.tick();

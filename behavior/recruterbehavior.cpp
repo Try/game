@@ -39,13 +39,11 @@ void RecruterBehavior::tick( const Terrain &terrain ) {
 
     flag.setPosition( taget.value().x(), taget.value().y() );
     flag.setViewPosition( World::coordCast(taget.value().x()),
-                          World::coordCast(taget.value().y()),
-                          0 );
+                          World::coordCast(taget.value().y()) );
     } else {
     flag.setPosition( rallyX, rallyY );
     flag.setViewPosition( World::coordCast(rallyX),
-                          World::coordCast(rallyY),
-                          0 );
+                          World::coordCast(rallyY) );
     }
 
   flag.setVisible( obj.isSelected() &&

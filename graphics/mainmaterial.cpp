@@ -3,6 +3,8 @@
 #include <MyGL/UniformTable>
 #include <MyGL/RenderState>
 
+#include <MyGL/Camera>
+
 MainMaterial::MainMaterial( const MyGL::Matrix4x4 &s,
                             const MyGL::Color &teamColor )
              : shadowMatrix(&s), teamColor(&teamColor) {

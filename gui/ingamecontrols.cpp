@@ -355,10 +355,12 @@ void InGameControls::keyUpEvent(KeyEvent &e) {
   }
 
 bool InGameControls::instalHook(InputHookBase *h) {
-  if( isHooksEnabled && hooks.size()==0 )
+  if( isHooksEnabled && hooks.size()==0 ){
     hooks.push_back( h );
+    return 1;
+    }
 
-  return isHooksEnabled && hooks.size()==0;
+  return 0;
   }
 
 void InGameControls::removeHook(InputHookBase *h) {

@@ -97,60 +97,18 @@ void Button::mouseUpEvent(MyWidget::MouseEvent &e) {
 void Button::paintEvent( MyWidget::PaintEvent &e ) {
   MyWidget::Painter p(e);
 
-  int fx = 0, fy = 0,
-      px = 0, py = 0,
-      pw = w(), ph = h(),
-      pw2 = pw, ph2 = ph;
+  MyWidget::Rect vRect = viewRect();
+  int px = vRect.x, py = vRect.y,
+      pw = vRect.w, ph = vRect.h;
 
-  if( presAnim ){
-    const int s = 1;
-    px += s;
-    py += s;
-
-    pw -=s;
-    ph -=s;
-
-    pw2 = pw-s;
-    ph2 = ph-s;
-    }
-
-  int bw = std::min(20, pw2/2);
-  int bh = std::min(20, ph2/2);
-
-  if( pw2==27 )
-    pw2 = 27;
+  MyWidget::Rect r = p.scissor();
+  p.setScissor( r.intersected( MyWidget::Rect(px, py, pw, ph) ) );
 
   Texture bk = back[ (hasFocus() || presAnim) ? 1:0 ];
   p.setTexture( bk );
-  p.drawRectTailed( px, py, pw2, ph2,
+  p.drawRectTailed( px, py, pw, ph,
                     0, 0,
                     bk.data.rect.w, bk.data.rect.h );
-
-  p.setTexture( frame );
-
-  p.drawRect( px+bw, py, pw-2*bw, 20,
-              fx+20, fy, 10, 20 );
-
-  p.drawRect( px+bw, ph-20, pw-2*bw, 20,
-              fx+20, fy+30, 10, 20 );
-
-
-  p.drawRect( px,    py+bh, 20, ph-bh*2,
-              fx,    fy+20, 20, 10 );
-  p.drawRect( pw-20, py+bh, 20, ph-bh*2,
-              fx+30, fy+20, 20, 10 );
-
-
-  p.drawRect( px, px, bw, bh,
-              fx, fy );
-  p.drawRect( pw-bw, py, bw, bh,
-              fx+50-bw, fy );
-
-  p.drawRect( px, ph-bh, bw, bh,
-              fx, fy+50-bh );
-  p.drawRect( pw-bw, ph-bh, bw, bh,
-              fx+50-bw, fy+50-bh );
-  p.unsetTexture();
 
 
   p.setBlendMode( MyWidget::alphaBlend );
@@ -168,6 +126,10 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
   p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
               0, 0, icon.data.rect.w, icon.data.rect.h );
 
+  p.setScissor(r);
+
+  drawFrame( p );
+
   p.setFont(f);
   p.drawText( 0,0,w(),h(), txt,
               MyWidget::AlignHCenter | MyWidget::AlignVCenter );
@@ -178,6 +140,59 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
 
     update();
     }
+  }
+
+void Button::drawFrame( MyWidget::Painter & p ) {
+  int fx = 0, fy = 0;
+
+  MyWidget::Rect vRect = viewRect();
+  int px = vRect.x, py = vRect.y,
+      pw = vRect.w, ph = vRect.h;
+
+  int bw = std::min(20, pw/2);
+  int bh = std::min(20, ph/2);
+
+  p.setTexture( frame );
+
+  p.drawRect( px+bw, py, pw-2*bw, 20,
+              fx+20, fy, 10, 20 );
+
+  p.drawRect( px+bw, py+ph-20, pw-2*bw, 20,
+              fx+20, fy+30, 10, 20 );
+
+
+  p.drawRect( px,    py+bh, 20, ph-bh*2,
+              fx,    fy+20, 20, 10 );
+  p.drawRect( px+pw-20, py+bh, 20, ph-bh*2,
+              fx+30, fy+20, 20, 10 );
+
+
+  p.drawRect( px, py, bw, bh,
+              fx, fy );
+  p.drawRect( px+pw-bw, py, bw, bh,
+              fx+50-bw, fy );
+
+  p.drawRect( px, py+ph-bh, bw, bh,
+              fx, fy+50-bh );
+  p.drawRect( px+pw-bw, py+ph-bh, bw, bh,
+              fx+50-bw, fy+50-bh );
+  p.unsetTexture();
+  }
+
+MyWidget::Rect Button::viewRect() const {
+  int px = 0, py = 0,
+      pw = w(), ph = h();
+
+  if( presAnim ){
+    const int s = 1;
+    px += s;
+    py += s;
+
+    pw -= 2*s;
+    ph -= 2*s;
+    }
+
+  return MyWidget::Rect(px, py, pw, ph);
   }
 
 void Button::keyPressEvent(MyWidget::KeyEvent &e) {
