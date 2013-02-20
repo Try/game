@@ -130,6 +130,7 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
 
     {
       hudIntent.unsetMaterial<MainMaterial>();
+      hudIntent.unsetMaterial<MyGL::ShadowMapPassMaterial>();
 
       TransparentMaterial mat( obj.game().shadowMat() );
       TransparentMaterialZPass zpass;
@@ -138,8 +139,13 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
       mat.normalMap = obj.game().resources().texture( proto->view[0].name+"/norm" );
       zpass.texture = mat.texture;
 
+      TransparentMaterialShadow sh( obj.game().shadowMat() );
+      sh.texture   = mat.texture;
+      sh.normalMap = mat.normalMap;
+
       hudIntent.setupMaterial(mat);
       hudIntent.setupMaterial(zpass);
+      hudIntent.setupMaterial( sh );
       }
 
     }

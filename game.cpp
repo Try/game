@@ -64,7 +64,49 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   mouseTracking         = 0;
   selectionRectTracking = 0;
 
-  initFactorys();
+  initFactorys();  
+
+  /*
+  MyGL::Model<>::Raw m = MyGL::Model<>::loadRawData("./data/models/grass/0.mx");
+
+  float tc[6][2] = {
+    {0, 0},
+    {0, 1},
+    {1, 1},
+
+    {0, 0},
+    {1, 1},
+    {1, 0}
+    };
+
+  m.vertex.resize(150*6);
+  for( size_t i=0; i<m.vertex.size(); i+=6 ){
+    float cx = ((rand()/float(RAND_MAX)) - 0.5)*16;
+    float cy = ((rand()/float(RAND_MAX)) - 0.5)*16;
+
+    float a = (rand()/float(RAND_MAX))*2*M_PI;
+
+    int x = rand()%2, y = rand()%3;
+
+    for( int r=0; r<6; ++r ){
+      m.vertex[i+r].u = (x+tc[r][0])*0.5;
+      m.vertex[i+r].v = 1 - (y+tc[r][1])/3.0;
+
+      m.vertex[i+r].x = cx + cos(a)*(tc[r][0]*2-1)*0.8;
+      m.vertex[i+r].y = cy + sin(a)*(tc[r][0]*2-1)*0.8;
+      m.vertex[i+r].z = tc[r][1]*2.0;
+      }
+    }
+
+  size_t sz = m.vertex.size();
+  for( size_t i=0; i<sz; i+=3 ){
+    m.vertex.push_back( m.vertex[i] );
+    m.vertex.push_back( m.vertex[i+2] );
+    m.vertex.push_back( m.vertex[i+1] );
+    }
+
+  MyGL::Model<>::saveRawData("./data/models/grass/0.mx", m);
+  */
 
   resource.load("./data/data.xml");
   proto   .load("./data/game.xml");
@@ -112,23 +154,11 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   }
 
 void Game::tick() {
+  //return;
+
   moveCamera();
 
   DWORD time = GetTickCount();
-
-  World::CameraViewBounds b;
-  F3 vb[4];
-  vb[0] = unProject( 0, 0 );
-  vb[1] = unProject( w, 0 );
-  vb[2] = unProject( 0, h );
-  vb[3] = unProject( w, h );
-
-  for( int i=0; i<4; ++i ){
-    b.x[i] = World::coordCastD(vb[i].data[0]);
-    b.y[i] = World::coordCastD(vb[i].data[1]);
-    }
-
-  world->setCameraBounds(b);
 
   F3 v = unProject( curMPos.x, curMPos.y );
   int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
@@ -193,7 +223,20 @@ void Game::tick() {
   fps.time += int(GetTickCount() - time);
   }
 
-void Game::onRender( double dt ){
+void Game::onRender( double dt ){  
+  World::CameraViewBounds b;
+  F3 vb[4];
+  vb[0] = unProject( 0, 0 );
+  vb[1] = unProject( w, 0 );
+  vb[2] = unProject( 0, h );
+  vb[3] = unProject( w, h );
+
+  for( int i=0; i<4; ++i ){
+    b.x[i] = World::coordCastD(vb[i].data[0]);
+    b.y[i] = World::coordCastD(vb[i].data[1]);
+    }
+
+  world->setCameraBounds(b);
   gui.renderMinimap(*world);
 
   if( gui.isCutsceneMode() ){
@@ -521,8 +564,8 @@ void Game::addPlayer() {
 
   players.back()->onUnitSelected.bind( *this, &Game::onUnitsSelected );
   players.back()->onUnitDied    .bind( *this, &Game::onUnitDied );
-  if( world )
-    players.back()->computeFog(world);
+  //if( world )
+    //players.back()->computeFog(world);
   }
 
 Player &Game::player(int i) {
@@ -841,6 +884,11 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     material.normalMap = r.texture( src.name+"/norm" );
 
     obj.setupMaterial( material );
+
+    TransparentMaterialShadow sh(c.shadow.matrix);
+    sh.texture   = material.texture;
+    sh.normalMap = material.normalMap;
+    obj.setupMaterial( sh );
     }
 
   if( contains( src.materials, "transparent" ) ){
@@ -848,9 +896,16 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     TransparentMaterial      material(c.shadow.matrix);
     zpass.texture = r.texture( src.name+"/diff" );
 
-    material.texture = zpass.texture;
+    material.texture   = zpass.texture;
+    material.normalMap = r.texture( src.name+"/norm" );
+
     obj.setupMaterial( zpass    );
     obj.setupMaterial( material );
+
+    TransparentMaterialShadow sh(c.shadow.matrix);
+    sh.texture   = material.texture;
+    sh.normalMap = material.normalMap;
+    obj.setupMaterial( sh );
     }
 
   if( contains( src.materials, "omni" ) ){

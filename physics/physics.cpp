@@ -8,6 +8,7 @@
 #include "game/world.h"
 
 #include <memory>
+#include <unordered_set>
 
 struct Physics::Data{
   std::unique_ptr<btBroadphaseInterface>               broadphase;
@@ -17,6 +18,8 @@ struct Physics::Data{
 
   std::unique_ptr<Physics::TerrainBody>                terrain;
   std::unique_ptr<btDiscreteDynamicsWorld>             dynamicsWorld;
+
+  Mutex  physicMutex;
 
   static btVector3 localInertion( float mass,
                                   const btSphereShape & s ){
@@ -149,6 +152,10 @@ struct Physics::TerrainBody{
 
 Physics::Physics(int /*tw*/, int /*th*/) {
   data = new Data();
+
+  Lock lock(data->physicMutex);
+  (void)lock;
+
   data->broadphase.reset( new btDbvtBroadphase() );
 
   data->collisionConfiguration.reset( new btDefaultCollisionConfiguration() );
@@ -166,14 +173,21 @@ Physics::Physics(int /*tw*/, int /*th*/) {
   }
 
 Physics::~Physics() {
-  if( data->terrain )
-    data->dynamicsWorld->removeRigidBody( &data->terrain->body );
+  { Lock lock(data->physicMutex);
+    (void)lock;
+
+    if( data->terrain )
+      data->dynamicsWorld->removeRigidBody( &data->terrain->body );
+    }
 
   delete data;
   }
 
 void Physics::tick() {
-  data->dynamicsWorld->stepSimulation( 1/60.f, 10 );
+  Lock lock(data->physicMutex);
+  (void)lock;
+
+  data->dynamicsWorld->stepSimulation( 1/60.f, 5 );
   }
 
 void Physics::setTerrain( const Terrain &t ) {
@@ -189,6 +203,9 @@ void Physics::setTerrain( const Terrain &t ) {
       min = std::min(min, h);
       max = std::max(max, h);
       }
+
+  Lock lock(data->physicMutex);
+  (void)lock;
 
   if( data->terrain )
     data->dynamicsWorld->removeRigidBody( &data->terrain->body );
@@ -210,13 +227,21 @@ void Physics::setTerrain( const Terrain &t ) {
 
 Physics::Sphere Physics::createSphere( float x, float y, float z, float d ) {
   Physics::Sphere s;
+
+  Lock lock(data->physicMutex);
+  (void)lock;
+
   s.data = new RigidBody( x, y, z, d, 0.1 );
   data->dynamicsWorld->addRigidBody( &s.data->body );
+
   return s;
   }
 
 void Physics::free( Physics::Rigid &s) {
   if( s.data ){
+    Lock lock(data->physicMutex);
+    (void)lock;
+
     data->dynamicsWorld->removeRigidBody( &s.data->body );
     --data->rigidCount;
     s.data = 0;
@@ -226,29 +251,50 @@ void Physics::free( Physics::Rigid &s) {
 Physics::Box Physics::createBox(float x, float y, float z,
                                 float sx, float sy, float sz) {
   Physics::Box s;
+
+  Lock lock(data->physicMutex);
+  (void)lock;
+
   s.data = new RigidBody( x, y, z, sx, sy, sz, 0.1 );
+  s.engine = data;
   data->dynamicsWorld->addRigidBody( &s.data->body );
+
   return s;
   }
 
 Physics::AnimatedSphere Physics::createAnimatedSphere( float x, float y,
                                                        float z, float d ){
   Physics::AnimatedSphere s;
+
+  Lock lock(data->physicMutex);
+  (void)lock;
+
   s.data = new AnimatedBody( x, y, z, d );
+  s.engine = data;
   data->dynamicsWorld->addRigidBody( &s.data->body );
+
   return s;
   }
 
 Physics::AnimatedBox Physics::createAnimatedBox( float  x, float  y, float  z,
                                                  float sx, float sy, float sz ){
   Physics::AnimatedBox s;
+
+  Lock lock(data->physicMutex);
+  (void)lock;
+
   s.data = new AnimatedBody( x, y, z, sx, sy, sz );
+  s.engine = data;
   data->dynamicsWorld->addRigidBody( &s.data->body );
+
   return s;
   }
 
 void Physics::free(Physics::AnimatedSphere &s) {
   if( s.data ){
+    Lock lock(data->physicMutex);
+    (void)lock;
+
     data->dynamicsWorld->removeRigidBody( &s.data->body );
     --data->animCount;
     s.data = 0;
@@ -257,17 +303,35 @@ void Physics::free(Physics::AnimatedSphere &s) {
 
 void Physics::free(Physics::AnimatedBox &s) {
   if( s.data ){
+    Lock lock(data->physicMutex);
+    (void)lock;
+
     data->dynamicsWorld->removeRigidBody( &s.data->body );
     --data->animCount;
     s.data = 0;
     }
   }
 
+void Physics::beginUpdate() {
+  data->physicMutex.lock();
+  }
+
+void Physics::endUpdate() {
+  data->physicMutex.unlock();
+  }
+
 Physics::Rigid::Rigid() {
   data = 0;
+  engine = 0;
+
+  static const MyGL::Float nullf[16] = {};
+  matrix = MyGL::Matrix4x4(nullf);
   }
 
 float Physics::Rigid::x() const {
+  Lock lock(engine->physicMutex);
+  (void)lock;
+
   btTransform trans;
   data->body.getMotionState()->getWorldTransform(trans);
 
@@ -275,6 +339,9 @@ float Physics::Rigid::x() const {
   }
 
 float Physics::Rigid::y() const {
+  Lock lock(engine->physicMutex);
+  (void)lock;
+
   btTransform trans;
   data->body.getMotionState()->getWorldTransform(trans);
 
@@ -282,6 +349,9 @@ float Physics::Rigid::y() const {
   }
 
 float Physics::Rigid::z() const {
+  Lock lock(engine->physicMutex);
+  (void)lock;
+
   btTransform trans;
   data->body.getMotionState()->getWorldTransform(trans);
 
@@ -289,6 +359,71 @@ float Physics::Rigid::z() const {
   }
 
 MyGL::Matrix4x4 Physics::Rigid::transform() {
+  return matrix;
+
+  /*
+  Lock lock(engine->physicMutex);
+  (void)lock;
+
+  update();
+  */
+  }
+
+float Physics::Rigid::diameter() const {
+  return data->sphere.getRadius()*2;
+  }
+
+bool Physics::Rigid::isValid() const {
+  return data!=0;
+  }
+
+void Physics::Rigid::activate() {
+  if( Lock(engine->physicMutex) )
+    data->body.activate(true);
+  }
+
+bool Physics::Rigid::isActive() {
+  if( Lock(engine->physicMutex) )
+    return data->body.isActive();
+
+  return 0;
+  }
+
+void Physics::Rigid::setPosition(float x, float y, float z) {
+  // Lock lock(engine->physicMutex);
+  // (void)lock;
+
+  btTransform tr;
+  data->body.getMotionState()->getWorldTransform(tr);
+  tr.setOrigin( btVector3(x,y,z) );
+
+  data->mstate.setWorldTransform( tr );
+  data->body.setCenterOfMassTransform( tr );
+  }
+
+void Physics::Rigid::setAngle(float rx, float ry) {
+  // Lock lock(engine->physicMutex);
+  // (void)lock;
+
+  rx = rx*M_PI/180.0;
+  ry = ry*M_PI/180.0;
+
+  btTransform tr;
+  data->body.getMotionState()->getWorldTransform(tr);
+  tr.setRotation( btQuaternion(0, rx, ry));
+
+  data->mstate.setWorldTransform( tr );
+  data->body.setCenterOfMassTransform( tr );
+  }
+
+void Physics::Rigid::applyForce(float x, float y, float z) {
+  // Lock lock(engine->physicMutex);
+  // (void)lock;
+
+  data->body.applyForce( btVector3(x,y,z), btVector3(0,0,1) );
+  }
+
+void Physics::Rigid::update() {
   btTransform n;
   data->body.getMotionState()->getWorldTransform(n);
   //data->body.activate(true);
@@ -302,51 +437,10 @@ MyGL::Matrix4x4 Physics::Rigid::transform() {
 
   btVector3 pos = n.getOrigin();
 
-  return MyGL::Matrix4x4( v[0][0], v[0][1], v[0][2], 0,
-                          v[1][0], v[1][1], v[1][2], 0,
-                          v[2][0], v[2][1], v[2][2], 0,
-                           pos[0],  pos[1],  pos[2], 1 );
-  }
-
-float Physics::Rigid::diameter() const {
-  return data->sphere.getRadius()*2;
-  }
-
-bool Physics::Rigid::isValid() const {
-  return data!=0;
-  }
-
-void Physics::Rigid::activate() {
-  data->body.activate(true);
-  }
-
-bool Physics::Rigid::isActive() {
-  return data->body.isActive();
-  }
-
-void Physics::Rigid::setPosition(float x, float y, float z) {
-  btTransform tr;
-  data->body.getMotionState()->getWorldTransform(tr);
-  tr.setOrigin( btVector3(x,y,z) );
-
-  data->mstate.setWorldTransform( tr );
-  data->body.setCenterOfMassTransform( tr );
-  }
-
-void Physics::Rigid::setAngle(float rx, float ry) {
-  rx = rx*M_PI/180.0;
-  ry = ry*M_PI/180.0;
-
-  btTransform tr;
-  data->body.getMotionState()->getWorldTransform(tr);
-  tr.setRotation( btQuaternion(0, rx, ry));
-
-  data->mstate.setWorldTransform( tr );
-  data->body.setCenterOfMassTransform( tr );
-  }
-
-void Physics::Rigid::applyForce(float x, float y, float z) {
-  data->body.applyForce( btVector3(x,y,z), btVector3(0,0,1) );
+  matrix =  MyGL::Matrix4x4( v[0][0], v[0][1], v[0][2], 0,
+                             v[1][0], v[1][1], v[1][2], 0,
+                             v[2][0], v[2][1], v[2][2], 0,
+                              pos[0],  pos[1],  pos[2], 1 );
   }
 
 float Physics::AnimatedSphere::diameter() const {
@@ -355,19 +449,37 @@ float Physics::AnimatedSphere::diameter() const {
 
 Physics::Animated::Animated() {
   data = 0;
+  engine = 0;
+
+  x = 0;
+  y = 0;
+  z = 0;
   }
 
-void Physics::Animated::setPosition(float x, float y, float z) {
+void Physics::Animated::setPosition(float ix, float iy, float iz) {
+  x = ix;
+  y = iy;
+  z = iz;
+
+  /*
+  update();
+  */
+  }
+
+bool Physics::Animated::isValid() const {
+  return data!=0;
+  }
+
+void Physics::Animated::update() {
+  //Lock lock(engine->physicMutex);
+  //(void)lock;
+
   btTransform tr;
   data->body.getMotionState()->getWorldTransform(tr);
   tr.setOrigin( btVector3(x,y,z) );
 
   data->mstate.setWorldTransform( tr );
   data->body.setCenterOfMassTransform( tr );
-  }
-
-bool Physics::Animated::isValid() const {
-  return data!=0;
   }
 
 

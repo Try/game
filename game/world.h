@@ -13,6 +13,10 @@
 #include <MyWidget/Event>
 
 #include <memory>
+#include <unordered_set>
+
+#include "threads/async.h"
+#include "threads/mutex.h"
 
 class BehaviorMSGQueue;
 class PrototypesLoader;
@@ -32,6 +36,7 @@ class World {
 
     World(Game & game,
            int w, int h );
+    ~World();
 
     MyWidget::signal< MyGL::AbstractGraphicObject &,
                       const ProtoObject::View &,
@@ -105,6 +110,7 @@ class World {
 
     void toogleEditLandMode( const Terrain::EditMode & m );
     Physics physics;
+    bool    isRunning;
 
     void serialize( GameSerializer &s);
 
@@ -123,6 +129,8 @@ class World {
     void setCameraBounds( const CameraViewBounds& c );
 
     void wayFind( int x, int y, GameObject* obj );
+
+    void updateIntent( GameObjectView* v );
   private:
     MyGL::Scene scene;
     std::unique_ptr<Terrain> terr;
@@ -136,6 +144,8 @@ class World {
 
     std::vector< PGameObject > gameObjects, eviObjects;
     std::vector< PGameObject > nonBackground;
+    std::unordered_set<GameObjectView*> updatePosIntents;
+
     SpatialIndex spatialId;
     // std::vector< PGameObject > selected;
     std::vector< WeakWorldPtr* > wptrs;
@@ -162,6 +172,9 @@ class World {
 
     void initTerrain();
     void createTestMap();
+
+    void computePhysic(void *);
+    Future physicCompute;
 
     void createResp( int pl, int x, int y, int minX, int minY );
 

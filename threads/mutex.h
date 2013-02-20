@@ -2,6 +2,7 @@
 #define MUTEX_H
 
 #include <pthread.h>
+#include <iostream>
 
 class Lock;
 

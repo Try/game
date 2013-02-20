@@ -20,7 +20,6 @@
 #include <MyGL/GraphicObject>
 #include <MyGL/Scene>
 
-#include <MyGL/Algo/RenderAlgo>
 #include <MyGL/Algo/ShadowMapPass>
 
 #include <MyGL/Size>
@@ -115,8 +114,8 @@ class GraphicsSystem {
       } gbuf;
 
     struct Transparent{
-      MyGL::VertexShader   vs, vsAdd;
-      MyGL::FragmentShader fs, fsAdd;
+      MyGL::VertexShader   vs, vsAdd, vsSh;
+      MyGL::FragmentShader fs, fsAdd, fsSh;
       } transparentData;
 
     struct Displace{
@@ -128,7 +127,7 @@ class GraphicsSystem {
       MyGL::VertexShader   vs;
       MyGL::FragmentShader fs;
 
-      MyGL::Texture2d      waterHeightMap, envMap;
+      MyGL::Texture2d      waterHeightMap[2], envMap;
       } water;
 
     struct Glow{
@@ -189,10 +188,10 @@ class GraphicsSystem {
 
     MyGL::Uniform<float[2]> scrOffset, cpyOffset;
 
-    void fillGBuf( MyGL::Texture2d *gbuffer,
+    void fillGBuf(MyGL::Texture2d *gbuffer,
                    MyGL::Texture2d &mainDepth,
-                   const MyGL::Texture2d &sm,
-                   const MyGL::Scene &scene);
+                   const MyGL::Texture2d &sm, const MyGL::Texture2d &smCl,
+                   const MyGL::Scene &scene, const MyGL::AbstractCamera &camera);
 
     void renderVolumeLight( const MyGL::Scene &scene,
                             MyGL::Texture2d &gbuffer,
@@ -202,20 +201,23 @@ class GraphicsSystem {
     void drawOmni(MyGL::Texture2d *gbuffer,
                    MyGL::Texture2d &mainDepth, MyGL::Texture2d &sm, const MyGL::Scene &scene);
 
-    void setupLight( const MyGL::Scene &scene,
+    void setupLight(const MyGL::Scene &scene,
                      MyGL::FragmentShader & fs ,
-                     const MyGL::Texture2d &sm);
+                     const MyGL::Texture2d &sm, const MyGL::Texture2d &smCl);
 
     void fillShadowMap( MyGL::Texture2d &sm,
                         const MyGL::Scene &scene );
+
+    void fillTranscurentMap(MyGL::Texture2d &sm, MyGL::Texture2d &depthSm,
+                             const MyGL::Scene &scene );
 
     void fillShadowMap(MyGL::Texture2d &sm, MyGL::Texture2d &depth,
                         const MyGL::Scene &scene,
                        const MyGL::Scene::Objects &v, bool clr);
 
-    void drawObjects( MyGL::Texture2d* gbuffer,
+    void drawObjects(MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
-                      const MyGL::Scene &scene,
+                      const MyGL::Scene &scene, const MyGL::AbstractCamera &camera,
                       const MyGL::Scene::Objects &v, bool clr );
 
     void drawObjects(MyGL::VertexShader &vs,
@@ -223,7 +225,7 @@ class GraphicsSystem {
 
                       MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
-                      const MyGL::Scene &scene,
+                      const MyGL::Scene &scene, const MyGL::AbstractCamera &camera,
                       const MyGL::Scene::Objects &v,
                       bool clr = false );
 
@@ -233,10 +235,10 @@ class GraphicsSystem {
                           const MyGL::Scene &scene,
                           const MyGL::Scene::Objects &v ) ;
 
-    void drawWater( MyGL::Texture2d &screen,
+    void drawWater(MyGL::Texture2d &screen,
                     MyGL::Texture2d& mainDepth,
                     MyGL::Texture2d &sceneCopy,
-                    MyGL::Texture2d &sm,
+                    MyGL::Texture2d &sm, MyGL::Texture2d &smCl,
                     MyGL::Texture2d& sceneDepth,
                     const MyGL::Scene &scene,
                     const MyGL::Scene::Objects &v ) ;
@@ -268,8 +270,8 @@ class GraphicsSystem {
 
     void blt(const MyGL::Texture2d &tex);
 
-    void waves( MyGL::Texture2d &out,
-                const MyGL::Texture2d& in );
+    void waves(MyGL::Texture2d &out,
+                const MyGL::Texture2d& in , const MyGL::Texture2d &in1);
 
     void ssao(MyGL::Texture2d &out,
                const MyGL::Texture2d& in , const MyGL::Texture2d &gao, const MyGL::Scene &scene);
@@ -296,13 +298,13 @@ class GraphicsSystem {
     MyGL::Texture2d depth( const MyGL::Size& sz );
 
 
-    void renderScene(const MyGL::Scene &scene,
+    void renderScene(const MyGL::Scene &scene, const MyGL::AbstractCamera &camera,
                       MyGL::Texture2d gbuffer[4],
                       MyGL::Texture2d & depthBuffer, MyGL::Texture2d rsm[],
                       int shadowMapSize, bool useAO);
     void buildRSM(MyGL::Scene &scene,
                    MyGL::Texture2d gbuffer[4],
-                   int shadowMapSize, bool useAO);
+                   int shadowMapSize);
 
     size_t time;
 

@@ -11,7 +11,8 @@ class BlushMaterial : public MainMaterial {
     BlushMaterial( const MyGL::Matrix4x4 & shadowMatrix );
 
     static float wind;
-    static MyGL::Matrix4x4 animateObjMatrix(const MyGL::Matrix4x4& object );
+    static MyGL::Matrix4x4 animateObjMatrix( const MyGL::Matrix4x4& object,
+                                             double power = 1 );
   protected:
     bool bind( MyGL::RenderState &dev,
                const MyGL::Matrix4x4 &object,

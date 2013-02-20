@@ -68,3 +68,20 @@ bool TransparentMaterialNoZW::bind( MyGL::RenderState &rs,
 
   return 1;
   }
+
+
+TransparentMaterialShadow::TransparentMaterialShadow(const MyGL::Matrix4x4 &s)
+                          :TransparentMaterial(s){
+
+  }
+
+bool TransparentMaterialShadow::bind( MyGL::RenderState &rs,
+                                    const MyGL::Matrix4x4 &object,
+                                    const MyGL::AbstractCamera &c,
+                                    MyGL::UniformTable & u ) const {
+  TransparentMaterial::bind( rs, object, c, u );
+  rs.setZTest(0);
+
+  //rs.setBlend(0);
+  return 1;
+  }

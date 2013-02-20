@@ -304,6 +304,8 @@ void GameObjectView::setViewPosition( float x, float y, float z ) {
 
 void GameObjectView::setViewPosition( float x, float y, float z,
                                       float interp ) {
+  wrld.updateIntent(this);
+
   for( size_t i=0; i<env.size(); ++i ){
     //setViewPosition( env[i], getClass().view[i], x, y, z );
     EnvObject::Form & form = env[i].form;
@@ -412,6 +414,8 @@ double GameObjectView::viewHeight() const {
   }
 
 void GameObjectView::setViewSize( float x, float y, float z ) {
+  wrld.updateIntent(this);
+
   for( size_t i=0; i<view.size(); ++i ){
     setViewSize( view[i], getClass().view[i], x, y, z );
     }
@@ -476,22 +480,28 @@ void GameObjectView::updatePos() {
   if( anim.sphere.isValid() && view.size() ){
     MyGL::GraphicObject & g = view[0];
     anim.sphere.setPosition( g.x(), g.y(), g.z() );
+    anim.sphere.update();
     }
 
   if( anim.box.isValid() && view.size() ){
     MyGL::GraphicObject & g = view[0];
     anim.box.setPosition( g.x(), g.y(), g.z() );
+    anim.box.update();
     }
 
   //rigid bodyes
   for( size_t i=0; i<env.size(); ++i ){
     EnvObject::Form & form = env[i].form;
 
-    if( form.sphere.isValid() )
+    if( form.sphere.isValid() ){
+      form.sphere.update();
       updatePosRigid(form.sphere, i);
+      }
 
-    if( form.box.isValid() )
+    if( form.box.isValid() ){
+      form.box.update();
       updatePosRigid(form.box, i);
+      }
     }
   }
 
@@ -507,6 +517,9 @@ void GameObjectView::higlight(int time, GameObjectView::Selection s) {
 void GameObjectView::setVisible_perf(bool v) {
   for( size_t i=0; i<view.size(); ++i )
     view[i].setVisible(v);
+
+  //for( int i=0; i<selectModelsCount; ++i )
+    //selection[i]->setVisible(v);
   }
 
 void GameObjectView::setVisible(bool v) {

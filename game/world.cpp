@@ -32,6 +32,8 @@ World::World( Game & gm,
   tx = ty = 0;
   mouseObject = 0;
 
+  isRunning = true;
+
   memset(&lcamBds, 0, sizeof(lcamBds) );
 
   terr.reset( new Terrain( w,h, resource, scene, *this, prototypes) );
@@ -60,6 +62,13 @@ World::World( Game & gm,
   camera.setDistance( 4 );
   camera.setSpinX(0);
   camera.setSpinY(-150);
+
+  physicCompute = async( this, &World::computePhysic, 0 );
+  }
+
+World::~World() {
+  isRunning = false;
+  physicCompute.join();
   }
 
 void World::emitHudAnim( const std::string &s,
@@ -96,6 +105,11 @@ void World::wayFind(int x, int y, GameObject *obj) {
   wayFindRq.findWay(x,y,obj);
   }
 
+void World::updateIntent(GameObjectView *v) {
+  if( v->getClass().data.isBackground )
+    updatePosIntents.insert(v);
+  }
+
 void World::createTestMap() {
   return;
 
@@ -125,9 +139,16 @@ void World::createTestMap() {
   addObject("pikeman", 2 ).setPosition( 15000, 2500, 1 );
   }
 
+void World::computePhysic( void * ) {
+  while( isRunning ){
+    physics.tick();
+    Sleep(50);
+    }
+  }
+
 void World::createResp(int pl, int x, int y, int minX, int minY) {
   int wcount = 0;
-  addObject("castle", pl ).setPosition( x, y, 1 );
+  addObject("smoke", pl ).setPosition( x, y, 1 );
 
   for( int i=1; i<5; ++i ){
     addObject("crystal" ).setPosition( x - (1100 - i*300)*minX,
@@ -752,7 +773,7 @@ void World::onRender( double dt ) {
   scene.setCamera( camera );
   terr->updatePolish();
 
-  int rx = 0, lx = terrain().width()*Terrain::quadSize;
+  int rx = 0, lx = terrain().width() *Terrain::quadSize;
   int ry = 0, ly = terrain().height()*Terrain::quadSize;
 
   for( size_t i=0; i<4; ++i ){
@@ -763,7 +784,7 @@ void World::onRender( double dt ) {
     ry = std::max( cameraVBounds.y[i], ry );
     }
 
-  int divSz = Terrain::quadSize*8;
+  int divSz = Terrain::quadSize;
 
   lx -= divSz;
   rx += divSz;
@@ -777,10 +798,10 @@ void World::onRender( double dt ) {
   ry = int(ry/divSz+1)*divSz;
   ly = int(ly/divSz)*divSz;
 
-  if( rx==lcamBds.rx &&
-      lx==lcamBds.lx &&
-      ry==lcamBds.ry &&
-      ly==lcamBds.ly ){
+  if( !(rx==lcamBds.rx &&
+        lx==lcamBds.lx &&
+        ry==lcamBds.ry &&
+        ly==lcamBds.ly) ){
     lcamBds.rx = rx;
     lcamBds.lx = lx;
 
@@ -790,8 +811,11 @@ void World::onRender( double dt ) {
     for( size_t i=0; i<gameObjects.size(); ++i ){
       GameObject &obj = *gameObjects[i];
 
-      if( lx<=obj.x() && obj.x()<=rx &&
-          ly<=obj.y() && obj.y()<=ry )
+      int x = obj.x(),
+          y = obj.y();
+
+      if( lx<=x && x<=rx &&
+          ly<=y && y<=ry )
         obj.setVisible_perf(true); else
         obj.setVisible_perf(false);
       }
@@ -824,7 +848,7 @@ void World::tick() {
     }
   wayFindRq.tick( terrain() );
 
-  physics.tick();
+  // physics.tick();
 
   for( size_t i=0; i<hudAnims.size(); ++i )
     hudAnims[i]->tick();
@@ -837,6 +861,20 @@ void World::tick() {
       ++i;
       }
     }
+
+  physics.beginUpdate();
+
+  for( size_t i=0; i<nonBackground.size(); ++i )
+    nonBackground[i]->updatePos();
+
+  for( size_t i=0; i<eviObjects.size(); ++i )
+    eviObjects[i]->updatePos();
+
+  for( auto i=updatePosIntents.begin(); i!=updatePosIntents.end(); ++i ){
+    (*i)->updatePos();
+    }
+
+  physics.endUpdate();
 
   for( size_t i=0; i<nonBackground.size(); ++i )
     if( nonBackground[i]->hp() <= 0 &&
@@ -851,6 +889,7 @@ void World::tick() {
       cl.set( cl.r()*k, cl.g()*k, cl.b()*k, cl.a() );
       obj.setTeamColor( cl );
 
+      physics.beginUpdate();
       obj.rotate( src.rAngle()*180.0/M_PI );
       obj.setPosition( src.x(), src.y(), src.z()+100 );
 
@@ -859,6 +898,7 @@ void World::tick() {
             c = f*cos( src.rAngle() );
 
       obj.applyForce( -c, -s, 0 );
+      physics.endUpdate();
       }
 
   for( size_t i=0; i<nonBackground.size(); ){
@@ -869,11 +909,7 @@ void World::tick() {
       }
     }
 
-  for( size_t i=0; i<gameObjects.size(); ++i )
-    gameObjects[i]->updatePos();
-
-  for( size_t i=0; i<eviObjects.size(); ++i )
-    eviObjects[i]->updatePos();
+  updatePosIntents.clear();
   }
 
 MyGL::Scene &World::getScene() {
@@ -900,6 +936,7 @@ void World::serialize(GameSerializer &s) {
   s + sz;
 
   if( s.isReader() ){
+    updatePosIntents.clear();
     gameObjects.clear();
     eviObjects.clear();
     warehouses.clear();

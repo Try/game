@@ -84,8 +84,11 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
     smap.vs = vsHolder.load("./data/sh/shadow_map.vert");
     smap.fs = fsHolder.load("./data/sh/shadow_map.frag");
 
-    transparentData.vs = res.vshader("main_material");
-    transparentData.fs = res.fshader("main_material");
+    transparentData.vs = res.vshader("transparent_material");
+    transparentData.fs = res.fshader("transparent_material");
+
+    transparentData.vsSh = res.vshader("transparent_material_shadow");
+    transparentData.fsSh = res.fshader("transparent_material_shadow");
 
     transparentData.vsAdd = res.vshader("blend_add");
     transparentData.fsAdd = res.fshader("blend_add");
@@ -122,7 +125,9 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
     bloomData.b[1].setName("b1");
     bloomData.b[2].setName("b2");
 
-    water.waterHeightMap = texHolder.load("./data/textures/water/hmap.png");
+    water.waterHeightMap[0] = texHolder.load("./data/textures/water/hmap.png");
+    water.waterHeightMap[1] = texHolder.load("./data/textures/water/hmap1.png");
+
     water.envMap = res.texture("sky0/diff");
 
     water.vs = vsHolder.load("./data/sh/htonorm.vert");
@@ -277,7 +282,9 @@ bool GraphicsSystem::render( MyGL::Scene &scene,
   return 1;
   */
 
-  renderScene( scene, gbuffer, mainDepth, rsm,
+  renderScene( scene,
+               scene.camera(),
+               gbuffer, mainDepth, rsm,
                2048, true );
 
   MyGL::Texture2d fog;
@@ -402,9 +409,69 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
 
   }
 
+void GraphicsSystem::fillTranscurentMap( MyGL::Texture2d &sm,
+                                         MyGL::Texture2d &depthSm,
+                                         const MyGL::Scene &scene) {
+
+  MyGL::DirectionLight light;
+  if( scene.lights().direction().size() > 0 )
+    light = scene.lights().direction()[0];
+
+  MyGL::Texture2d lightColor = localTex.create(1,1);
+  {
+    MyGL::Texture2d depthSm = depth(1,1);
+    MyGL::Render render( device,
+                         sm, depthSm,
+                         transparentData.vsSh,
+                         transparentData.fsSh );
+    render.clear( light.color(), 1 );
+    }
+
+  MyGL::RenderState rstate;
+  rstate.setCullFaceMode( MyGL::RenderState::CullMode::front );
+
+  double dir[3] = { light.xDirection(),
+                    light.yDirection(),
+                    light.zDirection() };
+  MyGL::Render render( device,
+                       sm, depthSm,
+                       transparentData.vsSh,
+                       transparentData.fsSh );
+  render.clear( light.color(), 1 );
+
+  if( sm.width()==1 && sm.height()==1 )
+    return;
+
+  setupLight( scene, transparentData.fsSh, sm, lightColor );
+
+  render.setRenderState( rstate );
+  RSMCamera c;
+  c.v = makeShadowMatrix( scene, dir );
+  c.p.setData( 1, 0, 0, 0,
+               0,-1, 0, 0,
+               0, 0, 1, 0,
+               0, 0, 0, 1 );
+
+  { auto v = scene.objects<TransparentMaterialShadow>();
+    for( size_t i=0; i<v.size(); ++i ){
+      const MyGL::AbstractGraphicObject& ptr = v[i].object();
+
+      MyGL::Matrix4x4 m = c.v;
+      m.mul( ptr.transform() );
+
+      if( scene.viewTester().isVisible( ptr, m ) ){
+        device.setUniform( transparentData.vsSh, m, "mvpMatrix" );
+        render.draw( v[i].material(), ptr,
+                     ptr.transform(), c );
+        }
+      }
+    }
+  }
+
 void GraphicsSystem::setupLight( const MyGL::Scene & scene,
                                  MyGL::FragmentShader & fs,
-                                 const MyGL::Texture2d & sm ){
+                                 const MyGL::Texture2d & sm,
+                                 const MyGL::Texture2d & smCl ){
   if( scene.lights().direction().size()>0 ){
     MyGL::DirectionLight l = scene.lights().direction()[0];
 
@@ -429,15 +496,19 @@ void GraphicsSystem::setupLight( const MyGL::Scene & scene,
 
     gbuf.view.set( view );
     device.setUniform( fs, gbuf.view );
-    device.setUniform( fs, sm, "shadowMap" );
+
+    device.setUniform( fs,   sm, "shadowMap"   );
+    device.setUniform( fs, smCl, "shadowMapCl" );
     }
   }
 
 void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                                MyGL::Texture2d& mainDepth,
                                const MyGL::Texture2d& sm,
-                               const MyGL::Scene & scene ) {
-  setupLight( scene, gbuf.terrainFs, sm );
+                               const MyGL::Texture2d& smCl,
+                               const MyGL::Scene & scene,
+                               const MyGL::AbstractCamera & camera ) {
+  setupLight( scene, gbuf.terrainFs, sm, smCl );
   particles->exec( scene.camera().view(),
                    scene.camera().projective(),
                    1 );
@@ -445,7 +516,9 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
   drawObjects( gbuf.terrainVs,
                gbuf.terrainFs,
                gbuffer, mainDepth,
-               scene, scene.objects<TerrainZPass>(), true );
+               scene,
+               camera,
+               scene.objects<TerrainZPass>(), true );
   {
     MyGL::Texture2d d = depth( mainDepth.width(), mainDepth.height() );
     MyGL::Render render( device,
@@ -458,32 +531,46 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
   drawObjects( gbuf.terrainVs,
                gbuf.terrainFs,
                gbuffer, mainDepth,
-               scene, scene.objects<TerrainMinorMaterial>(), false );
+               scene,
+               camera,
+               scene.objects<TerrainMinorMaterial>(), false );
 
-  setupLight( scene, gbuf.fs, sm );
+  setupLight( scene, gbuf.fs, sm, smCl );
   drawObjects( gbuffer, mainDepth,
-               scene, scene.objects<MainMaterial>(), false );
+               scene,
+               camera,
+               scene.objects<MainMaterial>(), false );
 
   drawObjects( gbuffer, mainDepth,
-               scene, scene.objects<BlushMaterial>(), false );
+               scene,
+               camera,
+               scene.objects<BlushMaterial>(), false );
 
-  setupLight( scene, gbuf.grassFs, sm );
+  setupLight( scene, gbuf.grassFs, sm, smCl );
   drawObjects( gbuf.grassVs, gbuf.grassFs,
                gbuffer, mainDepth,
-               scene, scene.objects<GrassMaterial>() );
+               scene,
+               camera,
+               scene.objects<GrassMaterial>() );
 
   drawObjects( transparentData.vsAdd, transparentData.fsAdd,
                gbuffer, mainDepth,
-               scene, scene.objects<AddMaterial>() );
+               scene,
+               camera,
+               scene.objects<AddMaterial>() );
 
   drawObjects( transparentData.vsAdd, transparentData.fsAdd,
                gbuffer, mainDepth,
-               scene, scene.objects<TransparentMaterialZPass>() );
+               scene,
+               camera,
+               scene.objects<TransparentMaterialZPass>() );
 
-  setupLight( scene, transparentData.fs, sm );
+  setupLight( scene, transparentData.fs, sm, smCl );
   drawObjects( transparentData.vs, transparentData.fs,
                gbuffer, mainDepth,
-               scene, scene.objects<TransparentMaterial>() );
+               scene,
+               camera,
+               scene.objects<TransparentMaterial>() );
   }
 
 void GraphicsSystem::renderVolumeLight( const MyGL::Scene &scene,
@@ -611,9 +698,10 @@ void GraphicsSystem::drawOmni( MyGL::Texture2d *gbuffer,
 void GraphicsSystem::drawObjects( MyGL::Texture2d* gbuffer,
                                   MyGL::Texture2d& mainDepth,
                                   const MyGL::Scene &scene,
+                                  const MyGL::AbstractCamera & camera,
                                   const MyGL::Scene::Objects &v,
                                   bool clr ) {
-  drawObjects(gbuf.vs, gbuf.fs, gbuffer, mainDepth, scene, v, clr);
+  drawObjects(gbuf.vs, gbuf.fs, gbuffer, mainDepth, scene, camera, v, clr);
   }
 
 void GraphicsSystem::drawObjects( MyGL::VertexShader   & vs,
@@ -622,6 +710,7 @@ void GraphicsSystem::drawObjects( MyGL::VertexShader   & vs,
                                   MyGL::Texture2d* gbuffer,
                                   MyGL::Texture2d& mainDepth,
                                   const MyGL::Scene &scene,
+                                  const MyGL::AbstractCamera& camera,
                                   const MyGL::Scene::Objects &v,
                                   bool clr ) {
   MyGL::Render render( device,
@@ -633,7 +722,7 @@ void GraphicsSystem::drawObjects( MyGL::VertexShader   & vs,
 
   //return;
 
-  const MyGL::AbstractCamera & camera = scene.camera();
+  //const MyGL::AbstractCamera & camera = scene.camera();
 
   for( size_t i=0; i<v.size(); ++i ){
     const MyGL::AbstractGraphicObject& ptr = v[i].object();
@@ -679,14 +768,15 @@ void GraphicsSystem::drawWater( MyGL::Texture2d& screen,
                                 MyGL::Texture2d& mainDepth,
                                 MyGL::Texture2d& sceneCopy,
                                 MyGL::Texture2d& sm,
+                                MyGL::Texture2d& smCl,
                                 MyGL::Texture2d& sceneDepth,
                                 const MyGL::Scene &scene,
                                 const MyGL::Scene::Objects &v ) {
 
   MyGL::Texture2d waterWaves;
-  waves( waterWaves, water.waterHeightMap );
+  waves( waterWaves, water.waterHeightMap[0], water.waterHeightMap[1] );
 
-  setupLight( scene, displaceData.fsWater, sm );
+  setupLight( scene, displaceData.fsWater, sm, smCl );
   MyGL::Render render( device,
                        screen,
                        mainDepth,
@@ -1048,7 +1138,8 @@ void GraphicsSystem::aceptFog( MyGL::Texture2d &in_out,
   }
 
 void GraphicsSystem::waves( MyGL::Texture2d &out,
-                            const MyGL::Texture2d& in) {
+                            const MyGL::Texture2d& in,
+                            const MyGL::Texture2d& in1 ) {
   int w = 2*in.width(), h = 2*in.height();
 
   out = localTex.create( w,h );
@@ -1066,6 +1157,7 @@ void GraphicsSystem::waves( MyGL::Texture2d &out,
   device.setUniform( water.vs, cpyOffset );
 
   device.setUniform( water.fs, bltData.texture );
+  device.setUniform( water.fs, in1, "texture1" );
 
   //sin( 2.0*M_PI*time/(4*1024.0) )
   //static unsigned time = 0;
@@ -1337,8 +1429,7 @@ void GraphicsSystem::blurSm( MyGL::Texture2d &sm,
 
 void GraphicsSystem::buildRSM( MyGL::Scene &scene,
                                MyGL::Texture2d gbuffer[4],
-                               int shadowMapSize,
-                               bool useAO ) {
+                               int shadowMapSize ) {
   for( int i=0; i<3; ++i ){
     gbuffer[i] = localTex.create( shadowMapSize, shadowMapSize,
                                   MyGL::Texture2d::Format::RGBA );
@@ -1363,13 +1454,17 @@ void GraphicsSystem::buildRSM( MyGL::Scene &scene,
                0, 0, 1, 0,
                0, 0, 0, 1 );
 
-  scene.setCamera( c );
+  // scene.setCamera( c );
 
   MyGL::Texture2d rsmNo[4];
-  renderScene( scene, gbuffer, mainDepth, rsmNo, 1, 0 );
+  renderScene( scene,
+               c,
+               gbuffer,
+               mainDepth, rsmNo, 1, 0 );
   }
 
 void GraphicsSystem::renderScene( const MyGL::Scene &scene,
+                                  const MyGL::AbstractCamera & camera,
                                   MyGL::Texture2d gbuffer[4],
                                   MyGL::Texture2d &mainDepth,
 
@@ -1391,7 +1486,13 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
                                                MyGL::AbstractTexture::Format::Luminance16 );
   fillShadowMap( shadowMap, scene );
 
-  fillGBuf( gbuffer, mainDepth, shadowMap, scene );
+  MyGL::Texture2d shadowMapCl = localTex.create(shadowMapSize, shadowMapSize),
+                  depth = this->depth(shadowMapSize, shadowMapSize);
+  fillTranscurentMap(shadowMapCl, depth, scene);
+
+  fillGBuf( gbuffer, mainDepth,
+            shadowMap, shadowMapCl,
+            scene, camera );
 
   MyGL::Texture2d topSm;
   ssaoGMap( scene, topSm );
@@ -1423,7 +1524,10 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
                    scene.objects<DisplaceMaterial>());
 
   drawWater( gbuffer[0], mainDepth,
-             sceneCopy, shadowMap, gbuffer[3],
+             sceneCopy,
+             shadowMap,
+             shadowMapCl,
+             gbuffer[3],
              scene,
              scene.objects<WaterMaterial>());
 
@@ -1434,10 +1538,12 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
                        shadowMap );
 
   if(1){
-    setupLight( scene, transparentData.fs, shadowMap );
+    setupLight( scene, transparentData.fs, shadowMap, shadowMapCl );
     drawObjects( transparentData.vs, transparentData.fs,
                  gbuffer, mainDepth,
-                 scene, scene.objects<TransparentMaterialNoZW>() );
+                 scene,
+                 camera,
+                 scene.objects<TransparentMaterialNoZW>() );
     }
 
 
@@ -1461,7 +1567,10 @@ void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,
   gbuffer[3] = localTex.create( w, h,
                                 MyGL::Texture2d::Format::RG16 );
 
-  renderScene( scene, gbuffer, mainDepth, rsm, 256, 0 );
+  renderScene( scene,
+               scene.camera(),
+               gbuffer, mainDepth, rsm, 256, 0 );
+
   MyGL::Texture2d glow;
   drawGlow( glow, mainDepth, scene, 128 );
 

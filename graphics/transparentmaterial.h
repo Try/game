@@ -32,7 +32,17 @@ class TransparentMaterialNoZW : public TransparentMaterial {
                const MyGL::Matrix4x4 &object,
                const MyGL::AbstractCamera &c,
                MyGL::UniformTable &) const;
-};
+  };
+
+class TransparentMaterialShadow: public TransparentMaterial {
+  public:
+    TransparentMaterialShadow( const MyGL::Matrix4x4 & s );
+
+    bool bind( MyGL::RenderState &dev,
+               const MyGL::Matrix4x4 &object,
+               const MyGL::AbstractCamera &c,
+               MyGL::UniformTable &) const;
+  };
 
 class TransparentMaterialZPass : public MyGL::AbstractMaterial {
   public:

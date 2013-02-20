@@ -13,8 +13,9 @@ BlushMaterial::BlushMaterial(const MyGL::Matrix4x4 &shadowMatrix)
   :MainMaterial(shadowMatrix) {
   }
 
-MyGL::Matrix4x4 BlushMaterial::animateObjMatrix(const MyGL::Matrix4x4 &object) {
-  MyGL::Float dvec[3] = { 0.02*wind, 0.03*wind, 0};
+MyGL::Matrix4x4 BlushMaterial::animateObjMatrix( const MyGL::Matrix4x4 &object,
+                                                 double power ) {
+  MyGL::Float dvec[3] = { power*0.02*wind, power*0.03*wind, 0};
 
   MyGL::Float mx[4][4] = {
     {1,0,0,0},
