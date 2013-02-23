@@ -24,7 +24,7 @@ class Material {
       bool mainPass, shadowCast, terrainMinor,
            displace, water, blush, add,
            transparent, fogOfWar,
-           omni;
+           omni, grass;
       } usage;
 
     void gbuffer( MyGL::RenderState& /*d*/,
@@ -32,6 +32,12 @@ class Material {
                   const MyGL::AbstractCamera&,
                   MyGL::UniformTable &,
                   const MyGL::Matrix4x4 &shadowMatrix ) const;
+
+    void grass( MyGL::RenderState& /*d*/,
+                const MyGL::Matrix4x4 & /*object*/,
+                const MyGL::AbstractCamera&,
+                MyGL::UniformTable &,
+                const MyGL::Matrix4x4 &shadowMatrix ) const;
 
     void additive( MyGL::RenderState& /*d*/,
                   const MyGL::Matrix4x4 & /*object*/,

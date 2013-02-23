@@ -4,12 +4,6 @@
 #include "game/world.h"
 #include "game.h"
 
-#include "graphics/glowmaterial.h"
-#include "graphics/addmaterial.h"
-
-#include "graphics/mainmaterial.h"
-#include "graphics/transparentmaterial.h"
-
 #include "behavior/buildingbehavior.h"
 
 BuilderBehavior::BuilderBehavior( GameObject & o,

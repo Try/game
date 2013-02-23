@@ -42,6 +42,10 @@ const Scene::Objects &Scene::transparentZWObjects() const {
   return transpObjZW;
   }
 
+const Scene::Objects &Scene::grassObjects() const {
+  return grassObj;
+  }
+
 const Scene::Objects &Scene::fogOfWar() const {
   return fogOfWarObj;
   }
@@ -83,6 +87,9 @@ void Scene::onObjectAdded( AbstractGraphicObject *x ) {
 
   if( x->material().usage.omni )
     omniObj.push_back(x);
+
+  if( x->material().usage.grass )
+    grassObj.push_back(x);
   }
 
 void Scene::onObjectRemoved( AbstractGraphicObject *x ) {
@@ -118,4 +125,7 @@ void Scene::onObjectRemoved( AbstractGraphicObject *x ) {
 
   if( x->material().usage.omni )
     remove( omniObj, x );
+
+  if( x->material().usage.grass )
+    remove( grassObj, x );
   }

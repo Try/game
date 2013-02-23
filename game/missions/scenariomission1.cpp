@@ -340,9 +340,10 @@ void ScenarioMission1::defeat() {
   }
 
 void ScenarioMission1::restartGame() {
+  Game &game = this->game;
+
   game.load(L"./campagin/0.sav");
-  mtagets.clear();
-  start();
+  game.scenario().onStartGame();
   }
 
 void ScenarioMission1::winGame() {

@@ -57,16 +57,12 @@ HEADERS += \
     graphics/guipass.h \
     gui/maingui.h \
     graphics/paintergui.h \
-    graphics/displacematerial.h \
-    graphics/glowmaterial.h \
     util/math.h \
-    graphics/transparentmaterial.h \
     gui/scroolbar.h \
     gui/button.h \
     gui/panel.h \
     util/randomgen.h \
     gui/scroolwidget.h \
-    graphics/addmaterial.h \
     game.h \
     behavior/behavior.h \
     behavior/abstractbehavior.h \
@@ -78,7 +74,6 @@ HEADERS += \
     behavior/buildingbehavior.h \
     game/player.h \
     util/serialize.h \
-    graphics/watermaterial.h \
     behavior/resourcebehavior.h \
     behavior/workerbehavior.h \
     util/weakworldptr.h \
@@ -89,12 +84,10 @@ HEADERS += \
     behavior/builderbehavior.h \
     gui/inputhook.h \
     behavior/incompletebuilding.h \
-    graphics/mainmaterial.h \
     behavior/warriorbehavior.h \
     gui/overlaywidget.h \
     gui/centralwidget.h \
     gui/listbox.h \
-    graphics/omnimaterial.h \
     gui/font.h \
     gui/formbuilder.h \
     gui/propertyeditor.h \
@@ -108,7 +101,6 @@ HEADERS += \
     gui/unitlist.h \
     game/bullet.h \
     game/gameobjectview.h \
-    graphics/blushmaterial.h \
     gui/nativesavedialog.h \
     util/gameserializer.h \
     gui/gen/ui_loaddialog.h \
@@ -122,7 +114,6 @@ HEADERS += \
     graphics/particlesystemengine.h \
     gui/tabwidget.h \
     gui/editterrainpanel.h \
-    graphics/terrainminormaterial.h \
     game/spatialindex.h \
     graphics/hudanim.h \
     landscape/terrainchunk.h \
@@ -136,7 +127,6 @@ HEADERS += \
     util/bytearrayserialize.h \
     threads/mutex.h \
     gui/progressbar.h \
-    graphics/warfogmaterial.h \
     sound/sound.h \
     behavior/bonusbehavior.h \
     algo/wayfindrequest.h \
@@ -151,7 +141,6 @@ HEADERS += \
     gui/missiontargets.h \
     game/missions/deatmachscenarion.h \
     game/particlesystemdeclaration.h \
-    graphics/grassmaterial.h \
     graphics/material.h \
     graphics/scene.h
 
@@ -172,16 +161,12 @@ SOURCES += \
     graphics/guipass.cpp \
     gui/maingui.cpp \
     graphics/paintergui.cpp \
-    graphics/displacematerial.cpp \
-    graphics/glowmaterial.cpp \
     util/math.cpp \
-    graphics/transparentmaterial.cpp \
     gui/scroolbar.cpp \
     gui/button.cpp \
     gui/panel.cpp \
     util/randomgen.cpp \
     gui/scroolwidget.cpp \
-    graphics/addmaterial.cpp \
     game.cpp \
     behavior/behavior.cpp \
     behavior/abstractbehavior.cpp \
@@ -192,7 +177,6 @@ SOURCES += \
     behavior/buildingbehavior.cpp \
     game/player.cpp \
     util/serialize.cpp \
-    graphics/watermaterial.cpp \
     behavior/resourcebehavior.cpp \
     behavior/workerbehavior.cpp \
     util/weakworldptr.cpp \
@@ -203,12 +187,10 @@ SOURCES += \
     behavior/builderbehavior.cpp \
     gui/inputhook.cpp \
     behavior/incompletebuilding.cpp \
-    graphics/mainmaterial.cpp \
     behavior/warriorbehavior.cpp \
     gui/overlaywidget.cpp \
     gui/centralwidget.cpp \
     gui/listbox.cpp \
-    graphics/omnimaterial.cpp \
     gui/font.cpp \
     gui/formbuilder.cpp \
     gui/propertyeditor.cpp \
@@ -222,7 +204,6 @@ SOURCES += \
     gui/unitlist.cpp \
     game/bullet.cpp \
     game/gameobjectview.cpp \
-    graphics/blushmaterial.cpp \
     gui/nativesavedialog.cpp \
     util/gameserializer.cpp \
     gui/gen/ui_loaddialog.cpp \
@@ -236,7 +217,6 @@ SOURCES += \
     graphics/particlesystemengine.cpp \
     gui/tabwidget.cpp \
     gui/editterrainpanel.cpp \
-    graphics/terrainminormaterial.cpp \
     game/spatialindex.cpp \
     graphics/hudanim.cpp \
     landscape/terrainchunk.cpp \
@@ -250,7 +230,6 @@ SOURCES += \
     util/bytearrayserialize.cpp \
     threads/mutex.cpp \
     gui/progressbar.cpp \
-    graphics/warfogmaterial.cpp \
     sound/sound.cpp \
     behavior/bonusbehavior.cpp \
     algo/wayfindrequest.cpp \
@@ -265,7 +244,6 @@ SOURCES += \
     gui/missiontargets.cpp \
     game/missions/deatmachscenarion.cpp \
     game/particlesystemdeclaration.cpp \
-    graphics/grassmaterial.cpp \
     graphics/material.cpp \
     graphics/scene.cpp
 

@@ -10,19 +10,6 @@
 
 #include <MyGL/GraphicObject>
 
-#include "graphics/guipass.h"
-#include "graphics/displacematerial.h"
-#include "graphics/glowmaterial.h"
-#include "graphics/transparentmaterial.h"
-#include "graphics/addmaterial.h"
-#include "graphics/watermaterial.h"
-#include "graphics/mainmaterial.h"
-#include "graphics/omnimaterial.h"
-#include "graphics/blushmaterial.h"
-#include "graphics/terrainminormaterial.h"
-#include "graphics/warfogmaterial.h"
-#include "graphics/grassmaterial.h"
-
 #include "graphics/particlesystemengine.h"
 
 #include <resource.h>
@@ -561,23 +548,22 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                &Material::gbuffer,
                false );
 
-  /*
-
   setupLight( scene, gbuf.grassFs, sm, smCl );
-  drawObjects( gbuf.grassVs, gbuf.grassFs,
-               gbuffer, mainDepth,
+  drawObjects( gbuf.grassVs,
+               gbuf.grassFs,
+               gbuffer,
+               mainDepth,
                scene,
                camera,
-               scene.objects<GrassMaterial>() );
-               */
+               scene.grassObjects(),
+               &Material::grass );
 
   drawObjects( transparentData.vsAdd, transparentData.fsAdd,
                gbuffer, mainDepth,
                scene,
                camera,
                scene.additiveObjects(),
-               &Material::additive,
-               false );
+               &Material::additive );
 
   setupLight( scene, transparentData.fs, sm, smCl );
   drawObjects( transparentData.vs, transparentData.fs,

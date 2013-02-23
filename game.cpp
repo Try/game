@@ -12,18 +12,6 @@
 #include "algo/algo.h"
 #include <MyGL/Pixmap>
 
-#include "graphics/displacematerial.h"
-#include "graphics/glowmaterial.h"
-#include "graphics/transparentmaterial.h"
-#include "graphics/addmaterial.h"
-#include "graphics/watermaterial.h"
-#include "graphics/mainmaterial.h"
-#include "graphics/omnimaterial.h"
-#include "graphics/blushmaterial.h"
-#include "graphics/terrainminormaterial.h"
-#include "graphics/warfogmaterial.h"
-#include "graphics/grassmaterial.h"
-
 #include "util/gameserializer.h"
 
 #include "behavior/buildingbehavior.h"
@@ -792,8 +780,15 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
     material.usage.water = true;
     }
 
-  if( contains( src.materials, "blush" ) ){
+  if( contains( src.materials, "blush" ) ||
+      contains( src.materials, "grass" ) ){
     material.usage.blush = true;
+    }
+
+  if( contains( src.materials, "grass" ) ){
+    material.usage.grass   = true;
+    material.usage.blush   = true;
+    material.alphaTrestRef = 0;
     }
 
   if( contains( src.materials, "add" ) ){
@@ -818,170 +813,6 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
     }
 
   obj.setMaterial( material );
-  /*
-  GraphicsSystem::ObjectsClosure &c = graphics.closure;
-
-  MainMaterial material( c.shadow.matrix );
-
-  MyGL::ShadowMapPassMaterial smMaterial;
-
-  material.diffuseTexture   = r.texture( src.name+"/diff" );
-  material.normalMap        = r.texture( src.name+"/norm" );
-  smMaterial.diffuseTexture = material.diffuseTexture;
-
-  material.useAlphaTest = smMaterial.useAlphaTest = true;
-  material.specular     = 1.0;
-
-  if( contains( src.materials, "phong" )  ){
-    material.specular = src.specularFactor;
-    obj.setupMaterial( material );
-    }
-
-  if( contains( src.materials, "terrain.minor" )  ){
-    TerrainMinorMaterial mat( c.shadow.matrix );
-    mat.diffuseTexture = material.diffuseTexture;
-    mat.normalMap      = material.normalMap;
-    mat.useAlphaTest   = false;
-
-    mat.specular = src.specularFactor;
-    mat.alphaTrestRef = 0;
-    obj.setupMaterial( mat );
-
-    TerrainZPass tz;
-    tz.texture = mat.diffuseTexture;
-    obj.setupMaterial( tz );
-    }
-
-  if( contains( src.materials, "grass" )  ){
-    GrassMaterial material( c.shadow.matrix );
-    material.diffuseTexture   = r.texture( src.name+"/diff" );
-    smMaterial.diffuseTexture = material.diffuseTexture;
-
-    material.useAlphaTest = smMaterial.useAlphaTest = true;
-
-    obj.setupMaterial( material );
-    }
-
-  if( contains( src.materials, "unit" )  ){
-    MainMaterial material( c.shadow.matrix,
-                           teamColor );
-    material.diffuseTexture   = r.texture( src.name+"/diff" );
-    material.normalMap        = r.texture( src.name+"/norm" );
-    smMaterial.diffuseTexture = material.diffuseTexture;
-
-    material.useAlphaTest = smMaterial.useAlphaTest = true;
-    material.specular     = src.specularFactor;
-
-    obj.setupMaterial( material );
-    }
-
-  if( contains( src.materials, "blush" )  ){
-    BlushMaterial material( c.shadow.matrix );
-    material.diffuseTexture   = r.texture( src.name+"/diff" );
-    material.normalMap        = r.texture( src.name+"/norm" );
-    smMaterial.diffuseTexture = material.diffuseTexture;
-
-    material.useAlphaTest = smMaterial.useAlphaTest = true;
-    material.specular     = src.specularFactor;
-
-    obj.setupMaterial( material );
-
-    if( contains( src.materials, "shadow_cast" ) ){
-      BlushShMaterial sm;
-      (MyGL::ShadowMapPassMaterial&)sm = smMaterial;
-
-      if( r.findTexture(src.name+"/sm") )
-        sm.diffuseTexture = r.texture( src.name+"/sm" );
-
-      obj.setupMaterial( sm );
-      }
-    }
-
-  if( contains( src.materials, "shadow_cast" ) &&
-      !contains( src.materials, "blush" ) ){
-    if( r.findTexture(src.name+"/sm") )
-      smMaterial.diffuseTexture   = r.texture( src.name+"/sm" );
-
-    if( contains( src.materials, "transparent_no_zw" ) ||
-        contains( src.materials, "transparent" ))
-      smMaterial.alphaTrestRef = 1.0f/255.0f;
-
-    obj.setupMaterial( smMaterial );
-    }
-
-  if( contains( src.materials, "displace" ) ){
-    DisplaceMaterial material( c.shadow.matrix );
-    material.normalMap        = r.texture( src.name+"/norm" );
-
-    obj.setupMaterial( material );
-    }
-
-  if( contains( src.materials, "water" ) ){
-    WaterMaterial material( c.shadow.matrix );
-    material.texture = r.texture( "water/diff" );
-    material.normals = r.texture( "water/norm" );
-
-    obj.setupMaterial( material );
-    }
-
-  if( contains( src.materials, "glow" ) ){
-    GlowMaterial material;
-    material.texture = r.texture( src.name+"/glow" );
-
-    obj.setupMaterial( material );
-    }
-
-  if( contains( src.materials, "add" ) ){
-    AddMaterial material;
-    material.texture = r.texture( src.name+"/diff" );
-
-    obj.setupMaterial( material );
-    }
-
-  if( contains( src.materials, "transparent_no_zw" ) ){
-    TransparentMaterialNoZW   material(c.shadow.matrix);
-    material.texture   = r.texture( src.name+"/diff" );
-    material.normalMap = r.texture( src.name+"/norm" );
-
-    obj.setupMaterial( material );
-
-    TransparentMaterialShadow sh(c.shadow.matrix);
-    sh.texture   = material.texture;
-    sh.normalMap = material.normalMap;
-    obj.setupMaterial( sh );
-    }
-
-  if( contains( src.materials, "transparent" ) ){
-    TransparentMaterialZPass zpass;
-    TransparentMaterial      material(c.shadow.matrix);
-    zpass.texture = r.texture( src.name+"/diff" );
-
-    material.texture   = zpass.texture;
-    material.normalMap = r.texture( src.name+"/norm" );
-
-    obj.setupMaterial( zpass    );
-    obj.setupMaterial( material );
-
-    TransparentMaterialShadow sh(c.shadow.matrix);
-    sh.texture   = material.texture;
-    sh.normalMap = material.normalMap;
-    obj.setupMaterial( sh );
-    }
-
-  if( contains( src.materials, "omni" ) ){
-    OmniMaterial material;
-    obj.setupMaterial( material );
-    }
-
-  if( contains( src.materials, "fog_of_war" ) ){
-    WarFogMaterial material;
-    material.texture = r.texture( "fog_test" );
-    obj.setupMaterial( material );
-
-    WarFogMaterialZPass zpass;
-    obj.setupMaterial( zpass );
-    }
-  */
   }
 
 MyGL::Matrix4x4 &Game::shadowMat() {

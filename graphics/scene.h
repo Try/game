@@ -19,13 +19,15 @@ class Scene : public MyGL::AbstractScene<AbstractGraphicObject> {
     const Objects& transparentObjects() const;
     const Objects& transparentZWObjects() const;
 
+    const Objects& grassObjects() const;
+
     const Objects& fogOfWar() const;
     const Objects& omni() const;
   private:
     Objects shCast, mainObj, glowObj, terrainMinor,
             displaceObj, waterObj, addObj, transpObj,
             transpObjZW, fogOfWarObj,
-            omniObj;
+            omniObj, grassObj;
 
     void onObjectAdded(AbstractGraphicObject *);
     void onObjectRemoved(AbstractGraphicObject *);
