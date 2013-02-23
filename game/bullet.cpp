@@ -6,8 +6,8 @@
 
 #include <cmath>
 
-Bullet::Bullet( MyGL::Scene & s,
-                World       & wrld,
+Bullet::Bullet( Scene & s,
+                World & wrld,
                 const ProtoObject &p,
                 const PrototypesLoader & pl )
        :view(s, wrld, p, pl) {

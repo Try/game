@@ -14,7 +14,7 @@ const int Terrain::chunkSize = 32;
 
 Terrain::Terrain(int w, int h,
                   Resource & res,
-                  MyGL::Scene &s,
+                  Scene &s,
                   World &wrld,
                   const PrototypesLoader &pl)
   :scene(s), world(wrld), prototype(pl), res(res) {
@@ -213,20 +213,22 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
     chunk.landView.push_back( view );
     }
 
-  chunk.waterView.view.reset( new GameObjectView( scene,
+  if( plane==0 ){
+    chunk.waterView.view.reset( new GameObjectView( scene,
+                                                    world,
+                                                    prototype.get( "water" ),
+                                                    prototype) );
+    chunk.waterView.view->loadView( waterGeometry(vboHolder, iboHolder, cX, cY) );
+
+    chunk.fogView.view.reset( new GameObjectView( scene,
                                                   world,
                                                   prototype.get( "water" ),
                                                   prototype) );
-  chunk.waterView.view->loadView( waterGeometry(vboHolder, iboHolder, cX, cY) );
+    ProtoObject::View vf;
+    vf.materials.push_back("fog_of_war");
 
-  chunk.fogView.view.reset( new GameObjectView( scene,
-                                                world,
-                                                prototype.get( "water" ),
-                                                prototype) );
-  ProtoObject::View vf;
-  vf.materials.push_back("fog_of_war");
-
-  chunk.fogView.view->loadView( fogGeometry(vboHolder, iboHolder, cX, cY), vf );
+    chunk.fogView.view->loadView( fogGeometry(vboHolder, iboHolder, cX, cY), vf );
+    }
   }
 
 void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,

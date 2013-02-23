@@ -29,7 +29,7 @@ class Terrain {
   public:
     Terrain( int w, int h,
              Resource & res,
-             MyGL::Scene & s,
+             Scene & s,
              World       & wrld,
              const PrototypesLoader & pl );
 
@@ -99,7 +99,7 @@ class Terrain {
     int  depthAt( int x, int y ) const;
     int  heightAtNoDepth( int x, int y ) const;
   private:
-    MyGL::Scene            & scene;
+    Scene                  & scene;
     World                  & world;
     const PrototypesLoader & prototype;
 

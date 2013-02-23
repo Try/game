@@ -46,7 +46,7 @@ class InGameControls : public MyWidget::Widget {
                       MyWidget::MouseEvent::MouseButton,
                       MiniMapView::Mode > minimapEvent;
 
-    MyWidget::signal< const MyGL::Scene &,
+    MyWidget::signal< const Scene &,
                       ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
 

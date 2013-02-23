@@ -2,7 +2,6 @@
 #define BLUSHMATERIAL_H
 
 #include "mainmaterial.h"
-#include <MyGL/Algo/ShadowMapPass>
 
 class BlushMaterial : public MainMaterial {
   public:
@@ -18,12 +17,6 @@ class BlushMaterial : public MainMaterial {
                const MyGL::Matrix4x4 &object,
                const MyGL::AbstractCamera &c,
                MyGL::UniformTable &) const;
-  };
-
-
-class BlushShMaterial : public MyGL::ShadowMapPassMaterial {
-  public:
-    BlushShMaterial();
   };
 
 #endif // BLUSHMATERIAL_H

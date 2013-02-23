@@ -2,7 +2,7 @@
 
 #include "game/world.h"
 
-HudAnim::HudAnim( MyGL::Scene & s,
+HudAnim::HudAnim( Scene & s,
                   World       & wrld,
                   const ProtoObject &p,
                   const PrototypesLoader & pl,

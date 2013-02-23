@@ -7,10 +7,11 @@
 #include "resource.h"
 
 #include "physics/physics.h"
+#include "graphics/material.h"
 
-class EnvObject : public MyGL::AbstractGraphicObject {
+class EnvObject : public AbstractGraphicObject {
   public:
-    EnvObject( MyGL::Scene & s );
+    EnvObject( Scene & s );
 
     void setModel( const Model & m );
     const Model& model() const;
@@ -19,10 +20,13 @@ class EnvObject : public MyGL::AbstractGraphicObject {
     void setTransform( const MyGL::Matrix4x4 & m );
 
     MyGL::ModelBounds bounds() const;
+
     void render(const MyGL::AbstractMaterial &mat,
                 MyGL::Render &r,
                 const MyGL::Matrix4x4 &object,
                 const MyGL::AbstractCamera &camera) const;
+
+    void render(  MyGL::Render &r ) const;
 
     struct Form {
       Physics::Sphere sphere;

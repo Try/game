@@ -151,7 +151,9 @@ HEADERS += \
     gui/missiontargets.h \
     game/missions/deatmachscenarion.h \
     game/particlesystemdeclaration.h \
-    graphics/grassmaterial.h
+    graphics/grassmaterial.h \
+    graphics/material.h \
+    graphics/scene.h
 
 SOURCES += \
     main.cpp \
@@ -263,7 +265,9 @@ SOURCES += \
     gui/missiontargets.cpp \
     game/missions/deatmachscenarion.cpp \
     game/particlesystemdeclaration.cpp \
-    graphics/grassmaterial.cpp
+    graphics/grassmaterial.cpp \
+    graphics/material.cpp \
+    graphics/scene.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

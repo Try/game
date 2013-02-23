@@ -38,7 +38,7 @@ class World {
            int w, int h );
     ~World();
 
-    MyWidget::signal< MyGL::AbstractGraphicObject &,
+    MyWidget::signal< AbstractGraphicObject &,
                       const ProtoObject::View &,
                       const MyGL::Color & > setupMaterial;
 
@@ -54,7 +54,7 @@ class World {
     void tick();
 
     MyGL::Camera   camera;
-    MyGL::Scene &getScene();
+    Scene &getScene();
     ParticleSystemEngine & getParticles();
 
     GameObject& addObject( const std::string & proto,
@@ -132,7 +132,7 @@ class World {
 
     void updateIntent( GameObjectView* v );
   private:
-    MyGL::Scene scene;
+    Scene scene;
     std::unique_ptr<Terrain> terr;
 
     int mpos[3];

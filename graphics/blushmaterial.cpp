@@ -1,6 +1,7 @@
 #include "blushmaterial.h"
 
 #include <MyGL/UniformTable>
+#include <MyGL/AbstractCamera>
 
 float BlushMaterial::wind = 0.0;
 
@@ -61,7 +62,3 @@ bool BlushMaterial::bind( MyGL::RenderState &dev,
   return 1;
   }
 
-
-BlushShMaterial::BlushShMaterial() {
-
-  }

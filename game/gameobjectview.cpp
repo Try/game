@@ -21,7 +21,7 @@ GameObjectView::GameObjectView( GameObject &obj,
   loadView( obj.game().resources(), wrld.physics, 0 );
   }
 
-GameObjectView::GameObjectView( MyGL::Scene & s,
+GameObjectView::GameObjectView( Scene & s,
                                 World       & wrld,
                                 const ProtoObject &p,
                                 const PrototypesLoader & pl )
@@ -30,7 +30,7 @@ GameObjectView::GameObjectView( MyGL::Scene & s,
   init();
   }
 
-GameObjectView::GameObjectView( MyGL::Scene & s,
+GameObjectView::GameObjectView( Scene & s,
                                 World       & wrld,
                                 ParticleSystemEngine & psysEngine,
                                 const ProtoObject &p,
@@ -57,7 +57,7 @@ void GameObjectView::init() {
   m.intentDirY = -1;
 
   for( int i=0; i<selectModelsCount; ++i ){
-    selection[i].reset( new MyGL::GraphicObject(scene) );
+    selection[i].reset( new GraphicObject(scene) );
     selection[i]->setVisible(false);
     htime[i] = 0;
     }
@@ -147,7 +147,7 @@ void GameObjectView::loadView( const Resource & r,
       m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
     }
 
-  MyGL::AbstractGraphicObject * obj = 0;
+  AbstractGraphicObject * obj = 0;
 
   Physics& p = *physic;
   float szMid = 0;
@@ -212,7 +212,7 @@ void GameObjectView::loadView( const Resource & r,
     } else {
     if( src.isParticle.size()==0 ){
       if( model.size() > 32*3 || !getClass().data.isBackground ){
-        MyGL::GraphicObject object( scene );
+        GraphicObject object( scene );
         object.setModel( model );
 
         view.push_back( object );
@@ -269,7 +269,7 @@ void GameObjectView::loadView( const Model &model,
   for( int i=0; i<3; ++i )
     m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
 
-  MyGL::GraphicObject object( scene );
+  GraphicObject object( scene );
   object.setModel( model );
   m.radius = model.bounds().radius();
 
@@ -283,7 +283,7 @@ void GameObjectView::loadView(const MyGL::Model<WaterVertex> &model ){
   for( int i=0; i<3; ++i )
     m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
 
-  MyGL::GraphicObject object( scene );
+  GraphicObject object( scene );
   object.setModel( model );
   m.radius = model.bounds().radius();
 
@@ -478,13 +478,13 @@ void GameObjectView::setForm(const Physics::AnimatedBox &f) {
 void GameObjectView::updatePos() {
   //anim bodyes
   if( anim.sphere.isValid() && view.size() ){
-    MyGL::GraphicObject & g = view[0];
+    GraphicObject & g = view[0];
     anim.sphere.setPosition( g.x(), g.y(), g.z() );
     anim.sphere.update();
     }
 
   if( anim.box.isValid() && view.size() ){
-    MyGL::GraphicObject & g = view[0];
+    GraphicObject & g = view[0];
     anim.box.setPosition( g.x(), g.y(), g.z() );
     anim.box.update();
     }
@@ -754,7 +754,7 @@ MyGL::Matrix4x4 GameObjectView::_transform() const {
   return view[0].transform();
   }
 
-void GameObjectView::setupMaterials( MyGL::AbstractGraphicObject &obj,
+void GameObjectView::setupMaterials( AbstractGraphicObject &obj,
                                      const ProtoObject::View &src ) {
   wrld.game.setupMaterials( obj, src, teamColor );
   }

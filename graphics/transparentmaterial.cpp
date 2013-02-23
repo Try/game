@@ -2,6 +2,7 @@
 
 #include <MyGL/UniformTable>
 #include <MyGL/RenderState>
+#include <MyGL/AbstractCamera>
 
 TransparentMaterial::TransparentMaterial(const MyGL::Matrix4x4 &sm)
                     :shadowMatrix(&sm) {

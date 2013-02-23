@@ -755,10 +755,70 @@ Scenario &Game::scenario() {
   return *mscenario;
   }
 
-void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
+void Game::setupMaterials( AbstractGraphicObject &obj,
                            const ProtoObject::View &src,
                            const MyGL::Color & teamColor ) {
   Resource &r = resource;
+
+  Material material;
+
+  material.diffuse   = r.texture( src.name+"/diff" );
+  material.normal    = r.texture( src.name+"/norm" );
+  material.specular  = src.specularFactor;
+
+  if( contains( src.materials, "phong" ) ||
+      contains( src.materials, "unit" )  ||
+      contains( src.materials, "blush" ) ){
+    material.usage.mainPass = true;
+    }
+
+  if( contains( src.materials, "shadow_cast" ) ){
+    material.usage.shadowCast = true;
+    }
+
+  if( contains( src.materials, "glow" ) ){
+    material.glow = r.texture( src.name+"/glow" );
+    }
+
+  if( contains( src.materials, "terrain.minor" ) ){
+    material.usage.terrainMinor = true;
+    }
+
+  if( contains( src.materials, "displace" ) ){
+    material.usage.displace = true;
+    }
+
+  if( contains( src.materials, "water" ) ){
+    material.usage.water = true;
+    }
+
+  if( contains( src.materials, "blush" ) ){
+    material.usage.blush = true;
+    }
+
+  if( contains( src.materials, "add" ) ){
+    material.usage.add = true;
+    }
+
+  if( contains( src.materials, "transparent" ) ){
+    material.usage.transparent = true;
+    }
+
+  if( contains( src.materials, "transparent_no_zw" ) ){
+    material.usage.transparent = true;
+    material.zWrighting        = false;
+    }
+
+  if( contains( src.materials, "fog_of_war" ) ){
+    material.usage.fogOfWar = true;
+    }
+
+  if( contains( src.materials, "omni" ) ){
+    material.usage.omni = true;
+    }
+
+  obj.setMaterial( material );
+  /*
   GraphicsSystem::ObjectsClosure &c = graphics.closure;
 
   MainMaterial material( c.shadow.matrix );
@@ -921,6 +981,7 @@ void Game::setupMaterials( MyGL::AbstractGraphicObject &obj,
     WarFogMaterialZPass zpass;
     obj.setupMaterial( zpass );
     }
+  */
   }
 
 MyGL::Matrix4x4 &Game::shadowMat() {

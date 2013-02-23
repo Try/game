@@ -12,7 +12,7 @@ class Game;
 
 class SmallGraphicsObject {
   public:
-    SmallGraphicsObject( MyGL::Scene &s,
+    SmallGraphicsObject( Scene &s,
                          Game & g,
                          Terrain & t,
                          const ProtoObject::View & view );
@@ -52,7 +52,7 @@ class SmallGraphicsObject {
 
     const Model::Raw* model;
     MyGL::ModelBounds bds;
-    MyGL::Scene &scene;
+    Scene &scene;
 
     Game & game;
     float  mx, my, mz, sx, sy, sz, ax, az;

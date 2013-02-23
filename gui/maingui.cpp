@@ -75,7 +75,7 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   hintFrame.data = res.pixmap("gui/hintFrame");
 
   mainwidget = new InGameControls(res, msg, prototypes, game);
-  mainwidget->renderScene.bind( renderScene );
+  mainwidget->renderScene. bind( renderScene  );
   mainwidget->setCameraPos.bind( setCameraPos );
   mainwidget->minimapEvent.bind( minimapEvent );
 

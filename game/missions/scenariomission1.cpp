@@ -54,7 +54,7 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
       p2->layout().add( btn );
       }
 
-    MyWidget::signal< const MyGL::Scene &,
+    MyWidget::signal< const Scene &,
                       ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
     MyWidget::signal<> updateView;

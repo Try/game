@@ -25,28 +25,3 @@ bool GlowMaterial::bind( MyGL::RenderState &rs,
 
   return true;
   }
-
-void GlowMaterial::exec( const MyGL::Scene &scene,
-                         const MyGL::Scene::Objects &v,
-                         MyGL::Device &device,
-                         GraphicsSystem &sys ) {
-  /*
-  const MyGL::AbstractCamera & camera = scene.camera();
-
-  MyGL::Render render( device,
-                       sys.sceneCopy,
-                       sys.mainDepth,
-                       sys.glowData.vs,
-                       sys.glowData.fs );
-  render.clear( MyGL::Color(0,0,0,1) );
-
-  for( size_t i=0; i<v.size(); ++i ){
-    const MyGL::AbstractGraphicObject& ptr = v[i].object();
-
-    if( scene.viewTester().isVisible( ptr, camera ) ){
-      render.draw( v[i].material(), ptr,
-                   ptr.transform(), camera );
-      }
-    }
-*/
-  }

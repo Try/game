@@ -122,30 +122,24 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
     hud.setRotation(0, 180);
     hudIntent.setRotation(0, 180);
 
-    GlowMaterial mat;
-    mat.texture = blue;
-    hud.setupMaterial(mat);
-
     hud.setVisible(1);
 
     {
-      hudIntent.unsetMaterial<MainMaterial>();
-      hudIntent.unsetMaterial<MyGL::ShadowMapPassMaterial>();
+      Material mat = hud.material();
+      mat.glow = blue;
+      mat.usage.shadowCast  = false;
+      mat.usage.transparent = true;
 
-      TransparentMaterial mat( obj.game().shadowMat() );
-      TransparentMaterialZPass zpass;
-      //AddMaterial mat;
-      mat.texture   = obj.game().resources().texture("util/blue");
-      mat.normalMap = obj.game().resources().texture( proto->view[0].name+"/norm" );
-      zpass.texture = mat.texture;
+      mat.diffuse = obj.game().resources().texture("util/blue");
+      mat.normal  = obj.game().resources().texture( proto->view[0].name+"/norm" );
 
-      TransparentMaterialShadow sh( obj.game().shadowMat() );
-      sh.texture   = mat.texture;
-      sh.normalMap = mat.normalMap;
+      hud.setMaterial( mat );
 
-      hudIntent.setupMaterial(mat);
-      hudIntent.setupMaterial(zpass);
-      hudIntent.setupMaterial( sh );
+      mat.glow = MyGL::Texture2d();
+      mat.usage.shadowCast = true;
+      mat.usage.mainPass   = false;
+      mat.useAlphaTest = 0;
+      hudIntent.setMaterial( mat );
       }
 
     }
@@ -250,9 +244,9 @@ void BuilderBehavior::mouseMove(MyWidget::MouseEvent &e) {
                                          obj.game().prototype(taget),
                                          obj.world().mouseX(),
                                          obj.world().mouseY() );
-  GlowMaterial mat;
-  mat.texture = cl ? blue : red;
-  hud.setupMaterial(mat);
+  Material mat = hud.material();
+  mat.glow    = cl ? blue : red;
+  hud.setMaterial(mat);
 
   e.ignore();
   }

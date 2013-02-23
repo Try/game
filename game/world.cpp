@@ -784,7 +784,7 @@ void World::onRender( double dt ) {
     ry = std::max( cameraVBounds.y[i], ry );
     }
 
-  int divSz = Terrain::quadSize;
+  int divSz = 8*Terrain::quadSize;
 
   lx -= divSz;
   rx += divSz;
@@ -912,7 +912,7 @@ void World::tick() {
   updatePosIntents.clear();
   }
 
-MyGL::Scene &World::getScene() {
+Scene &World::getScene() {
   return scene;
   }
 

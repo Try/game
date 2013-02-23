@@ -18,8 +18,8 @@
 #include "util/gameserializer.h"
 #include "behavior/movebehavior.h"
 
-GameObject::GameObject( MyGL::Scene & s,
-                        World &w,
+GameObject::GameObject( Scene & s,
+                        World & w,
                         const ProtoObject &p,
                         const PrototypesLoader &pl )
   : scene(s),
@@ -95,7 +95,7 @@ int GameObject::distanceQL(int xx, int yy) const {
   return std::max( abs(dx), abs(dy) );
   }
 
-void GameObject::setupMaterials( MyGL::AbstractGraphicObject &obj,
+void GameObject::setupMaterials( AbstractGraphicObject &obj,
                                  const ProtoObject::View &src ) {
   game().setupMaterials( obj, src, teamColor() );
   }
@@ -128,7 +128,7 @@ void GameObject::loadView(const MyGL::Model<WaterVertex> &model ){
   view.loadView( model );
   }
 
-void GameObject::setViewPosition( MyGL::GraphicObject& obj,
+void GameObject::setViewPosition( GraphicObject& obj,
                                   const ProtoObject::View & v,
                                   float x,
                                   float y, float z) {
@@ -212,7 +212,7 @@ void GameObject::setViewSize(float s) {
   setViewSize(s,s,s);
   }
 
-void GameObject::setViewSize( MyGL::GraphicObject &obj,
+void GameObject::setViewSize( GraphicObject &obj,
                               const ProtoObject::View & v,
                               float x, float y, float z ) {
   const double *s = v.size;
@@ -326,7 +326,7 @@ Game &GameObject::game() {
   return wrld.game;
   }
 
-MyGL::Scene &GameObject::getScene() {
+Scene &GameObject::getScene() {
   return scene;
   }
 

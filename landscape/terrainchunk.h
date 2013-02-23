@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "game/gameobjectview.h"
+#include "graphics/scene.h"
 
 struct TerrainChunk {
   public:
@@ -17,10 +18,10 @@ struct TerrainChunk {
     View waterView, fogView;
 
     struct PolishView {
-      PolishView( MyGL::Scene& s,
+      PolishView( Scene& s,
                   const ProtoObject::View *v ):obj(s), baseView(v){}
 
-      MyGL::GraphicObject obj;
+      GraphicObject obj;
       Model::Raw          geometry;
 
       const ProtoObject::View  *baseView;

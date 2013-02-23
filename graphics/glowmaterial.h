@@ -6,7 +6,6 @@
 #include <MyGL/Texture2d>
 #include <MyGL/VertexShader>
 #include <MyGL/FragmentShader>
-#include <MyGL/Scene>
 
 namespace MyGL{
   class Scene;
@@ -25,11 +24,6 @@ class GlowMaterial : public MyGL::AbstractMaterial {
                MyGL::UniformTable & table) const;
 
     MyGL::Texture2d texture;
-
-    static void exec( const MyGL::Scene & scene,
-                      const MyGL::Scene::Objects &v,
-                      MyGL::Device & device,
-                      GraphicsSystem &rt );
 
   };
 

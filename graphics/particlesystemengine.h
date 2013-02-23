@@ -8,18 +8,15 @@
 #include "game/protoobject.h"
 #include "prototypesloader.h"
 #include "resource.h"
+#include "graphics/material.h"
 
-namespace MyGL{
-  class Scene;
-  class AbstractGraphicObject;
-  }
-
+class Scene;
 class Resource;
 class ParticleSystem;
 
 class ParticleSystemEngine {
   public:
-    ParticleSystemEngine( MyGL::Scene & s,
+    ParticleSystemEngine( Scene & s,
                           const PrototypesLoader & p,
                           Resource & r );
 
@@ -29,15 +26,15 @@ class ParticleSystemEngine {
                bool invCullMode = false );
     void update();
 
-    MyWidget::signal< MyGL::AbstractGraphicObject &,
+    MyWidget::signal< AbstractGraphicObject &,
                       const ProtoObject::View &,
                       const MyGL::Color & > setupMaterial;
   private:
-    MyGL::Scene & scene;
+    Scene & scene;
     const PrototypesLoader & proto;
     Resource & res;
 
-    std::vector<MyGL::GraphicObject> view;
+    std::vector<GraphicObject> view;
     std::vector<ParticleSystem*> particles, visible;
     std::vector< std::unique_ptr<ParticleSystem> > dispath;
 

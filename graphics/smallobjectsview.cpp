@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-SmallGraphicsObject::SmallGraphicsObject( MyGL::Scene &s,
+SmallGraphicsObject::SmallGraphicsObject( Scene &s,
                                           Game &g,
                                           Terrain &t,
                                           const ProtoObject::View &view )

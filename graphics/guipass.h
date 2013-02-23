@@ -1,8 +1,6 @@
 #ifndef GUIPASS_H
 #define GUIPASS_H
 
-#include <MyGL/AbstractRenderPass>
-
 #include <MyGL/VertexShaderHolder>
 #include <MyGL/FragmentShaderHolder>
 
@@ -12,6 +10,8 @@
 
 #include <MyGL/VertexShader>
 #include <MyGL/FragmentShader>
+#include <MyGL/VertexBufferHolder>
+#include <MyGL/VertexBuffer>
 
 #include "pixmapspool.h"
 
@@ -24,7 +24,7 @@ namespace MyGL{
 class MainGui;
 class Resource;
 
-class GUIPass : public MyGL::AbstractRenderPass {
+class GUIPass {
   public:
     GUIPass( const MyGL::VertexShader   & vsh,
              const MyGL::FragmentShader & fsh,

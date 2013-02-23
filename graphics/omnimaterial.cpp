@@ -2,6 +2,7 @@
 
 #include <MyGL/UniformTable>
 #include <MyGL/RenderState>
+#include <MyGL/AbstractCamera>
 
 bool OmniMaterial::bind( MyGL::RenderState &rs,
                          const MyGL::Matrix4x4 &object,

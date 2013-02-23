@@ -4,6 +4,7 @@
 #include "abstractbehavior.h"
 #include "behavior.h"
 #include "gui/inputhook.h"
+#include "graphics/material.h"
 
 #include <MyGL/GraphicObject>
 
@@ -21,7 +22,7 @@ class BuilderBehavior : public AbstractBehavior  {
     bool message(Message msg, int x, int y, Modifers md);
   private:
     GameObject & obj;
-    MyGL::GraphicObject hud, hudIntent;
+    GraphicObject hud, hudIntent;
     const ProtoObject* proto;
 
     InputHook hook;

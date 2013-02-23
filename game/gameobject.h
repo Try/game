@@ -4,10 +4,7 @@
 #include <vector>
 #include <memory>
 
-namespace MyGL{
-  class GraphicObject;
-  class Scene;
-  }
+class Scene;
 
 #include "graphics/graphicssystem.h"
 #include "physics/physics.h"
@@ -30,8 +27,8 @@ class Bullet;
 
 class GameObject {
   public:
-    GameObject( MyGL::Scene & s,
-                World       & wrld,
+    GameObject( Scene & s,
+                World & wrld,
                 const ProtoObject &p,
                 const PrototypesLoader & pl );
     ~GameObject();
@@ -58,7 +55,7 @@ class GameObject {
 
     void setViewSize( float x, float y, float z );
     void setViewSize( float s );
-    static void setViewSize( MyGL::GraphicObject& obj,
+    static void setViewSize( GraphicObject& obj,
                              const ProtoObject::View &v,
                              float x, float y, float z);
 
@@ -96,7 +93,7 @@ class GameObject {
 
     World& world();
     Game&  game();
-    MyGL::Scene& getScene();
+    Scene& getScene();
 
     void setPlayer( int pl );
     int playerNum() const;
@@ -113,7 +110,7 @@ class GameObject {
     const MyGL::Color& teamColor() const;
     void setTeamColor( const MyGL::Color& cl );
 
-    static void setViewPosition( MyGL::GraphicObject& obj,
+    static void setViewPosition( GraphicObject& obj,
                                  const ProtoObject::View &v,
                                  float x, float y, float z );
 
@@ -143,7 +140,7 @@ class GameObject {
     void loadView( Resource & r, const ProtoObject::View &src,
                    bool isEnv );
 
-    MyGL::Scene & scene;
+    Scene       & scene;
     World       & wrld;
     const PrototypesLoader & prototypes;
 
@@ -166,7 +163,7 @@ class GameObject {
 
     std::unordered_map<size_t, int> coolDowns;
 
-    void setupMaterials( MyGL::AbstractGraphicObject &obj,
+    void setupMaterials( AbstractGraphicObject &obj,
                          const ProtoObject::View &src );
 
     friend class GameObjectView;

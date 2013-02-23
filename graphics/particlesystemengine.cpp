@@ -2,12 +2,13 @@
 
 #include "resource.h"
 #include <cmath>
-#include <MyGL/Scene>
 #include "particlesystem.h"
 
 #include <algorithm>
 
-ParticleSystemEngine::ParticleSystemEngine(MyGL::Scene &s,
+#include "scene.h"
+
+ParticleSystemEngine::ParticleSystemEngine( Scene &s,
                                             const PrototypesLoader &p,
                                             Resource & r )
   :scene(s), proto(p), res(r) {
@@ -98,7 +99,7 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
     if( currView==0 ||
         currView->name != p.viewInfo().name ){
       if( currView && raw.vertex.size() ){
-        MyGL::GraphicObject obj(scene);
+        GraphicObject obj(scene);
         obj.setModel( res.model( raw ) );
         setupMaterial( obj, *currView, MyGL::Color() );
         view.push_back( obj );
@@ -113,7 +114,7 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
     }
 
   if( currView && raw.vertex.size() ){
-    MyGL::GraphicObject obj(scene);
+    GraphicObject obj(scene);
     obj.setModel( res.model( raw ) );
     setupMaterial( obj, *currView, MyGL::Color() );
     view.push_back( obj );

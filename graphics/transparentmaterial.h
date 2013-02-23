@@ -3,7 +3,6 @@
 
 #include <MyGL/AbstractMaterial>
 #include <MyGL/Texture2d>
-#include <MyGL/Scene>
 #include <MyGL/VertexShader>
 #include <MyGL/FragmentShader>
 

@@ -66,7 +66,7 @@ class MainGui {
 
     MyWidget::signal< const std::wstring& > save, load;    
 
-    MyWidget::signal< const MyGL::Scene &,
+    MyWidget::signal< const Scene &,
                       ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
 

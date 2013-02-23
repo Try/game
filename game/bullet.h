@@ -5,7 +5,7 @@
 
 class Bullet {
   public:
-    Bullet( MyGL::Scene &s,
+    Bullet( Scene &s,
             World &wrld,
             const ProtoObject &p,
             const PrototypesLoader &pl);

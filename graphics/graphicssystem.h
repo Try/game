@@ -18,14 +18,14 @@
 #include <MyGL/FragmentShaderHolder>
 
 #include <MyGL/GraphicObject>
-#include <MyGL/Scene>
-
-#include <MyGL/Algo/ShadowMapPass>
+#include <MyGL/AbstractScene>
 
 #include <MyGL/Size>
 #include <MyGL/Algo/PostProcessHelper>
 
 #include "graphics/guipass.h"
+#include "graphics/scene.h"
+
 #include <MyWidget/signal>
 
 namespace MyGL{
@@ -40,14 +40,14 @@ class GraphicsSystem {
   public:
     GraphicsSystem( void *hwnd, int w, int h, bool isFullScreen, int smSize );
 
-    bool render(MyGL::Scene &scene,
+    bool render( Scene &scene,
                  ParticleSystemEngine &e, MyGL::Camera camera,
                  size_t dt );
     void resizeEvent( int w, int h, bool isFullScreen );
 
     void load( Resource & r, MainGui & gui, int w, int h );
 
-    void renderSubScene( const MyGL::Scene &scene,
+    void renderSubScene( const Scene &scene,
                          ParticleSystemEngine &e,
                          MyGL::Texture2d & out   );
 
@@ -87,15 +87,16 @@ class GraphicsSystem {
     bool useFog;
 
     MyGL::Size  screenSize;
-    static  float smMatSize( const MyGL::Scene & s );
-    static  MyGL::Matrix4x4 makeShadowMatrix(const MyGL::Scene & s , double *dxyz);
+    static  float smMatSize( const Scene & s );
+    static  MyGL::Matrix4x4 makeShadowMatrix( const Scene & s );
+    static  MyGL::Matrix4x4 makeShadowMatrix( const Scene & s, double *dxyz );
 
     MyGL::Texture2d::Sampler reflect, bufSampler;
 
     void makeRenderAlgo( Resource &res,
                          MainGui &gui,
                          int w, int h );
-    void blurSm(MyGL::Texture2d &sm , const MyGL::Scene &scene);
+    void blurSm(MyGL::Texture2d &sm , const Scene &scene);
 
     struct Sm{
       MyGL::VertexShader   vs;
@@ -188,63 +189,84 @@ class GraphicsSystem {
 
     MyGL::Uniform<float[2]> scrOffset, cpyOffset;
 
-    void fillGBuf(MyGL::Texture2d *gbuffer,
+    void fillGBuf( MyGL::Texture2d *gbuffer,
                    MyGL::Texture2d &mainDepth,
-                   const MyGL::Texture2d &sm, const MyGL::Texture2d &smCl,
-                   const MyGL::Scene &scene, const MyGL::AbstractCamera &camera);
+                   const MyGL::Texture2d &sm,
+                   const MyGL::Texture2d &smCl,
+                   const Scene &scene,
+                   const MyGL::AbstractCamera &camera);
 
-    void renderVolumeLight( const MyGL::Scene &scene,
+    void renderVolumeLight( const Scene &scene,
                             MyGL::Texture2d &gbuffer,
                             MyGL::Texture2d &mainDepth,
                             MyGL::Texture2d &shadowMap );
 
-    void drawOmni(MyGL::Texture2d *gbuffer,
-                   MyGL::Texture2d &mainDepth, MyGL::Texture2d &sm, const MyGL::Scene &scene);
+    void drawOmni( MyGL::Texture2d *gbuffer,
+                   MyGL::Texture2d &mainDepth,
+                   MyGL::Texture2d &sm,
+                   const Scene &scene);
 
-    void setupLight(const MyGL::Scene &scene,
-                     MyGL::FragmentShader & fs ,
-                     const MyGL::Texture2d &sm, const MyGL::Texture2d &smCl);
+    void setupLight( const Scene &scene,
+                     MyGL::FragmentShader & fs,
+                     const MyGL::Texture2d &sm,
+                     const MyGL::Texture2d &smCl);
 
     void fillShadowMap( MyGL::Texture2d &sm,
-                        const MyGL::Scene &scene );
+                        const Scene &scene );
 
-    void fillTranscurentMap(MyGL::Texture2d &sm, MyGL::Texture2d &depthSm,
-                             const MyGL::Scene &scene );
+    void fillTranscurentMap( MyGL::Texture2d &sm,
+                             MyGL::Texture2d &depthSm,
+                             const Scene &scene );
 
-    void fillShadowMap(MyGL::Texture2d &sm, MyGL::Texture2d &depth,
-                        const MyGL::Scene &scene,
-                       const MyGL::Scene::Objects &v, bool clr);
+    void fillShadowMap( MyGL::Texture2d &sm,
+                        MyGL::Texture2d &depth,
+                        const Scene &scene,
+                        const Scene::Objects &v );
 
-    void drawObjects(MyGL::Texture2d* gbuffer,
+    void drawObjects( MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
-                      const MyGL::Scene &scene, const MyGL::AbstractCamera &camera,
-                      const MyGL::Scene::Objects &v, bool clr );
+                      const Scene &scene,
+                      const MyGL::AbstractCamera &camera,
+                      const Scene::Objects &v,
+                      void (Material::*func)( MyGL::RenderState& /*d*/,
+                                              const MyGL::Matrix4x4 & /*object*/,
+                                              const MyGL::AbstractCamera&,
+                                              MyGL::UniformTable &,
+                                              const MyGL::Matrix4x4 & ) const,
+                      bool clr );
 
-    void drawObjects(MyGL::VertexShader &vs,
+    void drawObjects( MyGL::VertexShader &vs,
                       MyGL::FragmentShader &fs,
-
                       MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
-                      const MyGL::Scene &scene, const MyGL::AbstractCamera &camera,
-                      const MyGL::Scene::Objects &v,
+                      const Scene &scene,
+                      const MyGL::AbstractCamera &camera,
+                      const Scene::Objects &v,
+                      void (Material::*func)( MyGL::RenderState& /*d*/,
+                                              const MyGL::Matrix4x4 & /*object*/,
+                                              const MyGL::AbstractCamera&,
+                                              MyGL::UniformTable &,
+                                              const MyGL::Matrix4x4 & ) const,
                       bool clr = false );
 
     void drawTranscurent( MyGL::Texture2d &screen,
                           MyGL::Texture2d& mainDepth,
                           MyGL::Texture2d &sceneCopy,
-                          const MyGL::Scene &scene,
-                          const MyGL::Scene::Objects &v ) ;
+                          const Scene &scene,
+                          const Scene::Objects &v ) ;
 
-    void drawWater(MyGL::Texture2d &screen,
+    void drawWater( MyGL::Texture2d &screen,
                     MyGL::Texture2d& mainDepth,
                     MyGL::Texture2d &sceneCopy,
                     MyGL::Texture2d &sm, MyGL::Texture2d &smCl,
                     MyGL::Texture2d& sceneDepth,
-                    const MyGL::Scene &scene,
-                    const MyGL::Scene::Objects &v ) ;
+                    const Scene &scene,
+                    const Scene::Objects &v ) ;
 
-    void drawGlow(MyGL::Texture2d &out,
-                   MyGL::Texture2d &depth, const MyGL::Scene &scene , int size);
+    void drawGlow( MyGL::Texture2d &out,
+                   MyGL::Texture2d &depth,
+                   const Scene &scene,
+                   int size );
 
     void aceptFog(MyGL::Texture2d &in_out, const MyGL::Texture2d &fog);
 
@@ -266,43 +288,51 @@ class GraphicsSystem {
 
     void bloom( MyGL::Texture2d &out,
                 const MyGL::Texture2d& in );
-    void drawFogOfWar(MyGL::Texture2d &out , const MyGL::Scene &scene);
+    void drawFogOfWar( MyGL::Texture2d &out, const Scene &scene);
 
     void blt(const MyGL::Texture2d &tex);
 
-    void waves(MyGL::Texture2d &out,
-                const MyGL::Texture2d& in , const MyGL::Texture2d &in1);
+    void waves( MyGL::Texture2d &out,
+                const MyGL::Texture2d& in,
+                const MyGL::Texture2d &in1);
 
-    void ssao(MyGL::Texture2d &out,
-               const MyGL::Texture2d& in , const MyGL::Texture2d &gao, const MyGL::Scene &scene);
+    void ssao( MyGL::Texture2d &out,
+               const MyGL::Texture2d& in,
+               const MyGL::Texture2d &gao,
+               const Scene &scene);
 
-    void aceptSsao( const MyGL::Scene &s,
+    void aceptSsao( const Scene &s,
                     MyGL::Texture2d &out,
                     const MyGL::Texture2d& scene,
                     const MyGL::Texture2d &diff,
                     const MyGL::Texture2d &ssao);
 
-    void aceptGI(const MyGL::Scene &s,
+    void aceptGI( const Scene &s,
                   MyGL::Texture2d &out,
                   const MyGL::Texture2d& scene,
-                  const MyGL::Texture2d &diff, const MyGL::Texture2d &norm, const MyGL::Texture2d &depth,
+                  const MyGL::Texture2d &diff,
+                  const MyGL::Texture2d &norm,
+                  const MyGL::Texture2d &depth,
                   const MyGL::Texture2d gi[4] );
 
     void ssaoDetail( MyGL::Texture2d &out,
-                     const MyGL::Texture2d& in , const MyGL::Texture2d &macro);
+                     const MyGL::Texture2d& in,
+                     const MyGL::Texture2d &macro );
 
-    void ssaoGMap( const MyGL::Scene &s,
+    void ssaoGMap( const Scene &s,
                    MyGL::Texture2d &out );
 
     MyGL::Texture2d depth( int w, int h );
     MyGL::Texture2d depth( const MyGL::Size& sz );
 
 
-    void renderScene(const MyGL::Scene &scene, const MyGL::AbstractCamera &camera,
+    void renderScene( const Scene &scene,
+                      const MyGL::AbstractCamera &camera,
                       MyGL::Texture2d gbuffer[4],
-                      MyGL::Texture2d & depthBuffer, MyGL::Texture2d rsm[],
+                      MyGL::Texture2d & depthBuffer,
+                      MyGL::Texture2d rsm[],
                       int shadowMapSize, bool useAO);
-    void buildRSM(MyGL::Scene &scene,
+    void buildRSM( Scene &scene,
                    MyGL::Texture2d gbuffer[4],
                    int shadowMapSize);
 
@@ -328,6 +358,18 @@ class GraphicsSystem {
 
       MyGL::Matrix4x4 v, p;
       };
+
+    template< class ... Args, class ... FArgs >
+    void draw( MyGL::Render & render,
+               const Scene & scene,
+               const MyGL::AbstractCamera & camera,
+               const Scene::Objects & obj,
+               void (Material::*func)( MyGL::RenderState& /*d*/,
+                                       const MyGL::Matrix4x4 & /*object*/,
+                                       const MyGL::AbstractCamera&,
+                                       MyGL::UniformTable &,
+                                       FArgs ... args ) const,
+               Args... args );
   };
 
 

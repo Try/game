@@ -4,8 +4,6 @@
 #include "textureview.h"
 
 #include <MyGL/Texture2d>
-#include <MyGL/Scene>
-
 #include <memory>
 
 #include "game/gameobjectview.h"
@@ -20,7 +18,7 @@ class UnitView : public TextureView {
     UnitView( Resource & res );
     ~UnitView();
 
-    MyWidget::signal< const MyGL::Scene &,
+    MyWidget::signal< const Scene &,
                       ParticleSystemEngine &,
                       MyGL::Texture2d & > renderScene;
 
@@ -36,8 +34,8 @@ class UnitView : public TextureView {
 
     void paintEvent(MyWidget::PaintEvent &e);
 
-    MyGL::Scene   scene;
-    Resource    & res;
+    Scene    scene;
+    Resource & res;
 
     bool  folowMode, rotateMode;
     float rotAngle;

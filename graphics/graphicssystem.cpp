@@ -5,11 +5,6 @@
 #include <MyGL/VertexShader>
 #include <MyGL/FragmentShader>
 
-#include <MyGL/Algo/Blit>
-#include <MyGL/MaterialPass>
-
-#include <MyGL/Scene>
-
 #include <iostream>
 #include <cmath>
 
@@ -174,7 +169,7 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
     bufSampler.vClamp = bufSampler.uClamp;
     }
 
-float GraphicsSystem::smMatSize(const MyGL::Scene &scene) {
+float GraphicsSystem::smMatSize( const Scene &scene ) {
     float s = 0.3;
 
     const MyGL::Camera &view =
@@ -186,7 +181,19 @@ float GraphicsSystem::smMatSize(const MyGL::Scene &scene) {
     return s;
     }
 
-MyGL::Matrix4x4 GraphicsSystem::makeShadowMatrix( const MyGL::Scene & scene,
+MyGL::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene ){
+  MyGL::DirectionLight light;
+  if( scene.lights().direction().size() > 0 )
+    light = scene.lights().direction()[0];
+
+  double dir[3] = { light.xDirection(),
+                    light.yDirection(),
+                    light.zDirection() };
+
+  return makeShadowMatrix(scene,dir);
+  }
+
+MyGL::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene,
                                                   double * dir ){
     MyGL::Matrix4x4 mat;
 
@@ -247,7 +254,7 @@ MyGL::Texture2d GraphicsSystem::depth( const MyGL::Size & sz ) {
   return localTex.create( sz.w, sz.h, MyGL::AbstractTexture::Format::Depth24 );
   }
 
-bool GraphicsSystem::render( MyGL::Scene &scene,
+bool GraphicsSystem::render( Scene &scene,
                              ParticleSystemEngine & par,
                              MyGL::Camera   camera,
                              size_t dt) {
@@ -260,7 +267,7 @@ bool GraphicsSystem::render( MyGL::Scene &scene,
   time = dt;//(time+dt);
   unsigned tx = time%(16*1024);
 
-  BlushMaterial::wind = sin( 2.0*M_PI*tx/(16*1024.0) );
+  Material::wind = sin( 2.0*M_PI*tx/(16*1024.0) );
 
   particles = &par;
 
@@ -289,8 +296,7 @@ bool GraphicsSystem::render( MyGL::Scene &scene,
 
   MyGL::Texture2d fog;
   drawFogOfWar(fog, scene);
-
-  aceptFog( gbuffer[0], fog );
+  aceptFog( gbuffer[0], fog );  
 
   if( widget )
     gui.exec( *widget, gbuffer[0], mainDepth, device );
@@ -329,7 +335,7 @@ bool GraphicsSystem::render( MyGL::Scene &scene,
     ppHelper.drawFullScreenQuad( device, finalData.vs, finalData.fs );
     }
 
-  //blt( gbuffer[0] );
+  //blt( gbuffer[2] );
   //blt( mainDepth );
   //blt( waterWaves );
 //  blt( shadowMap );
@@ -344,20 +350,17 @@ bool GraphicsSystem::render( MyGL::Scene &scene,
   }
 
 void GraphicsSystem::fillShadowMap( MyGL::Texture2d& shadowMap,
-                                    const MyGL::Scene & scene ) {
+                                    const Scene & scene ) {
   MyGL::Texture2d depthSm = depth( shadowMap.width(), shadowMap.height() );
 
   fillShadowMap( shadowMap, depthSm, scene,
-                 scene.objects<MyGL::ShadowMapPassMaterial>(), 1 );
-  fillShadowMap( shadowMap, depthSm, scene,
-                 scene.objects<BlushShMaterial>(), 0 );
+                 scene.shadowCasters() );
   }
 
 void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
                                     MyGL::Texture2d& depthSm,
-                                    const MyGL::Scene & scene,
-                                    const MyGL::Scene::Objects &v,
-                                    bool clr ) {
+                                    const Scene & scene,
+                                    const Scene::Objects &v ) {
   MyGL::RenderState rstate;
   rstate.setCullFaceMode( MyGL::RenderState::CullMode::front );
 
@@ -373,7 +376,7 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
   MyGL::Render render( device,
                        sm, depthSm,
                        smap.vs, smap.fs );
-  if( clr ){
+  {
     render.clear( MyGL::Color(1.0), 1 );
     if( !(sm.width()==1 && sm.height()==1) ){
       MyGL::Matrix4x4 proj;
@@ -392,26 +395,29 @@ void GraphicsSystem::fillShadowMap( MyGL::Texture2d& sm,
   const MyGL::AbstractCamera & camera = scene.camera();
 
   for( size_t i=0; i<v.size(); ++i ){
-    const MyGL::AbstractGraphicObject& ptr = v[i].object();
-
+    const AbstractGraphicObject& ptr = *v[i];
     MyGL::Matrix4x4 m = matrix;
 
-    if( clr )
+    if( !ptr.material().usage.blush )
       m.mul( ptr.transform() ); else
-      m.mul( BlushMaterial::animateObjMatrix( ptr.transform() ) );
+      m.mul( Material::animateObjMatrix( ptr.transform() ) );
 
     if( scene.viewTester().isVisible( ptr, m ) ){
-      device.setUniform( smap.vs, m, "mvpMatrix" );
-      render.draw( v[i].material(), ptr,
-                   ptr.transform(), camera );
+      MyGL::UniformTable table( device, smap.vs, smap.fs );
+      MyGL::RenderState rs;
+
+      table.add( m, "mvpMatrix", MyGL::UniformTable::Vertex );
+      ptr.material().shadow( rs, ptr.transform(), camera, table );
+
+      device.setRenderState(rs);
+      render.draw( ptr );
       }
     }
-
   }
 
 void GraphicsSystem::fillTranscurentMap( MyGL::Texture2d &sm,
                                          MyGL::Texture2d &depthSm,
-                                         const MyGL::Scene &scene) {
+                                         const Scene &scene) {
 
   MyGL::DirectionLight light;
   if( scene.lights().direction().size() > 0 )
@@ -452,6 +458,7 @@ void GraphicsSystem::fillTranscurentMap( MyGL::Texture2d &sm,
                0, 0, 1, 0,
                0, 0, 0, 1 );
 
+  /*
   { auto v = scene.objects<TransparentMaterialShadow>();
     for( size_t i=0; i<v.size(); ++i ){
       const MyGL::AbstractGraphicObject& ptr = v[i].object();
@@ -465,10 +472,10 @@ void GraphicsSystem::fillTranscurentMap( MyGL::Texture2d &sm,
                      ptr.transform(), c );
         }
       }
-    }
+    }*/
   }
 
-void GraphicsSystem::setupLight( const MyGL::Scene & scene,
+void GraphicsSystem::setupLight( const Scene & scene,
                                  MyGL::FragmentShader & fs,
                                  const MyGL::Texture2d & sm,
                                  const MyGL::Texture2d & smCl ){
@@ -497,8 +504,8 @@ void GraphicsSystem::setupLight( const MyGL::Scene & scene,
     gbuf.view.set( view );
     device.setUniform( fs, gbuf.view );
 
-    device.setUniform( fs,   sm, "shadowMap"   );
-    device.setUniform( fs, smCl, "shadowMapCl" );
+    device.setUniform( fs,     sm, "shadowMap"    );
+    device.setUniform( fs,   smCl, "shadowMapCl"  );
     }
   }
 
@@ -506,19 +513,24 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                                MyGL::Texture2d& mainDepth,
                                const MyGL::Texture2d& sm,
                                const MyGL::Texture2d& smCl,
-                               const MyGL::Scene & scene,
+                               const Scene & scene,
                                const MyGL::AbstractCamera & camera ) {
   setupLight( scene, gbuf.terrainFs, sm, smCl );
   particles->exec( scene.camera().view(),
                    scene.camera().projective(),
                    1 );
 
+  setupLight( scene, gbuf.fs, sm, smCl );
+
   drawObjects( gbuf.terrainVs,
                gbuf.terrainFs,
-               gbuffer, mainDepth,
+               gbuffer,
+               mainDepth,
                scene,
                camera,
-               scene.objects<TerrainZPass>(), true );
+               scene.terrainMinorObjects(),
+               &Material::terrainMinorZ,
+               true );
   {
     MyGL::Texture2d d = depth( mainDepth.width(), mainDepth.height() );
     MyGL::Render render( device,
@@ -528,23 +540,28 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
     render.clear( MyGL::Color(0) );
   }
 
+
   drawObjects( gbuf.terrainVs,
                gbuf.terrainFs,
-               gbuffer, mainDepth,
+               gbuffer,
+               mainDepth,
                scene,
                camera,
-               scene.objects<TerrainMinorMaterial>(), false );
+               scene.terrainMinorObjects(),
+               &Material::terrainMinor,
+               false );
 
   setupLight( scene, gbuf.fs, sm, smCl );
-  drawObjects( gbuffer, mainDepth,
-               scene,
-               camera,
-               scene.objects<MainMaterial>(), false );
 
-  drawObjects( gbuffer, mainDepth,
+  drawObjects( gbuffer,
+               mainDepth,
                scene,
                camera,
-               scene.objects<BlushMaterial>(), false );
+               scene.mainObjects(),
+               &Material::gbuffer,
+               false );
+
+  /*
 
   setupLight( scene, gbuf.grassFs, sm, smCl );
   drawObjects( gbuf.grassVs, gbuf.grassFs,
@@ -552,28 +569,35 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                scene,
                camera,
                scene.objects<GrassMaterial>() );
+               */
 
   drawObjects( transparentData.vsAdd, transparentData.fsAdd,
                gbuffer, mainDepth,
                scene,
                camera,
-               scene.objects<AddMaterial>() );
-
-  drawObjects( transparentData.vsAdd, transparentData.fsAdd,
-               gbuffer, mainDepth,
-               scene,
-               camera,
-               scene.objects<TransparentMaterialZPass>() );
+               scene.additiveObjects(),
+               &Material::additive,
+               false );
 
   setupLight( scene, transparentData.fs, sm, smCl );
   drawObjects( transparentData.vs, transparentData.fs,
                gbuffer, mainDepth,
                scene,
                camera,
-               scene.objects<TransparentMaterial>() );
+               scene.transparentObjects(),
+               &Material::transparentZ,
+               false );
+
+  drawObjects( transparentData.vs, transparentData.fs,
+               gbuffer, mainDepth,
+               scene,
+               camera,
+               scene.transparentObjects(),
+               &Material::transparent,
+               false );
   }
 
-void GraphicsSystem::renderVolumeLight( const MyGL::Scene &scene,
+void GraphicsSystem::renderVolumeLight( const Scene &scene,
                                         MyGL::Texture2d &gbuffer,
                                         MyGL::Texture2d &mainDepth,
                                         MyGL::Texture2d &shadowMap ) {
@@ -637,7 +661,7 @@ void GraphicsSystem::renderVolumeLight( const MyGL::Scene &scene,
 void GraphicsSystem::drawOmni( MyGL::Texture2d *gbuffer,
                                MyGL::Texture2d &mainDepth,
                                MyGL::Texture2d & sm,
-                               const MyGL::Scene &scene ) {
+                               const Scene &scene ) {
   MyGL::Render render( device,
                        gbuffer[0],
                        mainDepth,
@@ -668,50 +692,56 @@ void GraphicsSystem::drawOmni( MyGL::Texture2d *gbuffer,
   device.setUniform( omniData.fs, tc, 2, "dTexCoord");
 
   const MyGL::AbstractCamera & camera = scene.camera();
-  const MyGL::Scene::Objects &v = scene.objects<OmniMaterial>();
-  for( size_t i=0; i<v.size(); ++i ){
-    const MyGL::GraphicObject& ptr = (const MyGL::GraphicObject&)v[i].object();
+  const Scene::Objects &v = scene.omni();
 
-    float pos[3] = { };//ptr.x(), ptr.y(), ptr.z() };
-    device.setUniform( omniData.vs, pos, 3, "cenPos");
+  for( size_t i=0; i<v.size(); ++i ){
+    const AbstractGraphicObject& ptr = *v[i];
 
     MyGL::Matrix4x4 mat = camera.projective();
     mat.mul( camera.view() );
     mat.mul( ptr.transform() );
     mat.inverse();
 
-    device.setUniform( omniData.fs, mat, "invMatrix");
-
     MyGL::Matrix4x4 smat = shM;
     smat.mul( ptr.transform() );
-    device.setUniform( omniData.fs,
-                       smat,
-                       "shMatrix" );
 
     if( scene.viewTester().isVisible( ptr, camera ) ){
-      render.draw( v[i].material(), ptr,
-                   ptr.transform(), camera );
+      MyGL::UniformTable table( render );
+      MyGL::RenderState rs;
+
+      ptr.material().omni( rs, ptr.transform(), camera, table, smat, mat );
+      device.setRenderState(rs);
+      render.draw( ptr );
       }
     }
   }
 
 void GraphicsSystem::drawObjects( MyGL::Texture2d* gbuffer,
                                   MyGL::Texture2d& mainDepth,
-                                  const MyGL::Scene &scene,
+                                  const Scene &scene,
                                   const MyGL::AbstractCamera & camera,
-                                  const MyGL::Scene::Objects &v,
+                                  const Scene::Objects &v,
+                                  void (Material::*func)( MyGL::RenderState& /*d*/,
+                                                          const MyGL::Matrix4x4 & /*object*/,
+                                                          const MyGL::AbstractCamera&,
+                                                          MyGL::UniformTable &,
+                                                          const MyGL::Matrix4x4 & ) const,
                                   bool clr ) {
-  drawObjects(gbuf.vs, gbuf.fs, gbuffer, mainDepth, scene, camera, v, clr);
+  drawObjects(gbuf.vs, gbuf.fs, gbuffer, mainDepth, scene, camera, v, func, clr);
   }
 
 void GraphicsSystem::drawObjects( MyGL::VertexShader   & vs,
                                   MyGL::FragmentShader & fs,
-
                                   MyGL::Texture2d* gbuffer,
                                   MyGL::Texture2d& mainDepth,
-                                  const MyGL::Scene &scene,
+                                  const Scene &scene,
                                   const MyGL::AbstractCamera& camera,
-                                  const MyGL::Scene::Objects &v,
+                                  const Scene::Objects &v,
+                                  void (Material::*func)( MyGL::RenderState& /*d*/,
+                                                          const MyGL::Matrix4x4 & /*object*/,
+                                                          const MyGL::AbstractCamera&,
+                                                          MyGL::UniformTable &,
+                                                          const MyGL::Matrix4x4 & ) const,
                                   bool clr ) {
   MyGL::Render render( device,
                        gbuffer, 4,
@@ -720,25 +750,15 @@ void GraphicsSystem::drawObjects( MyGL::VertexShader   & vs,
   if( clr )
     render.clear( MyGL::Color(0.0), 1 );
 
-  //return;
-
-  //const MyGL::AbstractCamera & camera = scene.camera();
-
-  for( size_t i=0; i<v.size(); ++i ){
-    const MyGL::AbstractGraphicObject& ptr = v[i].object();
-
-    if( scene.viewTester().isVisible( ptr, camera ) ){
-      render.draw( v[i].material(), ptr,
-                   ptr.transform(), camera );
-      }
-    }
+  MyGL::Matrix4x4 matrix = makeShadowMatrix(scene);
+  draw( render, scene, camera, v, func, matrix );
   }
 
 void GraphicsSystem::drawTranscurent( MyGL::Texture2d& screen,
                                       MyGL::Texture2d& mainDepth,
                                       MyGL::Texture2d& sceneCopy,
-                                      const MyGL::Scene &scene,
-                                      const MyGL::Scene::Objects &v ) {
+                                      const Scene &scene,
+                                      const Scene::Objects &v ) {
   MyGL::Render render( device,
                        screen,
                        mainDepth,
@@ -752,14 +772,34 @@ void GraphicsSystem::drawTranscurent( MyGL::Texture2d& screen,
   device.setUniform( displaceData.fs, tc, 2, "dTexCoord");
 
   const MyGL::AbstractCamera & camera = scene.camera();
+
+  MyGL::Matrix4x4 matrix = makeShadowMatrix(scene);
+  draw( render, scene, camera, v, &Material::displace, matrix );
+  }
+
+template< class ... Args, class ... FArgs >
+void GraphicsSystem::draw( MyGL::Render & render,
+                           const Scene & scene,
+                           const MyGL::AbstractCamera & camera,
+                           const Scene::Objects & v,
+                           void (Material::*func)( MyGL::RenderState& /*d*/,
+                                                   const MyGL::Matrix4x4 & /*object*/,
+                                                   const MyGL::AbstractCamera&,
+                                                   MyGL::UniformTable &,
+                                                   FArgs ... args ) const,
+                           Args... args ){
   const MyGL::ViewTester & t = scene.viewTester();
 
   for( size_t i=0; i<v.size(); ++i ){
-    const MyGL::AbstractGraphicObject& ptr = v[i].object();
+    const AbstractGraphicObject& ptr = *v[i];
 
     if( t.isVisible( ptr, camera ) ){
-      render.draw( v[i].material(), ptr,
-                   ptr.transform(), camera );
+      MyGL::UniformTable table( render );
+      MyGL::RenderState rs;
+
+      (ptr.material().*func)( rs, ptr.transform(), camera, table, args... );
+      device.setRenderState(rs);
+      render.draw( ptr );
       }
     }
   }
@@ -770,8 +810,8 @@ void GraphicsSystem::drawWater( MyGL::Texture2d& screen,
                                 MyGL::Texture2d& sm,
                                 MyGL::Texture2d& smCl,
                                 MyGL::Texture2d& sceneDepth,
-                                const MyGL::Scene &scene,
-                                const MyGL::Scene::Objects &v ) {
+                                const Scene &scene,
+                                const Scene::Objects &v ) {
 
   MyGL::Texture2d waterWaves;
   waves( waterWaves, water.waterHeightMap[0], water.waterHeightMap[1] );
@@ -799,9 +839,10 @@ void GraphicsSystem::drawWater( MyGL::Texture2d& screen,
   device.setUniform( displaceData.fsWater, dc, 2, "dWaterCoord");
 
   const MyGL::AbstractCamera & camera = scene.camera();
+  MyGL::Matrix4x4 matrix = makeShadowMatrix(scene);
 
   for( size_t i=0; i<v.size(); ++i ){
-    const MyGL::AbstractGraphicObject& ptr = v[i].object();
+    const AbstractGraphicObject& ptr = *v[i];
 
     MyGL::Matrix4x4 mat = camera.projective();
     mat.mul( camera.view() );
@@ -811,15 +852,19 @@ void GraphicsSystem::drawWater( MyGL::Texture2d& screen,
     device.setUniform( displaceData.fsWater, mat, "invMatrix");
 
     if( scene.viewTester().isVisible( ptr, camera ) ){
-      render.draw( v[i].material(), ptr,
-                   ptr.transform(), camera );
+      MyGL::UniformTable table( render );
+      MyGL::RenderState rs;
+
+      ptr.material().water( rs, ptr.transform(), camera, table, matrix );
+      device.setRenderState(rs);
+      render.draw( ptr );
       }
     }
   }
 
 void GraphicsSystem::drawGlow (MyGL::Texture2d &out,
                                MyGL::Texture2d &depth,
-                               const MyGL::Scene &scene,
+                               const Scene &scene,
                                int size ) {
   MyGL::Texture2d buffer = localTex.create( depth.width(),
                                             depth.height(),
@@ -834,16 +879,22 @@ void GraphicsSystem::drawGlow (MyGL::Texture2d &out,
     render.clear( MyGL::Color(0,0,0,1) );
 
     const MyGL::AbstractCamera & camera = scene.camera();
-    const MyGL::Scene::Objects & v = scene.objects<GlowMaterial>();
+
+    const Scene::Objects & v = scene.glowObjects();
 
     for( size_t i=0; i<v.size(); ++i ){
-      const MyGL::AbstractGraphicObject& ptr = v[i].object();
+      const AbstractGraphicObject& ptr = *v[i];
 
       if( scene.viewTester().isVisible( ptr, camera ) ){
-        render.draw( v[i].material(), ptr,
-                     ptr.transform(), camera );
+        MyGL::UniformTable table( render );
+        MyGL::RenderState rs;
+
+        ptr.material().glowPass( rs, ptr.transform(), camera, table );
+        device.setRenderState(rs);
+        render.draw( ptr );
         }
       }
+
     }
 
   //int size = 512;
@@ -1065,13 +1116,14 @@ void GraphicsSystem::bloom( MyGL::Texture2d &result,
   }
 
 void GraphicsSystem::drawFogOfWar( MyGL::Texture2d &out,
-                                   const MyGL::Scene & scene ) {
+                                   const Scene & scene ) {
   int size = 256;
 
   MyGL::Texture2d depth  = this->depth( size, size );
   MyGL::Texture2d buffer = localTex.create( depth.width(),
                                             depth.height(),
                                             MyGL::Texture2d::Format::RGBA );
+
   {
     MyGL::Render render( device,
                          buffer,
@@ -1082,27 +1134,10 @@ void GraphicsSystem::drawFogOfWar( MyGL::Texture2d &out,
     device.setUniform( fogOfWar.fs, fogView, "texture" );
 
     const MyGL::AbstractCamera & camera = scene.camera();
-    const MyGL::Scene::Objects & v = scene.objects<WarFogMaterialZPass>();
 
-    for( size_t i=0; i<v.size(); ++i ){
-      const MyGL::AbstractGraphicObject& ptr = v[i].object();
-
-      if( scene.viewTester().isVisible( ptr, camera ) ){
-        render.draw( v[i].material(), ptr,
-                     ptr.transform(), camera );
-        }
-      }
-    { const MyGL::Scene::Objects & v = scene.objects<WarFogMaterial>();
-
-      for( size_t i=0; i<v.size(); ++i ){
-        const MyGL::AbstractGraphicObject& ptr = v[i].object();
-
-        if( scene.viewTester().isVisible( ptr, camera ) ){
-          render.draw( v[i].material(), ptr,
-                       ptr.transform(), camera );
-          }
-        }
-      }
+    const Scene::Objects & v = scene.fogOfWar();
+    draw( render, scene, camera, v, &Material::fogOgWar, true );
+    draw( render, scene, camera, v, &Material::fogOgWar, false );
     }
 
   MyGL::Texture2d tmp;
@@ -1203,7 +1238,7 @@ void GraphicsSystem::ssaoDetail( MyGL::Texture2d &out,
 void GraphicsSystem::ssao( MyGL::Texture2d &out,
                            const MyGL::Texture2d &in,
                            const MyGL::Texture2d & gao,
-                           const MyGL::Scene & scene ) {
+                           const Scene & scene ) {
   int w = in.width(), h = in.height();
 
   const MyGL::AbstractCamera &camera = scene.camera();
@@ -1242,7 +1277,7 @@ void GraphicsSystem::ssao( MyGL::Texture2d &out,
   ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.fs );
   }
 
-void GraphicsSystem::aceptGI(   const MyGL::Scene & s,
+void GraphicsSystem::aceptGI(   const Scene & s,
                                 MyGL::Texture2d &out,
                                 const MyGL::Texture2d &scene,
                                 const MyGL::Texture2d &diff,
@@ -1305,7 +1340,7 @@ void GraphicsSystem::aceptGI(   const MyGL::Scene & s,
   ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.acceptGI );
   }
 
-void GraphicsSystem::aceptSsao( const MyGL::Scene & s,
+void GraphicsSystem::aceptSsao( const Scene & s,
                                 MyGL::Texture2d &out,
                                 const MyGL::Texture2d &scene,
                                 const MyGL::Texture2d &diff,
@@ -1344,7 +1379,7 @@ void GraphicsSystem::aceptSsao( const MyGL::Scene & s,
   ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.accept );
   }
 
-void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
+void GraphicsSystem::ssaoGMap( const Scene &scene,
                                MyGL::Texture2d &sm  ) {
   sm = localTex.create( 256, 256,
                         MyGL::AbstractTexture::Format::RGB10_A2 );
@@ -1353,7 +1388,7 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
   rstate.setCullFaceMode( MyGL::RenderState::CullMode::front );
 
   MyGL::Texture2d depthSm = depth( sm.width(), sm.height() );
-  { const MyGL::Scene::Objects &v = scene.objects<MyGL::ShadowMapPassMaterial>();
+  { const Scene::Objects &v = scene.shadowCasters();
     MyGL::Render render( device,
                          sm, depthSm,
                          smap.vs, smap.fs );
@@ -1366,19 +1401,28 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
     MyGL::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
 
     for( size_t i=0; i<v.size(); ++i ){
-      const MyGL::AbstractGraphicObject& ptr = v[i].object();
+      const AbstractGraphicObject& ptr = *v[i];
       MyGL::Matrix4x4 m = matrix;
-      m.mul( ptr.transform() );
+
+      if( !ptr.material().usage.blush )
+        m.mul( ptr.transform() ); else
+        m.mul( Material::animateObjMatrix( ptr.transform() ) );
 
       if( scene.viewTester().isVisible( ptr, m ) ){
-        device.setUniform( smap.vs, m, "mvpMatrix" );
-        render.draw( v[i].material(), ptr,
-                     ptr.transform(), camera );
+        MyGL::UniformTable table( device, smap.vs, smap.fs );
+        MyGL::RenderState rs;
+
+        table.add( m, "mvpMatrix", MyGL::UniformTable::Vertex );
+        ptr.material().shadow( rs, ptr.transform(), camera, table );
+
+        device.setRenderState(rs);
+        render.draw( ptr );
         }
       }
     }
 
-  { const MyGL::Scene::Objects &v = scene.objects<BlushShMaterial>();
+  /*
+  { const Scene::Objects &v = scene.objects<BlushShMaterial>();
     MyGL::Render render( device,
                          sm, depthSm,
                          smap.vs, smap.fs );
@@ -1388,6 +1432,7 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
 
     double dir[] = {0,0, -1};
     MyGL::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
+
 
     for( size_t i=0; i<v.size(); ++i ){
       const MyGL::AbstractGraphicObject& ptr = v[i].object();
@@ -1401,12 +1446,12 @@ void GraphicsSystem::ssaoGMap( const MyGL::Scene &scene,
                      ptr.transform(), camera );
         }
       }
-    }
+    }*/
 
   }
 
 void GraphicsSystem::blurSm( MyGL::Texture2d &sm,
-                             const MyGL::Scene & scene ) {
+                             const Scene & scene ) {
   MyGL::Texture2d tmp = localTex.create( sm.width(), sm.height(),
                         MyGL::AbstractTexture::Format::RGB10_A2 );
 
@@ -1427,7 +1472,7 @@ void GraphicsSystem::blurSm( MyGL::Texture2d &sm,
   sm.setSampler( sampler );
   }
 
-void GraphicsSystem::buildRSM( MyGL::Scene &scene,
+void GraphicsSystem::buildRSM( Scene &scene,
                                MyGL::Texture2d gbuffer[4],
                                int shadowMapSize ) {
   for( int i=0; i<3; ++i ){
@@ -1463,7 +1508,7 @@ void GraphicsSystem::buildRSM( MyGL::Scene &scene,
                mainDepth, rsmNo, 1, 0 );
   }
 
-void GraphicsSystem::renderScene( const MyGL::Scene &scene,
+void GraphicsSystem::renderScene( const Scene &scene,
                                   const MyGL::AbstractCamera & camera,
                                   MyGL::Texture2d gbuffer[4],
                                   MyGL::Texture2d &mainDepth,
@@ -1521,7 +1566,7 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
 
   drawTranscurent( gbuffer[0], mainDepth, sceneCopy,
                    scene,
-                   scene.objects<DisplaceMaterial>());
+                   scene.displaceObjects() );
 
   drawWater( gbuffer[0], mainDepth,
              sceneCopy,
@@ -1529,7 +1574,8 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
              shadowMapCl,
              gbuffer[3],
              scene,
-             scene.objects<WaterMaterial>());
+             scene.waterObjects() );
+  /*
 
   if( useFog )
     renderVolumeLight( scene,
@@ -1545,11 +1591,10 @@ void GraphicsSystem::renderScene( const MyGL::Scene &scene,
                  camera,
                  scene.objects<TransparentMaterialNoZW>() );
     }
-
-
+*/
   }
 
-void GraphicsSystem::renderSubScene( const MyGL::Scene &scene,
+void GraphicsSystem::renderSubScene( const Scene &scene,
                                      ParticleSystemEngine &e,
                                      MyGL::Texture2d &out  ) {
   particles = &e;

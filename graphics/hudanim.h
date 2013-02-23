@@ -5,7 +5,7 @@
 
 class HudAnim {
   public:
-    HudAnim( MyGL::Scene & s,
+    HudAnim( Scene & s,
              World       & wrld,
              const ProtoObject &p,
              const PrototypesLoader & pl,

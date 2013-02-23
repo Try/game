@@ -6,6 +6,8 @@
 #include "envobject.h"
 #include "game/protoobject.h"
 #include "graphics/particlesystem.h"
+#include "graphics/scene.h"
+
 class SmallGraphicsObject;
 
 #include <memory>
@@ -23,13 +25,13 @@ class GameObjectView {
     GameObjectView( GameObject & obj,
                     const ProtoObject &p );
 
-    GameObjectView( MyGL::Scene & s,
+    GameObjectView( Scene & s,
                     World       & wrld,
                     const ProtoObject &p,
                     const PrototypesLoader & pl );
 
 
-    GameObjectView( MyGL::Scene & s,
+    GameObjectView( Scene & s,
                     World       & wrld,
                     ParticleSystemEngine & psysEngine,
                     const ProtoObject &p,
@@ -98,7 +100,7 @@ class GameObjectView {
     void setForm(const Physics::AnimatedSphere &f);
     void setForm(const Physics::AnimatedBox &f);
 
-    void setupMaterials( MyGL::AbstractGraphicObject &obj,
+    void setupMaterials( AbstractGraphicObject &obj,
                          const ProtoObject::View &src );
 
     template< class Object >
@@ -127,18 +129,18 @@ class GameObjectView {
       } anim;
 
     std::vector< EnvObject > env;
-    std::vector< MyGL::GraphicObject > view;
+    std::vector< GraphicObject > view;
     std::vector< std::unique_ptr<SmallGraphicsObject> > smallViews;
     std::vector< ParticleSystem >      particles;
 
     Physics * physic;
 
     static const int selectModelsCount = 5;
-    std::unique_ptr<MyGL::GraphicObject> selection[selectModelsCount];
+    std::unique_ptr<GraphicObject> selection[selectModelsCount];
     int htime[selectModelsCount];
 
-    MyGL::Scene & scene;
-    World       & wrld;
+    Scene & scene;
+    World & wrld;
     ParticleSystemEngine & psysEngine;
     const ProtoObject * cls;
     const PrototypesLoader & prototypes;

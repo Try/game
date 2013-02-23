@@ -6,7 +6,6 @@
 #include <MyGL/Texture2d>
 #include <MyGL/VertexShader>
 #include <MyGL/FragmentShader>
-#include <MyGL/Scene>
 
 namespace MyGL{
   class Scene;

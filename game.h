@@ -91,7 +91,7 @@ class Game {
     Resource &resources();
     const PrototypesLoader & prototypes() const;
 
-    void setupMaterials( MyGL::AbstractGraphicObject &obj,
+    void setupMaterials( AbstractGraphicObject &obj,
                          const ProtoObject::View &src,
                          const MyGL::Color &teamColor );
 

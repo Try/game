@@ -2,7 +2,7 @@
 
 #include <MyGL/Render>
 
-EnvObject::EnvObject(MyGL::Scene &s):MyGL::AbstractGraphicObject(s){
+EnvObject::EnvObject( Scene &s ): AbstractGraphicObject(s){
   viewID = -1;
   }
 
@@ -31,4 +31,8 @@ void EnvObject::render( const MyGL::AbstractMaterial &mat,
                         const MyGL::Matrix4x4 &object,
                         const MyGL::AbstractCamera &camera) const {
   r.draw(mat, m_model, object, camera);
+  }
+
+void EnvObject::render(MyGL::Render &r) const {
+  r.draw( m_model );
   }

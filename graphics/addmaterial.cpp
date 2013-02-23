@@ -4,6 +4,7 @@
 
 #include <MyGL/UniformTable>
 #include <MyGL/RenderState>
+#include <MyGL/AbstractCamera>
 
 bool AddMaterial::bind( MyGL::RenderState &rs,
                         const MyGL::Matrix4x4 &object,
