@@ -292,8 +292,8 @@ void GameObjectView::loadView(const MyGL::Model<WaterVertex> &model ){
   }
 
 void GameObjectView::setViewPosition(float x, float y) {
-  int z = wrld.terrain().heightAt( x/Terrain::quadSizef,
-                                   y/Terrain::quadSizef );
+  int z = wrld.terrain().heightAt( World::coordCastD(x)/Terrain::quadSizef,
+                                   World::coordCastD(y)/Terrain::quadSizef );
 
   setViewPosition( x, y, World::coordCast(z) );
   }

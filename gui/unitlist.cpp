@@ -157,6 +157,7 @@ void UnitList::onUnitDied(GameObject &obj) {
         if( btn[r] && btn[r]->owner ){
           cmd->bind(btn[r]->owner);
           uview->setupUnit( btn[r]->owner );
+          uinfo->setup( btn[r]->owner );
           return;
           }
       }

@@ -848,20 +848,6 @@ void World::tick() {
     }
   wayFindRq.tick( terrain() );
 
-  // physics.tick();
-
-  for( size_t i=0; i<hudAnims.size(); ++i )
-    hudAnims[i]->tick();
-
-  for( size_t i=0; i<hudAnims.size();  ){
-    if( hudAnims[i]->isEnd() ){
-      std::swap( hudAnims[i], hudAnims.back() );
-      hudAnims.pop_back();
-      } else {
-      ++i;
-      }
-    }
-
   physics.beginUpdate();
 
   for( size_t i=0; i<nonBackground.size(); ++i )
@@ -875,6 +861,20 @@ void World::tick() {
     }
 
   physics.endUpdate();
+
+  // physics.tick();
+
+  for( size_t i=0; i<hudAnims.size(); ++i )
+    hudAnims[i]->tick();
+
+  for( size_t i=0; i<hudAnims.size();  ){
+    if( hudAnims[i]->isEnd() ){
+      std::swap( hudAnims[i], hudAnims.back() );
+      hudAnims.pop_back();
+      } else {
+      ++i;
+      }
+    }
 
   for( size_t i=0; i<nonBackground.size(); ++i )
     if( nonBackground[i]->hp() <= 0 &&

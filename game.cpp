@@ -760,6 +760,11 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
     material.usage.mainPass = true;
     }
 
+  if( contains( src.materials, "unit" ) ){
+    material.useAlphaTest = 0;
+    material.teamColor = &teamColor;
+    }
+
   if( contains( src.materials, "shadow_cast" ) ){
     material.usage.shadowCast = true;
     }

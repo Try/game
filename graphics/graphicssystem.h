@@ -225,6 +225,7 @@ class GraphicsSystem {
 
     void drawObjects( MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
+                      int bufC,
                       const Scene &scene,
                       const MyGL::AbstractCamera &camera,
                       const Scene::Objects &v,
@@ -239,6 +240,7 @@ class GraphicsSystem {
                       MyGL::FragmentShader &fs,
                       MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
+                      int bufC,
                       const Scene &scene,
                       const MyGL::AbstractCamera &camera,
                       const Scene::Objects &v,

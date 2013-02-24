@@ -4,6 +4,8 @@ TARGET = game
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
 #QMAKE_LFLAGS   += -pg
 
+win32:RC_FILE = game.rc
+
 INCLUDEPATH += include
 
 INCLUDEPATH += "C:/Users/Try/Home/Programming/MyGL2/MyGL/include"

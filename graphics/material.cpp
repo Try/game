@@ -7,6 +7,7 @@ float Material::wind = 0;
 Material::Material():specular(0), useAlphaTest(1), alphaTrestRef(0.5) {
   memset( &usage, 0, sizeof(usage) );
   zWrighting = true;
+  teamColor  = 0;
   }
 
 MyGL::Matrix4x4 Material::animateObjMatrix( const MyGL::Matrix4x4 &object,
@@ -62,7 +63,7 @@ void Material::gbuffer(MyGL::RenderState &rs,
   table.add( normal,   "normalMap",      MyGL::UniformTable::Fragment );
   table.add( specular, "specularFactor", MyGL::UniformTable::Fragment );
 
-  /*
+
   if( teamColor ){// FIXME
     float cl[3] = { teamColor->r(),
                     teamColor->g(),
@@ -72,9 +73,6 @@ void Material::gbuffer(MyGL::RenderState &rs,
     float cl[3] = {};
     table.add( cl, 3, "tmColor", MyGL::UniformTable::Fragment );
     }
-    */
-  float cl[3] = {};
-  table.add( cl, 3, "tmColor", MyGL::UniformTable::Fragment );
 
   if( useAlphaTest ){
     rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
@@ -333,7 +331,7 @@ void Material::omni( MyGL::RenderState &rs,
                    MyGL::RenderState::AlphaBlendMode::one );
   }
 
-void Material::fogOgWar( MyGL::RenderState &rs,
+void Material::fogOfWar( MyGL::RenderState &rs,
                          const MyGL::Matrix4x4 &object,
                          const MyGL::AbstractCamera &c,
                          MyGL::UniformTable &table,

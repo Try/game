@@ -283,7 +283,7 @@ bool GraphicsSystem::render( Scene &scene,
 
   MyGL::Texture2d fog;
   drawFogOfWar(fog, scene);
-  aceptFog( gbuffer[0], fog );  
+  aceptFog( gbuffer[0], fog );
 
   if( widget )
     gui.exec( *widget, gbuffer[0], mainDepth, device );
@@ -435,8 +435,6 @@ void GraphicsSystem::fillTranscurentMap( MyGL::Texture2d &sm,
   if( sm.width()==1 && sm.height()==1 )
     return;
 
-  setupLight( scene, transparentData.fsSh, sm, lightColor );
-
   render.setRenderState( rstate );
   RSMCamera c;
   c.v = makeShadowMatrix( scene, dir );
@@ -444,22 +442,26 @@ void GraphicsSystem::fillTranscurentMap( MyGL::Texture2d &sm,
                0,-1, 0, 0,
                0, 0, 1, 0,
                0, 0, 0, 1 );
+/*
+  setupLight( scene, transparentData.fsSh, sm, lightColor );
+  drawObjects( transparentData.vs,
+               transparentData.fsSh,
+               &sm, depthSm, 1,
+               scene,
+               c,
+               scene.transparentObjects(),
+               &Material::transparentZ,
+               false );
 
-  /*
-  { auto v = scene.objects<TransparentMaterialShadow>();
-    for( size_t i=0; i<v.size(); ++i ){
-      const MyGL::AbstractGraphicObject& ptr = v[i].object();
-
-      MyGL::Matrix4x4 m = c.v;
-      m.mul( ptr.transform() );
-
-      if( scene.viewTester().isVisible( ptr, m ) ){
-        device.setUniform( transparentData.vsSh, m, "mvpMatrix" );
-        render.draw( v[i].material(), ptr,
-                     ptr.transform(), c );
-        }
-      }
-    }*/
+  drawObjects( transparentData.vs,
+               transparentData.fsSh,
+               &sm, depthSm, 1,
+               scene,
+               c,
+               scene.transparentObjects(),
+               &Material::transparent,
+               false );
+               */
   }
 
 void GraphicsSystem::setupLight( const Scene & scene,
@@ -513,6 +515,7 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                gbuf.terrainFs,
                gbuffer,
                mainDepth,
+               4,
                scene,
                camera,
                scene.terrainMinorObjects(),
@@ -532,6 +535,7 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                gbuf.terrainFs,
                gbuffer,
                mainDepth,
+               4,
                scene,
                camera,
                scene.terrainMinorObjects(),
@@ -542,6 +546,7 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
 
   drawObjects( gbuffer,
                mainDepth,
+               4,
                scene,
                camera,
                scene.mainObjects(),
@@ -553,13 +558,16 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                gbuf.grassFs,
                gbuffer,
                mainDepth,
+               4,
                scene,
                camera,
                scene.grassObjects(),
                &Material::grass );
 
   drawObjects( transparentData.vsAdd, transparentData.fsAdd,
-               gbuffer, mainDepth,
+               gbuffer,
+               mainDepth,
+               1,
                scene,
                camera,
                scene.additiveObjects(),
@@ -567,7 +575,9 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
 
   setupLight( scene, transparentData.fs, sm, smCl );
   drawObjects( transparentData.vs, transparentData.fs,
-               gbuffer, mainDepth,
+               gbuffer,
+               mainDepth,
+               1,
                scene,
                camera,
                scene.transparentObjects(),
@@ -575,7 +585,9 @@ void GraphicsSystem::fillGBuf( MyGL::Texture2d* gbuffer,
                false );
 
   drawObjects( transparentData.vs, transparentData.fs,
-               gbuffer, mainDepth,
+               gbuffer,
+               mainDepth,
+               1,
                scene,
                camera,
                scene.transparentObjects(),
@@ -704,6 +716,7 @@ void GraphicsSystem::drawOmni( MyGL::Texture2d *gbuffer,
 
 void GraphicsSystem::drawObjects( MyGL::Texture2d* gbuffer,
                                   MyGL::Texture2d& mainDepth,
+                                  int bufC,
                                   const Scene &scene,
                                   const MyGL::AbstractCamera & camera,
                                   const Scene::Objects &v,
@@ -713,13 +726,15 @@ void GraphicsSystem::drawObjects( MyGL::Texture2d* gbuffer,
                                                           MyGL::UniformTable &,
                                                           const MyGL::Matrix4x4 & ) const,
                                   bool clr ) {
-  drawObjects(gbuf.vs, gbuf.fs, gbuffer, mainDepth, scene, camera, v, func, clr);
+  drawObjects( gbuf.vs, gbuf.fs, gbuffer, mainDepth,
+               bufC, scene, camera, v, func, clr );
   }
 
 void GraphicsSystem::drawObjects( MyGL::VertexShader   & vs,
                                   MyGL::FragmentShader & fs,
                                   MyGL::Texture2d* gbuffer,
                                   MyGL::Texture2d& mainDepth,
+                                  int bufC,
                                   const Scene &scene,
                                   const MyGL::AbstractCamera& camera,
                                   const Scene::Objects &v,
@@ -730,7 +745,8 @@ void GraphicsSystem::drawObjects( MyGL::VertexShader   & vs,
                                                           const MyGL::Matrix4x4 & ) const,
                                   bool clr ) {
   MyGL::Render render( device,
-                       gbuffer, 4,
+                       gbuffer,
+                       bufC,
                        mainDepth,
                        vs, fs );
   if( clr )
@@ -1122,8 +1138,8 @@ void GraphicsSystem::drawFogOfWar( MyGL::Texture2d &out,
     const MyGL::AbstractCamera & camera = scene.camera();
 
     const Scene::Objects & v = scene.fogOfWar();
-    draw( render, scene, camera, v, &Material::fogOgWar, true );
-    draw( render, scene, camera, v, &Material::fogOgWar, false );
+    draw( render, scene, camera, v, &Material::fogOfWar, true );
+    draw( render, scene, camera, v, &Material::fogOfWar, false );
     }
 
   MyGL::Texture2d tmp;

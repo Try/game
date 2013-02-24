@@ -20,6 +20,8 @@ class Material {
     bool zWrighting;
     float alphaTrestRef;
 
+    const MyGL::Color *teamColor;
+
     struct Usage{
       bool mainPass, shadowCast, terrainMinor,
            displace, water, blush, add,
@@ -97,7 +99,7 @@ class Material {
                MyGL::UniformTable &,
                const MyGL::Matrix4x4 &shadowMatrix , const MyGL::Matrix4x4 &invMat) const;
 
-    void fogOgWar(MyGL::RenderState& /*d*/,
+    void fogOfWar(MyGL::RenderState& /*d*/,
                    const MyGL::Matrix4x4 & /*object*/,
                    const MyGL::AbstractCamera&,
                    MyGL::UniformTable & table, bool zpass) const;
