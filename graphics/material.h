@@ -16,8 +16,8 @@ class Material {
     MyGL::Texture2d diffuse, normal, glow;
     float specular;
 
-    bool useAlphaTest;
-    bool zWrighting;
+    bool  useAlphaTest;
+    bool  zWrighting;
     float alphaTrestRef;
 
     const MyGL::Color *teamColor;

@@ -350,11 +350,11 @@ void Material::fogOfWar( MyGL::RenderState &rs,
   table.add( m,       "mvpMatrix",    MyGL::UniformTable::Vertex   );
   table.add( object,  "objectMatrix", MyGL::UniformTable::Vertex   );
 
-  rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
+  rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::Always );
   rs.setAlphaTestRef ( 0.01 );
 
   if( !zpass ){
-    rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_alpha,
-                     MyGL::RenderState::AlphaBlendMode::one_minus_src_alpha );
+    //rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_alpha,
+    //                 MyGL::RenderState::AlphaBlendMode::one_minus_src_alpha );
     }
   }

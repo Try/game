@@ -225,6 +225,7 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
                                                   prototype.get( "water" ),
                                                   prototype) );
     ProtoObject::View vf;
+    vf.materials.clear();
     vf.materials.push_back("fog_of_war");
 
     chunk.fogView.view->loadView( fogGeometry(vboHolder, iboHolder, cX, cY), vf );
