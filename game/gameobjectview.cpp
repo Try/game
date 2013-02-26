@@ -42,6 +42,7 @@ GameObjectView::GameObjectView( Scene & s,
 
 void GameObjectView::init() {
   m.radius = 0;
+  m.initalModelHeight = 0;
 
   m.x = 0;
   m.y = 0;
@@ -80,6 +81,8 @@ void GameObjectView::freePhysic(){
   }
 
 void GameObjectView::loadView( const Resource &r, Physics & p, bool env ) {
+  m.initalModelHeight = 0;
+
   physic = &p;
   view.clear();
   m.radius = 0;
@@ -141,6 +144,7 @@ void GameObjectView::loadView( const Resource & r,
                                const ProtoObject::View &src,
                                bool isEnv ) {
   const Model & model = r.model( src.name+"/model" );
+  m.initalModelHeight = std::max<double>(m.initalModelHeight, model.bounds().max[2]);
 
   if( view.size()==0 ){
     for( int i=0; i<3; ++i )
@@ -404,10 +408,28 @@ void GameObjectView::setViewPosition( Object& obj,
 
 double GameObjectView::viewHeight() const {
   if( view.size() ){
+    const GraphicObject &obj = view[0];
+
+    float dx = 0, dy = 0, dz = 0;
+    double modelSize[3] = { obj.bounds().max[0] - obj.bounds().min[0],
+                            obj.bounds().max[1] - obj.bounds().min[1],
+                            obj.bounds().max[2] - obj.bounds().min[2] };
+
+    const int * align = getClass().view[0].align;
+    double alignSize  = getClass().view[0].alignSize;
+
+    dx = modelSize[0]*obj.sizeX()*align[0]*alignSize;
+    dy = modelSize[1]*obj.sizeY()*align[1]*alignSize;
+    dz = modelSize[2]*obj.sizeZ()*align[2]*alignSize;
+
+    return (m.initalModelHeight*view[0].sizeZ()+dz);
+
+    /*
     const int   align = getClass().view[0].align[2];
     double alignSize  = getClass().view[0].alignSize;
 
-    return m.modelSize[2]*view[0].sizeZ()*( 1 - (1-align)*alignSize );
+    return m.initalModelHeight*view[0].sizeZ()*( 1 - (1-align)*alignSize );
+    */
     }
 
   return 0;
@@ -602,8 +624,9 @@ double GameObjectView::rAngle() const {
 
 void GameObjectView::tick() {
   for( int i=1; i<selectModelsCount; ++i ){
-    selection[i]->setRotation( selection[i]->angleX(),
-                               selection[i]->angleZ()+1 );
+    if( selection[i]->isVisible() )
+      selection[i]->setRotation( selection[i]->angleX(),
+                                 selection[i]->angleZ()+1 );
     }
 
   for( int i=2; i<selectModelsCount; ++i ){

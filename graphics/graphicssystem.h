@@ -79,12 +79,20 @@ class GraphicsSystem {
         } shadow;
 
       } closure;
+
+    struct Frustum{
+      float f[6][4];
+      };
+
+    static void mkFrustum( const MyGL::AbstractCamera& c, Frustum& out );
+    static bool isVisible( const AbstractGraphicObject& c, const Frustum& f );
+    static bool isVisible( float x, float y, float z, float r, const Frustum& f );
   private:
     GUIPass gui;
     MainGui * widget;
     ParticleSystemEngine * particles;
 
-    bool useFog;
+    bool useFog, useHDR;
 
     MyGL::Size  screenSize;
     static  float smMatSize( const Scene & s );
@@ -236,7 +244,7 @@ class GraphicsSystem {
                                               const MyGL::Matrix4x4 & ) const,
                       bool clr );
 
-    void drawObjects( MyGL::VertexShader &vs,
+    void drawObjects(MyGL::VertexShader &vs,
                       MyGL::FragmentShader &fs,
                       MyGL::Texture2d* gbuffer,
                       MyGL::Texture2d &mainDepth,
@@ -249,7 +257,8 @@ class GraphicsSystem {
                                               const MyGL::AbstractCamera&,
                                               MyGL::UniformTable &,
                                               const MyGL::Matrix4x4 & ) const,
-                      bool clr = false );
+                      bool clr = false,
+                      bool clrDepth = false);
 
     void drawTranscurent( MyGL::Texture2d &screen,
                           MyGL::Texture2d& mainDepth,
@@ -324,9 +333,9 @@ class GraphicsSystem {
     void ssaoGMap( const Scene &s,
                    MyGL::Texture2d &out );
 
+    MyGL::Texture2d colorBuf( int w, int h );
     MyGL::Texture2d depth( int w, int h );
     MyGL::Texture2d depth( const MyGL::Size& sz );
-
 
     void renderScene( const Scene &scene,
                       const MyGL::AbstractCamera &camera,
@@ -363,6 +372,7 @@ class GraphicsSystem {
 
     template< class ... Args, class ... FArgs >
     void draw( MyGL::Render & render,
+               const Frustum &frustum,
                const Scene & scene,
                const MyGL::AbstractCamera & camera,
                const Scene::Objects & obj,

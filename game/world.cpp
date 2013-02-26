@@ -24,6 +24,7 @@ World::World( Game & gm,
               int w, int h )
   : game(gm),
     physics(w,h),
+    scene( World::coordCast(std::max(w,h)*Terrain::quadSizef) ),
     spatialId(w,h),
     graphics( gm.graphics ),
     resource( gm.resources() ),
@@ -108,6 +109,10 @@ void World::wayFind(int x, int y, GameObject *obj) {
 void World::updateIntent(GameObjectView *v) {
   if( v->getClass().data.isBackground )
     updatePosIntents.insert(v);
+  }
+
+void World::clrUpdateIntents() {
+  updatePosIntents.clear();
   }
 
 void World::createTestMap() {
@@ -772,54 +777,6 @@ void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
 void World::onRender( double dt ) {
   scene.setCamera( camera );
   terr->updatePolish();
-
-  int rx = 0, lx = terrain().width() *Terrain::quadSize;
-  int ry = 0, ly = terrain().height()*Terrain::quadSize;
-
-  for( size_t i=0; i<4; ++i ){
-    lx = std::min( cameraVBounds.x[i], lx );
-    rx = std::max( cameraVBounds.x[i], rx );
-
-    ly = std::min( cameraVBounds.y[i], ly );
-    ry = std::max( cameraVBounds.y[i], ry );
-    }
-
-  int divSz = 8*Terrain::quadSize;
-
-  lx -= divSz;
-  rx += divSz;
-
-  ly -= divSz;
-  ry += divSz;
-
-  rx = int(rx/divSz+1)*divSz;
-  lx = int(lx/divSz)*divSz;
-
-  ry = int(ry/divSz+1)*divSz;
-  ly = int(ly/divSz)*divSz;
-
-  if( !(rx==lcamBds.rx &&
-        lx==lcamBds.lx &&
-        ry==lcamBds.ry &&
-        ly==lcamBds.ly) ){
-    lcamBds.rx = rx;
-    lcamBds.lx = lx;
-
-    lcamBds.ry = ry;
-    lcamBds.ly = ly;
-
-    for( size_t i=0; i<gameObjects.size(); ++i ){
-      GameObject &obj = *gameObjects[i];
-
-      int x = obj.x(),
-          y = obj.y();
-
-      if( lx<=x && x<=rx &&
-          ly<=y && y<=ry )
-        obj.setVisible_perf(true); else
-        obj.setVisible_perf(false);
-      }
-    }
 
   for( size_t i=0; i<nonBackground.size(); ++i )
     nonBackground[i]->syncView(dt);

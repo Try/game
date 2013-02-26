@@ -119,18 +119,19 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
     hud.setVisible(1);
 
     {
-      Material mat = hud.material();
+      Material mat;
       mat.glow = blue;
-      mat.usage.shadowCast  = false;
+      mat.usage.shadowCast  = true;
+      mat.usage.mainPass    = true;
       mat.usage.transparent = true;
 
-      mat.diffuse = obj.game().resources().texture("util/blue");
+      mat.diffuse = obj.game().resources().texture( proto->view[0].name+"/diff" );
       mat.normal  = obj.game().resources().texture( proto->view[0].name+"/norm" );
 
       hud.setMaterial( mat );
 
       mat.glow = MyGL::Texture2d();
-      mat.usage.shadowCast = true;
+      mat.diffuse = obj.game().resources().texture("util/blue");
       mat.usage.mainPass   = false;
       mat.useAlphaTest = 0;
       hudIntent.setMaterial( mat );

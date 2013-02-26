@@ -5,7 +5,7 @@
 #include "game.h"
 
 UnitView::UnitView( Resource &res )
-  : TextureView(res), res(res) {
+  : TextureView(res), scene(0), res(res) {
   //texture = res.texHolder.create(120, 200);
 
   scene.lights().direction().resize(1);

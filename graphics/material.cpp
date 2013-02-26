@@ -128,6 +128,7 @@ void Material::additive( MyGL::RenderState &rs,
   u.add( m,      "mvpMatrix", MyGL::UniformTable::Vertex   );
   u.add( diffuse, "texture",  MyGL::UniformTable::Fragment );
 
+  rs.setZTestMode( MyGL::RenderState::ZTestMode::LEqual );
   rs.setBlend(1);
   rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::one,
                    MyGL::RenderState::AlphaBlendMode::one );
@@ -211,12 +212,14 @@ void Material::transparentZ(MyGL::RenderState &rs,
   rs.setColorMask(0,0,0,0);
   }
 
-void Material::glowPass( MyGL::RenderState & rs,
+void Material::glowPass(MyGL::RenderState & rs,
                          const MyGL::Matrix4x4 &object,
                          const MyGL::AbstractCamera &c,
-                         MyGL::UniformTable & table ) const {
+                         MyGL::UniformTable & table,
+                        const MyGL::Matrix4x4 &unused) const {
   rs.setZTestMode( MyGL::RenderState::ZTestMode::LEqual );
   rs.setZTest(true);
+  rs.setZWriting(false);
 
   MyGL::Matrix4x4 m = c.projective();
   m.mul( c.view() );
@@ -227,9 +230,17 @@ void Material::glowPass( MyGL::RenderState & rs,
   }
 
 void Material::shadow( MyGL::RenderState &rs,
-                       const MyGL::Matrix4x4 &,
+                       const MyGL::Matrix4x4 &object,
                        const MyGL::AbstractCamera &,
-                       MyGL::UniformTable & table ) const {
+                       MyGL::UniformTable & table,
+                       const MyGL::Matrix4x4 &sh ) const {
+  MyGL::Matrix4x4 m = sh;
+
+  if( !usage.blush )
+    m.mul( object ); else
+    m.mul( Material::animateObjMatrix( object ) );
+
+  table.add( m,     "mvpMatrix", MyGL::UniformTable::Vertex );
   table.add( diffuse, "texture", MyGL::UniformTable::Fragment );
 
   rs.setCullFaceMode( MyGL::RenderState::CullMode::front );
@@ -291,10 +302,16 @@ void Material::water(MyGL::RenderState &rs,
   MyGL::Matrix4x4 sh = shadowMatrix;
   sh.mul( object );
 
+  MyGL::Matrix4x4 invMat = c.projective();
+  invMat.mul( c.view() );
+  invMat.mul( object );
+  invMat.inverse();
+
   table.add( vp,      "mvpMatrix",    MyGL::UniformTable::Fragment );
   table.add( m,       "mvpMatrix",    MyGL::UniformTable::Vertex   );
   table.add( object,  "objectMatrix", MyGL::UniformTable::Vertex   );
   table.add( sh,     "shadowMatrix",  MyGL::UniformTable::Vertex   );
+  table.add( invMat, "invMatrix",     MyGL::UniformTable::Fragment );
 
   table.add( diffuse, "texture",      MyGL::UniformTable::Fragment );
   //table.add( normals, "normalMap",    MyGL::UniformTable::Fragment );
@@ -311,8 +328,15 @@ void Material::omni( MyGL::RenderState &rs,
                      const MyGL::Matrix4x4 &object,
                      const MyGL::AbstractCamera &c,
                      MyGL::UniformTable &u,
-                     const MyGL::Matrix4x4 &sm,
-                     const MyGL::Matrix4x4 &invMat ) const {
+                     const MyGL::Matrix4x4 &shM ) const {
+  MyGL::Matrix4x4 invMat = c.projective();
+  invMat.mul( c.view() );
+  invMat.mul( object );
+  invMat.inverse();
+
+  MyGL::Matrix4x4 sm = shM;
+  sm.mul( object );
+
   MyGL::Matrix4x4 m = c.projective();
   m.mul( c.view() );
   m.mul( object );
@@ -351,10 +375,4 @@ void Material::fogOfWar( MyGL::RenderState &rs,
   table.add( object,  "objectMatrix", MyGL::UniformTable::Vertex   );
 
   rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::Always );
-  rs.setAlphaTestRef ( 0.01 );
-
-  if( !zpass ){
-    //rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_alpha,
-    //                 MyGL::RenderState::AlphaBlendMode::one_minus_src_alpha );
-    }
   }

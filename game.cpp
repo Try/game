@@ -452,6 +452,7 @@ void Game::addEditorObject(const std::string &p,
   if( player(pl).editObj )
     world->deleteObject(player(pl).editObj);
 
+  world->clrUpdateIntents();
   player(pl).editObj = obj;
   }
 
@@ -484,6 +485,7 @@ void Game::nextEditorObject(int pl) {
 
 void Game::delEditorObject(int pl) {
   world->deleteObject( player(pl).editObj );
+  world->clrUpdateIntents();
   player(pl).editObj = 0;
   }
 

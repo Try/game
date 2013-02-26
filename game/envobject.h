@@ -12,6 +12,10 @@
 class EnvObject : public AbstractGraphicObject {
   public:
     EnvObject( Scene & s );
+    EnvObject( const EnvObject& obj );
+    ~EnvObject();
+
+    EnvObject& operator = ( const EnvObject& );
 
     void setModel( const Model & m );
     const Model& model() const;
@@ -28,6 +32,16 @@ class EnvObject : public AbstractGraphicObject {
 
     void render(  MyGL::Render &r ) const;
 
+    float x() const;
+    float y() const;
+    float z() const;
+
+    float sizeX() const;
+    float sizeY() const;
+    float sizeZ() const;
+
+    float radius() const;
+
     struct Form {
       Physics::Sphere sphere;
       Physics::Box    box;
@@ -37,6 +51,10 @@ class EnvObject : public AbstractGraphicObject {
   private:
     Model m_model;
     MyGL::Matrix4x4 mat;
+
+    struct {
+      float x,y,z,  r;
+      } m;
   };
 
 #endif // ENVOBJECT_H

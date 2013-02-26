@@ -232,14 +232,45 @@ void MiniMapView::aceptFog(MyGL::Pixmap &p, const MyGL::Pixmap &f) {
   }
 
 void MiniMapView::drawUnits( MyGL::Pixmap & renderTo, World & wx ) {
+  GraphicsSystem::Frustum f;
+  GraphicsSystem::mkFrustum( wx.camera, f );
+
+
   int tw = wx.terrain().width(),
       th = wx.terrain().height();
+
+  /*
+  {
+
+    MyGL::Pixmap::Pixel pix, pix2;
+    pix.r = 0;
+    pix.g = 0;
+    pix.b = 0;
+    pix.a = 0;
+    pix.a = 255;
+
+    pix2 = pix;
+    pix2.r = 255;
+
+    for( int i=0; i<tw; ++i )
+      for( int r=0; r<th; ++r ){
+        int pi = i*renderTo.width()/wx.terrain().width(),
+            pr = r*renderTo.height()/wx.terrain().height();
+
+        if( GraphicsSystem::isVisible( World::coordCast(i*Terrain::quadSize),
+                                       World::coordCast(r*Terrain::quadSize),
+                                       0,0, f) )
+          renderTo.set(pi, pr, pix); else
+          renderTo.set(pi, pr, pix2);
+        }
+    return;
+    }*/
+
 
   MyGL::Pixmap::Pixel pix;
   pix.r = 0;
   pix.g = 0;
   pix.b = 0;
-  pix.a = 0;
   pix.a = 255;
 
   const std::vector<World::PGameObject> & objects = wx.activeObjects();

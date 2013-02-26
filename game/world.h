@@ -131,6 +131,7 @@ class World {
     void wayFind( int x, int y, GameObject* obj );
 
     void updateIntent( GameObjectView* v );
+    void clrUpdateIntents();
   private:
     Scene scene;
     std::unique_ptr<Terrain> terr;

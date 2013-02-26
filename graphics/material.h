@@ -42,10 +42,10 @@ class Material {
                 const MyGL::Matrix4x4 &shadowMatrix ) const;
 
     void additive( MyGL::RenderState& /*d*/,
-                  const MyGL::Matrix4x4 & /*object*/,
-                  const MyGL::AbstractCamera&,
-                  MyGL::UniformTable &,
-                  const MyGL::Matrix4x4 &shadowMatrix ) const;
+                   const MyGL::Matrix4x4 & /*object*/,
+                   const MyGL::AbstractCamera&,
+                   MyGL::UniformTable &,
+                   const MyGL::Matrix4x4 &shadowMatrix ) const;
 
     void terrainMinor( MyGL::RenderState& /*d*/,
                        const MyGL::Matrix4x4 & /*object*/,
@@ -74,12 +74,14 @@ class Material {
     void glowPass( MyGL::RenderState& /*d*/,
                    const MyGL::Matrix4x4 & /*object*/,
                    const MyGL::AbstractCamera&,
-                   MyGL::UniformTable & ) const;
+                   MyGL::UniformTable &,
+                   const MyGL::Matrix4x4 &unused ) const;
 
     void shadow( MyGL::RenderState& /*d*/,
                  const MyGL::Matrix4x4 & /*object*/,
                  const MyGL::AbstractCamera&,
-                 MyGL::UniformTable & ) const;
+                 MyGL::UniformTable &,
+                 const MyGL::Matrix4x4 &sh ) const;
 
     void displace( MyGL::RenderState& /*d*/,
                    const MyGL::Matrix4x4 & /*object*/,
@@ -97,7 +99,7 @@ class Material {
                const MyGL::Matrix4x4 & /*object*/,
                const MyGL::AbstractCamera&,
                MyGL::UniformTable &,
-               const MyGL::Matrix4x4 &shadowMatrix , const MyGL::Matrix4x4 &invMat) const;
+               const MyGL::Matrix4x4 &shM ) const;
 
     void fogOfWar(MyGL::RenderState& /*d*/,
                    const MyGL::Matrix4x4 & /*object*/,

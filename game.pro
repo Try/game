@@ -144,7 +144,8 @@ HEADERS += \
     game/missions/deatmachscenarion.h \
     game/particlesystemdeclaration.h \
     graphics/material.h \
-    graphics/scene.h
+    graphics/scene.h \
+    graphics/octotree.h
 
 SOURCES += \
     main.cpp \

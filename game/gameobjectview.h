@@ -118,7 +118,7 @@ class GameObjectView {
     struct M{
       int x, y, z;
       double selectionSize[3], radius;
-      double modelSize[3], rndSize[3];
+      double modelSize[3], rndSize[3], initalModelHeight;
 
       int intentDirX, intentDirY;
       } m;
