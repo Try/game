@@ -1,7 +1,7 @@
 #ifndef MODEL_MX_H
 #define MODEL_MX_H
 
-#include <MyGL/Model>
+#include <Tempest/Model>
 
 struct MVertex {
   float x,y,z;
@@ -11,15 +11,15 @@ struct MVertex {
 
   float bnormal[4];
 
-  static MyGL::VertexDeclaration::Declarator decl();
+  static Tempest::VertexDeclaration::Declarator decl();
   };
 
-class Model : public MyGL::Model<MVertex> {
+class Model : public Tempest::Model<MVertex> {
   public:
     Model();
 
-    void loadMX( MyGL::VertexBufferHolder &vboHolder,
-                 MyGL::IndexBufferHolder &iboHolder,
+    void loadMX( Tempest::VertexBufferHolder &vboHolder,
+                 Tempest::IndexBufferHolder &iboHolder,
                  const std::string & f );
 
     std::vector< Model > groups;
@@ -44,7 +44,7 @@ class Model : public MyGL::Model<MVertex> {
                                  MVertex & b,
                                  MVertex & c );
 
-    void setModelData(const MyGL::Model<MVertex>& md);
+    void setModelData(const Tempest::Model<MVertex>& md);
 
     float cen[3], r, pbounds[3][2];
   };

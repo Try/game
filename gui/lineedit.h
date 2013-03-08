@@ -1,23 +1,23 @@
 #ifndef LINEEDIT_H
 #define LINEEDIT_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include <string>
 
 #include "font.h"
 
 class Resource;
 
-class LineEdit : public MyWidget::Widget {
+class LineEdit : public Tempest::Widget {
   public:
     LineEdit( Resource & res );
 
     void setText( const std::wstring& t );
     const std::wstring& text() const;
 
-    MyWidget::signal<const std::wstring&> onTextChanged;
-    MyWidget::signal<const std::wstring&> onTextEdited;
-    MyWidget::signal<const std::wstring&> onEditingFinished;
+    Tempest::signal<const std::wstring&> onTextChanged;
+    Tempest::signal<const std::wstring&> onTextEdited;
+    Tempest::signal<const std::wstring&> onEditingFinished;
 
     size_t selectionBegin();
     size_t selectionEnd();
@@ -26,13 +26,13 @@ class LineEdit : public MyWidget::Widget {
     void setEditable( bool e );
     bool isEditable() const;
   protected:
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseUpEvent(MyWidget::MouseEvent &e);
-    void mouseDragEvent(MyWidget::MouseEvent &e);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseUpEvent(Tempest::MouseEvent &e);
+    void mouseDragEvent(Tempest::MouseEvent &e);
 
-    void paintEvent(MyWidget::PaintEvent &p);
+    void paintEvent(Tempest::PaintEvent &p);
 
-    void keyDownEvent(MyWidget::KeyEvent &e);
+    void keyDownEvent(Tempest::KeyEvent &e);
 
   private:
     std::wstring txt;
@@ -41,11 +41,11 @@ class LineEdit : public MyWidget::Widget {
     bool editable;
 
     size_t sedit, eedit;
-    MyWidget::Point sp, ep;
+    Tempest::Point sp, ep;
     int scrool;
 
     Font font;
-    MyWidget::Bind::UserTexture frame;
+    Tempest::Bind::UserTexture frame;
 
     bool isEdited;
     void updateSel();

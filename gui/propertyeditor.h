@@ -3,7 +3,7 @@
 
 #include "panel.h"
 
-class PropertyEditor : public MyWidget::Widget {
+class PropertyEditor : public Tempest::Widget {
   public:
     PropertyEditor( Resource & res );
 
@@ -19,16 +19,16 @@ class PropertyEditor : public MyWidget::Widget {
       CloseEditor
       };
 
-    MyWidget::signal< const Property&, Widget*&, EditAction > onEditor;
+    Tempest::signal< const Property&, Widget*&, EditAction > onEditor;
   protected:
-    void paintEvent(MyWidget::PaintEvent &p);
+    void paintEvent(Tempest::PaintEvent &p);
 
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseUpEvent(MyWidget::MouseEvent &e);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseUpEvent(Tempest::MouseEvent &e);
 
   private:
     Resource & res;
-    MyWidget::Bind::UserTexture frame, back;
+    Tempest::Bind::UserTexture frame, back;
 
     std::vector<Property> prop;
 

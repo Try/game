@@ -1,15 +1,15 @@
 #include "propertyeditor.h"
 
-#include <MyWidget/Painter>
+#include <Tempest/Painter>
 #include "resource.h"
 
 #include "button.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 
 #include "font.h"
 
-using namespace MyWidget;
+using namespace Tempest;
 
 PropertyEditor::PropertyEditor( Resource & res ):Widget(), res(res), editor(0){
   setSizePolicy( Expanding, FixedMin );
@@ -22,7 +22,7 @@ PropertyEditor::PropertyEditor( Resource & res ):Widget(), res(res), editor(0){
   updateSize();
   }
 
-void PropertyEditor::paintEvent(MyWidget::PaintEvent &pe) {
+void PropertyEditor::paintEvent(Tempest::PaintEvent &pe) {
   Painter p(pe);
 
   Font f;

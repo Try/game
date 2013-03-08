@@ -1,13 +1,13 @@
 #ifndef UNITINFO_H
 #define UNITINFO_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include "panel.h"
 
 class Resource;
 class GameObject;
 
-class UnitInfo : public MyWidget::Widget {
+class UnitInfo : public Tempest::Widget {
   public:
     UnitInfo( GameObject& obj, Resource &res);
     UnitInfo( Resource &res);

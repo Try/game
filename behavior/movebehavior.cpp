@@ -221,12 +221,12 @@ void MoveBehavior::calcWayAndMove( int tx, int ty,
   obj.world().wayFind( tx, ty, &obj );
   }
 
-void MoveBehavior::mouseDown(MyWidget::MouseEvent &e) {
+void MoveBehavior::mouseDown(Tempest::MouseEvent &e) {
   e.accept();
   }
 
-void MoveBehavior::mouseUp( MyWidget::MouseEvent &e ) {
-  if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+void MoveBehavior::mouseUp( Tempest::MouseEvent &e ) {
+  if( e.button==Tempest::MouseEvent::ButtonLeft ){
     patrulWay.clear();
     if( inputMode==inMove ){
       if( obj.world().mouseObj()==0 ){

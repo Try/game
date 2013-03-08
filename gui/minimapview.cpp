@@ -23,8 +23,8 @@ void MiniMapView::render( World &wx ) {
   if( clock() >= rtime2+mk*CLOCKS_PER_SEC*2 ){
     rtime2 = clock();
 
-    MyGL::Pixmap terr = MyGL::Pixmap(w(), h(), true);
-    MyGL::Pixmap::Pixel pix;
+    Tempest::Pixmap terr = Tempest::Pixmap(w(), h(), true);
+    Tempest::Pixmap::Pixel pix;
     pix.r = 0;
     pix.g = 0;
     pix.b = 0;
@@ -57,7 +57,7 @@ void MiniMapView::render( World &wx ) {
             h += std::max(0, std::min(int(l*20), 20) );
             }
 
-          MyGL::Color cl = wx.terrain().colorAt(terrX, terrY);
+          Tempest::Color cl = wx.terrain().colorAt(terrX, terrY);
           pix.r = cl.r()*h;
           pix.g = cl.g()*h;
           pix.b = cl.b()*h;
@@ -73,13 +73,13 @@ void MiniMapView::render( World &wx ) {
 
   if( clock() >= rtime+mk*CLOCKS_PER_SEC/2 ){
     rtime = clock();
-    MyGL::Pixmap::Pixel pix;
+    Tempest::Pixmap::Pixel pix;
     pix.r = 0;
     pix.g = 0;
     pix.b = 0;
     pix.a = 0;
 
-    MyGL::Pixmap renderTo = MyGL::Pixmap(w(), h(), true);
+    Tempest::Pixmap renderTo = Tempest::Pixmap(w(), h(), true);
     for( int i=0; i<terr.width(); ++i )
       for( int r=0; r<terr.height(); ++r )
         renderTo.set(i,r, pix);
@@ -88,14 +88,14 @@ void MiniMapView::render( World &wx ) {
     //aceptFog(renderTo, wx.game.player().fog() );
     units = res.ltexHolder.create(renderTo, false);
 
-    MyGL::Pixmap fogTex = MyGL::Pixmap(w(), h(), true);
+    Tempest::Pixmap fogTex = Tempest::Pixmap(w(), h(), true);
     aceptFog(fogTex, wx.game.player().fog() );
 
     fog   = res.ltexHolder.create(fogTex, false);
     }
 
-  static MyGL::Pixmap hudPx = MyGL::Pixmap(w(), h(), true);
-  MyGL::Pixmap::Pixel px = {};
+  static Tempest::Pixmap hudPx = Tempest::Pixmap(w(), h(), true);
+  Tempest::Pixmap::Pixel px = {};
 
   for( int i=0; i<hudPx.width(); ++i )
     for( int r=0; r<hudPx.height(); ++r ){
@@ -117,16 +117,16 @@ void MiniMapView::render( World &wx ) {
   lineTo( hudPx, b.x[3], b.y[3], b.x[2], b.y[2] );
   hud   = res.ltexHolder.create(hudPx, false);
 
-  //setTexture( MyGL::Texture2d() );
+  //setTexture( Tempest::Texture2d() );
   //setTexture( res.ltexHolder.create( renderTo, 0) );
 
   //update();
   }
 
-void MiniMapView::lineTo( MyGL::Pixmap &renderTo,
+void MiniMapView::lineTo( Tempest::Pixmap &renderTo,
                           int x0, int y0,
                           int x1, int y1) {
-  MyGL::Pixmap::Pixel pix;
+  Tempest::Pixmap::Pixel pix;
   pix.r = 255;
   pix.g = 255;
   pix.b = 255;
@@ -185,25 +185,25 @@ void MiniMapView::lineTo( MyGL::Pixmap &renderTo,
     }
   }
 
-void MiniMapView::mouseDownEvent(MyWidget::MouseEvent &e) {
+void MiniMapView::mouseDownEvent(Tempest::MouseEvent &e) {
   mouseEvent( e.x/float(w()), e.y/float(h()), e.button, MiniMapView::Down );
   pressed = true;
   }
 
-void MiniMapView::mouseDragEvent(MyWidget::MouseEvent &e) {
+void MiniMapView::mouseDragEvent(Tempest::MouseEvent &e) {
   mouseEvent( e.x/float(w()), e.y/float(h()),
-              MyWidget::MouseEvent::ButtonLeft,
+              Tempest::MouseEvent::ButtonLeft,
               MiniMapView::Drag );
   }
 
-void MiniMapView::mouseUpEvent(MyWidget::MouseEvent &e) {
+void MiniMapView::mouseUpEvent(Tempest::MouseEvent &e) {
   mouseEvent( e.x/float(w()), e.y/float(h()),
               e.button,
               MiniMapView::Up );
   pressed = false;
   }
 
-void MiniMapView::aceptFog(MyGL::Pixmap &p, const MyGL::Pixmap &f) {
+void MiniMapView::aceptFog(Tempest::Pixmap &p, const Tempest::Pixmap &f) {
   for( int i=0; i<p.width(); ++i )
     for( int r=0; r<p.height(); ++r ){
       int lx = i*f.width()/p.width(),
@@ -215,11 +215,11 @@ void MiniMapView::aceptFog(MyGL::Pixmap &p, const MyGL::Pixmap &f) {
         int v = 0;
         for( int ix = lx; ix<rx; ++ix )
           for( int iy = ly; iy<ry; ++iy ){
-            //const MyGL::Pixmap::Pixel pix = f.at( ix, iy);
+            //const Tempest::Pixmap::Pixel pix = f.at( ix, iy);
             v += f.at( ix, iy).r;
             }
 
-        MyGL::Pixmap::Pixel pix = {0,0,0,255};//p.at(i,r);
+        Tempest::Pixmap::Pixel pix = {0,0,0,255};//p.at(i,r);
         int dv = (rx-lx)*(ry-ly)*255;
         //pix.r = (v*pix.r)/dv;
         //pix.g = (v*pix.g)/dv;
@@ -231,7 +231,7 @@ void MiniMapView::aceptFog(MyGL::Pixmap &p, const MyGL::Pixmap &f) {
       }
   }
 
-void MiniMapView::drawUnits( MyGL::Pixmap & renderTo, World & wx ) {
+void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
   GraphicsSystem::Frustum f;
   GraphicsSystem::mkFrustum( wx.camera, f );
 
@@ -242,7 +242,7 @@ void MiniMapView::drawUnits( MyGL::Pixmap & renderTo, World & wx ) {
   /*
   {
 
-    MyGL::Pixmap::Pixel pix, pix2;
+    Tempest::Pixmap::Pixel pix, pix2;
     pix.r = 0;
     pix.g = 0;
     pix.b = 0;
@@ -267,7 +267,7 @@ void MiniMapView::drawUnits( MyGL::Pixmap & renderTo, World & wx ) {
     }*/
 
 
-  MyGL::Pixmap::Pixel pix;
+  Tempest::Pixmap::Pixel pix;
   pix.r = 0;
   pix.g = 0;
   pix.b = 0;
@@ -341,13 +341,13 @@ void MiniMapView::drawUnits( MyGL::Pixmap & renderTo, World & wx ) {
         ;//renderTo.set( i, r, terr.at(i,r) );
   }
 
-void MiniMapView::paintEvent(MyWidget::PaintEvent &e) {
-  MyWidget::Painter p(e);
-  MyWidget::Bind::UserTexture u;
+void MiniMapView::paintEvent(Tempest::PaintEvent &e) {
+  Tempest::Painter p(e);
+  Tempest::Bind::UserTexture u;
 
   u.data.nonPool = &terr;
 
-  p.setBlendMode( MyWidget::alphaBlend );
+  p.setBlendMode( Tempest::alphaBlend );
   p.setTexture( u );
   p.drawRect( 0, 0, w(), h(),
               0, 0, terr.width(), terr.height() );

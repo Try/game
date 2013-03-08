@@ -1,7 +1,7 @@
 #ifndef INGAMECONTROLS_H
 #define INGAMECONTROLS_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include "graphics/paintergui.h"
 #include "inputhook.h"
 
@@ -23,11 +23,11 @@ class World;
 
 class EditTerrainPanel;
 
-namespace MyGL{
+namespace Tempest{
   class Scene;
   }
 
-class InGameControls : public MyWidget::Widget {
+class InGameControls : public Tempest::Widget {
   public:
     InGameControls( Resource & res,
                     BehaviorMSGQueue & q,
@@ -35,22 +35,22 @@ class InGameControls : public MyWidget::Widget {
                     Game &game );
     ~InGameControls();
 
-    MyWidget::signal< MyWidget::Painter&, int , int> paintObjectsHud;
-    MyWidget::signal<const ProtoObject&, int> addObject;
-    MyWidget::signal<const Terrain::EditMode&> toogleEditLandMode;
+    Tempest::signal< Tempest::Painter&, int , int> paintObjectsHud;
+    Tempest::signal<const ProtoObject&, int> addObject;
+    Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
 
-    MyWidget::signal<> save, load;
-    MyWidget::signal<> updateView;
-    MyWidget::signal<GameObject&>  setCameraPos;
-    MyWidget::signal< float, float,
-                      MyWidget::MouseEvent::MouseButton,
+    Tempest::signal<> save, load;
+    Tempest::signal<> updateView;
+    Tempest::signal<GameObject&>  setCameraPos;
+    Tempest::signal< float, float,
+                      Tempest::MouseEvent::MouseButton,
                       MiniMapView::Mode > minimapEvent;
 
-    MyWidget::signal< const Scene &,
+    Tempest::signal< const Scene &,
                       ParticleSystemEngine &,
-                      MyGL::Texture2d & > renderScene;
+                      Tempest::Texture2d & > renderScene;
 
-    //MyWidget::Rect selection;
+    //Tempest::Rect selection;
 
     void updateSelectUnits( const std::vector<GameObject*> &u );
     void onUnitDied(GameObject &obj);
@@ -62,18 +62,18 @@ class InGameControls : public MyWidget::Widget {
     void updateValues();
     void renderMinimap( World& w );
 
-    bool minimapMouseEvent(float x, float y, MyWidget::Event::MouseButton btn , MiniMapView::Mode m);
+    bool minimapMouseEvent(float x, float y, Tempest::Event::MouseButton btn , MiniMapView::Mode m);
   protected:
-    void paintEvent(MyWidget::PaintEvent &p);
+    void paintEvent(Tempest::PaintEvent &p);
 
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseUpEvent(MyWidget::MouseEvent &e);
-    void mouseMoveEvent(MyWidget::MouseEvent &e);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseUpEvent(Tempest::MouseEvent &e);
+    void mouseMoveEvent(Tempest::MouseEvent &e);
 
-    void mouseWheelEvent(MyWidget::MouseEvent &e);
+    void mouseWheelEvent(Tempest::MouseEvent &e);
 
-    void keyDownEvent(MyWidget::KeyEvent &e);
-    void keyUpEvent(MyWidget::KeyEvent &e);
+    void keyDownEvent(Tempest::KeyEvent &e);
+    void keyUpEvent(Tempest::KeyEvent &e);
 
   private:
     Widget* createConsole( BehaviorMSGQueue & q );
@@ -86,14 +86,14 @@ class InGameControls : public MyWidget::Widget {
 
     void toogleEditPanel();
 
-    MyWidget::Shortcut showEditPanel;
+    Tempest::Shortcut showEditPanel;
     Widget        *editPanel;
     CommandsPanel *commands;
     UnitList      *units;
     Button *gold, *lim;
     MiniMapView * minimap;
 
-    //MyWidget::Bind::UserTexture frame;
+    //Tempest::Bind::UserTexture frame;
     int currPl;
 
     void setCurrPl( size_t i );

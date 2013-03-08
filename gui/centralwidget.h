@@ -1,16 +1,16 @@
 #ifndef CENTRALWIDGET_H
 #define CENTRALWIDGET_H
 
-#include <MyWidget/Widget>
-#include <MyWidget/Layout>
+#include <Tempest/Widget>
+#include <Tempest/Layout>
 
-class CentralWidget : public MyWidget::Widget {
+class CentralWidget : public Tempest::Widget {
   public:
     CentralWidget();
 
-    MyWidget::Widget& top();
+    Tempest::Widget& top();
   private:
-    struct StackLayout : public MyWidget::Layout {
+    struct StackLayout : public Tempest::Layout {
       void applyLayout();
       };
   };

@@ -13,7 +13,7 @@
 #include "maingui.h"
 #include "lang/lang.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include <sstream>
 
 #include "game.h"
@@ -23,37 +23,37 @@ struct UnitInfo::Btn : public Button{
     const int sz = 40;
     setMinimumSize(sz, sz);
     setMaximumSize(sz, sz);
-    setSizePolicy( MyWidget::FixedMax );
+    setSizePolicy( Tempest::FixedMax );
     }
 
   };
 
-struct UnitInfo::PanelBase : public MyWidget::Widget {
+struct UnitInfo::PanelBase : public Tempest::Widget {
   PanelBase( Resource & res ): res(res) {
     frame.data = res.pixmap("gui/hintFrame");
     layout().setMargin(15);
     }
 
-  void paintEvent(MyWidget::PaintEvent &e){
-    MyWidget::Painter p(e);
-    p.setBlendMode( MyWidget::alphaBlend );
+  void paintEvent(Tempest::PaintEvent &e){
+    Tempest::Painter p(e);
+    p.setBlendMode( Tempest::alphaBlend );
     p.setTexture( frame );
 
-    MainGui::drawFrame(p, frame, MyWidget::Point(), size() );
+    MainGui::drawFrame(p, frame, Tempest::Point(), size() );
 
     paintNested(e);
     }
 
   Resource  & res;
-  MyWidget::Bind::UserTexture frame;
+  Tempest::Bind::UserTexture frame;
   };
 
 struct UnitInfo::Stats : public PanelBase {
   Stats( Resource & res, GameObject& obj ):PanelBase(res), res(res), obj(obj){
-    setLayout( MyWidget::Vertical );
+    setLayout( Tempest::Vertical );
 
     Widget *w = new Widget();
-    w->setLayout(MyWidget::Horizontal);
+    w->setLayout(Tempest::Horizontal);
     LineEdit *le = new LineEdit(res);
     std::string name = "$(" +obj.getClass().name+")";
     le->setText( Lang::tr( name ) );
@@ -67,7 +67,7 @@ struct UnitInfo::Stats : public PanelBase {
     w = new Widget();
     layout().add(w);
 
-    w->setLayout( MyWidget::Horizontal );
+    w->setLayout( Tempest::Horizontal );
 
     const char* icon[2] = {
       "gui/icon/atack",
@@ -88,7 +88,7 @@ struct UnitInfo::Stats : public PanelBase {
       }
     }
 
-  void customEvent( MyWidget::CustomEvent & ){
+  void customEvent( Tempest::CustomEvent & ){
     }
 
   Resource  & res;
@@ -101,16 +101,16 @@ struct UnitInfo::Production : public PanelBase {
   Production( Resource & res, GameObject& obj ):PanelBase(res), res(res), obj(obj){
     le = new ProgressBar(res);
 
-    setLayout( MyWidget::Vertical );
+    setLayout( Tempest::Vertical );
 
     top = new Widget();
-    top->setLayout( MyWidget::Horizontal );
+    top->setLayout( Tempest::Horizontal );
     btns.push_back( std::unique_ptr<Btn>(new Btn(res)) );
     top->layout().add( btns[0].get() );
     top->layout().add( le );
 
     bottom = new Widget();
-    bottom->setLayout( MyWidget::Horizontal );
+    bottom->setLayout( Tempest::Horizontal );
     for( size_t i=0; i<5; ++i ){
       btns.push_back( std::unique_ptr<Btn>(new Btn(res)) );
       bottom->layout().add( btns.back().get() );
@@ -123,7 +123,7 @@ struct UnitInfo::Production : public PanelBase {
     layout().add( new Widget() );
     }
 
-  void customEvent( MyWidget::CustomEvent & ){
+  void customEvent( Tempest::CustomEvent & ){
     if( RecruterBehavior *b = obj.behavior.find<RecruterBehavior>() ){
       const std::vector<std::string>& q = b->orders();
 
@@ -167,7 +167,7 @@ UnitInfo::UnitInfo(GameObject &obj, Resource & res )
 
 UnitInfo::UnitInfo(Resource &res):res(res) {
   obj = 0;
-  setLayout( MyWidget::Vertical );
+  setLayout( Tempest::Vertical );
   }
 
 void UnitInfo::setup(GameObject *nobj) {

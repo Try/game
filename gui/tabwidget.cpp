@@ -3,12 +3,12 @@
 #include "panel.h"
 #include "button.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 
 struct TabWidget::MPanel: public Panel{
   MPanel( Resource& res ):Panel(res){}
 
-  void mouseDownEvent(MyWidget::MouseEvent &e){
+  void mouseDownEvent(Tempest::MouseEvent &e){
     e.ignore();
     }
   };
@@ -18,7 +18,7 @@ struct TabWidget::MBtn: public Button {
     clicked.bind(*this, &MBtn::exec );
     }
 
-  MyWidget::signal<int> setPage;
+  Tempest::signal<int> setPage;
   void exec(){
     setPage(tab);
     }
@@ -27,13 +27,13 @@ struct TabWidget::MBtn: public Button {
   };
 
 TabWidget::TabWidget( Resource& res ):Panel(res), res(res) {
-  setLayout( MyWidget::Vertical );
+  setLayout( Tempest::Vertical );
   layout().setMargin(0);
 
   Widget* w = new Widget();
   wbtns = w;
   w->setMaximumSize( w->sizePolicy().maxSize.w, 27 );
-  w->setLayout( MyWidget::Horizontal );
+  w->setLayout( Tempest::Horizontal );
   w->layout().setMargin(0);
 
   /*
@@ -57,7 +57,7 @@ TabWidget::~TabWidget() {
     delete tabs[i];
   }
 
-void TabWidget::addTab(MyWidget::Widget *w) {
+void TabWidget::addTab(Tempest::Widget *w) {
   tabs.push_back( w );
 
   if( tabs.size()==1 )

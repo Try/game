@@ -1,7 +1,7 @@
 #include "formbuilder.h"
 
 #include <fstream>
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include <tinyxml.h>
 
 #include "button.h"
@@ -13,7 +13,7 @@
 
 #include "nativesavedialog.h"
 
-using namespace MyWidget;
+using namespace Tempest;
 
 class FormBuilder::FrmWidget : public Widget {
   public:
@@ -21,26 +21,26 @@ class FormBuilder::FrmWidget : public Widget {
       this->frame.data = res.pixmap("gui/colors");
       }
 
-    void paintEvent( MyWidget::PaintEvent &e ){
+    void paintEvent( Tempest::PaintEvent &e ){
       Painter p(e);
 
-      MyWidget::Rect r   = MyWidget::Rect(0,0, w(),h()),
-                     tex = MyWidget::Rect(2,0, 1,1);
+      Tempest::Rect r   = Tempest::Rect(0,0, w(),h()),
+                     tex = Tempest::Rect(2,0, 1,1);
 
       p.setTexture( frame );
-      p.setBlendMode( MyWidget::addBlend );
+      p.setBlendMode( Tempest::addBlend );
       //p.drawRect( r, tex );
 
-      r = MyWidget::Rect(r.x, r.y, 1, r.h);
+      r = Tempest::Rect(r.x, r.y, 1, r.h);
       p.drawRect( r, tex );
 
-      r = MyWidget::Rect(r.x+w()-1, r.y, 1, r.h );
+      r = Tempest::Rect(r.x+w()-1, r.y, 1, r.h );
       p.drawRect( r, tex );
 
-      r = MyWidget::Rect(r.x-this->w()+2, r.y, this->w()-2, 1);
+      r = Tempest::Rect(r.x-this->w()+2, r.y, this->w()-2, 1);
       p.drawRect( r, tex );
 
-      r = MyWidget::Rect(r.x, r.y+this->h()-1, this->w()-2, 1);
+      r = Tempest::Rect(r.x, r.y+this->h()-1, this->w()-2, 1);
       p.drawRect( r, tex );
 
       p.unsetTexture();
@@ -48,7 +48,7 @@ class FormBuilder::FrmWidget : public Widget {
       paintNested(e);
       }
 
-  MyWidget::Bind::UserTexture frame;
+  Tempest::Bind::UserTexture frame;
   };
 
 
@@ -111,15 +111,15 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
     int editW, editH;
 
 
-    void keyDownEvent(MyWidget::KeyEvent &e){
+    void keyDownEvent(Tempest::KeyEvent &e){
       Base::keyDownEvent(e);
 
       if( dynamic_cast<Central*>(this)==0 &&
-          e.key == MyWidget::KeyEvent::K_Delete )
+          e.key == Tempest::KeyEvent::K_Delete )
         this->deleteLater();
       }
 
-    void mouseDownEvent( MyWidget::MouseEvent &e ){
+    void mouseDownEvent( Tempest::MouseEvent &e ){
       if( owner.bintent==FormBuilder::NoIntent ){
         Layout* l = &(((Widget*)this)->owner()->layout());
 
@@ -148,7 +148,7 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
       e.accept();
       }
 
-    void mouseDragEvent( MyWidget::MouseEvent &e ){
+    void mouseDragEvent( Tempest::MouseEvent &e ){
       Layout* l = &(((Widget*)this)->owner()->layout());
 
       if( 0==dynamic_cast<LinearLayout*>(l) ){
@@ -174,11 +174,11 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
         }
       }
 
-    void mouseUpEvent( MyWidget::MouseEvent &e ){
+    void mouseUpEvent( Tempest::MouseEvent &e ){
       if( owner.bintent!=FormBuilder::NoIntent ){
         Widget* w = owner.createWidget();
         w->setPosition( e.pos() );
-        MyWidget::LinearLayout* l = (MyWidget::LinearLayout*)&layout();
+        Tempest::LinearLayout* l = (Tempest::LinearLayout*)&layout();
 
         w->setLayout( l->orientation()==Vertical ? Horizontal:Vertical );
         layout().add( w );
@@ -193,33 +193,33 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
       this->update();
       }
 
-    void paintEvent( MyWidget::PaintEvent &e ){
+    void paintEvent( Tempest::PaintEvent &e ){
       Base::paintEvent(e);
       int w = this->w(), h = this->h();
 
-      MyWidget::Painter p(e);
+      Tempest::Painter p(e);
 
       if( this==owner.selected ){
-        MyWidget::Rect r   = MyWidget::Rect(0,0, w,h),
-                       tex = MyWidget::Rect(2,0, 1,1);
+        Tempest::Rect r   = Tempest::Rect(0,0, w,h),
+                       tex = Tempest::Rect(2,0, 1,1);
 
         p.setTexture( frame );
-        p.setBlendMode( MyWidget::addBlend );
+        p.setBlendMode( Tempest::addBlend );
         //p.drawRect( r, tex );
 
-        r = MyWidget::Rect(r.x, r.y, 1, r.h);
+        r = Tempest::Rect(r.x, r.y, 1, r.h);
         p.drawRect( r, tex );
 
-        r = MyWidget::Rect(r.x+w-1, r.y, 1, r.h);
+        r = Tempest::Rect(r.x+w-1, r.y, 1, r.h);
         p.drawRect( r, tex );
 
-        r = MyWidget::Rect(r.x-w+2, r.y, w-2, 1);
+        r = Tempest::Rect(r.x-w+2, r.y, w-2, 1);
         p.drawRect( r, tex );
 
-        r = MyWidget::Rect(r.x, r.y+h-1, w-2, 1);
+        r = Tempest::Rect(r.x, r.y+h-1, w-2, 1);
         p.drawRect( r, tex );
 
-        p.setBlendMode( MyWidget::noBlend );
+        p.setBlendMode( Tempest::noBlend );
         Rect s = p.scissor();
         p.setScissor(-5, -5, w+10, h+10 );
 
@@ -256,7 +256,7 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
       //w->layout().setMargin(m);
       }
 
-    MyWidget::Bind::UserTexture frame;
+    Tempest::Bind::UserTexture frame;
   };
 
 class FormBuilder::Central:public FormWidget<Panel>{
@@ -305,7 +305,7 @@ FormBuilder:: FormBuilder(Resource & res , Widget *ow)
 
 
   w = new Widget();
-  w->setSizePolicy( MyWidget::Expanding );
+  w->setSizePolicy( Tempest::Expanding );
   layout().add( w );
 
   w->setLayout( Horizontal );
@@ -570,7 +570,7 @@ void FormBuilder::save() {
   std::fstream foutCpp( (fname+".cpp").data(), std::ios::out );
   std::fstream xml( (fname+".xml").data(), std::ios::out );
 
-  foutH << "#include <MyWidget/Widget>" << std::endl << std::endl
+  foutH << "#include <Tempest/Widget>" << std::endl << std::endl
         << "class Resource;" << std::endl
         << std::endl
         << "class Button;" << std::endl
@@ -581,17 +581,17 @@ void FormBuilder::save() {
         << "namespace UI{ " << std::endl << std::endl
         << "class " << "Out" << " { "   << std::endl
         << "  public: "   << std::endl
-        << "    void setupUi( MyWidget::Widget*, Resource & res );" << std::endl;
+        << "    void setupUi( Tempest::Widget*, Resource & res );" << std::endl;
 
   foutCpp << "#include \"" << fname << ".h\" " << std::endl
           << std::endl
-          << "#include <MyWidget/Layout>" << std::endl
+          << "#include <Tempest/Layout>" << std::endl
           << "#include \"gui/button.h\"" << std::endl
           << "#include \"gui/panel.h\"" << std::endl
           << "#include \"gui/scroolwidget.h\"" << std::endl
           << "#include \"gui/lineedit.h\"" << std::endl
           << std::endl
-          << "using namespace MyWidget;" << std::endl
+          << "using namespace Tempest;" << std::endl
           << std::endl
           << "void UI::Out::setupUi( Widget* w, Resource & res ) {" << std::endl;
 
@@ -619,8 +619,8 @@ void FormBuilder::save( Widget &w,
                         std::ostream &xml,
                         bool root) {
   if( root ){
-    //foutCpp << "{ MyWidget::Widget* owner = w;" << std::endl;
-    foutCpp  << tab << "w = new MyWidget::Widget();" << std::endl;
+    //foutCpp << "{ Tempest::Widget* owner = w;" << std::endl;
+    foutCpp  << tab << "w = new Tempest::Widget();" << std::endl;
 
     xml << tab << "<Widget>" << std::endl;
 
@@ -629,7 +629,7 @@ void FormBuilder::save( Widget &w,
       xml << tab << "<objName string = \"" << s->name
           << "\"/>" << std::endl;
 
-      foutH << "    MyWidget::Widget * " << s->name <<";" << std::endl;
+      foutH << "    Tempest::Widget * " << s->name <<";" << std::endl;
       foutCpp << tab << s->name <<" = w;" << std::endl;
       }
     }
@@ -695,7 +695,7 @@ void FormBuilder::save( Widget &w,
   Layout* lay = &w.layout();
   if( ScroolWidget *sw = dynamic_cast<ScroolWidget*>(&w) ){
     lay = &sw->centralWidget().layout();
-    foutCpp << tab << "MyWidget::Widget *pw = w;" << std::endl;
+    foutCpp << tab << "Tempest::Widget *pw = w;" << std::endl;
     foutCpp << tab << "w = &((ScroolWidget*)w)->centralWidget();" << std::endl;
     }
 

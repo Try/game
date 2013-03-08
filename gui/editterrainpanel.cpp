@@ -1,6 +1,6 @@
 #include "editterrainpanel.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "button.h"
 #include "scroolbar.h"
 
@@ -17,13 +17,13 @@ struct EditTerrainPanel::TileBtn: public Button{
     clickedEx( tile );
     }
 
-  MyWidget::signal< const std::string& > clickedEx;
+  Tempest::signal< const std::string& > clickedEx;
   std::string tile;
   };
 
 EditTerrainPanel::EditTerrainPanel(Resource &res , PrototypesLoader &prototypes) {
   layout().setMargin( 6 );
-  setLayout( MyWidget::Vertical );
+  setLayout( Tempest::Vertical );
 
   Button *btn = new Button(res);
   btn->clicked.bind( *this, &EditTerrainPanel::setupEHeight );
@@ -41,19 +41,19 @@ EditTerrainPanel::EditTerrainPanel(Resource &res , PrototypesLoader &prototypes)
   layout().add( btn );
 
   ScroolBar *sb = new ScroolBar(res);
-  sb->setOrientation( MyWidget::Horizontal );
+  sb->setOrientation( Tempest::Horizontal );
   sb->valueChanged.bind( *this, &EditTerrainPanel::setR );
   sb->setRange(0, 20);
   layout().add( sb );
 
   Widget* w = new Widget();
-  w->setLayout( MyWidget::Horizontal );
+  w->setLayout( Tempest::Horizontal );
 
   btn = new Button(res);
   btn->setText("Main");
   btn->clicked.bind(*this, &EditTerrainPanel::setTexID<0> );
-  MyWidget::SizePolicy policy = btn->sizePolicy();
-  policy.typeH = MyWidget::Preferred;
+  Tempest::SizePolicy policy = btn->sizePolicy();
+  policy.typeH = Tempest::Preferred;
   btn->setSizePolicy( policy );
   w->layout().add( btn );
 
@@ -65,7 +65,7 @@ EditTerrainPanel::EditTerrainPanel(Resource &res , PrototypesLoader &prototypes)
 
   policy = w->sizePolicy();
   policy.minSize.h = 30;
-  policy.typeV = MyWidget::FixedMin;
+  policy.typeV = Tempest::FixedMin;
   //w->setSizePolicy( btn->sizePolicy() );
   w->setSizePolicy( policy );
   w->layout().setMargin(0);

@@ -5,13 +5,14 @@
 #include <vector>
 #include <unordered_map>
 
-#include <MyGL/Matrix4x4>
+#include <Tempest/Matrix4x4>
 
 template< class T >
 class OcTree {
   public:
     typedef std::unique_ptr<OcTree> POcTree;
-    OcTree( int linearSize = leafLinearSize ):r(linearSize*1.45), linearSize(linearSize){
+    OcTree( int linearSize = leafLinearSize )
+        :r(1.5*linearSize*1.45), linearSize(linearSize){
         x = 0;
         y = 0;
         z = 0;
@@ -94,7 +95,8 @@ class OcTree {
             dy = ( n->y + linearSize/4 - (y+ty)),
             dz = ( n->z + linearSize/4 - (z+tz));
 
-      if( dx*dx+dy*dy+dz*dz > (linearSize/4 - sZ)*(linearSize/4 - sZ) ){
+      float inR = 1.5*linearSize/4;
+      if( dx*dx+dy*dy+dz*dz > (inR - sZ)*(inR - sZ) ){
         return *this;
         }
 

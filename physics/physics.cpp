@@ -324,8 +324,8 @@ Physics::Rigid::Rigid() {
   data = 0;
   engine = 0;
 
-  static const MyGL::Float nullf[16] = {};
-  matrix = MyGL::Matrix4x4(nullf);
+  static const double nullf[16] = {};
+  matrix = Tempest::Matrix4x4(nullf);
   }
 
 float Physics::Rigid::x() const {
@@ -358,7 +358,7 @@ float Physics::Rigid::z() const {
   return trans.getOrigin().z();
   }
 
-MyGL::Matrix4x4 Physics::Rigid::transform() {
+Tempest::Matrix4x4 Physics::Rigid::transform() {
   return matrix;
 
   /*
@@ -437,7 +437,7 @@ void Physics::Rigid::update() {
 
   btVector3 pos = n.getOrigin();
 
-  matrix =  MyGL::Matrix4x4( v[0][0], v[0][1], v[0][2], 0,
+  matrix =  Tempest::Matrix4x4( v[0][0], v[0][1], v[0][2], 0,
                              v[1][0], v[1][1], v[1][2], 0,
                              v[2][0], v[2][1], v[2][2], 0,
                               pos[0],  pos[1],  pos[2], 1 );

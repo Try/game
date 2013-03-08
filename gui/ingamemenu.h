@@ -6,9 +6,9 @@
 
 class InGameMenu : public ModalWindow {
   public:
-    InGameMenu(Resource &res, MyWidget::Widget* );
+    InGameMenu(Resource &res, Tempest::Widget* );
 
-    MyWidget::signal<> save, load, quit;
+    Tempest::signal<> save, load, quit;
 
   };
 

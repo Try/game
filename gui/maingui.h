@@ -4,8 +4,8 @@
 #include "graphics/paintergui.h"
 #include "landscape/terrain.h"
 
-#include <MyWidget/Widget>
-#include <MyWidget/Image>
+#include <Tempest/Widget>
+#include <Tempest/Image>
 
 #include "resource.h"
 
@@ -19,7 +19,7 @@
 
 #include <memory>
 
-namespace MyGL{
+namespace Tempest{
   class Device;
   }
 
@@ -36,13 +36,13 @@ class Game;
 
 class InGameControls;
 
-namespace MyGL{
+namespace Tempest{
   class Scene;
   }
 
 class MainGui {
   public:
-    MainGui( MyGL::Device &dev,
+    MainGui( Tempest::Device &dev,
              int w, int h,
              Resource &r,
              PrototypesLoader & prototypes );
@@ -54,38 +54,38 @@ class MainGui {
 
     void createControls( BehaviorMSGQueue &msg,
                          Game &game );
-    MyWidget::signal<const ProtoObject&, int> addObject;
-    MyWidget::signal< MyWidget::Painter&, int, int> paintObjectsHud;
-    MyWidget::signal<> toogleFullScreen;
-    MyWidget::signal<const Terrain::EditMode&> toogleEditLandMode;
-    //MyWidget::signal<> updateView;
-    MyWidget::signal<GameObject&> setCameraPos;
-    MyWidget::signal< float, float,
-                      MyWidget::MouseEvent::MouseButton,
+    Tempest::signal<const ProtoObject&, int> addObject;
+    Tempest::signal< Tempest::Painter&, int, int> paintObjectsHud;
+    Tempest::signal<> toogleFullScreen;
+    Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
+    //Tempest::signal<> updateView;
+    Tempest::signal<GameObject&> setCameraPos;
+    Tempest::signal< float, float,
+                      Tempest::MouseEvent::MouseButton,
                       MiniMapView::Mode> minimapEvent;
 
-    MyWidget::signal< const std::wstring& > save, load;    
+    Tempest::signal< const std::wstring& > save, load;    
 
-    MyWidget::signal< const Scene &,
+    Tempest::signal< const Scene &,
                       ParticleSystemEngine &,
-                      MyGL::Texture2d & > renderScene;
+                      Tempest::Texture2d & > renderScene;
 
-    MyWidget::signal<> updateView;
+    Tempest::signal<> updateView;
 
     bool draw( GUIPass & pass );
     void resizeEvent( int w, int h );
 
-    int mouseDownEvent  (MyWidget::MouseEvent &e);
-    int mouseUpEvent    (MyWidget::MouseEvent &e);
-    int mouseMoveEvent  (MyWidget::MouseEvent &e);
-    int mouseWheelEvent (MyWidget::MouseEvent &e);
+    int mouseDownEvent  (Tempest::MouseEvent &e);
+    int mouseUpEvent    (Tempest::MouseEvent &e);
+    int mouseMoveEvent  (Tempest::MouseEvent &e);
+    int mouseWheelEvent (Tempest::MouseEvent &e);
 
-    int scutEvent   ( MyWidget::KeyEvent & e );
-    int keyDownEvent( MyWidget::KeyEvent & e );
-    int keyUpEvent  ( MyWidget::KeyEvent & e );
-    bool minimapMouseEvent(float x, float y, MyWidget::Event::MouseButton btn , MiniMapView::Mode m);
+    int scutEvent   ( Tempest::KeyEvent & e );
+    int keyDownEvent( Tempest::KeyEvent & e );
+    int keyUpEvent  ( Tempest::KeyEvent & e );
+    bool minimapMouseEvent(float x, float y, Tempest::Event::MouseButton btn , MiniMapView::Mode m);
 
-    MyWidget::Rect& selectionRect();
+    Tempest::Rect& selectionRect();
     void update();
 
     void updateSelectUnits(const std::vector<GameObject *> &u );
@@ -99,19 +99,19 @@ class MainGui {
 
     bool isCutsceneMode();
 
-    static void drawFrame( MyWidget::Painter & p,
-                           const MyWidget::Bind::UserTexture & tex ,
-                           const MyWidget::Point &pos,
-                           const MyWidget::Size &size );
+    static void drawFrame( Tempest::Painter & p,
+                           const Tempest::Bind::UserTexture & tex ,
+                           const Tempest::Point &pos,
+                           const Tempest::Size &size );
 
-    MyWidget::Widget* centralWidget();
+    Tempest::Widget* centralWidget();
 
     void setCutsceneMode( bool cs );
   private:
-    typedef MyWidget::PainterDevice Painter;
-    typedef MyWidget::Widget  Widget;
-    typedef MyWidget::Image<> Image;
-    typedef MyWidget::SizePolicy        SizePolicy;
+    typedef Tempest::PainterDevice Painter;
+    typedef Tempest::Widget  Widget;
+    typedef Tempest::Image<> Image;
+    typedef Tempest::SizePolicy        SizePolicy;
 
     InGameControls *mainwidget;
 
@@ -122,10 +122,10 @@ class MainGui {
     void saveGame();
     void loadGame();
 
-    MyWidget::Point mousePos;
+    Tempest::Point mousePos;
 
-    MyWidget::Bind::UserTexture frame, hintFrame;
-    MyWidget::Rect selRect;
+    Tempest::Bind::UserTexture frame, hintFrame;
+    Tempest::Rect selRect;
   };
 
 #endif // MAINGUI_H

@@ -12,9 +12,9 @@ class ScroolWidget;
 
 class SaveDialog : public ModalWindow {
   public:
-    SaveDialog( Resource & res, MyWidget::Widget* );
+    SaveDialog( Resource & res, Tempest::Widget* );
 
-    MyWidget::signal< const std::wstring& > accept;
+    Tempest::signal< const std::wstring& > accept;
 
     void setSaveMode();
   private:

@@ -2,7 +2,7 @@
 
 #include "resource.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "gen/ui_toppanel.h"
 #include "formbuilder.h"
 #include "button.h"
@@ -32,7 +32,7 @@
 
 #include <sstream>
 
-using namespace MyWidget;
+using namespace Tempest;
 
 struct InGameControls::AddUnitButton: public Button{
   AddUnitButton( Resource & res, ProtoObject& obj )
@@ -49,7 +49,7 @@ struct InGameControls::AddUnitButton: public Button{
     clickedEx( prototype );
     }
 
-  MyWidget::signal<const ProtoObject&> clickedEx;
+  Tempest::signal<const ProtoObject&> clickedEx;
   ProtoObject& prototype;
   };
 
@@ -59,20 +59,20 @@ InGameControls::InGameControls(Resource &res,
                : res(res),
                  game(game),
                  prototypes(prototypes),
-                 showEditPanel(this, MyWidget::KeyEvent::K_F9) {
+                 showEditPanel(this, Tempest::KeyEvent::K_F9) {
   isHooksEnabled = true;
   currPl         = 1;
-  setFocusPolicy( MyWidget::ClickFocus );
+  setFocusPolicy( Tempest::ClickFocus );
 
-  setLayout( MyWidget::Vertical );
-  layout().setMargin( MyWidget::Margin(4) );
+  setLayout( Tempest::Vertical );
+  layout().setMargin( Tempest::Margin(4) );
   useScissor( false );
 
   Widget * top = new Widget(),
          * cen = new Widget();
 
   { SizePolicy p;
-    p.typeV = MyWidget::Expanding;
+    p.typeV = Tempest::Expanding;
     cen->setSizePolicy(p);
     }
 
@@ -81,18 +81,18 @@ InGameControls::InGameControls(Resource &res,
 
   layout().add( createConsole(msg) );
 
-  top->setLayout( MyWidget::Horizontal );
+  top->setLayout( Tempest::Horizontal );
 
   SizePolicy p;
   p.maxSize.h = 30;
-  p.typeV = MyWidget::FixedMax;
+  p.typeV = Tempest::FixedMax;
 
   {
     UI::TopPanel p;
     p.setupUi( top, res );
     //p.fullScr->clicked.bind( toogleFullScreen );
     p.menu->clicked.bind( *this, &InGameControls::showMenu );
-    p.menu->setShortcut( MyWidget::Shortcut(p.menu, MyWidget::KeyEvent::K_ESCAPE) );
+    p.menu->setShortcut( Tempest::Shortcut(p.menu, Tempest::KeyEvent::K_ESCAPE) );
 
     p.frmEdit->clicked.bind( *this, &InGameControls::showFormBuilder );
     gold = p.gold;
@@ -111,10 +111,10 @@ InGameControls::InGameControls(Resource &res,
   top->setSizePolicy(p);
 
   editPanel = createEditPanel();
-  cen->setLayout( MyWidget::Horizontal );
+  cen->setLayout( Tempest::Horizontal );
   cen->layout().add( new MissionTargets(game, res) );
 
-  MyWidget::Widget * box = new MyWidget::Widget();
+  Tempest::Widget * box = new Tempest::Widget();
   box->layout().add( editPanel );
   cen->layout().add( box );
 
@@ -133,10 +133,10 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   console->setMinimumSize( 0, 220);
 
   SizePolicy p;
-  p.minSize = MyWidget::Size(220, 220);
-  p.maxSize = MyWidget::Size(220, 220);
+  p.minSize = Tempest::Size(220, 220);
+  p.maxSize = Tempest::Size(220, 220);
 
-  console->setLayout( MyWidget::Horizontal );
+  console->setLayout( Tempest::Horizontal );
   console->layout().setSpacing(6);
 
   Panel * img = new Panel( res );
@@ -153,7 +153,7 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   console->layout().add( img );
 
   Widget * cen = new Widget();
-  cen->setLayout( MyWidget::Horizontal );
+  cen->setLayout( Tempest::Horizontal );
 
   Panel * cenp = new Panel( res );
   cenp->setMaximumSize( SizePolicy::maxWidgetSize().w, 220 );
@@ -165,13 +165,13 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   units = new UnitList(commands,res, uview, uinfo);
   units->setCameraPos.bind( setCameraPos );
 
-  //cenp->layout().add( new MyWidget::Widget() );
+  //cenp->layout().add( new Tempest::Widget() );
   cenp->layout().add( units );
   cenp->layout().add( uinfo );
 
-  cen->setSizePolicy( MyWidget::Expanding );
+  cen->setSizePolicy( Tempest::Expanding );
 
-  MyWidget::Margin m(0);
+  Tempest::Margin m(0);
   m.top = 50;
   cen->layout().setMargin(m);
 
@@ -179,7 +179,7 @@ Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
 
   { Panel * avatar = new Panel(res);
     SizePolicy pa;
-    pa.typeH = MyWidget::FixedMin;
+    pa.typeH = Tempest::FixedMin;
     pa.minSize.w = 120;
     avatar->setSizePolicy( pa );
 
@@ -216,7 +216,7 @@ Widget *InGameControls::createEditPanel() {
 
   tabs->setDragable(1);
   p->layout().setMargin( 6 );
-  p->setLayout( MyWidget::Vertical );
+  p->setLayout( Tempest::Vertical );
 
   ScroolWidget *w = new ScroolWidget(res);
   //w->useScissor(0);
@@ -234,7 +234,7 @@ Widget *InGameControls::createEditPanel() {
       b->clickedEx.bind( *this, &InGameControls::addEditorObject );
 
       SizePolicy p = b->sizePolicy();
-      p.typeH = MyWidget::Preferred;
+      p.typeH = Tempest::Preferred;
       b->setSizePolicy(p);
 
       w->centralWidget().layout().add( b );

@@ -1,10 +1,10 @@
 #include "ui_toppanel.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "gui/button.h"
 #include "gui/panel.h"
 
-using namespace MyWidget;
+using namespace Tempest;
 
 void UI::TopPanel::setupUi( Widget* w, Resource & res ) {
   w->setSizePolicy( Expanding, Expanding );

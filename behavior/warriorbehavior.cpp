@@ -291,12 +291,12 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
     }
   }
 
-void WarriorBehavior::mouseDown(MyWidget::MouseEvent &e) {
+void WarriorBehavior::mouseDown(Tempest::MouseEvent &e) {
   e.accept();
   }
 
-void WarriorBehavior::mouseUp( MyWidget::MouseEvent &e ) {
-  if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+void WarriorBehavior::mouseUp( Tempest::MouseEvent &e ) {
+  if( e.button==Tempest::MouseEvent::ButtonLeft ){
     if( obj.world().mouseObj()==0 ){
       obj.game().message( obj.playerNum(),
                           AtackMove,

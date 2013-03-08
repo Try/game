@@ -1,35 +1,35 @@
 #ifndef RICHTEXT_H
 #define RICHTEXT_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include <string>
 
 class Resource;
 
-namespace MyWidget{
+namespace Tempest{
   class Painter;
   }
 
-class RichText : public MyWidget::Widget {
+class RichText : public Tempest::Widget {
   public:
     RichText( Resource & res );
 
-    static void renderText(int x, int y, Resource &res, MyWidget::Painter & p,
+    static void renderText(int x, int y, Resource &res, Tempest::Painter & p,
                             const std::wstring& txt );
-    static MyWidget::Size bounds( Resource & res,
+    static Tempest::Size bounds( Resource & res,
                                   const std::wstring& txt );
 
     void setText( const std::wstring & text );
   protected:
-    void paintEvent(MyWidget::PaintEvent &e);
+    void paintEvent(Tempest::PaintEvent &e);
 
   private:
     static void rText( int dx,
                        int dy,
                        Resource & res,
-                       MyWidget::Painter *p,
+                       Tempest::Painter *p,
                        const std::wstring& txt,
-                       MyWidget::Size &rect );
+                       Tempest::Size &rect );
 
     std::wstring txt;
     Resource & res;

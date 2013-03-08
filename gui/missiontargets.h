@@ -1,22 +1,22 @@
 #ifndef MISSIONTARGETS_H
 #define MISSIONTARGETS_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include "graphics/paintergui.h"
 
 class Resource;
 class Game;
 
-class MissionTargets : public MyWidget::Widget {
+class MissionTargets : public Tempest::Widget {
   public:
     MissionTargets( Game &game, Resource & res );
 
   protected:
-    void paintEvent(MyWidget::PaintEvent &e);
+    void paintEvent(Tempest::PaintEvent &e);
 
   private:
-    MyWidget::Bind::UserTexture frame, ckFrame, ck;
-    MyWidget::Widget * box;
+    Tempest::Bind::UserTexture frame, ckFrame, ck;
+    Tempest::Widget * box;
 
     Game & game;
     Resource & res;

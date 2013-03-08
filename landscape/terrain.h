@@ -3,12 +3,12 @@
 
 #include "util/array2d.h"
 
-#include <MyGL/Model>
+#include <Tempest/Model>
 #include "resource.h"
 
 #include <memory>
 
-namespace MyGL{
+namespace Tempest{
   class VertexBufferHolder;
   class IndexBufferHolder;
   }
@@ -49,15 +49,15 @@ class Terrain {
       std::string texture;
       };
 
-    void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                        MyGL::IndexBufferHolder  & iboHolder );
+    void buildGeometry( Tempest::VertexBufferHolder & vboHolder,
+                        Tempest::IndexBufferHolder  & iboHolder );
 
-    MyGL::Model<WaterVertex> waterGeometry( MyGL::VertexBufferHolder & vboHolder,
-                                            MyGL::IndexBufferHolder  & iboHolder,
+    Tempest::Model<WaterVertex> waterGeometry( Tempest::VertexBufferHolder & vboHolder,
+                                            Tempest::IndexBufferHolder  & iboHolder,
                                             int cX, int cY ) const;
 
-    Model fogGeometry( MyGL::VertexBufferHolder & vboHolder,
-                       MyGL::IndexBufferHolder  & iboHolder,
+    Model fogGeometry( Tempest::VertexBufferHolder & vboHolder,
+                       Tempest::IndexBufferHolder  & iboHolder,
                        int cX, int cY ) const;
 
     int width() const;
@@ -73,7 +73,7 @@ class Terrain {
     int  heightAt( float x, float y ) const;
 
     void normalAt( int x, int y, float *out );
-    MyGL::Color colorAt( int x, int y );
+    Tempest::Color colorAt( int x, int y );
 
     bool isEnableW( int x, int y ) const;
     bool isEnable( int x, int y ) const;
@@ -94,7 +94,7 @@ class Terrain {
     void serialize( GameSerializer &s );
 
     void updatePolish();
-    void loadFromPixmap( const MyGL::Pixmap& p );
+    void loadFromPixmap( const Tempest::Pixmap& p );
 
     int  depthAt( int x, int y ) const;
     int  heightAtNoDepth( int x, int y ) const;
@@ -104,13 +104,13 @@ class Terrain {
     const PrototypesLoader & prototype;
 
     std::vector< std::string > aviableTiles;
-    std::vector< MyGL::Color > aviableColors;
+    std::vector< Tempest::Color > aviableColors;
 
     struct Tile {
       int plane;
       size_t textureID[2];
       float normal[3];
-      MyGL::Color color;
+      Tempest::Color color;
       };
     array2d<Tile> tileset;
     array2d<TerrainChunk> chunks;
@@ -127,13 +127,13 @@ class Terrain {
 
     void computeEnableMap();
 
-    void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                        MyGL::IndexBufferHolder  & iboHolder,
+    void buildGeometry( Tempest::VertexBufferHolder & vboHolder,
+                        Tempest::IndexBufferHolder  & iboHolder,
                         int plane,
                         size_t texture );
 
-    void buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                        MyGL::IndexBufferHolder  & iboHolder,
+    void buildGeometry( Tempest::VertexBufferHolder & vboHolder,
+                        Tempest::IndexBufferHolder  & iboHolder,
                         int plane,
                         size_t texture,
                         int cX, int cy );

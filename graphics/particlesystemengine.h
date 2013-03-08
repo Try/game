@@ -1,10 +1,10 @@
 #ifndef PARTICLESYSTEMENGINE_H
 #define PARTICLESYSTEMENGINE_H
 
-#include <MyGL/GraphicObject>
+#include <Tempest/GraphicObject>
 #include <vector>
 
-#include <MyWidget/signal>
+#include <Tempest/signal>
 #include "game/protoobject.h"
 #include "prototypesloader.h"
 #include "resource.h"
@@ -20,15 +20,15 @@ class ParticleSystemEngine {
                           const PrototypesLoader & p,
                           Resource & r );
 
-    void exec( const MyGL::Matrix4x4 &view,
-               const MyGL::Matrix4x4 &proj,
+    void exec( const Tempest::Matrix4x4 &view,
+               const Tempest::Matrix4x4 &proj,
                int dt,
                bool invCullMode = false );
     void update();
 
-    MyWidget::signal< AbstractGraphicObject &,
+    Tempest::signal< AbstractGraphicObject &,
                       const ProtoObject::View &,
-                      const MyGL::Color & > setupMaterial;
+                      const Tempest::Color & > setupMaterial;
   private:
     Scene & scene;
     const PrototypesLoader & proto;
@@ -40,10 +40,10 @@ class ParticleSystemEngine {
 
     void emitParticle( Model::Raw &v,
                        float x, float y, float z , float sz,
-                       MyGL::Color &color );
+                       Tempest::Color &color );
 
     void emitParticle( float x, float y, float z, float sz,
-                       MyGL::Color &color );
+                       Tempest::Color &color );
 
     double left[3], top[3], norm[3];
     Model::Raw raw;

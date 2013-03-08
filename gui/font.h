@@ -9,7 +9,7 @@
 
 class Resource;
 
-namespace MyWidget {
+namespace Tempest {
 
 namespace Bind{
   class UserFont{
@@ -19,9 +19,9 @@ namespace Bind{
       UserFont();
 
       struct Leter{
-        MyWidget::Bind::UserTexture surf;
-        MyWidget::Size  size;
-        MyWidget::Point dpos, advance;
+        Tempest::Bind::UserTexture surf;
+        Tempest::Size  size;
+        Tempest::Point dpos, advance;
         };
 
       const Leter& leter( Resource &res, wchar_t ch ) const;
@@ -69,6 +69,6 @@ namespace Bind{
   }
 
 }
-typedef MyWidget::Bind::UserFont Font;
+typedef Tempest::Bind::UserFont Font;
 
 #endif // FONT_H

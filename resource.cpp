@@ -1,8 +1,8 @@
 #include "resource.h"
 
-#include <MyGL/VertexShaderHolder>
-#include <MyGL/LocalVertexBufferHolder>
-#include <MyGL/LocalTexturesHolder>
+#include <Tempest/VertexShaderHolder>
+#include <Tempest/LocalVertexBufferHolder>
+#include <Tempest/LocalTexturesHolder>
 
 #include "sound/sound.h"
 
@@ -102,19 +102,19 @@ struct Resource::XML{
         name = pAttrib->Value();
       }
 
-    r.load( pm.add( MyGL::Pixmap(file) ), name );
+    r.load( pm.add( Tempest::Pixmap(file) ), name );
     }
   };
 
-Resource::Resource( MyGL::TextureHolder       & tx,
-                    MyGL::LocalTexturesHolder & ltx,
+Resource::Resource( Tempest::TextureHolder       & tx,
+                    Tempest::LocalTexturesHolder & ltx,
 
-                    MyGL::VertexBufferHolder &  vh,
-                    MyGL::LocalVertexBufferHolder &lvh,
-                    MyGL::IndexBufferHolder  &  ih,
+                    Tempest::VertexBufferHolder &  vh,
+                    Tempest::LocalVertexBufferHolder &lvh,
+                    Tempest::IndexBufferHolder  &  ih,
 
-                    MyGL::VertexShaderHolder &  vsh,
-                    MyGL::FragmentShaderHolder& fsh )
+                    Tempest::VertexShaderHolder &  vsh,
+                    Tempest::FragmentShaderHolder& fsh )
   : texHolder(tx),
     ltexHolder(ltx),
     vboHolder(vh),
@@ -130,7 +130,7 @@ Resource::Resource( MyGL::TextureHolder       & tx,
   models  .add("null", model);
   textures.add("null",      texHolder.load("./data/textures/w.png") );
   textures.add("null/norm", texHolder.load("./data/textures/norm.png") );
-  texturesAvg.add( "null", MyGL::Color() );
+  texturesAvg.add( "null", Tempest::Color() );
 
   vs.add("null", vsHolder.load("./data/sh/main_material.vert") );
   fs.add("null", fsHolder.load("./data/sh/main_material.frag") );
@@ -155,7 +155,7 @@ const Model::Raw &Resource::rawModel(const std::string &key) const {
   return *rawModels.get(key);
   }
 
-Model Resource::model( const MyGL::Model<MVertex>::Raw &r ) const {
+Model Resource::model( const Tempest::Model<MVertex>::Raw &r ) const {
   Model m;
 
   m.load( lvboHolder, iboHolder, r, MVertex::decl() );
@@ -163,7 +163,7 @@ Model Resource::model( const MyGL::Model<MVertex>::Raw &r ) const {
   return m;
   }
 
-const MyGL::Texture2d &Resource::texture(const std::string &key) const {
+const Tempest::Texture2d &Resource::texture(const std::string &key) const {
   bool norm = false;
   if( key.size()>5 ){
     norm = true;
@@ -179,7 +179,7 @@ const MyGL::Texture2d &Resource::texture(const std::string &key) const {
     return textures.get(key, textures.get("null") );
   }
 
-MyGL::Texture2d &Resource::texture(const std::string &key) {
+Tempest::Texture2d &Resource::texture(const std::string &key) {
   bool norm = false;
   if( key.size()>5 ){
     norm = true;
@@ -195,7 +195,7 @@ MyGL::Texture2d &Resource::texture(const std::string &key) {
     return textures.get(key, textures.get("null") );
   }
 
-MyGL::Color Resource::textureAVG(const std::string &key) const {
+Tempest::Color Resource::textureAVG(const std::string &key) const {
   return texturesAvg.get(key);
   }
 
@@ -207,11 +207,11 @@ Sound &Resource::sound(const std::string &key) const {
   return *sounds.get(key);
   }
 
-MyGL::VertexShader &Resource::vshader(const std::string &key) {
+Tempest::VertexShader &Resource::vshader(const std::string &key) {
   return vs.get(key);
   }
 
-MyGL::FragmentShader &Resource::fshader(const std::string &key){
+Tempest::FragmentShader &Resource::fshader(const std::string &key){
   return fs.get(key);
   }
 
@@ -220,7 +220,7 @@ PixmapsPool::TexturePtr Resource::pixmap(const std::string &key) {
   return px.get(key);
   }
 
-PixmapsPool::TexturePtr Resource::pixmap( const MyGL::Pixmap &px,
+PixmapsPool::TexturePtr Resource::pixmap( const Tempest::Pixmap &px,
                                           bool flush ) {
   PixmapsPool::TexturePtr tmp = pixmaps.add(px);
 
@@ -271,7 +271,7 @@ void Resource::load( Box< std::shared_ptr<Sound> >& sounds,
     }
   }
 
-void Resource::load( Box<MyGL::Texture2d>& textures,
+void Resource::load( Box<Tempest::Texture2d>& textures,
                      const std::string &k,
                      const std::string &f,
                      bool avg ){
@@ -285,11 +285,11 @@ void Resource::load( Box<MyGL::Texture2d>& textures,
     }
 
   if( avg ){
-    MyGL::Pixmap pm(f);
+    Tempest::Pixmap pm(f);
     int cl[4] = {};
     for( int i=0; i<pm.width(); ++i )
       for( int r=0; r<pm.height(); ++r ){
-        MyGL::Pixmap::Pixel px = pm.at(i,r);
+        Tempest::Pixmap::Pixel px = pm.at(i,r);
         cl[0] += px.r;
         cl[1] += px.g;
         cl[2] += px.b;
@@ -301,14 +301,14 @@ void Resource::load( Box<MyGL::Texture2d>& textures,
         cl[i] /= (pm.width()*pm.height());
       }
 
-    texturesAvg.add(k, MyGL::Color( cl[0]/255.0,
+    texturesAvg.add(k, Tempest::Color( cl[0]/255.0,
                                     cl[1]/255.0,
                                     cl[2]/255.0,
                                     cl[3]/255.0 ) );
     }
   }
 
-void Resource::load( Box<MyGL::VertexShader> &vs,
+void Resource::load( Box<Tempest::VertexShader> &vs,
                      const std::string &k,
                      const std::string &f,
                      const std::string &def ) {
@@ -316,7 +316,7 @@ void Resource::load( Box<MyGL::VertexShader> &vs,
   vs.add(k, vsHolder.loadFromSource(src) );
   }
 
-void Resource::load( Box<MyGL::FragmentShader> &fs,
+void Resource::load( Box<Tempest::FragmentShader> &fs,
                      const std::string &k, const std::string &f,
                      const std::string &def ) {
   std::string src = def + loadSrc(f);

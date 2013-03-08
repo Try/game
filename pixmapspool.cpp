@@ -3,12 +3,12 @@
 #include <cassert>
 #include <string>
 
-PixmapsPool::PixmapsPool(MyGL::TextureHolder &h):holder(h) {
+PixmapsPool::PixmapsPool(Tempest::TextureHolder &h):holder(h) {
   needToflush = true;
   addPage();
   }
 
-PixmapsPool::TexturePtr PixmapsPool::add(const MyGL::Pixmap &p) {
+PixmapsPool::TexturePtr PixmapsPool::add(const Tempest::Pixmap &p) {
   if( p.width()==0 || p.height()==0 ){
     TexturePtr n;
     n.tex = 0;
@@ -36,8 +36,8 @@ void PixmapsPool::flush() {
     for( size_t i=0; i<page.size(); ++i ){
       page[i].t = holder.create( page[i].p );
 
-      MyGL::Texture2d::Sampler s;
-      s.mipFilter = MyGL::Texture2d::FilterType::Nearest;
+      Tempest::Texture2d::Sampler s;
+      s.mipFilter = Tempest::Texture2d::FilterType::Nearest;
       s.magFilter = s.mipFilter;
       s.minFilter = s.mipFilter;
       s.anisotropic = false;
@@ -55,22 +55,22 @@ void PixmapsPool::flush() {
 
 void PixmapsPool::addPage() {
   Page p;
-  p.p = MyGL::Pixmap(2048, 2048, true);
-  p.rects.push_back( MyWidget::Rect(0,0, p.p.width(), p.p.height() ) );
+  p.p = Tempest::Pixmap(2048, 2048, true);
+  p.rects.push_back( Tempest::Rect(0,0, p.p.width(), p.p.height() ) );
 
   page.push_back( p );
   }
 
-PixmapsPool::TexturePtr PixmapsPool::add(const MyGL::Pixmap &px, Page & page ) {
+PixmapsPool::TexturePtr PixmapsPool::add(const Tempest::Pixmap &px, Page & page ) {
   needToflush = true;
 
-  page.t = MyGL::Texture2d();
+  page.t = Tempest::Texture2d();
 
-  MyGL::PixEditor p( page.p );
+  Tempest::PixEditor p( page.p );
 
   size_t id = 0, sq = 0;
   for( size_t i=0; i<page.rects.size(); ++i ){
-    const MyWidget::Rect r = page.rects[i];
+    const Tempest::Rect r = page.rects[i];
 
     if( r.w>=px.width() && r.h>=px.height() ){
       size_t sq2 = r.w*r.h;
@@ -88,11 +88,11 @@ PixmapsPool::TexturePtr PixmapsPool::add(const MyGL::Pixmap &px, Page & page ) {
     return n;
     }
 
-  MyWidget::Rect r = page.rects[id];
+  Tempest::Rect r = page.rects[id];
   p.copy( r.x, r.y, px );
 
   if( r.w!=px.width() && r.h!=px.height() ){
-    page.rects[id] = MyWidget::Rect( r.x+px.width(), r.y+px.height(),
+    page.rects[id] = Tempest::Rect( r.x+px.width(), r.y+px.height(),
                                      r.w-px.width(), r.h-px.height() );
     } else {
     page.rects[id] = page.rects.back();
@@ -101,21 +101,21 @@ PixmapsPool::TexturePtr PixmapsPool::add(const MyGL::Pixmap &px, Page & page ) {
 
 
   if( r.w!=px.width() )
-    page.rects.push_back( MyWidget::Rect( r.x+px.width(), r.y,
+    page.rects.push_back( Tempest::Rect( r.x+px.width(), r.y,
                                           r.w-px.width(), px.height() ) );
 
   if( r.h!=px.height() )
-    page.rects.push_back( MyWidget::Rect( r.x, r.y+px.height(),
+    page.rects.push_back( Tempest::Rect( r.x, r.y+px.height(),
                                           px.width(), r.h-px.height() ) );
 
 
   TexturePtr n;
-  n.rect = MyWidget::Rect( r.x, r.y, px.width(), px.height() );
+  n.rect = Tempest::Rect( r.x, r.y, px.width(), px.height() );
   n.tex = &this->page;
 
   return n;
   }
 
-const MyGL::Texture2d &PixmapsPool::TexturePtr::pageRawData() const {
+const Tempest::Texture2d &PixmapsPool::TexturePtr::pageRawData() const {
   return (*tex)[id].t;
   }

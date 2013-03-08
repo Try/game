@@ -97,7 +97,7 @@ float SmallGraphicsObject::angleZ() {
   return az;
   }
 
-const MyGL::ModelBounds SmallGraphicsObject::bounds() const {
+const Tempest::ModelBounds SmallGraphicsObject::bounds() const {
   return bds;
   }
 
@@ -166,14 +166,14 @@ void SmallGraphicsObject::setVisible(bool v) {
   visible = v;
   }
 
-MyGL::Matrix4x4 SmallGraphicsObject::transform() const {
+Tempest::Matrix4x4 SmallGraphicsObject::transform() const {
   return transformV;
   }
 
 void SmallGraphicsObject::applyTransform() {
   TerrainChunk::PolishView& vx = chunk();
 
-  MyGL::Matrix4x4& mat = transformV;
+  Tempest::Matrix4x4& mat = transformV;
 
   mat.identity();
   mat.translate( mx, my, mz );
@@ -218,7 +218,7 @@ TerrainChunk::PolishView &SmallGraphicsObject::chunk() {
   vx->zView = z();
   vx->obj.setPosition(0,0, z());
 
-  game.setupMaterials( vx->obj, view, MyGL::Color() );
+  game.setupMaterials( vx->obj, view, Tempest::Color() );
   c.polish.push_back( std::shared_ptr<TerrainChunk::PolishView>(vx) );
   glocation = 0;
 

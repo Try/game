@@ -1,7 +1,7 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
-#include <MyGL/Matrix4x4>
+#include <Tempest/Matrix4x4>
 //#include "landscape/terrain.h"
 
 class Terrain;
@@ -38,7 +38,7 @@ class Physics {
         float y() const;
         float z() const;
 
-        MyGL::Matrix4x4 transform();
+        Tempest::Matrix4x4 transform();
         float diameter() const;
 
         bool isValid() const;
@@ -54,7 +54,7 @@ class Physics {
         RigidBody* data;
         Physics::Data * engine;
 
-        MyGL::Matrix4x4 matrix;
+        Tempest::Matrix4x4 matrix;
 
       friend class Physics;
       };

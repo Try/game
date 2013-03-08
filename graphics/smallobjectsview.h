@@ -4,7 +4,7 @@
 #include "resource.h"
 #include "game/protoobject.h"
 
-#include <MyGL/GraphicObject>
+#include <Tempest/GraphicObject>
 #include "landscape/terrainchunk.h"
 
 class Terrain;
@@ -25,7 +25,7 @@ class SmallGraphicsObject {
 
     void setPosition( float x, float y, float z );
     void setSize( float x, float y, float z );
-    const MyGL::ModelBounds bounds() const;
+    const Tempest::ModelBounds bounds() const;
 
     const ProtoObject::View & view;
 
@@ -46,12 +46,12 @@ class SmallGraphicsObject {
 
     void setVisible( bool v );
 
-    MyGL::Matrix4x4 transform() const;
+    Tempest::Matrix4x4 transform() const;
   private:
     Terrain * t;
 
     const Model::Raw* model;
-    MyGL::ModelBounds bds;
+    Tempest::ModelBounds bds;
     Scene &scene;
 
     Game & game;
@@ -60,7 +60,7 @@ class SmallGraphicsObject {
     bool needToUpdate, visible;
 
     void applyTransform();
-    MyGL::Matrix4x4 transformV;
+    Tempest::Matrix4x4 transformV;
 
     size_t glocation;
 

@@ -19,7 +19,7 @@ class AbstractListBox : public Button {
     Resource &res;
     OverlayWidget * overlay;
 
-    virtual MyWidget::Widget *createDropList();
+    virtual Tempest::Widget *createDropList();
     void close();
   };
 

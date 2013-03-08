@@ -1,6 +1,6 @@
 #include "overlaywidget.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "panel.h"
 #include "maingui.h"
 
@@ -14,7 +14,7 @@ OverlayWidget::OverlayWidget() {
 //  layout().add( new Panel(r) );
 
   resize(200, 200);
-  setFocusPolicy( MyWidget::ClickFocus );
+  setFocusPolicy( Tempest::ClickFocus );
   //setFocus(1);
   }
 
@@ -28,19 +28,19 @@ void OverlayWidget::focusEvent(bool /*f*/) {
     deleteLater();
   }
 
-void OverlayWidget::mouseDownEvent(MyWidget::MouseEvent &e) {
+void OverlayWidget::mouseDownEvent(Tempest::MouseEvent &e) {
   deleteLater();
   e.ignore();
   }
 
-void OverlayWidget::mouseWheelEvent(MyWidget::MouseEvent &e) {
+void OverlayWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
   deleteLater();
   e.ignore();
   }
 
 void OverlayWidget::ContainerLayout::applyLayout() {
   for( size_t i=1; i<widgets().size(); ++i )
-    placeIn( widgets()[i], MyWidget::Rect(0,0, owner()->w(), owner()->h()) );
+    placeIn( widgets()[i], Tempest::Rect(0,0, owner()->w(), owner()->h()) );
 
   if( widgets().size()==0 ){
     if( used )

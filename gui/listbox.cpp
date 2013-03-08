@@ -17,7 +17,7 @@ class ListBox::ItemBtn:public Button{
       clickedEx(id);
       }
 
-    MyWidget::signal<size_t> clickedEx;
+    Tempest::signal<size_t> clickedEx;
   };
 
 ListBox::ListBox( Resource &r ) : AbstractListBox(r), res(r) {
@@ -48,7 +48,7 @@ void ListBox::setCurrentItem(size_t i) {
   onItem(selected);
   }
 
-void ListBox::mouseWheelEvent(MyWidget::MouseEvent &e) {
+void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
   if( !rect().contains(e.x+x(), e.y+y()) ){
     e.ignore();
     return;
@@ -63,11 +63,11 @@ void ListBox::mouseWheelEvent(MyWidget::MouseEvent &e) {
     }
   }
 
-MyWidget::Widget* ListBox::createDropList() {
+Tempest::Widget* ListBox::createDropList() {
   Panel *box = new Panel(res);
-  box->setLayout( MyWidget::Horizontal );
+  box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
-  box->setPosition( mapToRoot( MyWidget::Point(0,h()) ) );
+  box->setPosition( mapToRoot( Tempest::Point(0,h()) ) );
   box->resize(170, 200);
 
   ScroolWidget *sw = new ScroolWidget( res );

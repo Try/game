@@ -1,6 +1,6 @@
 #include "gameobject.h"
 
-#include <MyGL/GraphicObject>
+#include <Tempest/GraphicObject>
 
 #include "resource.h"
 
@@ -124,7 +124,7 @@ void GameObject::loadView( const Model &model,
   view.loadView( model, pview );
   }
 
-void GameObject::loadView(const MyGL::Model<WaterVertex> &model ){
+void GameObject::loadView(const Tempest::Model<WaterVertex> &model ){
   view.loadView( model );
   }
 
@@ -163,11 +163,11 @@ double GameObject::viewHeight() const {
   return view.viewHeight();
   }
 
-const MyGL::Color& GameObject::teamColor() const {
+const Tempest::Color& GameObject::teamColor() const {
   return view.teamColor;
   }
 
-void GameObject::setTeamColor(const MyGL::Color &cl) {
+void GameObject::setTeamColor(const Tempest::Color &cl) {
   view.teamColor = cl;
   }
 
@@ -306,7 +306,7 @@ double GameObject::rawRadius() const {
   return view.rawRadius();
   }
 
-MyGL::Matrix4x4 GameObject::_transform() const {
+Tempest::Matrix4x4 GameObject::_transform() const {
   return view._transform();
   }
 

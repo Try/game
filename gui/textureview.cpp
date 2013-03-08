@@ -1,6 +1,6 @@
 #include "textureview.h"
 
-#include <MyWidget/Painter>
+#include <Tempest/Painter>
 #include "graphics/paintergui.h"
 
 #include <iostream>
@@ -11,13 +11,13 @@ TextureView::TextureView(Resource &) {
 TextureView::~TextureView() {
   }
 
-void TextureView::setTexture(const MyGL::Texture2d &t) {
+void TextureView::setTexture(const Tempest::Texture2d &t) {
   texture = t;
   }
 
-void TextureView::paintEvent(MyWidget::PaintEvent &e) {
-  MyWidget::Painter p(e);
-  MyWidget::Bind::UserTexture u;
+void TextureView::paintEvent(Tempest::PaintEvent &e) {
+  Tempest::Painter p(e);
+  Tempest::Bind::UserTexture u;
 
   u.data.nonPool = &texture;
 

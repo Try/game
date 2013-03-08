@@ -72,8 +72,8 @@ class MoveBehavior : public AbstractBehavior {
 
     void calcWayAndMove( int tx, int ty, const Terrain & terrain );
 
-    void mouseDown(MyWidget::MouseEvent &e);
-    void mouseUp  ( MyWidget::MouseEvent& e );
+    void mouseDown(Tempest::MouseEvent &e);
+    void mouseUp  ( Tempest::MouseEvent& e );
     void onRemoveHook();
 
     void unHold();

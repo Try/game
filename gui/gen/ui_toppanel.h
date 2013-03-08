@@ -1,14 +1,14 @@
 #ifndef TOPPANEL_H
 #define TOPPANEL_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 class Resource;
 class Button;
 
 namespace UI{
 class TopPanel {
 public:
-  void setupUi( MyWidget::Widget*, Resource & res );
+  void setupUi( Tempest::Widget*, Resource & res );
 
   Button * fullScr;
   Button * frmEdit;

@@ -10,7 +10,7 @@
 #include "spatialindex.h"
 #include "algo/wayfindrequest.h"
 
-#include <MyWidget/Event>
+#include <Tempest/Event>
 
 #include <memory>
 #include <unordered_set>
@@ -24,7 +24,7 @@ class Game;
 class Player;
 class GameSerializer;
 
-namespace MyWidget{
+namespace Tempest{
   class Painter;
   }
 
@@ -38,11 +38,11 @@ class World {
            int w, int h );
     ~World();
 
-    MyWidget::signal< AbstractGraphicObject &,
+    Tempest::signal< AbstractGraphicObject &,
                       const ProtoObject::View &,
-                      const MyGL::Color & > setupMaterial;
+                      const Tempest::Color & > setupMaterial;
 
-    void clickEvent( int x, int y, const MyWidget::MouseEvent &e );
+    void clickEvent( int x, int y, const Tempest::MouseEvent &e );
     void onRender(double dt);
 
     static double coordCast( int icoord );
@@ -53,7 +53,7 @@ class World {
     void moveCamera( double x, double y );
     void tick();
 
-    MyGL::Camera   camera;
+    Tempest::Camera   camera;
     Scene &getScene();
     ParticleSystemEngine & getParticles();
 
@@ -83,7 +83,7 @@ class World {
                               int mx, int my, int w, int h );
     size_t unitUnderMouse(int mx, int my, int w, int h ) const;
 
-    void paintHUD( MyWidget::Painter &, int w, int h );
+    void paintHUD( Tempest::Painter &, int w, int h );
 
     Player& player( int id );
 
@@ -179,10 +179,10 @@ class World {
 
     void createResp( int pl, int x, int y, int minX, int minY );
 
-    bool isUnitUnderMouse(MyGL::Matrix4x4 & gmMat, const GameObject &obj,
+    bool isUnitUnderMouse(Tempest::Matrix4x4 & gmMat, const GameObject &obj,
                            int mx, int my, int w, int h , int &dist) const;
 
-    MyWidget::Rect projectUnit(GameObject& obj , const MyGL::Matrix4x4 &gmMat, int w, int h);
+    Tempest::Rect projectUnit(GameObject& obj , const Tempest::Matrix4x4 &gmMat, int w, int h);
 };
 
 #endif // WORLD_H

@@ -281,7 +281,7 @@ void GameObjectView::loadView( const Model &model,
   view.push_back( object );
   }
 
-void GameObjectView::loadView(const MyGL::Model<WaterVertex> &model ){
+void GameObjectView::loadView(const Tempest::Model<WaterVertex> &model ){
   view.clear();
 
   for( int i=0; i<3; ++i )
@@ -684,7 +684,7 @@ void GameObjectView::updatePosRigid( Rigid &rigid ){
   }
 
 void GameObjectView::updatePosRigid( Physics::Sphere &rigid, size_t i ) {
-  MyGL::Matrix4x4 m;
+  Tempest::Matrix4x4 m;
   m.identity();
 
   m.mul  ( rigid.transform() );
@@ -710,7 +710,7 @@ void GameObjectView::updatePosRigid( Physics::Sphere &rigid, size_t i ) {
   }
 
 void GameObjectView::updatePosRigid( Physics::Box &rigid, size_t i ) {
-  MyGL::Matrix4x4 m;
+  Tempest::Matrix4x4 m;
   m.identity();
 
   m.mul  ( rigid.transform() );
@@ -767,11 +767,11 @@ const ProtoObject &GameObjectView::getClass() const {
   return *cls;
   }
 
-MyGL::Matrix4x4 GameObjectView::_transform() const {
+Tempest::Matrix4x4 GameObjectView::_transform() const {
   if( view.size()==0 ){
     if( smallViews.size() )
       return smallViews[0]->transform(); else
-      return MyGL::Matrix4x4();
+      return Tempest::Matrix4x4();
     }
 
   return view[0].transform();

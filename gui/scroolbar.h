@@ -1,21 +1,21 @@
 #ifndef SCROOLBAR_H
 #define SCROOLBAR_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 
 #include "gui/button.h"
 
 class Resource;
 class Button;
 
-class ScroolBar : public MyWidget::Widget {
+class ScroolBar : public Tempest::Widget {
   public:
-    typedef MyWidget::Bind::UserTexture Texture;
+    typedef Tempest::Bind::UserTexture Texture;
 
     ScroolBar(Resource &res);
 
-    void setOrientation( MyWidget::Orientation ori );
-    MyWidget::Orientation orientation() const;
+    void setOrientation( Tempest::Orientation ori );
+    Tempest::Orientation orientation() const;
 
     void setRange( int min, int max );
     int range() const;
@@ -25,7 +25,7 @@ class ScroolBar : public MyWidget::Widget {
     void setValue( int v );
     int  value() const;
 
-    MyWidget::signal<int> valueChanged;
+    Tempest::signal<int> valueChanged;
 
   private:
     void inc();
@@ -39,28 +39,28 @@ class ScroolBar : public MyWidget::Widget {
     int rmin, rmax, smallStep, largeStep;
     int mvalue;
 
-    MyWidget::Orientation orient;
+    Tempest::Orientation orient;
 
     void alignCenBtn(int, int);
 
     struct CenBtn: public Button {
       CenBtn( Resource & r ):Button(r) {}
 
-      void mouseDownEvent(MyWidget::MouseEvent &e);
-      void mouseDragEvent(MyWidget::MouseEvent &e);
-      void keyPressEvent(MyWidget::KeyEvent &e);
+      void mouseDownEvent(Tempest::MouseEvent &e);
+      void mouseDragEvent(Tempest::MouseEvent &e);
+      void keyPressEvent(Tempest::KeyEvent &e);
 
       //bool mouseTracking;
-      MyWidget::Point mpos, oldPos;
+      Tempest::Point mpos, oldPos;
 
-      void moveTo( MyWidget::Point p );
+      void moveTo( Tempest::Point p );
       };
 
     struct CenWidget : public Widget {
       CenWidget( Resource & r, ScroolBar *owner );
 
-      void mouseDownEvent(MyWidget::MouseEvent &e);
-      void mouseUpEvent(MyWidget::MouseEvent &e);
+      void mouseDownEvent(Tempest::MouseEvent &e);
+      void mouseUpEvent(Tempest::MouseEvent &e);
 
       ScroolBar * ow;
       };

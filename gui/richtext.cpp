@@ -1,6 +1,6 @@
 #include "richtext.h"
 
-#include <MyWidget/Painter>
+#include <Tempest/Painter>
 #include "font.h"
 
 RichText::RichText( Resource & res ):res(res) {
@@ -9,15 +9,15 @@ RichText::RichText( Resource & res ):res(res) {
 
 void RichText::renderText( int x, int y,
                            Resource & res,
-                           MyWidget::Painter &p,
+                           Tempest::Painter &p,
                            const std::wstring &txt) {
-  MyWidget::Size r;
+  Tempest::Size r;
   rText(x, y, res, &p, txt, r);
   }
 
-MyWidget::Size RichText::bounds( Resource & res,
+Tempest::Size RichText::bounds( Resource & res,
                                  const std::wstring &txt ) {
-  MyWidget::Size r;
+  Tempest::Size r;
   rText(0, 0, res, 0, txt, r);
 
   return r;
@@ -30,14 +30,14 @@ void RichText::setText(const std::wstring &text) {
 
 void RichText::rText( int dx, int dy,
                       Resource &res,
-                      MyWidget::Painter *p,
+                      Tempest::Painter *p,
                       const std::wstring &txt,
-                      MyWidget::Size & rect ) {
+                      Tempest::Size & rect ) {
   Font font(15);
 
   if( p ){
     p->setFont(font);
-    p->setBlendMode( MyWidget::alphaBlend );
+    p->setBlendMode( Tempest::alphaBlend );
     }
 
   int x = 0, y = 0, w = 0, h = 0;
@@ -179,11 +179,11 @@ void RichText::rText( int dx, int dy,
       }
     }
 
-  rect = MyWidget::Size( w, h+ddy );
+  rect = Tempest::Size( w, h+ddy );
   }
 
-void RichText::paintEvent( MyWidget::PaintEvent &e ) {
-  MyWidget::Painter p(e);
+void RichText::paintEvent( Tempest::PaintEvent &e ) {
+  Tempest::Painter p(e);
 
   renderText( 0, 0, res, p, txt );
   }

@@ -1,8 +1,8 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include <MyWidget/Widget>
-#include <MyWidget/Shortcut>
+#include <Tempest/Widget>
+#include <Tempest/Shortcut>
 #include "graphics/paintergui.h"
 #include "font.h"
 
@@ -10,17 +10,17 @@
 
 class Resource;
 
-class Button : public MyWidget::Widget {
+class Button : public Tempest::Widget {
   public:
-    typedef MyWidget::Bind::UserTexture Texture;
+    typedef Tempest::Bind::UserTexture Texture;
     Button( Resource & res );
 
-    MyWidget::signal<> clicked;
+    Tempest::signal<> clicked;
 
     Texture frame, back[2], icon;
 
     void setBackTexture( const Texture & t );
-    void setShortcut( const MyWidget::Shortcut & sc );
+    void setShortcut( const Tempest::Shortcut & sc );
 
     const std::wstring text() const;
     void setText( const std::wstring& t );
@@ -29,22 +29,22 @@ class Button : public MyWidget::Widget {
     void setHint( const std::wstring & str );
     const std::wstring &hint() const;
   protected:
-    void drawFrame(MyWidget::Painter &p);
+    void drawFrame(Tempest::Painter &p);
 
-    MyWidget::Rect viewRect() const;
+    Tempest::Rect viewRect() const;
 
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseMoveEvent(MyWidget::MouseEvent &e);
-    void mouseUpEvent(MyWidget::MouseEvent &e);
-    void paintEvent( MyWidget::PaintEvent &p);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseMoveEvent(Tempest::MouseEvent &e);
+    void mouseUpEvent(Tempest::MouseEvent &e);
+    void paintEvent( Tempest::PaintEvent &p);
 
-    void keyPressEvent(MyWidget::KeyEvent &e);
+    void keyPressEvent(Tempest::KeyEvent &e);
 
     void focusChange(bool);
     bool pressed, presAnim;
     std::wstring txt, hnt;
 
-    MyWidget::Shortcut hotKey;
+    Tempest::Shortcut hotKey;
     Resource & res;
 
     Font font;

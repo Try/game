@@ -16,19 +16,19 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
   public:
     IntroWidget( Game &game,
                  Resource &res,
-                 MyWidget::Widget* ow ):ModalWindow(res, ow){
+                 Tempest::Widget* ow ):ModalWindow(res, ow){
       Panel *p = new Panel(res);
       p->setMinimumSize(550, 300);
-      p->setSizePolicy( MyWidget::FixedMin );
+      p->setSizePolicy( Tempest::FixedMin );
 
       layout().add( new Widget() );
       layout().add(p);
       layout().add( new Widget() );
       layout().add( new Widget() );
 
-      setLayout( MyWidget::Vertical );
+      setLayout( Tempest::Vertical );
 
-      p->setLayout( MyWidget::Horizontal );
+      p->setLayout( Tempest::Horizontal );
       p->layout().setMargin(8);
 
       Panel *p2 = new Panel(res);
@@ -41,7 +41,7 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
       v->setupUnit( game, "chest" );
       p->layout().add( v );
 
-      p2->setLayout( MyWidget::Vertical );
+      p2->setLayout( Tempest::Vertical );
       p2->layout().setMargin(16);
 
       RichText * t = new RichText(res);
@@ -50,34 +50,34 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
 
       Button * btn = new Button(res);
       btn->setText( Lang::tr(L"$(play)") );
-      btn->clicked.bind( *this, &MyWidget::Widget::deleteLater );
+      btn->clicked.bind( *this, &Tempest::Widget::deleteLater );
       p2->layout().add( btn );
       }
 
-    MyWidget::signal< const Scene &,
+    Tempest::signal< const Scene &,
                       ParticleSystemEngine &,
-                      MyGL::Texture2d & > renderScene;
-    MyWidget::signal<> updateView;
+                      Tempest::Texture2d & > renderScene;
+    Tempest::signal<> updateView;
   };
 
 class ScenarioMission1::EndScreenWidget:public ModalWindow{
   public:
     EndScreenWidget( Game &game,
                      Resource &res,
-                     MyWidget::Widget* ow,
+                     Tempest::Widget* ow,
                      bool isWin ):ModalWindow(res, ow){
       Panel *p = new Panel(res);
       p->setMinimumSize(300, 200);
-      p->setSizePolicy( MyWidget::FixedMin );
+      p->setSizePolicy( Tempest::FixedMin );
 
       layout().add( new Widget() );
       layout().add(p);
       layout().add( new Widget() );
       layout().add( new Widget() );
 
-      setLayout( MyWidget::Vertical );
+      setLayout( Tempest::Vertical );
 
-      p->setLayout( MyWidget::Vertical );
+      p->setLayout( Tempest::Vertical );
       p->layout().setMargin(8);
 
       RichText * t = new RichText(res);
@@ -89,14 +89,14 @@ class ScenarioMission1::EndScreenWidget:public ModalWindow{
 
       Widget *p2 = new Widget();
       p->layout().add(p2);
-      p2->setLayout( MyWidget::Horizontal );
+      p2->setLayout( Tempest::Horizontal );
       p2->setMaximumSize(2000, 30);
-      p2->setSizePolicy( MyWidget::Preferred, MyWidget::FixedMax );
+      p2->setSizePolicy( Tempest::Preferred, Tempest::FixedMax );
 
       if( isWin ){
         Button * btn = new Button(res);
         btn->setText( Lang::tr(L"$(continue_game)") );
-        btn->clicked.bind( *this, &MyWidget::Widget::deleteLater );
+        btn->clicked.bind( *this, &Tempest::Widget::deleteLater );
         p2->layout().add( btn );
 
         p2->layout().add( new Widget() );
@@ -106,7 +106,7 @@ class ScenarioMission1::EndScreenWidget:public ModalWindow{
         Button * btn = new Button(res);
         btn->setText( Lang::tr(L"$(restart_mission)") );
         btn->clicked.bind( game.scenario(), &Scenario::restartGame );
-        btn->clicked.bind( *this, &MyWidget::Widget::deleteLater );
+        btn->clicked.bind( *this, &Tempest::Widget::deleteLater );
         p2->layout().add( btn );
         p2->layout().add( new Widget() );
         }

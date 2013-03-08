@@ -20,20 +20,20 @@ Player::Player(int num) {
   m.num    = num;
   m.htCtrl = 0;
 
-  static MyGL::Color cl[8] = {
-    MyGL::Color(1, 1, 1 ),
-    MyGL::Color(1, 1, 0 ),
-    MyGL::Color(1, 0, 0 ),
-    MyGL::Color(0, 1, 0 ),
-    MyGL::Color(0, 0, 1 ),
-    MyGL::Color(1, 0, 1 ),
-    MyGL::Color(0, 1, 1 ),
-    MyGL::Color(0, 0, 0 ),
+  static Tempest::Color cl[8] = {
+    Tempest::Color(1, 1, 1 ),
+    Tempest::Color(1, 1, 0 ),
+    Tempest::Color(1, 0, 0 ),
+    Tempest::Color(0, 1, 0 ),
+    Tempest::Color(0, 0, 1 ),
+    Tempest::Color(1, 0, 1 ),
+    Tempest::Color(0, 1, 1 ),
+    Tempest::Color(0, 0, 0 ),
     };
 
   m.color = cl[ std::min(7, m.num) ];
   /*
-  m.color = MyGL::Color( 255*m.color.r(),
+  m.color = Tempest::Color( 255*m.color.r(),
                          255*m.color.g(),
                          255*m.color.b() );*/
   //setSyncFlag(0);
@@ -90,7 +90,7 @@ std::vector<GameObject*> &Player::selected() {
   return m.selected;
   }
 
-const MyGL::Color &Player::color() const {
+const Tempest::Color &Player::color() const {
   return m.color;
   }
 
@@ -145,7 +145,7 @@ int Player::number() const {
   return m.num;
   }
 
-const MyGL::Pixmap &Player::fog() const {
+const Tempest::Pixmap &Player::fog() const {
   return m.fog;
   }
 
@@ -168,17 +168,17 @@ void Player::computeFog(void *curW) {
     fillFog(m.fog, *(World*)curW);
   }
 
-void Player::fillFog(MyGL::Pixmap &p, World &wx ) {
+void Player::fillFog(Tempest::Pixmap &p, World &wx ) {
   const bool useFog = 0;
 
   if( p.width()  != wx.terrain().width() ||
       p.height() != wx.terrain().height() ){
-    p = MyGL::Pixmap( wx.terrain().width(),
+    p = Tempest::Pixmap( wx.terrain().width(),
                       wx.terrain().height(),
                       true );
 
     int cf = useFog? 0:255;
-    MyGL::Pixmap::Pixel pix;
+    Tempest::Pixmap::Pixel pix;
     pix.r = cf;
     pix.g = cf;
     pix.b = cf;
@@ -194,7 +194,7 @@ void Player::fillFog(MyGL::Pixmap &p, World &wx ) {
   //return;
 
   int cf2 = useFog ? 128:255;//128;
-  MyGL::Pixmap::Pixel pix;
+  Tempest::Pixmap::Pixel pix;
   pix.r = cf2;
   pix.g = cf2;
   pix.b = cf2;
@@ -221,15 +221,15 @@ void Player::fillFog(MyGL::Pixmap &p, World &wx ) {
     }
   }
 
-void Player::cride(MyGL::Pixmap &p,
+void Player::cride(Tempest::Pixmap &p,
                     int x, int y, int R ) {
-  MyGL::Pixmap::Pixel pix;
+  Tempest::Pixmap::Pixel pix;
   pix.r = 255;
   pix.g = 255;
   pix.b = 255;
   pix.a = 255;
 
-  MyGL::Pixmap::Pixel hpix[2] = {pix, pix};
+  Tempest::Pixmap::Pixel hpix[2] = {pix, pix};
   hpix[0].a = 128+64;
   hpix[0].r = hpix[0].a;
   hpix[0].g = hpix[0].a;

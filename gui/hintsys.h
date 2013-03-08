@@ -2,21 +2,21 @@
 #define HINTSYS_H
 
 #include <string>
-#include <MyWidget/Utility>
+#include <Tempest/Utility>
 
 class HintSys {
   public:
     static void setHint( const std::wstring& current,
-                         const MyWidget::Rect & r );
+                         const Tempest::Rect & r );
 
     static const std::wstring& hint();
-    static const MyWidget::Point pos();
+    static const Tempest::Point pos();
 
     static int time;
-    static const MyWidget::Rect& vrect();
+    static const Tempest::Rect& vrect();
   private:
     static std::wstring    current;
-    static MyWidget::Rect     rect;
+    static Tempest::Rect     rect;
   };
 
 #endif // HINTSYS_H

@@ -1,7 +1,7 @@
 #ifndef TABWIDGET_H
 #define TABWIDGET_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include <vector>
 #include "panel.h"
 
@@ -17,7 +17,7 @@ class TabWidget : public Panel {
     void addTab( Widget* );
     void setCurrentTab( int id );
 
-    MyWidget::signal<int> onTabChanged;
+    Tempest::signal<int> onTabChanged;
   private:
     using Widget::layout;
 

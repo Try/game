@@ -1,6 +1,6 @@
 #include "missiontargets.h"
 
-#include <MyWidget/Painter>
+#include <Tempest/Painter>
 #include "maingui.h"
 
 #include "richtext.h"
@@ -20,14 +20,14 @@ MissionTargets::MissionTargets( Game & game, Resource &res )
   setupTagets();
   }
 
-void MissionTargets::paintEvent(MyWidget::PaintEvent &e) {
-  MyWidget::Painter p(e);
+void MissionTargets::paintEvent(Tempest::PaintEvent &e) {
+  Tempest::Painter p(e);
 
-  p.setBlendMode( MyWidget::alphaBlend );
+  p.setBlendMode( Tempest::alphaBlend );
   MainGui::drawFrame(p, frame, box->pos(), box->size() );
 
   for( size_t i=0; i<box->layout().widgets().size(); ++i ){
-    MyWidget::Widget *wx = box->layout().widgets()[i];
+    Tempest::Widget *wx = box->layout().widgets()[i];
     int sz = wx->h();
     p.setTexture( ckFrame );
     p.drawRect( 7, wx->pos().y, sz, sz,
@@ -48,17 +48,17 @@ void MissionTargets::setupTagets() {
 
   int w = 180, h = 20;
 
-  setLayout( MyWidget::Vertical );
+  setLayout( Tempest::Vertical );
 
-  box = new MyWidget::Widget();
-  box->setLayout( MyWidget::Vertical );
+  box = new Tempest::Widget();
+  box->setLayout( Tempest::Vertical );
 
   for( size_t i=0; i<game.scenario().tagets().size(); ++i ){
     RichText *t = new RichText(res);
     std::wstring str = Lang::tr( game.scenario().tagets()[i].hint );
     t->setText( str );
 
-    MyWidget::Size sz = RichText::bounds(res, str);
+    Tempest::Size sz = RichText::bounds(res, str);
     t->setMaximumSize( sz );
 
     w = std::max(w, sz.w);
@@ -70,7 +70,7 @@ void MissionTargets::setupTagets() {
   box->setMaximumSize( w+40, h );
   box->layout().setMargin( 20, 10, 10, 10 );
 
-  box->setSizePolicy( MyWidget::FixedMax );
+  box->setSizePolicy( Tempest::FixedMax );
   setMaximumSize( box->sizePolicy().maxSize.w, sizePolicy().maxSize.h );
 
   setVisible( box->layout().widgets().size() );

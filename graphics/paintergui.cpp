@@ -31,11 +31,11 @@ void PainterGUI::unsetTexture() {
   drawer.unsetTexture();
   }
 
-void PainterGUI::setBlendMode(MyWidget::BlendMode m) {
+void PainterGUI::setBlendMode(Tempest::BlendMode m) {
   drawer.setBlendMode(m);
   }
 
-MyWidget::PaintTextEngine &PainterGUI::textEngine() {
+Tempest::PaintTextEngine &PainterGUI::textEngine() {
   return te;
   }
 
@@ -56,7 +56,7 @@ PainterGUI::TextEngine::TextEngine(PainterGUI &p, Resource &res)
 
   }
 
-void PainterGUI::TextEngine::setFont(const MyWidget::Bind::UserFont &f) {
+void PainterGUI::TextEngine::setFont(const Tempest::Bind::UserFont &f) {
   font = &f;
   }
 
@@ -68,9 +68,9 @@ void PainterGUI::TextEngine::drawText( int x, int y, int w, int h,
 
   font->fetch( res, str );
 
-  MyWidget::Rect oldScissor = p.scissor();
-  p.setScissor( oldScissor.intersected( MyWidget::Rect(x,y,w,h) ) );
-  p.setBlendMode( MyWidget::alphaBlend );
+  Tempest::Rect oldScissor = p.scissor();
+  p.setScissor( oldScissor.intersected( Tempest::Rect(x,y,w,h) ) );
+  p.setBlendMode( Tempest::alphaBlend );
 
   int tx = 0, ty = 0, tw = 0, th = 0;
   for( size_t i=0; i<str.size(); ++i ){
@@ -84,15 +84,15 @@ void PainterGUI::TextEngine::drawText( int x, int y, int w, int h,
     }
 
 
-  if( flg & MyWidget::AlignHCenter )
+  if( flg & Tempest::AlignHCenter )
     x += (w-tw)/2; else
 
-  if( flg & MyWidget::AlignRight )
+  if( flg & Tempest::AlignRight )
     x += (w-tw);
 
-  if( flg & MyWidget::AlignVCenter )
+  if( flg & Tempest::AlignVCenter )
     y += (h-th)/2; else
-  if( flg & MyWidget::AlignBottom )
+  if( flg & Tempest::AlignBottom )
     y += (h-th);
 
 

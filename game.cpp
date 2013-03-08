@@ -1,7 +1,7 @@
 #include "game.h"
 
-#include <MyGL/TessObject>
-#include <MyWidget/Event>
+#include <Tempest/TessObject>
+#include <Tempest/Event>
 #include <iostream>
 
 #include <windows.h>
@@ -10,7 +10,7 @@
 
 #include "util/serialize.h"
 #include "algo/algo.h"
-#include <MyGL/Pixmap>
+#include <Tempest/Pixmap>
 
 #include "util/gameserializer.h"
 
@@ -26,7 +26,7 @@
 
 Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   : graphics( ihwnd, iw, ih, isFS, isFS ? 2048:1024 ),
-    soundDev(ihwnd),
+    soundDev( ihwnd ),
     resource( graphics.texHolder,
               graphics.localTex,
               graphics.vboHolder,
@@ -44,7 +44,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   acceptMouseObj = true;
 
-  curMPos = MyWidget::Point(w/2, h/2);
+  curMPos = Tempest::Point(w/2, h/2);
 
   hwnd = ihwnd;
   currentPlayer = 1;
@@ -55,7 +55,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   initFactorys();  
 
   /*
-  MyGL::Model<>::Raw m = MyGL::Model<>::loadRawData("./data/models/grass/0.mx");
+  Tempest::Model<>::Raw m = Tempest::Model<>::loadRawData("./data/models/grass/0.mx");
 
   float tc[6][2] = {
     {0, 0},
@@ -93,7 +93,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
     m.vertex.push_back( m.vertex[i+1] );
     }
 
-  MyGL::Model<>::saveRawData("./data/models/grass/0.mx", m);
+  Tempest::Model<>::saveRawData("./data/models/grass/0.mx", m);
   */
 
   resource.load("./data/data.xml");
@@ -101,7 +101,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
 
   mscenario.reset( new DeatmachScenarion() );
 
-  //MyGL::Model<>::saveRawData( "./sphere.mx", MyGL::TessObject::sphere(3, 1) );
+  //Tempest::Model<>::saveRawData( "./sphere.mx", Tempest::TessObject::sphere(3, 1) );
 
   gui.createControls( msg, *this );
   gui.enableHooks( !serializator.isReader() );
@@ -228,8 +228,8 @@ void Game::onRender( double dt ){
   gui.renderMinimap(*world);
 
   if( gui.isCutsceneMode() ){
-    MyGL::Pixmap p(1,1, false);
-    MyGL::Pixmap::Pixel pix;
+    Tempest::Pixmap p(1,1, false);
+    Tempest::Pixmap::Pixel pix;
     pix.r = 255;
     pix.g = 255;
     pix.b = 255;
@@ -285,49 +285,49 @@ void Game::resizeEvent( int iw, int ih ){
   gui.resizeEvent(w,h);
   }
 
-void Game::mouseDownEvent( MyWidget::MouseEvent &e) {
+void Game::mouseDownEvent( Tempest::MouseEvent &e) {
   if( gui.mouseDownEvent(e) )
     return;
 
   gui.setFocus();
-  mouseTracking         = (e.button==MyWidget::MouseEvent::ButtonRight);
-  if(e.button==MyWidget::MouseEvent::ButtonLeft)
+  mouseTracking         = (e.button==Tempest::MouseEvent::ButtonRight);
+  if(e.button==Tempest::MouseEvent::ButtonLeft)
     selectionRectTracking = 1;
 
-  gui.selectionRect() = MyWidget::Rect(e.x, e.y, 0, 0);
+  gui.selectionRect() = Tempest::Rect(e.x, e.y, 0, 0);
 
-  lastMPos = MyWidget::Point( e.x, e.y );
+  lastMPos = Tempest::Point( e.x, e.y );
 
-  if( e.button==MyWidget::MouseEvent::ButtonLeft && player().editObj ){
+  if( e.button==Tempest::MouseEvent::ButtonLeft && player().editObj ){
     msg.message( currentPlayer, Behavior::EditNext );
     }
 
-  if( e.button==MyWidget::MouseEvent::ButtonRight && player().editObj ){
+  if( e.button==Tempest::MouseEvent::ButtonRight && player().editObj ){
     msg.message( currentPlayer, Behavior::EditDel );
     }
   }
 
-void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
+void Game::mouseUpEvent( Tempest::MouseEvent &e) {
   if( !selectionRectTracking && gui.mouseUpEvent(e) )
     return;
 
   gui.setFocus();
 
   mouseTracking         = false;
-  gui.selectionRect() = MyWidget::Rect(-1, -1, 0, 0);
+  gui.selectionRect() = Tempest::Rect(-1, -1, 0, 0);
   gui.update();
 
   F3 v = unProject( e.x, e.y );
 
   if( player().editObj==0 ){
-    if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+    if( e.button==Tempest::MouseEvent::ButtonLeft ){
       if( selectionRectTracking==2 )
         world->updateSelectionFlag( msg, currentPlayer ); else
         world->updateSelectionClick( msg, currentPlayer, e.x, e.y,
                                      w, h );
       }
 
-    if( e.button==MyWidget::MouseEvent::ButtonRight ){
+    if( e.button==Tempest::MouseEvent::ButtonRight ){
       size_t obj = world->unitUnderMouse( e.x, e.y,
                                           w, h );
 
@@ -350,8 +350,8 @@ void Game::mouseUpEvent( MyWidget::MouseEvent &e) {
                      e );
   }
 
-void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
-  curMPos = MyWidget::Point(e.x, e.y);
+void Game::mouseMoveEvent( Tempest::MouseEvent &e ) {
+  curMPos = Tempest::Point(e.x, e.y);
 
   if( !selectionRectTracking && gui.mouseMoveEvent(e) ){
     acceptMouseObj = false;
@@ -364,13 +364,13 @@ void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
     //world->camera.setSpinX( world->camera.spinX() - (e.x - lastMPos.x) );
     //world->camera.setSpinY( world->camera.spinY() - (e.y - lastMPos.y) );
 
-    lastMPos = MyWidget::Point(e.x, e.y);
+    lastMPos = Tempest::Point(e.x, e.y);
     }
 
   if( selectionRectTracking ){
     selectionRectTracking = 2;
 
-    MyWidget::Rect & r = gui.selectionRect();
+    Tempest::Rect & r = gui.selectionRect();
     r.w = e.x - gui.selectionRect().x;
     r.h = e.y - gui.selectionRect().y;
 
@@ -385,14 +385,14 @@ void Game::mouseMoveEvent( MyWidget::MouseEvent &e ) {
 
   }
 
-void Game::mouseWheelEvent( MyWidget::MouseEvent &e ) {
+void Game::mouseWheelEvent( Tempest::MouseEvent &e ) {
   if( gui.mouseWheelEvent(e) ){
     return;
     }
   gui.setFocus();
 
   if( (player().editObj && !serializator.isReader() ) &&
-      lastKEvent!=MyWidget::KeyEvent::K_Down ){
+      lastKEvent!=Tempest::KeyEvent::K_Down ){
     int dR = 10;
     if( e.delta<0 )
       dR = -10;
@@ -405,22 +405,22 @@ void Game::mouseWheelEvent( MyWidget::MouseEvent &e ) {
     }
 }
 
-void Game::scutEvent(MyWidget::KeyEvent &e) {
+void Game::scutEvent(Tempest::KeyEvent &e) {
   gui.scutEvent(e);
   }
 
-void Game::keyDownEvent( MyWidget::KeyEvent &e ) {
+void Game::keyDownEvent( Tempest::KeyEvent &e ) {
   if( gui.keyDownEvent(e) )
     return;
 
   lastKEvent = e.key;
   }
 
-void Game::keyUpEvent( MyWidget::KeyEvent & e ) {
+void Game::keyUpEvent( Tempest::KeyEvent & e ) {
   if( gui.keyUpEvent(e) )
     return;
 
-  lastKEvent = MyWidget::KeyEvent::K_NoKey;
+  lastKEvent = Tempest::KeyEvent::K_NoKey;
   }
 
 void Game::toogleFullScr() {
@@ -596,7 +596,7 @@ void Game::onUnitDied( GameObject& u, Player & pl ) {
   }
 
 Game::F3 Game::unProject( int x, int y, float destZ ) {
-  MyGL::Matrix4x4 mat = world->camera.projective();
+  Tempest::Matrix4x4 mat = world->camera.projective();
   mat.mul( world->camera.view() );
   mat.inverse();
 
@@ -649,7 +649,7 @@ Game::F3 Game::unProject(int x, int y) {
   }
 
 Game::F3 Game::project(float x, float y, float z) {
-  MyGL::Matrix4x4 mat = world->camera.projective();
+  Tempest::Matrix4x4 mat = world->camera.projective();
   mat.mul( world->camera.view() );
   //mat.transpose();
 
@@ -672,17 +672,17 @@ void Game::moveCamera() {
   const double cameraStep = 0.1;
   const int sensetive = 20;
 
-  if( curMPos.x < sensetive || lastKEvent==MyWidget::KeyEvent::K_Left ){
+  if( curMPos.x < sensetive || lastKEvent==Tempest::KeyEvent::K_Left ){
     world->moveCamera( -cameraStep, 0 );
     }
-  if( curMPos.x > w - sensetive || lastKEvent==MyWidget::KeyEvent::K_Right ){
+  if( curMPos.x > w - sensetive || lastKEvent==Tempest::KeyEvent::K_Right ){
     world->moveCamera( cameraStep, 0 );
     }
 
-  if( curMPos.y < sensetive || lastKEvent==MyWidget::KeyEvent::K_Up ){
+  if( curMPos.y < sensetive || lastKEvent==Tempest::KeyEvent::K_Up ){
     world->moveCamera( 0, -cameraStep );
     }
-  if( curMPos.y > h-sensetive || lastKEvent==MyWidget::KeyEvent::K_Down ){
+  if( curMPos.y > h-sensetive || lastKEvent==Tempest::KeyEvent::K_Down ){
     world->moveCamera( 0, cameraStep );
     }
   }
@@ -707,7 +707,7 @@ void Game::setCameraPos(GameObject &obj) {
   }
 
 void Game::minimapEvent( float fx, float fy,
-                         MyWidget::Event::MouseButton b,
+                         Tempest::Event::MouseButton b,
                          MiniMapView::Mode m ) {
   world->setMousePos( fx*world->terrain().width() *Terrain::quadSizef,
                       fy*world->terrain().height()*Terrain::quadSizef,
@@ -723,7 +723,7 @@ void Game::minimapEvent( float fx, float fy,
         y1 = World::coordCast(fy*world->terrain().height()*Terrain::quadSizef),
         z1 = world->camera.z();
 
-  if( b==MyWidget::MouseEvent::ButtonLeft ){
+  if( b==Tempest::MouseEvent::ButtonLeft ){
     float k = 1;//0.3;
     float x = world->camera.x(),
           y = world->camera.y(),
@@ -733,7 +733,7 @@ void Game::minimapEvent( float fx, float fy,
     world->moveCamera(0,0);
     }
 
-  if( b==MyWidget::MouseEvent::ButtonRight ){
+  if( b==Tempest::MouseEvent::ButtonRight ){
     msg.message( currentPlayer,
                  AbstractBehavior::Move,
                  fx*world->terrain().width() *Terrain::quadSizef,
@@ -747,7 +747,7 @@ Scenario &Game::scenario() {
 
 void Game::setupMaterials( AbstractGraphicObject &obj,
                            const ProtoObject::View &src,
-                           const MyGL::Color & teamColor ) {
+                           const Tempest::Color & teamColor ) {
   Resource &r = resource;
 
   Material material;
@@ -822,7 +822,7 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
   obj.setMaterial( material );
   }
 
-MyGL::Matrix4x4 &Game::shadowMat() {
+Tempest::Matrix4x4 &Game::shadowMat() {
   return graphics.closure.shadow.matrix;
   }
 
@@ -890,10 +890,10 @@ void Game::serialize( GameSerializer &s ) {
 
   world = worlds[curWorld].get();
 
-  gui.toogleEditLandMode = MyWidget::signal<const Terrain::EditMode&>();
+  gui.toogleEditLandMode = Tempest::signal<const Terrain::EditMode&>();
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
 
-  gui.paintObjectsHud = MyWidget::signal< MyWidget::Painter&, int, int>();
+  gui.paintObjectsHud = Tempest::signal< Tempest::Painter&, int, int>();
   gui.paintObjectsHud.bind( *world, &World::paintHUD );
 
   for( size_t i=0; i<worlds.size(); ++i )

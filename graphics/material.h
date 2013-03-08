@@ -1,10 +1,10 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include <MyGL/Texture2d>
-#include <MyGL/GraphicObject>
+#include <Tempest/Texture2d>
+#include <Tempest/GraphicObject>
 
-namespace MyGL{
+namespace Tempest{
   class VertexShader;
   class FragmentShader;
   }
@@ -13,14 +13,14 @@ class Material {
   public:
     Material();
 
-    MyGL::Texture2d diffuse, normal, glow;
+    Tempest::Texture2d diffuse, normal, glow;
     float specular;
 
     bool  useAlphaTest;
     bool  zWrighting;
     float alphaTrestRef;
 
-    const MyGL::Color *teamColor;
+    const Tempest::Color *teamColor;
 
     struct Usage{
       bool mainPass, shadowCast, terrainMinor,
@@ -29,90 +29,90 @@ class Material {
            omni, grass;
       } usage;
 
-    void gbuffer( MyGL::RenderState& /*d*/,
-                  const MyGL::Matrix4x4 & /*object*/,
-                  const MyGL::AbstractCamera&,
-                  MyGL::UniformTable &,
-                  const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void gbuffer( Tempest::RenderState& /*d*/,
+                  const Tempest::Matrix4x4 & /*object*/,
+                  const Tempest::AbstractCamera&,
+                  Tempest::UniformTable &,
+                  const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void grass( MyGL::RenderState& /*d*/,
-                const MyGL::Matrix4x4 & /*object*/,
-                const MyGL::AbstractCamera&,
-                MyGL::UniformTable &,
-                const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void grass( Tempest::RenderState& /*d*/,
+                const Tempest::Matrix4x4 & /*object*/,
+                const Tempest::AbstractCamera&,
+                Tempest::UniformTable &,
+                const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void additive( MyGL::RenderState& /*d*/,
-                   const MyGL::Matrix4x4 & /*object*/,
-                   const MyGL::AbstractCamera&,
-                   MyGL::UniformTable &,
-                   const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void additive( Tempest::RenderState& /*d*/,
+                   const Tempest::Matrix4x4 & /*object*/,
+                   const Tempest::AbstractCamera&,
+                   Tempest::UniformTable &,
+                   const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void terrainMinor( MyGL::RenderState& /*d*/,
-                       const MyGL::Matrix4x4 & /*object*/,
-                       const MyGL::AbstractCamera&,
-                       MyGL::UniformTable &,
-                       const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void terrainMinor( Tempest::RenderState& /*d*/,
+                       const Tempest::Matrix4x4 & /*object*/,
+                       const Tempest::AbstractCamera&,
+                       Tempest::UniformTable &,
+                       const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void terrainMinorZ( MyGL::RenderState& /*d*/,
-                        const MyGL::Matrix4x4 & /*object*/,
-                        const MyGL::AbstractCamera&,
-                        MyGL::UniformTable &,
-                        const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void terrainMinorZ( Tempest::RenderState& /*d*/,
+                        const Tempest::Matrix4x4 & /*object*/,
+                        const Tempest::AbstractCamera&,
+                        Tempest::UniformTable &,
+                        const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void transparent( MyGL::RenderState& /*d*/,
-                      const MyGL::Matrix4x4 & /*object*/,
-                      const MyGL::AbstractCamera&,
-                      MyGL::UniformTable &,
-                      const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void transparent( Tempest::RenderState& /*d*/,
+                      const Tempest::Matrix4x4 & /*object*/,
+                      const Tempest::AbstractCamera&,
+                      Tempest::UniformTable &,
+                      const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void transparentZ( MyGL::RenderState& /*d*/,
-                      const MyGL::Matrix4x4 & /*object*/,
-                      const MyGL::AbstractCamera&,
-                      MyGL::UniformTable &,
-                      const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void transparentZ( Tempest::RenderState& /*d*/,
+                      const Tempest::Matrix4x4 & /*object*/,
+                      const Tempest::AbstractCamera&,
+                      Tempest::UniformTable &,
+                      const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void glowPass( MyGL::RenderState& /*d*/,
-                   const MyGL::Matrix4x4 & /*object*/,
-                   const MyGL::AbstractCamera&,
-                   MyGL::UniformTable &,
-                   const MyGL::Matrix4x4 &unused ) const;
+    void glowPass( Tempest::RenderState& /*d*/,
+                   const Tempest::Matrix4x4 & /*object*/,
+                   const Tempest::AbstractCamera&,
+                   Tempest::UniformTable &,
+                   const Tempest::Matrix4x4 &unused ) const;
 
-    void shadow( MyGL::RenderState& /*d*/,
-                 const MyGL::Matrix4x4 & /*object*/,
-                 const MyGL::AbstractCamera&,
-                 MyGL::UniformTable &,
-                 const MyGL::Matrix4x4 &sh ) const;
+    void shadow( Tempest::RenderState& /*d*/,
+                 const Tempest::Matrix4x4 & /*object*/,
+                 const Tempest::AbstractCamera&,
+                 Tempest::UniformTable &,
+                 const Tempest::Matrix4x4 &sh ) const;
 
-    void displace( MyGL::RenderState& /*d*/,
-                   const MyGL::Matrix4x4 & /*object*/,
-                   const MyGL::AbstractCamera&,
-                   MyGL::UniformTable &,
-                   const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void displace( Tempest::RenderState& /*d*/,
+                   const Tempest::Matrix4x4 & /*object*/,
+                   const Tempest::AbstractCamera&,
+                   Tempest::UniformTable &,
+                   const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void water( MyGL::RenderState& /*d*/,
-                const MyGL::Matrix4x4 & /*object*/,
-                const MyGL::AbstractCamera&,
-                MyGL::UniformTable &,
-                const MyGL::Matrix4x4 &shadowMatrix ) const;
+    void water( Tempest::RenderState& /*d*/,
+                const Tempest::Matrix4x4 & /*object*/,
+                const Tempest::AbstractCamera&,
+                Tempest::UniformTable &,
+                const Tempest::Matrix4x4 &shadowMatrix ) const;
 
-    void omni(MyGL::RenderState& /*d*/,
-               const MyGL::Matrix4x4 & /*object*/,
-               const MyGL::AbstractCamera&,
-               MyGL::UniformTable &,
-               const MyGL::Matrix4x4 &shM ) const;
+    void omni(Tempest::RenderState& /*d*/,
+               const Tempest::Matrix4x4 & /*object*/,
+               const Tempest::AbstractCamera&,
+               Tempest::UniformTable &,
+               const Tempest::Matrix4x4 &shM ) const;
 
-    void fogOfWar(MyGL::RenderState& /*d*/,
-                   const MyGL::Matrix4x4 & /*object*/,
-                   const MyGL::AbstractCamera&,
-                   MyGL::UniformTable & table, bool zpass) const;
+    void fogOfWar(Tempest::RenderState& /*d*/,
+                   const Tempest::Matrix4x4 & /*object*/,
+                   const Tempest::AbstractCamera&,
+                   Tempest::UniformTable & table, bool zpass) const;
 
     static float wind;
   //private:
-    static MyGL::Matrix4x4 animateObjMatrix( const MyGL::Matrix4x4 &object,
+    static Tempest::Matrix4x4 animateObjMatrix( const Tempest::Matrix4x4 &object,
                                              double power = 1 );
   };
 
-typedef MyGL::AbstractGraphicObject<Material> AbstractGraphicObject;
-typedef MyGL::GraphicObject<Material>         GraphicObject;
+typedef Tempest::AbstractGraphicObject<Material> AbstractGraphicObject;
+typedef Tempest::GraphicObject<Material>         GraphicObject;
 
 #endif // MATERIAL_H

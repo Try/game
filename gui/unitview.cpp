@@ -9,10 +9,10 @@ UnitView::UnitView( Resource &res )
   //texture = res.texHolder.create(120, 200);
 
   scene.lights().direction().resize(1);
-  MyGL::DirectionLight light;
+  Tempest::DirectionLight light;
   light.setDirection( -2, 1, -2.0 );
-  light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
-  light.setAblimient( MyGL::Color( 0.33, 0.33,  0.35) );
+  light.setColor    ( Tempest::Color( 0.7, 0.7, 0.7 ) );
+  light.setAblimient( Tempest::Color( 0.33, 0.33,  0.35) );
   scene.lights().direction()[0] = light;
 
   folowMode = 0;
@@ -58,7 +58,7 @@ void UnitView::setupUnit( Game &game,
                                   p,
                                   prototypes ) );
   view->loadView( res, world->physics, 0 );
-  view->teamColor = MyGL::Color(1, 1, 0, 1);
+  view->teamColor = Tempest::Color(1, 1, 0, 1);
 
   view->setViewPosition(0,0,0);
 
@@ -82,21 +82,21 @@ void UnitView::updateView() {
     }
   }
 
-void UnitView::mouseDownEvent(MyWidget::MouseEvent &) {
+void UnitView::mouseDownEvent(Tempest::MouseEvent &) {
   folowMode = (1);
   }
 
-void UnitView::mouseUpEvent(MyWidget::MouseEvent &) {
+void UnitView::mouseUpEvent(Tempest::MouseEvent &) {
   folowMode = (0);
   }
 
-void UnitView::paintEvent(MyWidget::PaintEvent &e) {
+void UnitView::paintEvent(Tempest::PaintEvent &e) {
   //updateView();
   TextureView::paintEvent(e);
   }
 
 void UnitView::setupCamera() {
-  MyGL::Camera camera;
+  Tempest::Camera camera;
   camera.setPerespective( true, w(), h() );
   camera.setPosition( 0, 0, 0 );
   camera.setDistance( 2 );

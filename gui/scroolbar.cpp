@@ -1,6 +1,6 @@
 #include "scroolbar.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include <iostream>
 
 #include "gui/button.h"
@@ -13,12 +13,12 @@ ScroolBar::ScroolBar( Resource & res ) {
 
   setRange(0, 100);
 
-  setOrientation( MyWidget::Vertical );
+  setOrientation( Tempest::Vertical );
 
-  MyWidget::SizePolicy p;
-  p.typeH = MyWidget::FixedMax;
-  p.typeV = MyWidget::FixedMax;
-  p.maxSize = MyWidget::Size(27, 27);
+  Tempest::SizePolicy p;
+  p.typeH = Tempest::FixedMax;
+  p.typeV = Tempest::FixedMax;
+  p.maxSize = Tempest::Size(27, 27);
 
   Button *b[2] = { new Button(res), new Button(res) };
   cen = new CenWidget( res, this );
@@ -47,25 +47,25 @@ ScroolBar::ScroolBar( Resource & res ) {
   alignCenBtn(-1, -1);
   }
 
-void ScroolBar::setOrientation( MyWidget::Orientation ori ) {
+void ScroolBar::setOrientation( Tempest::Orientation ori ) {
   setLayout( ori );
   layout().setMargin(0);
   orient = ori;
 
-  MyWidget::SizePolicy p;
-  if( ori==MyWidget::Vertical ){
+  Tempest::SizePolicy p;
+  if( ori==Tempest::Vertical ){
     p.maxSize.w = 27;
-    p.typeH = MyWidget::FixedMax;
+    p.typeH = Tempest::FixedMax;
     } else {
     p.maxSize.h = 27;
-    p.typeV = MyWidget::FixedMax;
+    p.typeV = Tempest::FixedMax;
     }
 
-  p.minSize = MyWidget::Size(27, 27);
+  p.minSize = Tempest::Size(27, 27);
   setSizePolicy(p);
   }
 
-MyWidget::Orientation ScroolBar::orientation() const {
+Tempest::Orientation ScroolBar::orientation() const {
   return orient;
   }
 
@@ -97,9 +97,9 @@ void ScroolBar::setValue(int v) {
     mvalue = v;
     valueChanged(v);
 
-    MyWidget::Point p = cenBtn->pos();
+    Tempest::Point p = cenBtn->pos();
 
-    if( orient==MyWidget::Vertical )
+    if( orient==Tempest::Vertical )
       p.y = v*(cen->h()-cenBtn->h())/std::max(1, rmax-rmin); else
       p.x = v*(cen->w()-cenBtn->w())/std::max(1, rmax-rmin);
 
@@ -129,7 +129,7 @@ void ScroolBar::decL() {
 
 void ScroolBar::updateValueFromView(int, unsigned) {
   int v;
-  if( orient==MyWidget::Vertical )
+  if( orient==Tempest::Vertical )
     v = (range()*cenBtn->y())/(cen->h() - cenBtn->h()); else
     v = (range()*cenBtn->x())/(cen->w() - cenBtn->w());
 
@@ -140,34 +140,34 @@ void ScroolBar::updateValueFromView(int, unsigned) {
 void ScroolBar::alignCenBtn( int, int ) {
   int w = cen->w(), h = cen->h();
 
-  if( orient==MyWidget::Vertical )
+  if( orient==Tempest::Vertical )
     h = 40; else
     w = 40;
 
   cenBtn->setGeometry(0,0, w,h );
   }
 
-void ScroolBar::CenBtn::mouseDownEvent(MyWidget::MouseEvent &e) {
+void ScroolBar::CenBtn::mouseDownEvent(Tempest::MouseEvent &e) {
   Button::mouseDownEvent(e);
 
   mpos   = mapToRoot( e.pos() );
   oldPos = pos();
   }
 
-void ScroolBar::CenBtn::mouseDragEvent(MyWidget::MouseEvent &e) {
+void ScroolBar::CenBtn::mouseDragEvent(Tempest::MouseEvent &e) {
   moveTo( oldPos - ( mpos - mapToRoot(e.pos()) ) );
   }
 
-void ScroolBar::CenBtn::keyPressEvent(MyWidget::KeyEvent &e) {/*
-  if( orient==MyWidget::Vertical ){
-    if( e.key==MyWidget::KeyEvent::K_Up )
-      moveTo( pos()+MyWidget::Point(0,10) );
+void ScroolBar::CenBtn::keyPressEvent(Tempest::KeyEvent &e) {/*
+  if( orient==Tempest::Vertical ){
+    if( e.key==Tempest::KeyEvent::K_Up )
+      moveTo( pos()+Tempest::Point(0,10) );
     }*/
 
   e.ignore();
   }
 
-void ScroolBar::CenBtn::moveTo( MyWidget::Point p ) {
+void ScroolBar::CenBtn::moveTo( Tempest::Point p ) {
   p.x = std::max(p.x, 0);
   p.y = std::max(p.y, 0);
 
@@ -182,11 +182,11 @@ ScroolBar::CenWidget::CenWidget(Resource &r, ScroolBar *owner) {
   ow = owner;
   }
 
-void ScroolBar::CenWidget::mouseDownEvent(MyWidget::MouseEvent &) {
+void ScroolBar::CenWidget::mouseDownEvent(Tempest::MouseEvent &) {
   }
 
-void ScroolBar::CenWidget::mouseUpEvent(MyWidget::MouseEvent &e) {
-  if( ow->orientation()==MyWidget::Vertical ){
+void ScroolBar::CenWidget::mouseUpEvent(Tempest::MouseEvent &e) {
+  if( ow->orientation()==Tempest::Vertical ){
     if( e.pos().y < ow->cenBtn->y() )
       ow->decL();
 

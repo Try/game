@@ -1,7 +1,7 @@
 #include "unitlist.h"
 
 #include "gui/button.h"
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 
 #include "resource.h"
 #include "game/gameobject.h"
@@ -14,7 +14,7 @@
 #include "game.h"
 #include "util/weakworldptr.h"
 
-#include <MyWidget/Painter>
+#include <Tempest/Painter>
 
 struct UnitList::Btn : public Button {
   Btn( Resource & res ):Button(res){
@@ -26,15 +26,15 @@ struct UnitList::Btn : public Button {
     clicked(owner);
     }
 
-  void paintEvent(MyWidget::PaintEvent &e){
+  void paintEvent(Tempest::PaintEvent &e){
     Button::paintEvent(e);
 
-    MyWidget::Painter p(e);
+    Tempest::Painter p(e);
 
     PainterGUI& pt = (PainterGUI&)p.device();
     pt.setColor( 1, 1-std::max(1-oldHp/200.0, 0.0), 1-std::max(1-oldHp/128.0, 0.0), 1 );
 
-    p.setBlendMode( MyWidget::alphaBlend );
+    p.setBlendMode( Tempest::alphaBlend );
     p.setTexture( icon );
 
     int sz = std::min(w(), h());
@@ -44,7 +44,7 @@ struct UnitList::Btn : public Button {
     int icW = icon.data.rect.w*k,
         icH = icon.data.rect.h*k;
 
-    MyWidget::Rect s = p.scissor();
+    Tempest::Rect s = p.scissor();
     p.setScissor( viewRect() );
     p.drawRect( (w()-icW)/2, (h()-icH)/2, icW, icH,
                 0, 0, icon.data.rect.w, icon.data.rect.h );
@@ -53,7 +53,7 @@ struct UnitList::Btn : public Button {
     drawFrame(p);
     }
 
-  void customEvent(MyWidget::CustomEvent &){
+  void customEvent(Tempest::CustomEvent &){
     if( owner==0 )
       return;
 
@@ -65,18 +65,18 @@ struct UnitList::Btn : public Button {
     }
 
   GameObject * owner;
-  MyWidget::signal<GameObject*> clicked;
+  Tempest::signal<GameObject*> clicked;
 
   Texture icon;
   int oldHp;
   };
 
-struct UnitList::Lay : public MyWidget::Layout {
+struct UnitList::Lay : public Tempest::Layout {
   void applyLayout(){
     }
   };
 
-struct UnitList::View: public MyWidget::Widget{
+struct UnitList::View: public Tempest::Widget{
   View(){
     setLayout( new Lay() );
     }
@@ -95,13 +95,13 @@ UnitList::UnitList( CommandsPanel *panel,
 
   view = new View();
   view->setMinimumSize( sz*10+4, sz*3 );
-  view->setSizePolicy( MyWidget::FixedMin, MyWidget::FixedMin );
+  view->setSizePolicy( Tempest::FixedMin, Tempest::FixedMin );
 
   centralWidget().layout().add( view );
 
   setMinimumSize( sz*11, sz*3 );
 
-  setSizePolicy( MyWidget::FixedMin, MyWidget::Preferred );
+  setSizePolicy( Tempest::FixedMin, Tempest::Preferred );
   }
 
 void UnitList::setup(const std::vector<GameObject*> &ux ) {

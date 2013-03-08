@@ -1,17 +1,17 @@
 #ifndef PAINTERGUI_H
 #define PAINTERGUI_H
 
-#include <MyWidget/Painter>
-#include <MyGL/Texture2d>
+#include <Tempest/Painter>
+#include <Tempest/Texture2d>
 #include "pixmapspool.h"
 
-namespace MyGL{
+namespace Tempest{
   class Device;
   }
 
 class GUIPass;
 
-namespace MyWidget{
+namespace Tempest{
   namespace Bind{
     struct UserTexture{
       UserTexture(){
@@ -24,7 +24,7 @@ namespace MyWidget{
 
 class Resource;
 
-class PainterGUI: public MyWidget::PainterDevice {
+class PainterGUI: public Tempest::PainterDevice {
   public:
     PainterGUI( GUIPass & drawer,
                 Resource &res, int sx, int sy, int sw, int sh );
@@ -36,8 +36,8 @@ class PainterGUI: public MyWidget::PainterDevice {
     void setTexture(const Texture &t);
     void unsetTexture();
 
-    void setBlendMode(MyWidget::BlendMode m);
-    MyWidget::PaintTextEngine& textEngine();
+    void setBlendMode(Tempest::BlendMode m);
+    Tempest::PaintTextEngine& textEngine();
 
     void setColor(float r, float g, float b, float a );
 
@@ -45,15 +45,15 @@ class PainterGUI: public MyWidget::PainterDevice {
     void popState();
   private:
     GUIPass & drawer;
-    struct TextEngine:public MyWidget::PaintTextEngine{
+    struct TextEngine:public Tempest::PaintTextEngine{
       TextEngine( PainterGUI & p, Resource& res );
 
-      void setFont( const MyWidget::Bind::UserFont &f );
+      void setFont( const Tempest::Bind::UserFont &f );
       void drawText( int x, int y, int w, int h, const std::wstring &,
-                     int align = MyWidget::NoAlign );
+                     int align = Tempest::NoAlign );
       PainterGUI & p;
       Resource   & res;
-      const MyWidget::Bind::UserFont * font;
+      const Tempest::Bind::UserFont * font;
       } te;
   };
 

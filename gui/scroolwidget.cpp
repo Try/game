@@ -1,10 +1,10 @@
 #include "scroolwidget.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 
 ScroolWidget::ScroolWidget(Resource &res)
-  :MyWidget::Widget(), sb(res) {
-  setLayout( MyWidget::Horizontal );
+  :Tempest::Widget(), sb(res) {
+  setLayout( Tempest::Horizontal );
   layout().add(&box);
   layout().add(&sb);
 
@@ -16,13 +16,13 @@ ScroolWidget::ScroolWidget(Resource &res)
   lay = new ProxyLayout();
   lay->scrool = &sb;
   cen->setLayout( lay );
-  box.setLayout( MyWidget::Vertical );
+  box.setLayout( Tempest::Vertical );
 
   onResize.bind(*this, &ScroolWidget::resizeEv);
   sb.valueChanged.bind( *this, &ScroolWidget::scrool );
   }
 
-MyWidget::Widget &ScroolWidget::centralWidget() {
+Tempest::Widget &ScroolWidget::centralWidget() {
   return *cen;
   }
 
@@ -33,7 +33,7 @@ void ScroolWidget::setScroolBarVisible(bool v) {
     layout().add( &sb );
   }
 
-void ScroolWidget::mouseWheelEvent(MyWidget::MouseEvent &e) {
+void ScroolWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
   if( !rect().contains(e.x+x(), e.y+y()) ){
     e.ignore();
     return;
@@ -59,17 +59,17 @@ void ScroolWidget::ProxyLayout::applyLayout() {
       sh = sw;
 
   for( size_t i=0; i<widgets().size(); ++i ){
-    MyWidget::Size s = sizeHint( widgets()[i] );
+    Tempest::Size s = sizeHint( widgets()[i] );
 
     sw += s.w;
     sh += s.h;
     }
 
-  MyWidget::Size sback;
+  Tempest::Size sback;
   if( widgets().size() )
     sback = sizeHint( widgets().back() );
 
-  if( orientation()==MyWidget::Vertical ){
+  if( orientation()==Tempest::Vertical ){
     scrool->setRange(0, sh-std::min( sback.h, scrool->h()) );
     owner()->setPosition( 0, -scrool->value() );
     owner()->resize( owner()->w(), sh );
@@ -82,14 +82,14 @@ void ScroolWidget::ProxyLayout::applyLayout() {
   LinearLayout::applyLayout();
   }
 
-MyWidget::Size ScroolWidget::ProxyLayout::sizeHint(const MyWidget::Widget *wid) {
+Tempest::Size ScroolWidget::ProxyLayout::sizeHint(const Tempest::Widget *wid) {
   int w = wid->sizePolicy().minSize.w,
       h = wid->sizePolicy().minSize.h;
 
-  if( wid->sizePolicy().typeH==MyWidget::FixedMax )
+  if( wid->sizePolicy().typeH==Tempest::FixedMax )
     w = wid->sizePolicy().maxSize.w;
-  if( wid->sizePolicy().typeV==MyWidget::FixedMax )
+  if( wid->sizePolicy().typeV==Tempest::FixedMax )
     h = wid->sizePolicy().maxSize.h;
 
-  return MyWidget::Size(w,h);
+  return Tempest::Size(w,h);
   }

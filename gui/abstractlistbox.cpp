@@ -39,15 +39,15 @@ void AbstractListBox::close() {
     }
   }
 
-void AbstractListBox::rmOverlay(MyWidget::Widget *) {
+void AbstractListBox::rmOverlay(Tempest::Widget *) {
   overlay = 0;
   }
 
-MyWidget::Widget* AbstractListBox::createDropList() {
+Tempest::Widget* AbstractListBox::createDropList() {
   Panel *box = new Panel(res);
-  box->setLayout( MyWidget::Horizontal );
+  box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
-  box->setPosition( mapToRoot( MyWidget::Point(0,h()) ) );
+  box->setPosition( mapToRoot( Tempest::Point(0,h()) ) );
   box->resize(170, 200);
 
   ScroolWidget *sw = new ScroolWidget( res );

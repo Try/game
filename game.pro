@@ -7,16 +7,29 @@ QMAKE_CXXFLAGS += -std=gnu++0x -Wall
 win32:RC_FILE = game.rc
 
 INCLUDEPATH += include
+INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 
-INCLUDEPATH += "C:/Users/Try/Home/Programming/MyGL2/MyGL/include"
-LIBS        += -L"C:/Users/Try/Home/Programming/MyGL2/lib" -l"MyGL"
+INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest2/Tempest/include"
+LIBS        += -L"C:/Users/Try/Home/Programming/Tempest2/lib" -l"Tempest_dx"
 
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 
+CONFIG += directx
 
-INCLUDEPATH += C:/Users/Try/Home/Programming/GuiCore/MyWidget/include
-LIBS        += -L"C:/Users/Try/Home/Programming/GuiCore/MyWidget-build-desktop/debug" -l"MyWidget"
+opengl:{
+  LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_gl"
+  LIBS += -L"$$(CG_LIB_PATH)" -l"opengl32" -l"cg" -l"cgGL"
+  LIBS += -L"$$(GLEW_PATH)/lib"  -l"glew32" -l"glew32"
+
+  DEFINES += TEMPEST_OPENGL
+  } else {
+  LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_dx"
+  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
+  LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
+
+  DEFINES += TEMPEST_DIRECTX
+  }
 
 INCLUDEPATH += "$$(DXSDK_DIR)/include"\
                "$$(CG_INC_PATH)" \

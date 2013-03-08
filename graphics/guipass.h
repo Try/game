@@ -1,23 +1,22 @@
 #ifndef GUIPASS_H
 #define GUIPASS_H
 
-#include <MyGL/VertexShaderHolder>
-#include <MyGL/FragmentShaderHolder>
+#include <Tempest/VertexShaderHolder>
+#include <Tempest/FragmentShaderHolder>
 
-#include <MyGL/Size>
-#include <MyWidget/Painter>
-#include <MyGL/RenderState>
+#include <Tempest/Painter>
+#include <Tempest/RenderState>
 
-#include <MyGL/VertexShader>
-#include <MyGL/FragmentShader>
-#include <MyGL/VertexBufferHolder>
-#include <MyGL/VertexBuffer>
+#include <Tempest/VertexShader>
+#include <Tempest/FragmentShader>
+#include <Tempest/VertexBufferHolder>
+#include <Tempest/VertexBuffer>
 
 #include "pixmapspool.h"
 
 #include <cstdint>
 
-namespace MyGL{
+namespace Tempest{
   class PostProcessHelper;
   }
 
@@ -26,13 +25,13 @@ class Resource;
 
 class GUIPass {
   public:
-    GUIPass( const MyGL::VertexShader   & vsh,
-             const MyGL::FragmentShader & fsh,
-             MyGL::VertexBufferHolder &vbo,
-             MyGL::Size &s );
+    GUIPass( const Tempest::VertexShader   & vsh,
+             const Tempest::FragmentShader & fsh,
+             Tempest::VertexBufferHolder &vbo,
+             Tempest::Size &s );
 
-    void exec( MainGui &gui, MyGL::Texture2d &rt,
-               MyGL::Texture2d &depth, MyGL::Device &device );
+    void exec( MainGui &gui, Tempest::Texture2d &rt,
+               Tempest::Texture2d &depth, Tempest::Device &device );
 
     void rect( int x0, int y0, int x1, int y1,
                int texDx, int texDy, int tw, int th );
@@ -41,7 +40,7 @@ class GUIPass {
     void unsetTexture();
 
     void clearBuffers();
-    void setBlendMode( MyWidget::BlendMode m );
+    void setBlendMode( Tempest::BlendMode m );
 
     void setCurrentBuffer( int i );
 
@@ -55,17 +54,17 @@ class GUIPass {
       float u,v;
       float color[4];
       };
-    MyWidget::Rect texRect;
+    Tempest::Rect texRect;
 
     struct GeometryBlock{
       size_t begin, size;
-      MyGL::RenderState state;
+      Tempest::RenderState state;
       PixmapsPool::TexturePtr texture;
       };
 
     struct Layer{
       std::vector<GeometryBlock> geometryBlocks;
-      MyGL::VertexBuffer<Vertex> guiGeometry;
+      Tempest::VertexBuffer<Vertex> guiGeometry;
 
       std::vector<Vertex> guiRawData;
       bool needToUpdate;
@@ -74,29 +73,29 @@ class GUIPass {
     std::vector<Layer> layers;
     int curLay;
 
-    MyGL::VertexDeclaration    vdecl;
+    Tempest::VertexDeclaration    vdecl;
 
-    MyGL::VertexShader   vs;
-    MyGL::FragmentShader fs;
-    MyGL::VertexBufferHolder & vbHolder;
+    Tempest::VertexShader   vs;
+    Tempest::FragmentShader fs;
+    Tempest::VertexBufferHolder & vbHolder;
 
-    MyGL::Texture2d noTexture, testTex;
+    Tempest::Texture2d noTexture, testTex;
 
-    MyGL::Size         & size;
-    MyWidget::Size       texSize;
+    Tempest::Size         & size;
+    Tempest::Size       texSize;
 
     float dTexCoord[2];
 
     struct State{
-      MyGL::Texture2d tex;
+      Tempest::Texture2d tex;
       float color[4];
       } state;
 
     std::vector<State> stateStk;
 
-    MyGL::Device *dev;
+    Tempest::Device *dev;
 
-    static MyGL::RenderState makeRS( MyWidget::BlendMode m );
+    static Tempest::RenderState makeRS( Tempest::BlendMode m );
   };
 
 #endif // GUIPASS_H

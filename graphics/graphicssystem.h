@@ -3,32 +3,30 @@
 
 #include <stdint.h>
 
-#include <MyGL/DirectX9>
-#include <MyGL/Device>
+#include <Tempest/DirectX9>
+#include <Tempest/Device>
 
-#include <MyGL/VertexBufferHolder>
-#include <MyGL/LocalVertexBufferHolder>
+#include <Tempest/VertexBufferHolder>
+#include <Tempest/LocalVertexBufferHolder>
 
-#include <MyGL/IndexBufferHolder>
+#include <Tempest/IndexBufferHolder>
 
-#include <MyGL/TextureHolder>
-#include <MyGL/LocalTexturesHolder>
+#include <Tempest/TextureHolder>
+#include <Tempest/LocalTexturesHolder>
 
-#include <MyGL/VertexShaderHolder>
-#include <MyGL/FragmentShaderHolder>
+#include <Tempest/VertexShaderHolder>
+#include <Tempest/FragmentShaderHolder>
 
-#include <MyGL/GraphicObject>
-#include <MyGL/AbstractScene>
-
-#include <MyGL/Size>
-#include <MyGL/Algo/PostProcessHelper>
+#include <Tempest/GraphicObject>
+#include <Tempest/AbstractScene>
+#include <Tempest/PostProcessHelper>
 
 #include "graphics/guipass.h"
 #include "graphics/scene.h"
 
-#include <MyWidget/signal>
+#include <Tempest/signal>
 
-namespace MyGL{
+namespace Tempest{
   class Camera;
   }
 
@@ -41,7 +39,7 @@ class GraphicsSystem {
     GraphicsSystem( void *hwnd, int w, int h, bool isFullScreen, int smSize );
 
     bool render( Scene &scene,
-                 ParticleSystemEngine &e, MyGL::Camera camera,
+                 ParticleSystemEngine &e, Tempest::Camera camera,
                  size_t dt );
     void resizeEvent( int w, int h, bool isFullScreen );
 
@@ -49,33 +47,33 @@ class GraphicsSystem {
 
     void renderSubScene( const Scene &scene,
                          ParticleSystemEngine &e,
-                         MyGL::Texture2d & out   );
+                         Tempest::Texture2d & out   );
 
-    MyWidget::signal<double> onRender;
-    void setFog( const MyGL::Pixmap& p );
+    Tempest::signal<double> onRender;
+    void setFog( const Tempest::Pixmap& p );
   private:
-    MyGL::DirectX9 directx;
+    Tempest::DirectX9 directx;
 
-    static MyGL::Device::Options makeOpt( bool isFullScreen );
+    static Tempest::Device::Options makeOpt( bool isFullScreen );
   public:
-    MyGL::Device   device;
+    Tempest::Device   device;
 
-    MyGL::TextureHolder           texHolder;
-    MyGL::LocalTexturesHolder     localTex;
-    MyGL::VertexBufferHolder      vboHolder;
-    MyGL::LocalVertexBufferHolder lvboHolder;
-    MyGL::IndexBufferHolder       iboHolder;
+    Tempest::TextureHolder           texHolder;
+    Tempest::LocalTexturesHolder     localTex;
+    Tempest::VertexBufferHolder      vboHolder;
+    Tempest::LocalVertexBufferHolder lvboHolder;
+    Tempest::IndexBufferHolder       iboHolder;
 
-    MyGL::VertexShaderHolder   vsHolder;
-    MyGL::FragmentShaderHolder fsHolder;
+    Tempest::VertexShaderHolder   vsHolder;
+    Tempest::FragmentShaderHolder fsHolder;
 
-    MyGL::PostProcessHelper    ppHelper;
-    MyGL::Texture2d    fogView;
+    Tempest::PostProcessHelper    ppHelper;
+    Tempest::Texture2d    fogView;
 
 
     struct ObjectsClosure{
       struct{
-        MyGL::Matrix4x4 matrix;
+        Tempest::Matrix4x4 matrix;
         } shadow;
 
       } closure;
@@ -84,9 +82,16 @@ class GraphicsSystem {
       float f[6][4];
       };
 
-    static void mkFrustum( const MyGL::AbstractCamera& c, Frustum& out );
-    static bool isVisible( const AbstractGraphicObject& c, const Frustum& f );
-    static bool isVisible( float x, float y, float z, float r, const Frustum& f );
+    static void mkFrustum( const Tempest::AbstractCamera& c, Frustum& out );
+
+    enum VisibleRet{
+      NotVisible = 0,
+      PartialVisible,
+      FullVisible
+      };
+
+    static VisibleRet isVisible( const AbstractGraphicObject& c, const Frustum& f );
+    static VisibleRet isVisible( float x, float y, float z, float r, const Frustum& f );
   private:
     GUIPass gui;
     MainGui * widget;
@@ -94,257 +99,257 @@ class GraphicsSystem {
 
     bool useFog, useHDR;
 
-    MyGL::Size  screenSize;
+    Tempest::Size  screenSize;
     static  float smMatSize( const Scene & s );
-    static  MyGL::Matrix4x4 makeShadowMatrix( const Scene & s );
-    static  MyGL::Matrix4x4 makeShadowMatrix( const Scene & s, double *dxyz );
+    static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s );
+    static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s, double *dxyz );
 
-    MyGL::Texture2d::Sampler reflect, bufSampler;
+    Tempest::Texture2d::Sampler reflect, bufSampler;
 
     void makeRenderAlgo( Resource &res,
                          MainGui &gui,
                          int w, int h );
-    void blurSm(MyGL::Texture2d &sm , const Scene &scene);
+    void blurSm(Tempest::Texture2d &sm , const Scene &scene);
 
     struct Sm{
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader fs;
       } smap;
 
     struct GBuf{
-      MyGL::VertexShader   vs, grassVs;
-      MyGL::FragmentShader fs, grassFs;
+      Tempest::VertexShader   vs, grassVs;
+      Tempest::FragmentShader fs, grassFs;
 
-      MyGL::VertexShader   terrainVs;
-      MyGL::FragmentShader terrainFs;
+      Tempest::VertexShader   terrainVs;
+      Tempest::FragmentShader terrainFs;
 
-      MyGL::Uniform<float[3]> lightDirection, lightColor, lightAblimient,
+      Tempest::Uniform<float[3]> lightDirection, lightColor, lightAblimient,
                               view;
       } gbuf;
 
     struct Transparent{
-      MyGL::VertexShader   vs, vsAdd, vsSh;
-      MyGL::FragmentShader fs, fsAdd, fsSh;
+      Tempest::VertexShader   vs, vsAdd, vsSh;
+      Tempest::FragmentShader fs, fsAdd, fsSh;
       } transparentData;
 
     struct Displace{
-      MyGL::VertexShader   vs, vsWater;
-      MyGL::FragmentShader fs, fsWater;
+      Tempest::VertexShader   vs, vsWater;
+      Tempest::FragmentShader fs, fsWater;
       } displaceData;
 
     struct Water{
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader fs;
 
-      MyGL::Texture2d      waterHeightMap[2], envMap;
+      Tempest::Texture2d      waterHeightMap[2], envMap;
       } water;
 
     struct Glow{
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader fs;
       } glowData;
 
     struct FogOfWar{
-      MyGL::VertexShader   vs, vsAcept;
-      MyGL::FragmentShader fs, fsAcept;
+      Tempest::VertexShader   vs, vsAcept;
+      Tempest::FragmentShader fs, fsAcept;
       } fogOfWar;
 
     struct Bloom{
-      MyGL::Uniform< MyGL::Texture2d > b[3];
+      Tempest::Uniform< Tempest::Texture2d > b[3];
 
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader brightPass, combine;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader brightPass, combine;
       } bloomData;
 
     struct Blt{
-      MyGL::Uniform< MyGL::Texture2d > texture;
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      Tempest::Uniform< Tempest::Texture2d > texture;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader fs;
       } bltData;
 
     struct Gauss{
-      MyGL::Uniform< MyGL::Texture2d > texture;
-      MyGL::VertexShader   vs, vsGB, vsB;
-      MyGL::FragmentShader fs, fsGB, fsB;
+      Tempest::Uniform< Tempest::Texture2d > texture;
+      Tempest::VertexShader   vs, vsGB, vsB;
+      Tempest::FragmentShader fs, fsGB, fsB;
       } gaussData;
 
     struct Omni{
-      MyGL::Uniform< MyGL::Texture2d > texture;
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      Tempest::Uniform< Tempest::Texture2d > texture;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader fs;
       } omniData;
 
     struct Volumetric{
-      MyGL::Uniform< MyGL::Texture2d > scene;
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs;
+      Tempest::Uniform< Tempest::Texture2d > scene;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader fs;
       } volumetricData;
 
     struct Final{
-      MyGL::Uniform< MyGL::Texture2d > scene, bloom, glow;
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs, avatar;
+      Tempest::Uniform< Tempest::Texture2d > scene, bloom, glow;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader fs, avatar;
       } finalData;
 
     struct SSAO{
-      MyGL::Uniform< MyGL::Texture2d > texture, blured, macro;
-      MyGL::Uniform< MyGL::Texture2d > scene, diff, ssao;
-      MyGL::Uniform<float[3]> lightAblimient;
+      Tempest::Uniform< Tempest::Texture2d > texture, blured, macro;
+      Tempest::Uniform< Tempest::Texture2d > scene, diff, ssao;
+      Tempest::Uniform<float[3]> lightAblimient;
 
-      MyGL::VertexShader   vs;
-      MyGL::FragmentShader fs, detail, accept, acceptGI;
+      Tempest::VertexShader   vs;
+      Tempest::FragmentShader fs, detail, accept, acceptGI;
       } ssaoData;
 
-    MyGL::Uniform<float[2]> scrOffset, cpyOffset;
+    Tempest::Uniform<float[2]> scrOffset, cpyOffset;
 
-    void fillGBuf( MyGL::Texture2d *gbuffer,
-                   MyGL::Texture2d &mainDepth,
-                   const MyGL::Texture2d &sm,
-                   const MyGL::Texture2d &smCl,
+    void fillGBuf( Tempest::Texture2d *gbuffer,
+                   Tempest::Texture2d &mainDepth,
+                   const Tempest::Texture2d &sm,
+                   const Tempest::Texture2d &smCl,
                    const Scene &scene,
-                   const MyGL::AbstractCamera &camera);
+                   const Tempest::AbstractCamera &camera);
 
     void renderVolumeLight( const Scene &scene,
-                            MyGL::Texture2d &gbuffer,
-                            MyGL::Texture2d &mainDepth,
-                            MyGL::Texture2d &shadowMap );
+                            Tempest::Texture2d &gbuffer,
+                            Tempest::Texture2d &mainDepth,
+                            Tempest::Texture2d &shadowMap );
 
-    void drawOmni( MyGL::Texture2d *gbuffer,
-                   MyGL::Texture2d &mainDepth,
-                   MyGL::Texture2d &sm,
+    void drawOmni( Tempest::Texture2d *gbuffer,
+                   Tempest::Texture2d &mainDepth,
+                   Tempest::Texture2d &sm,
                    const Scene &scene);
 
     void setupLight( const Scene &scene,
-                     MyGL::FragmentShader & fs,
-                     const MyGL::Texture2d &sm,
-                     const MyGL::Texture2d &smCl);
+                     Tempest::FragmentShader & fs,
+                     const Tempest::Texture2d &sm,
+                     const Tempest::Texture2d &smCl);
 
-    void fillShadowMap( MyGL::Texture2d &sm,
+    void fillShadowMap( Tempest::Texture2d &sm,
                         const Scene &scene );
 
-    void fillTranscurentMap( MyGL::Texture2d &sm,
-                             MyGL::Texture2d &depthSm,
+    void fillTranscurentMap( Tempest::Texture2d &sm,
+                             Tempest::Texture2d &depthSm,
                              const Scene &scene );
 
-    void fillShadowMap( MyGL::Texture2d &sm,
-                        MyGL::Texture2d &depth,
+    void fillShadowMap( Tempest::Texture2d &sm,
+                        Tempest::Texture2d &depth,
                         const Scene &scene,
                         const Scene::Objects &v );
 
-    void drawObjects( MyGL::Texture2d* gbuffer,
-                      MyGL::Texture2d &mainDepth,
+    void drawObjects( Tempest::Texture2d* gbuffer,
+                      Tempest::Texture2d &mainDepth,
                       int bufC,
                       const Scene &scene,
-                      const MyGL::AbstractCamera &camera,
+                      const Tempest::AbstractCamera &camera,
                       const Scene::Objects &v,
-                      void (Material::*func)( MyGL::RenderState& /*d*/,
-                                              const MyGL::Matrix4x4 & /*object*/,
-                                              const MyGL::AbstractCamera&,
-                                              MyGL::UniformTable &,
-                                              const MyGL::Matrix4x4 & ) const,
+                      void (Material::*func)( Tempest::RenderState& /*d*/,
+                                              const Tempest::Matrix4x4 & /*object*/,
+                                              const Tempest::AbstractCamera&,
+                                              Tempest::UniformTable &,
+                                              const Tempest::Matrix4x4 & ) const,
                       bool clr );
 
-    void drawObjects(MyGL::VertexShader &vs,
-                      MyGL::FragmentShader &fs,
-                      MyGL::Texture2d* gbuffer,
-                      MyGL::Texture2d &mainDepth,
+    void drawObjects(Tempest::VertexShader &vs,
+                      Tempest::FragmentShader &fs,
+                      Tempest::Texture2d* gbuffer,
+                      Tempest::Texture2d &mainDepth,
                       int bufC,
                       const Scene &scene,
-                      const MyGL::AbstractCamera &camera,
+                      const Tempest::AbstractCamera &camera,
                       const Scene::Objects &v,
-                      void (Material::*func)( MyGL::RenderState& /*d*/,
-                                              const MyGL::Matrix4x4 & /*object*/,
-                                              const MyGL::AbstractCamera&,
-                                              MyGL::UniformTable &,
-                                              const MyGL::Matrix4x4 & ) const,
+                      void (Material::*func)( Tempest::RenderState& /*d*/,
+                                              const Tempest::Matrix4x4 & /*object*/,
+                                              const Tempest::AbstractCamera&,
+                                              Tempest::UniformTable &,
+                                              const Tempest::Matrix4x4 & ) const,
                       bool clr = false,
                       bool clrDepth = false);
 
-    void drawTranscurent( MyGL::Texture2d &screen,
-                          MyGL::Texture2d& mainDepth,
-                          MyGL::Texture2d &sceneCopy,
+    void drawTranscurent( Tempest::Texture2d &screen,
+                          Tempest::Texture2d& mainDepth,
+                          Tempest::Texture2d &sceneCopy,
                           const Scene &scene,
                           const Scene::Objects &v ) ;
 
-    void drawWater( MyGL::Texture2d &screen,
-                    MyGL::Texture2d& mainDepth,
-                    MyGL::Texture2d &sceneCopy,
-                    MyGL::Texture2d &sm, MyGL::Texture2d &smCl,
-                    MyGL::Texture2d& sceneDepth,
+    void drawWater( Tempest::Texture2d &screen,
+                    Tempest::Texture2d& mainDepth,
+                    Tempest::Texture2d &sceneCopy,
+                    Tempest::Texture2d &sm, Tempest::Texture2d &smCl,
+                    Tempest::Texture2d& sceneDepth,
                     const Scene &scene,
                     const Scene::Objects &v ) ;
 
-    void drawGlow( MyGL::Texture2d &out,
-                   MyGL::Texture2d &depth,
+    void drawGlow( Tempest::Texture2d &out,
+                   Tempest::Texture2d &depth,
                    const Scene &scene,
                    int size );
 
-    void aceptFog(MyGL::Texture2d &in_out, const MyGL::Texture2d &fog);
+    void aceptFog(Tempest::Texture2d &in_out, const Tempest::Texture2d &fog);
 
-    void copy( MyGL::Texture2d &out,
-               const MyGL::Texture2d& in );
-    void copyDepth(MyGL::Texture2d &out,
-                    const MyGL::Texture2d& in , int w, int h);
-    void copy( MyGL::Texture2d &out,
-               const MyGL::Texture2d& in, int w, int h );
-    void gauss( MyGL::Texture2d &out,
-                const MyGL::Texture2d& in,
+    void copy( Tempest::Texture2d &out,
+               const Tempest::Texture2d& in );
+    void copyDepth(Tempest::Texture2d &out,
+                    const Tempest::Texture2d& in , int w, int h);
+    void copy( Tempest::Texture2d &out,
+               const Tempest::Texture2d& in, int w, int h );
+    void gauss( Tempest::Texture2d &out,
+                const Tempest::Texture2d& in,
                 int w, int h, float dx, float dy );
-    void gauss_gb( MyGL::Texture2d &out,
-                   const MyGL::Texture2d& in,
+    void gauss_gb( Tempest::Texture2d &out,
+                   const Tempest::Texture2d& in,
                    int w, int h, float dx, float dy );
-    void gauss_b( MyGL::Texture2d &out,
-                  const MyGL::Texture2d& in,
+    void gauss_b( Tempest::Texture2d &out,
+                  const Tempest::Texture2d& in,
                   int w, int h, float dx, float dy );
 
-    void bloom( MyGL::Texture2d &out,
-                const MyGL::Texture2d& in );
-    void drawFogOfWar( MyGL::Texture2d &out, const Scene &scene);
+    void bloom( Tempest::Texture2d &out,
+                const Tempest::Texture2d& in );
+    void drawFogOfWar( Tempest::Texture2d &out, const Scene &scene);
 
-    void blt(const MyGL::Texture2d &tex);
+    void blt(const Tempest::Texture2d &tex);
 
-    void waves( MyGL::Texture2d &out,
-                const MyGL::Texture2d& in,
-                const MyGL::Texture2d &in1);
+    void waves( Tempest::Texture2d &out,
+                const Tempest::Texture2d& in,
+                const Tempest::Texture2d &in1);
 
-    void ssao( MyGL::Texture2d &out,
-               const MyGL::Texture2d& in,
-               const MyGL::Texture2d &gao,
+    void ssao( Tempest::Texture2d &out,
+               const Tempest::Texture2d& in,
+               const Tempest::Texture2d &gao,
                const Scene &scene);
 
     void aceptSsao( const Scene &s,
-                    MyGL::Texture2d &out,
-                    const MyGL::Texture2d& scene,
-                    const MyGL::Texture2d &diff,
-                    const MyGL::Texture2d &ssao);
+                    Tempest::Texture2d &out,
+                    const Tempest::Texture2d& scene,
+                    const Tempest::Texture2d &diff,
+                    const Tempest::Texture2d &ssao);
 
     void aceptGI( const Scene &s,
-                  MyGL::Texture2d &out,
-                  const MyGL::Texture2d& scene,
-                  const MyGL::Texture2d &diff,
-                  const MyGL::Texture2d &norm,
-                  const MyGL::Texture2d &depth,
-                  const MyGL::Texture2d gi[4] );
+                  Tempest::Texture2d &out,
+                  const Tempest::Texture2d& scene,
+                  const Tempest::Texture2d &diff,
+                  const Tempest::Texture2d &norm,
+                  const Tempest::Texture2d &depth,
+                  const Tempest::Texture2d gi[4] );
 
-    void ssaoDetail( MyGL::Texture2d &out,
-                     const MyGL::Texture2d& in,
-                     const MyGL::Texture2d &macro );
+    void ssaoDetail( Tempest::Texture2d &out,
+                     const Tempest::Texture2d& in,
+                     const Tempest::Texture2d &macro );
 
     void ssaoGMap( const Scene &s,
-                   MyGL::Texture2d &out );
+                   Tempest::Texture2d &out );
 
-    MyGL::Texture2d colorBuf( int w, int h );
-    MyGL::Texture2d depth( int w, int h );
-    MyGL::Texture2d depth( const MyGL::Size& sz );
+    Tempest::Texture2d colorBuf( int w, int h );
+    Tempest::Texture2d depth( int w, int h );
+    Tempest::Texture2d depth( const Tempest::Size& sz );
 
     void renderScene( const Scene &scene,
-                      const MyGL::AbstractCamera &camera,
-                      MyGL::Texture2d gbuffer[4],
-                      MyGL::Texture2d & depthBuffer,
-                      MyGL::Texture2d rsm[],
+                      const Tempest::AbstractCamera &camera,
+                      Tempest::Texture2d gbuffer[4],
+                      Tempest::Texture2d & depthBuffer,
+                      Tempest::Texture2d rsm[],
                       int shadowMapSize, bool useAO);
     void buildRSM( Scene &scene,
-                   MyGL::Texture2d gbuffer[4],
+                   Tempest::Texture2d gbuffer[4],
                    int shadowMapSize);
 
     size_t time;
@@ -354,32 +359,32 @@ class GraphicsSystem {
     friend class TransparentMaterial;
     friend class WaterMaterial;
 
-    struct RSMCamera : public MyGL::AbstractCamera {
+    struct RSMCamera : public Tempest::AbstractCamera {
       RSMCamera(){
         p.identity();
         }
 
-      MyGL::Matrix4x4 view() const {
+      Tempest::Matrix4x4 view() const {
         return v;
         }
 
-      MyGL::Matrix4x4 projective() const{
+      Tempest::Matrix4x4 projective() const{
         return p;
         }
 
-      MyGL::Matrix4x4 v, p;
+      Tempest::Matrix4x4 v, p;
       };
 
     template< class ... Args, class ... FArgs >
-    void draw( MyGL::Render & render,
+    void draw( Tempest::Render & render,
                const Frustum &frustum,
-               const Scene & scene,
-               const MyGL::AbstractCamera & camera,
+               bool  deepVTest,
+               const Tempest::AbstractCamera & camera,
                const Scene::Objects & obj,
-               void (Material::*func)( MyGL::RenderState& /*d*/,
-                                       const MyGL::Matrix4x4 & /*object*/,
-                                       const MyGL::AbstractCamera&,
-                                       MyGL::UniformTable &,
+               void (Material::*func)( Tempest::RenderState& /*d*/,
+                                       const Tempest::Matrix4x4 & /*object*/,
+                                       const Tempest::AbstractCamera&,
+                                       Tempest::UniformTable &,
                                        FArgs ... args ) const,
                Args... args );
   };

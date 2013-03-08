@@ -1,19 +1,19 @@
 #ifndef OVERLAYWIDGET_H
 #define OVERLAYWIDGET_H
 
-#include <MyWidget/Widget>
-#include <MyWidget/Layout>
+#include <Tempest/Widget>
+#include <Tempest/Layout>
 
 class Resource;
 class MainGui;
 
-class OverlayWidget : public MyWidget::Widget {
+class OverlayWidget : public Tempest::Widget {
   public:
     OverlayWidget();
 
     void setupSignals();
 
-    struct ContainerLayout : public MyWidget::Layout {
+    struct ContainerLayout : public Tempest::Layout {
       ContainerLayout();
       void applyLayout();
       bool used;
@@ -21,8 +21,8 @@ class OverlayWidget : public MyWidget::Widget {
   protected:
     void focusEvent( bool f );
 
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseWheelEvent(MyWidget::MouseEvent &e);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseWheelEvent(Tempest::MouseEvent &e);
   };
 
 #endif // OVERLAYWIDGET_H

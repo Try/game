@@ -130,7 +130,7 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
 
       hud.setMaterial( mat );
 
-      mat.glow = MyGL::Texture2d();
+      mat.glow = Tempest::Texture2d();
       mat.diffuse = obj.game().resources().texture("util/blue");
       mat.usage.mainPass   = false;
       mat.useAlphaTest = 0;
@@ -185,16 +185,16 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
   return 0;
   }
 
-void BuilderBehavior::mouseDown(MyWidget::MouseEvent &e) {
+void BuilderBehavior::mouseDown(Tempest::MouseEvent &e) {
   e.accept();
   }
 
-void BuilderBehavior::mouseUp(MyWidget::MouseEvent & e ) {
+void BuilderBehavior::mouseUp(Tempest::MouseEvent & e ) {
   if( BuildingBehavior::canBuild( obj.world().terrain(),
                                   obj.game().prototype(taget),
                                   obj.world().mouseX(),
                                   obj.world().mouseY() ) &&
-      e.button==MyWidget::Event::ButtonLeft &&
+      e.button==Tempest::Event::ButtonLeft &&
       obj.player().canBuild( *proto ) ){
     onRemoveHook();
     obj.game().removeHook( &hook );
@@ -219,7 +219,7 @@ void BuilderBehavior::mouseUp(MyWidget::MouseEvent & e ) {
                                  World::coordCast(obj.world().mouseZ()) );
     }
 
-  if( e.button==MyWidget::Event::ButtonRight ){
+  if( e.button==Tempest::Event::ButtonRight ){
     onRemoveHook();
     obj.player().addGold( proto->data.gold );
     obj.player().addLim ( proto->data.lim );
@@ -228,7 +228,7 @@ void BuilderBehavior::mouseUp(MyWidget::MouseEvent & e ) {
     }
   }
 
-void BuilderBehavior::mouseMove(MyWidget::MouseEvent &e) {
+void BuilderBehavior::mouseMove(Tempest::MouseEvent &e) {
   GameObject::setViewPosition( hud,
                                proto->view[0],
                                World::coordCast(obj.world().mouseX()),

@@ -1,6 +1,6 @@
 #include "prototypesloader.h"
 
-#include <MyWidget/Shortcut>
+#include <Tempest/Shortcut>
 #include <tinyxml.h>
 #include "util/lexicalcast.h"
 
@@ -419,7 +419,7 @@ void PrototypesLoader::readButton(ProtoObject::CmdButton &b, TiXmlNode *node) {
     b.y = 0;
 
   if( find(e, "hotkey", str ) && str.size() ){
-    b.hotkey = MyWidget::KeyEvent::KeyType( MyWidget::KeyEvent::K_A + str[0] - 'a' );
+    b.hotkey = Tempest::KeyEvent::KeyType( Tempest::KeyEvent::K_A + str[0] - 'a' );
     }
 
   if( find(e, "hint", str ) && str.size() ){

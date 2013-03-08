@@ -6,7 +6,7 @@
 #include "gui/inputhook.h"
 #include "graphics/material.h"
 
-#include <MyGL/GraphicObject>
+#include <Tempest/GraphicObject>
 
 class ProtoObject;
 
@@ -29,10 +29,10 @@ class BuilderBehavior : public AbstractBehavior  {
     bool instaled;
     std::string taget;
 
-    void mouseDown( MyWidget::MouseEvent& e );
-    void mouseUp  ( MyWidget::MouseEvent& e );
+    void mouseDown( Tempest::MouseEvent& e );
+    void mouseUp  ( Tempest::MouseEvent& e );
 
-    void mouseMove( MyWidget::MouseEvent& e );
+    void mouseMove( Tempest::MouseEvent& e );
 
     void move(int x, int y);
     void build();
@@ -44,7 +44,7 @@ class BuilderBehavior : public AbstractBehavior  {
       };
 
     std::vector<CreateOrder> tasks;
-    MyGL::Texture2d red, blue;
+    Tempest::Texture2d red, blue;
   };
 
 #endif // BUILDERBEHAVIOR_H

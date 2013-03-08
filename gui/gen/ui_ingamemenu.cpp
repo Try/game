@@ -1,11 +1,11 @@
 #include "ui_ingamemenu.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "gui/button.h"
 #include "gui/panel.h"
 #include "gui/scroolwidget.h"
 
-using namespace MyWidget;
+using namespace Tempest;
 
 void UI::InGameMenu::setupUi( Widget* w, Resource & res ) {
   w->setSizePolicy( Expanding, Expanding );

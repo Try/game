@@ -13,7 +13,7 @@ class Scene;
 #include "game/protoobject.h"
 #include "game/gameobjectview.h"
 
-#include <MyWidget/signal>
+#include <Tempest/signal>
 
 class WaterVertex;
 class Resource;
@@ -32,7 +32,7 @@ class GameObject {
                 const ProtoObject &p,
                 const PrototypesLoader & pl );
     ~GameObject();
-    MyWidget::signal<GameObject&> onDied;
+    Tempest::signal<GameObject&> onDied;
 
     std::vector<GameObject*> colisions;
 
@@ -47,7 +47,7 @@ class GameObject {
                    bool env );
     void loadView(const Model &model , const ProtoObject::View &pview);
 
-    void loadView( const MyGL::Model<WaterVertex> & model );
+    void loadView( const Tempest::Model<WaterVertex> & model );
 
     void setPosition( int x, int y, int z );
     void setPositionSmooth( int x, int y, int z );
@@ -85,7 +85,7 @@ class GameObject {
     double radius() const;
     double rawRadius() const;
 
-    MyGL::Matrix4x4 _transform() const;
+    Tempest::Matrix4x4 _transform() const;
     Behavior behavior;
 
     bool isOnMove() const;
@@ -107,8 +107,8 @@ class GameObject {
 
     double viewHeight() const;
 
-    const MyGL::Color& teamColor() const;
-    void setTeamColor( const MyGL::Color& cl );
+    const Tempest::Color& teamColor() const;
+    void setTeamColor( const Tempest::Color& cl );
 
     static void setViewPosition( GraphicObject& obj,
                                  const ProtoObject::View &v,

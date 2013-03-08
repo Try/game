@@ -1,12 +1,12 @@
 #include "ingamemenu.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "panel.h"
 
 #include "resource.h"
 #include "gen/ui_ingamemenu.h"
 
-#include <MyWidget/Painter>
+#include <Tempest/Painter>
 #include "button.h"
 
 InGameMenu::InGameMenu( Resource &res , Widget * ow):ModalWindow(res,ow) {
@@ -16,9 +16,9 @@ InGameMenu::InGameMenu( Resource &res , Widget * ow):ModalWindow(res,ow) {
   menu.setupUi(p, res);
   p->layout().setMargin(8);
 
-  setLayout( MyWidget::Vertical );
+  setLayout( Tempest::Vertical );
   p->setMaximumSize(175, 175);
-  p->setSizePolicy( MyWidget::FixedMax );
+  p->setSizePolicy( Tempest::FixedMax );
 
   layout().add(p);
   layout().add( new Widget() );

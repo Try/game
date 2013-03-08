@@ -1,5 +1,5 @@
 #include "game.h"
-#include <MyWidget/Event>
+#include <Tempest/Event>
 
 #ifndef STRICT
 #define STRICT
@@ -236,56 +236,56 @@ int WINAPI WinMain( HINSTANCE hInstance,
     return uMsg.wParam;
 }
 
-MyWidget::KeyEvent makeKeyEvent( WPARAM k,
+Tempest::KeyEvent makeKeyEvent( WPARAM k,
                                  bool scut = false ){
-  MyWidget::KeyEvent::KeyType e = MyWidget::KeyEvent::K_NoKey;
+  Tempest::KeyEvent::KeyType e = Tempest::KeyEvent::K_NoKey;
 
   if( k==VK_ESCAPE )
-    e = MyWidget::KeyEvent::K_ESCAPE;//PostQuitMessage(0);
+    e = Tempest::KeyEvent::K_ESCAPE;//PostQuitMessage(0);
 
   if( k==VK_BACK ){
-    e = MyWidget::KeyEvent::K_Back;
+    e = Tempest::KeyEvent::K_Back;
     }
 
   if( k==VK_DELETE ){
-    e = MyWidget::KeyEvent::K_Delete;
+    e = Tempest::KeyEvent::K_Delete;
     }
 
   if( k==VK_RETURN ){
-    e = MyWidget::KeyEvent::K_Return;
+    e = Tempest::KeyEvent::K_Return;
     }
 
   if( k>=VK_LEFT && k<=VK_DOWN )
-    e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_Left) + size_t(k) - VK_LEFT );
+    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_Left) + size_t(k) - VK_LEFT );
 
   if( k>=VK_F1 && k<= VK_F24 )
-    e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_F1) + size_t(k) - VK_F1 );
+    e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_F1) + size_t(k) - VK_F1 );
 
   if( scut ){
     if( k>=0x41 && k<=0x5A )
-      e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_A) + size_t(k) - 0x41 );
+      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_A) + size_t(k) - 0x41 );
 
     if( k>=0x30 && k<=0x39 )
-      e = MyWidget::KeyEvent::KeyType( size_t(MyWidget::KeyEvent::K_0) + size_t(k) - 0x30 );
+      e = Tempest::KeyEvent::KeyType( size_t(Tempest::KeyEvent::K_0) + size_t(k) - 0x30 );
     }
 
-  return MyWidget::KeyEvent(e);
+  return Tempest::KeyEvent(e);
   }
 
-MyWidget::Event::MouseButton toButton( UINT msg ){
+Tempest::Event::MouseButton toButton( UINT msg ){
   if( msg==WM_LBUTTONDOWN ||
       msg==WM_LBUTTONUP )
-    return MyWidget::Event::ButtonLeft;
+    return Tempest::Event::ButtonLeft;
 
   if( msg==WM_RBUTTONDOWN  ||
       msg==WM_RBUTTONUP)
-    return MyWidget::Event::ButtonRight;
+    return Tempest::Event::ButtonRight;
 
   if( msg==WM_MBUTTONDOWN ||
       msg==WM_MBUTTONUP )
-    return MyWidget::Event::ButtonMid;
+    return Tempest::Event::ButtonMid;
 
-  return MyWidget::Event::ButtonNone;
+  return Tempest::Event::ButtonNone;
   }
 
 LRESULT CALLBACK WindowProc( HWND   hWnd, 
@@ -300,7 +300,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
     {
         case WM_CHAR:
         {
-           MyWidget::KeyEvent e = MyWidget::KeyEvent( uint16_t(wParam) );
+           Tempest::KeyEvent e = Tempest::KeyEvent( uint16_t(wParam) );
 
            DWORD wrd[3] = {
              VK_RETURN,
@@ -318,12 +318,12 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
         case WM_KEYDOWN:
         {
-           MyWidget::KeyEvent sce =  makeKeyEvent(wParam, true);
+           Tempest::KeyEvent sce =  makeKeyEvent(wParam, true);
            mgl_demo->scutEvent(sce);
 
            if( !sce.isAccepted() ){
-             MyWidget::KeyEvent e =  makeKeyEvent(wParam);
-             if( e.key!=MyWidget::KeyEvent::K_NoKey )
+             Tempest::KeyEvent e =  makeKeyEvent(wParam);
+             if( e.key!=Tempest::KeyEvent::K_NoKey )
                mgl_demo->keyDownEvent( e );
              }
            //std::cout << "wParaam = " << wParam << std::endl;
@@ -332,7 +332,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
         case WM_KEYUP:
         {
-           MyWidget::KeyEvent e =  makeKeyEvent(wParam);
+           Tempest::KeyEvent e =  makeKeyEvent(wParam);
            mgl_demo->keyUpEvent( e );
         }
         break;
@@ -341,7 +341,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         case WM_MBUTTONDOWN:
         case WM_RBUTTONDOWN:
         {
-          MyWidget::MouseEvent e( LOWORD (lParam),
+          Tempest::MouseEvent e( LOWORD (lParam),
                                   HIWORD (lParam),
                                   toButton(msg) );
           mgl_demo->mouseDownEvent(e);
@@ -352,7 +352,7 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
         case WM_RBUTTONUP:
         case WM_MBUTTONUP:
         {
-          MyWidget::MouseEvent e( LOWORD (lParam),
+          Tempest::MouseEvent e( LOWORD (lParam),
                                   HIWORD (lParam),
                                   toButton(msg) );
           mgl_demo->mouseUpEvent(e);
@@ -384,8 +384,8 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
           ScreenToClient(hWnd, &p);
 
-          MyWidget::MouseEvent e( p.x, p.y,
-                                  MyWidget::Event::ButtonNone,
+          Tempest::MouseEvent e( p.x, p.y,
+                                  Tempest::Event::ButtonNone,
                                   GET_WHEEL_DELTA_WPARAM(wParam) );
           mgl_demo->mouseWheelEvent(e);
           }
@@ -393,9 +393,9 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
         case WM_MOUSEMOVE:
         {
-          MyWidget::MouseEvent e( LOWORD (lParam),
+          Tempest::MouseEvent e( LOWORD (lParam),
                                   HIWORD (lParam),
-                                  MyWidget::Event::ButtonNone );
+                                  Tempest::Event::ButtonNone );
           mgl_demo->mouseMoveEvent(e);
         }
         break;

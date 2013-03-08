@@ -1,4 +1,4 @@
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 
 class Resource;
 
@@ -11,11 +11,11 @@ namespace UI{
 
 class UnitInfo {
   public: 
-    void setupUi( MyWidget::Widget*, Resource & res );
-    MyWidget::Widget * priview;
+    void setupUi( Tempest::Widget*, Resource & res );
+    Tempest::Widget * priview;
     Panel * hpBox;
     LineEdit * hp;
     LineEdit * caption;
-    MyWidget::Widget * status;
+    Tempest::Widget * status;
 };
 } 

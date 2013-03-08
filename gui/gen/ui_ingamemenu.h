@@ -1,7 +1,7 @@
 #ifndef UI_INGAMEMENU_H
 #define UI_INGAMEMENU_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 
 class Resource;
 class Button;
@@ -10,7 +10,7 @@ namespace UI{
 
 class InGameMenu {
   public:
-    void setupUi(MyWidget::Widget*, Resource &res );
+    void setupUi(Tempest::Widget*, Resource &res );
     Button * resume;
     Button * save;
     Button * load;

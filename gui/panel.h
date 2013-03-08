@@ -1,14 +1,14 @@
 #ifndef PANEL_H
 #define PANEL_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include "graphics/paintergui.h"
 
 class Resource;
 
-class Panel : public MyWidget::Widget {
+class Panel : public Tempest::Widget {
   public:
-    typedef MyWidget::Bind::UserTexture Texture;
+    typedef Tempest::Bind::UserTexture Texture;
     Panel(Resource &res );
 
     Texture frame, back;
@@ -17,18 +17,18 @@ class Panel : public MyWidget::Widget {
     bool isDragable();
 
   protected:
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseDragEvent(MyWidget::MouseEvent &e);
-    void mouseMoveEvent(MyWidget::MouseEvent &e);
-    void mouseUpEvent(MyWidget::MouseEvent &e);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseDragEvent(Tempest::MouseEvent &e);
+    void mouseMoveEvent(Tempest::MouseEvent &e);
+    void mouseUpEvent(Tempest::MouseEvent &e);
 
-    void mouseWheelEvent(MyWidget::MouseEvent &e);
+    void mouseWheelEvent(Tempest::MouseEvent &e);
 
-    void paintEvent( MyWidget::PaintEvent &p);
+    void paintEvent( Tempest::PaintEvent &p);
 
   private:
     bool mouseTracking, dragable;
-    MyWidget::Point mpos, oldPos;
+    Tempest::Point mpos, oldPos;
   };
 
 #endif // PANEL_H

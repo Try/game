@@ -21,8 +21,8 @@ class LocalServer : public NetUser {
     bool isServer() const;
     bool isConnected() const;
 
-    MyWidget::signal< NetUser&, Client& > onConnected;
-    MyWidget::signal< NetUser&, Client& > onDisConnected;
+    Tempest::signal< NetUser&, Client& > onConnected;
+    Tempest::signal< NetUser&, Client& > onDisConnected;
 
   private:
     Mutex clientsMut;

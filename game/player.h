@@ -2,9 +2,9 @@
 #define PLAYER_H
 
 #include <vector>
-#include <MyWidget/signal>
-#include <MyGL/Color>
-#include <MyGL/Pixmap>
+#include <Tempest/signal>
+#include <Tempest/Color>
+#include <Tempest/Pixmap>
 
 #include "util/array2d.h"
 
@@ -32,10 +32,10 @@ class Player {
     void select( GameObject *obj, bool s );
     std::vector<GameObject*>& selected();
 
-    MyWidget::signal< std::vector<GameObject*>&, Player& > onUnitSelected;
-    MyWidget::signal< GameObject&, Player& > onUnitDied;
+    Tempest::signal< std::vector<GameObject*>&, Player& > onUnitSelected;
+    Tempest::signal< GameObject&, Player& > onUnitDied;
 
-    const MyGL::Color& color() const;
+    const Tempest::Color& color() const;
 
     void addGold( int g );
     int  gold() const;
@@ -57,7 +57,7 @@ class Player {
     void tick( World & curW );
     void computeFog( void* curW );
 
-    const MyGL::Pixmap& fog() const;
+    const Tempest::Pixmap& fog() const;
   private:
     struct {
       int num;
@@ -67,15 +67,15 @@ class Player {
       int gold, lim, limMax;
       std::vector<GameObject*> objects, selected;
 
-      MyGL::Color color;
+      Tempest::Color color;
 
-      MyGL::Pixmap fog;
+      Tempest::Pixmap fog;
       } m;
 
-    void fillFog( MyGL::Pixmap &p,
+    void fillFog( Tempest::Pixmap &p,
                   World &wx );
 
-    void cride( MyGL::Pixmap &p,
+    void cride( Tempest::Pixmap &p,
                 int x, int y, int r);
 
     static bool compare( const GameObject* a,

@@ -1,4 +1,4 @@
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 
 class Resource;
 
@@ -11,13 +11,13 @@ namespace UI{
 
 class LoadDialog {
   public: 
-    void setupUi( MyWidget::Widget*, Resource & res );
-    MyWidget::Widget * topWidget;
+    void setupUi( Tempest::Widget*, Resource & res );
+    Tempest::Widget * topWidget;
     Panel * topPanel;
     LineEdit * inputName;
-    MyWidget::Widget * central;
+    Tempest::Widget * central;
     ScroolWidget * items;
-    MyWidget::Widget * bottom;
+    Tempest::Widget * bottom;
     Button * accept;
     Button * cancel;
 };

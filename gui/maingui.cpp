@@ -2,10 +2,10 @@
 
 #include "graphics/paintergui.h"
 #include "prototypesloader.h"
-#include <MyWidget/Event>
+#include <Tempest/Event>
 
-#include <MyWidget/Layout>
-#include <MyGL/Pixmap>
+#include <Tempest/Layout>
+#include <Tempest/Pixmap>
 
 #include "gui/button.h"
 #include "gui/panel.h"
@@ -28,7 +28,7 @@
 
 #include "graphics/paintergui.h"
 
-MainGui::MainGui( MyGL::Device &,
+MainGui::MainGui( Tempest::Device &,
                   int w, int h,
                   Resource &r,
                   PrototypesLoader &pr )
@@ -102,14 +102,14 @@ bool MainGui::draw(GUIPass &pass) {
 
   {
     PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
-    MyWidget::PaintEvent event(painter);
+    Tempest::PaintEvent event(painter);
 
-    MyWidget::Painter p( event );
+    Tempest::Painter p( event );
     pass.setCurrentBuffer(0);
     pass.clearBuffers();
 
     p.setTexture( frame );
-    MyWidget::Rect r = selRect;
+    Tempest::Rect r = selRect;
     if( r.w<0 ){
       r.x += r.w;
       r.w = -r.w;
@@ -119,21 +119,21 @@ bool MainGui::draw(GUIPass &pass) {
       r.h = -r.h;
       }
     int w = r.w, h = r.h;
-    MyWidget::Rect tex = MyWidget::Rect(0,0, 1,1);
+    Tempest::Rect tex = Tempest::Rect(0,0, 1,1);
 
-    p.setBlendMode( MyWidget::addBlend );
+    p.setBlendMode( Tempest::addBlend );
     p.drawRect( r, tex );
 
-    r = MyWidget::Rect(r.x, r.y, 1, r.h);
+    r = Tempest::Rect(r.x, r.y, 1, r.h);
     p.drawRect( r, tex );
 
-    r = MyWidget::Rect(r.x+w-1, r.y, 1, r.h);
+    r = Tempest::Rect(r.x+w-1, r.y, 1, r.h);
     p.drawRect( r, tex );
 
-    r = MyWidget::Rect(r.x-w+2, r.y, w-2, 1);
+    r = Tempest::Rect(r.x-w+2, r.y, w-2, 1);
     p.drawRect( r, tex );
 
-    r = MyWidget::Rect(r.x, r.y+h-1, w-2, 1);
+    r = Tempest::Rect(r.x, r.y+h-1, w-2, 1);
     p.drawRect( r, tex );
 
     p.unsetTexture();
@@ -142,11 +142,11 @@ bool MainGui::draw(GUIPass &pass) {
 
     if( isCutsceneMode() ){
       p.setTexture( frame );
-      MyWidget::Rect tex = MyWidget::Rect(4,0, 1,1);
+      Tempest::Rect tex = Tempest::Rect(4,0, 1,1);
 
-      p.setBlendMode( MyWidget::noBlend );
-      p.drawRect( MyWidget::Rect(0,0, central.w(), 80), tex );
-      p.drawRect( MyWidget::Rect(0, central.h()-80, central.w(), 80), tex );
+      p.setBlendMode( Tempest::noBlend );
+      p.drawRect( Tempest::Rect(0,0, central.w(), 80), tex );
+      p.drawRect( Tempest::Rect(0, central.h()-80, central.w(), 80), tex );
 
       p.unsetTexture();
       }
@@ -154,7 +154,7 @@ bool MainGui::draw(GUIPass &pass) {
 
   if( central.needToUpdate() ){
     PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
-    MyWidget::PaintEvent event(painter);
+    Tempest::PaintEvent event(painter);
 
     pass.setCurrentBuffer(1);
     pass.clearBuffers();
@@ -163,9 +163,9 @@ bool MainGui::draw(GUIPass &pass) {
     }
   {
     PainterGUI painter( pass, res, 0,0, central.w(), central.h() );
-    MyWidget::PaintEvent event(painter);
+    Tempest::PaintEvent event(painter);
 
-    MyWidget::Painter p( event );
+    Tempest::Painter p( event );
     pass.setCurrentBuffer(2);
     pass.clearBuffers();
 
@@ -174,12 +174,12 @@ bool MainGui::draw(GUIPass &pass) {
         --HintSys::time;
 
       p.setFont( Font(14) );
-      MyWidget::Size dpos = RichText::bounds( res, HintSys::hint() );
+      Tempest::Size dpos = RichText::bounds( res, HintSys::hint() );
       //Font(14).textSize(res, HintSys::hint());
       dpos.w += 30;
       dpos.h += 30;
 
-      MyWidget::Point pos = HintSys::pos() + MyWidget::Point( -dpos.w/2, -dpos.h );
+      Tempest::Point pos = HintSys::pos() + Tempest::Point( -dpos.w/2, -dpos.h );
 
       if( pos.y-dpos.h < 0 )
         pos.y += 2*dpos.h;
@@ -188,7 +188,7 @@ bool MainGui::draw(GUIPass &pass) {
       pos.x = std::min(pos.x, central.w()-dpos.w);
 
       p.setTexture( hintFrame );
-      p.setBlendMode( MyWidget::alphaBlend );
+      p.setBlendMode( Tempest::alphaBlend );
 
       MainGui::drawFrame( p, hintFrame, pos, dpos );
       RichText::renderText( pos.x+15, pos.y+15, res, p, HintSys::hint() );
@@ -203,17 +203,17 @@ void MainGui::resizeEvent(int w, int h) {
   central.resize( w, h );
   }
 
-int MainGui::mouseDownEvent( MyWidget::MouseEvent &e ) {
+int MainGui::mouseDownEvent( Tempest::MouseEvent &e ) {
   central.mouseDownEvent(e);
   return e.isAccepted();
   }
 
-int MainGui::mouseUpEvent( MyWidget::MouseEvent &e) {
+int MainGui::mouseUpEvent( Tempest::MouseEvent &e) {
   central.mouseUpEvent(e);
   return e.isAccepted();
   }
 
-int MainGui::mouseMoveEvent( MyWidget::MouseEvent &e) {
+int MainGui::mouseMoveEvent( Tempest::MouseEvent &e) {
   mousePos = e.pos();
 
   central.mouseDragEvent(e);
@@ -226,36 +226,36 @@ int MainGui::mouseMoveEvent( MyWidget::MouseEvent &e) {
   return e.isAccepted();
   }
 
-int MainGui::mouseWheelEvent(MyWidget::MouseEvent &e) {
+int MainGui::mouseWheelEvent(Tempest::MouseEvent &e) {
   central.mouseWheelEvent(e);
   return e.isAccepted();
   }
 
-int MainGui::scutEvent(MyWidget::KeyEvent &e) {
+int MainGui::scutEvent(Tempest::KeyEvent &e) {
   e.ignore();
   central.shortcutEvent(e);
   return 1;
   }
 
-int MainGui::keyDownEvent(MyWidget::KeyEvent &e) {
+int MainGui::keyDownEvent(Tempest::KeyEvent &e) {
   e.ignore();
   central.keyDownEvent(e);
   return e.isAccepted();
   }
 
-int MainGui::keyUpEvent(MyWidget::KeyEvent &e) {
+int MainGui::keyUpEvent(Tempest::KeyEvent &e) {
   e.ignore();
   central.keyUpEvent(e);
   return e.isAccepted();
   }
 
 bool MainGui::minimapMouseEvent( float x, float y,
-                                 MyWidget::Event::MouseButton btn,
+                                 Tempest::Event::MouseButton btn,
                                  MiniMapView::Mode m ) {
   return mainwidget->minimapMouseEvent(x,y,btn,m);
   }
 
-MyWidget::Rect &MainGui::selectionRect() {
+Tempest::Rect &MainGui::selectionRect() {
   return selRect;
   }
 
@@ -284,7 +284,7 @@ void MainGui::renderMinimap(World &w) {
   }
 
 void MainGui::updateValues() {
-  MyWidget::CustomEvent e;
+  Tempest::CustomEvent e;
   central.customEvent(e);
   }
 
@@ -292,41 +292,41 @@ bool MainGui::isCutsceneMode() {
   return !mainwidget->isVisible();
   }
 
-void MainGui::drawFrame( MyWidget::Painter & p,
-                         const MyWidget::Bind::UserTexture &frame,
-                         const MyWidget::Point &pos,
-                         const MyWidget::Size &dpos ) {
-  MyWidget::Rect tex = MyWidget::Rect( 0, 0,
+void MainGui::drawFrame( Tempest::Painter & p,
+                         const Tempest::Bind::UserTexture &frame,
+                         const Tempest::Point &pos,
+                         const Tempest::Size &dpos ) {
+  Tempest::Rect tex = Tempest::Rect( 0, 0,
                                        frame.data.rect.w,
                                        frame.data.rect.h);
-  p.setBlendMode( MyWidget::alphaBlend );
+  p.setBlendMode( Tempest::alphaBlend );
   p.setTexture( frame );
   int b = 10;
 
-  MyWidget::Size s = frame.data.rect.size();
+  Tempest::Size s = frame.data.rect.size();
 
-  p.drawRect( MyWidget::Rect(pos.x, pos.y, b,b),
-              MyWidget::Rect(0, 0, b, b) );
-  p.drawRect( MyWidget::Rect(pos.x, pos.y+b, b, dpos.h-2*b),
-              MyWidget::Rect(0, b, b, tex.h-2*b) );
-  p.drawRect( MyWidget::Rect(pos.x, pos.y+dpos.h-b, b, b),
-              MyWidget::Rect(0, tex.h-b, b, b) );
+  p.drawRect( Tempest::Rect(pos.x, pos.y, b,b),
+              Tempest::Rect(0, 0, b, b) );
+  p.drawRect( Tempest::Rect(pos.x, pos.y+b, b, dpos.h-2*b),
+              Tempest::Rect(0, b, b, tex.h-2*b) );
+  p.drawRect( Tempest::Rect(pos.x, pos.y+dpos.h-b, b, b),
+              Tempest::Rect(0, tex.h-b, b, b) );
 
-  p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y, b,b),
-              MyWidget::Rect(s.w-b, 0, b, b) );
-  p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y+b, b, dpos.h-2*b),
-              MyWidget::Rect(s.w-b, b, b, tex.h-2*b) );
-  p.drawRect( MyWidget::Rect(pos.x+dpos.w-b, pos.y+dpos.h-b, b, b),
-              MyWidget::Rect(s.w-b, tex.h-b, b, b) );
+  p.drawRect( Tempest::Rect(pos.x+dpos.w-b, pos.y, b,b),
+              Tempest::Rect(s.w-b, 0, b, b) );
+  p.drawRect( Tempest::Rect(pos.x+dpos.w-b, pos.y+b, b, dpos.h-2*b),
+              Tempest::Rect(s.w-b, b, b, tex.h-2*b) );
+  p.drawRect( Tempest::Rect(pos.x+dpos.w-b, pos.y+dpos.h-b, b, b),
+              Tempest::Rect(s.w-b, tex.h-b, b, b) );
 
-  p.drawRect( MyWidget::Rect(pos.x+b, pos.y, dpos.w-2*b, b ),
-              MyWidget::Rect(b, 0, tex.w-2*b, b ) );
+  p.drawRect( Tempest::Rect(pos.x+b, pos.y, dpos.w-2*b, b ),
+              Tempest::Rect(b, 0, tex.w-2*b, b ) );
 
-  p.drawRect( MyWidget::Rect(pos.x+b, pos.y+dpos.h-b, dpos.w-2*b, b ),
-              MyWidget::Rect(b, s.h-b, tex.w-2*b, b ) );
+  p.drawRect( Tempest::Rect(pos.x+b, pos.y+dpos.h-b, dpos.w-2*b, b ),
+              Tempest::Rect(b, s.h-b, tex.w-2*b, b ) );
 
-  p.drawRect( MyWidget::Rect(pos.x+b, pos.y+b, dpos.w-2*b, dpos.h-2*b ),
-              MyWidget::Rect(b, b, tex.w-2*b, tex.h-2*b ) );
+  p.drawRect( Tempest::Rect(pos.x+b, pos.y+b, dpos.w-2*b, dpos.h-2*b ),
+              Tempest::Rect(b, b, tex.w-2*b, tex.h-2*b ) );
   }
 
 MainGui::Widget *MainGui::centralWidget() {

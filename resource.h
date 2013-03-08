@@ -4,11 +4,11 @@
 #include <unordered_map>
 #include <string>
 
-#include <MyGL/Model>
+#include <Tempest/Model>
 
-#include <MyGL/Texture2d>
-#include <MyGL/VertexShader>
-#include <MyGL/FragmentShader>
+#include <Tempest/Texture2d>
+#include <Tempest/VertexShader>
+#include <Tempest/FragmentShader>
 
 #include "xml/abstractxmlreader.h"
 #include "pixmapspool.h"
@@ -16,7 +16,7 @@
 
 #include <memory>
 
-namespace MyGL{
+namespace Tempest{
   class TextureHolder;
   class LocalTexturesHolder;
 
@@ -33,39 +33,39 @@ class Sound;
 class Resource : public AbstractXMLReader {
   public:
     Resource(
-        MyGL::TextureHolder       &  texHolder,
-        MyGL::LocalTexturesHolder &  ltexHolder,
+        Tempest::TextureHolder       &  texHolder,
+        Tempest::LocalTexturesHolder &  ltexHolder,
 
-        MyGL::VertexBufferHolder &  vboHolder,
-        MyGL::LocalVertexBufferHolder &lvboHolder,
-        MyGL::IndexBufferHolder  &  iboHolder,
+        Tempest::VertexBufferHolder &  vboHolder,
+        Tempest::LocalVertexBufferHolder &lvboHolder,
+        Tempest::IndexBufferHolder  &  iboHolder,
 
-        MyGL::VertexShaderHolder &  vsHolder,
-        MyGL::FragmentShaderHolder& fsHolder );
+        Tempest::VertexShaderHolder &  vsHolder,
+        Tempest::FragmentShaderHolder& fsHolder );
 
     const Model& model( const std::string & key ) const;
     const Model::Raw& rawModel( const std::string & key ) const;
-    Model model(const MyGL::Model<MVertex>::Raw& r) const;
+    Model model(const Tempest::Model<MVertex>::Raw& r) const;
 
-    const MyGL::Texture2d &texture( const std::string & key ) const;
-          MyGL::Texture2d &texture( const std::string & key );
-          MyGL::Color textureAVG( const std::string & key ) const;
+    const Tempest::Texture2d &texture( const std::string & key ) const;
+          Tempest::Texture2d &texture( const std::string & key );
+          Tempest::Color textureAVG( const std::string & key ) const;
           bool findTexture( const std::string & key );
 
     Sound &sound( const std::string & key ) const;
 
 
-    MyGL::VertexShader   & vshader( const std::string & key );
-    MyGL::FragmentShader & fshader( const std::string & key );
+    Tempest::VertexShader   & vshader( const std::string & key );
+    Tempest::FragmentShader & fshader( const std::string & key );
 
     PixmapsPool::TexturePtr pixmap( const std::string & key );
-    PixmapsPool::TexturePtr pixmap( const MyGL::Pixmap& pm, bool flush );
+    PixmapsPool::TexturePtr pixmap( const Tempest::Pixmap& pm, bool flush );
 
     void flushPixmaps();
     using AbstractXMLReader::load;
 
-    MyGL::TextureHolder       &  texHolder;
-    MyGL::LocalTexturesHolder &  ltexHolder;
+    Tempest::TextureHolder       &  texHolder;
+    Tempest::LocalTexturesHolder &  ltexHolder;
 private:
     template< class T >
     struct Box{
@@ -128,17 +128,17 @@ private:
       std::unordered_map< std::string, std::string > loaded;
       };
 
-    void load(Box<MyGL::Texture2d>& textures,
+    void load(Box<Tempest::Texture2d>& textures,
                const std::string &k, const std::string & f , bool avg);
 
     void load( Box< std::shared_ptr<Sound> >& sounds,
                const std::string &k, const std::string & f );
 
-    void load( Box<MyGL::VertexShader>& vs,
+    void load( Box<Tempest::VertexShader>& vs,
                const std::string &k, const std::string & f,
                const std::string &def );
 
-    void load( Box<MyGL::FragmentShader>& fs,
+    void load( Box<Tempest::FragmentShader>& fs,
                const std::string &k, const std::string & f,
                const std::string &def  );
 
@@ -148,20 +148,20 @@ private:
 
     Box< Model > models;
     mutable Box< std::shared_ptr<Model::Raw> > rawModels;
-    Box<MyGL::Texture2d> textures;
-    Box<MyGL::Color>     texturesAvg;
-    Box<MyGL::VertexShader>   vs;
-    Box<MyGL::FragmentShader> fs;
+    Box<Tempest::Texture2d> textures;
+    Box<Tempest::Color>     texturesAvg;
+    Box<Tempest::VertexShader>   vs;
+    Box<Tempest::FragmentShader> fs;
     Box<PixmapsPool::TexturePtr> px;
 
     Box< std::shared_ptr<Sound> > sounds;
 
-    MyGL::VertexBufferHolder      & vboHolder;
-    MyGL::LocalVertexBufferHolder & lvboHolder;
-    MyGL::IndexBufferHolder       & iboHolder;
+    Tempest::VertexBufferHolder      & vboHolder;
+    Tempest::LocalVertexBufferHolder & lvboHolder;
+    Tempest::IndexBufferHolder       & iboHolder;
 
-    MyGL::VertexShaderHolder &  vsHolder;
-    MyGL::FragmentShaderHolder& fsHolder;
+    Tempest::VertexShaderHolder &  vsHolder;
+    Tempest::FragmentShaderHolder& fsHolder;
 
     void readElement( TiXmlNode *node );
 

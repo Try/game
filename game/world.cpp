@@ -7,7 +7,7 @@
 
 #include "util/math.h"
 
-#include <MyWidget/Painter>
+#include <Tempest/Painter>
 #include "behavior/behaviormsgqueue.h"
 #include "game.h"
 #include "algo/algo.h"
@@ -46,16 +46,19 @@ World::World( Game & gm,
 
   scene.lights().direction().resize(1);
 
-  MyGL::DirectionLight light;
+  Tempest::Color cl(1);
+  cl.a();
+
+  Tempest::DirectionLight light;
   light.setDirection( -2, -1, -2.0 );
-  light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
-  light.setAblimient( MyGL::Color( 0.33, 0.33,  0.35) );
+  light.setColor    ( Tempest::Color( 0.7, 0.7, 0.7 ) );
+  light.setAblimient( Tempest::Color( 0.33, 0.33,  0.35) );
   scene.lights().direction()[0] = light;
 
-  //MyGL::DirectionLight light;
+  //Tempest::DirectionLight light;
   light.setDirection( -2, 1, -2 );
-  light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
-  light.setAblimient( MyGL::Color( 0.23, 0.23,  0.35) );
+  light.setColor    ( Tempest::Color( 0.7, 0.7, 0.7 ) );
+  light.setAblimient( Tempest::Color( 0.23, 0.23,  0.35) );
   //scene.lights().direction()[0] = light;
 
   camera.setPerespective( true, w, h );
@@ -336,7 +339,7 @@ Terrain &World::terrain() {
 
 void World::updateMouseOverFlag( double x0, double y0,
                                  double x1, double y1 ) {
-  MyGL::Matrix4x4 mat = camera.projective();
+  Tempest::Matrix4x4 mat = camera.projective();
   mat.mul( camera.view() );
   //mat.transpose();
 
@@ -423,7 +426,7 @@ void World::updateSelectionClick( BehaviorMSGQueue &msg,
   }
 
 size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
-  MyGL::Matrix4x4 gmMat = camera.projective();
+  Tempest::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
 
   int dist = -1, mdist = -1;
@@ -461,16 +464,16 @@ size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
 
 
 
-bool World::isUnitUnderMouse( MyGL::Matrix4x4 & gmMat,
+bool World::isUnitUnderMouse( Tempest::Matrix4x4 & gmMat,
                               const GameObject & obj,
                               int mx, int my, int w, int h,
                               int & dist ) const {
   double data1[4], data2[4];
-  MyGL::Matrix4x4 m = gmMat;
+  Tempest::Matrix4x4 m = gmMat;
 
   m.mul( obj._transform() );
 
-  MyGL::Matrix4x4 mat = obj._transform();
+  Tempest::Matrix4x4 mat = obj._transform();
 
   double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
   double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
@@ -532,14 +535,14 @@ bool World::isUnitUnderMouse( MyGL::Matrix4x4 & gmMat,
   return false;
   }
 
-void World::paintHUD( MyWidget::Painter & p,
+void World::paintHUD( Tempest::Painter & p,
                       int w, int h ) {
   //return;
 
-  MyGL::Matrix4x4 gmMat = camera.projective();
+  Tempest::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
 
-  MyWidget::Bind::UserTexture green, bar, gray;
+  Tempest::Bind::UserTexture green, bar, gray;
   green.data = resource.pixmap("gui/hp");
   bar.data   = resource.pixmap("gui/bar");
   gray.data  = resource.pixmap("gui/gray");
@@ -552,7 +555,7 @@ void World::paintHUD( MyWidget::Painter & p,
 
       int x = obj.x()/Terrain::quadSize,
           y = obj.y()/Terrain::quadSize;
-      const MyGL::Pixmap & fog = game.player().fog();
+      const Tempest::Pixmap & fog = game.player().fog();
 
       bool v = true;
       if( x>=0 && x<fog.width() &&
@@ -561,7 +564,7 @@ void World::paintHUD( MyWidget::Painter & p,
 
       if( v &&
           obj.isVisible_perf() && !obj.behavior.find<BonusBehavior>() ) {
-        MyWidget::Rect rect = projectUnit( game.player(plN).unit(i),
+        Tempest::Rect rect = projectUnit( game.player(plN).unit(i),
                                            gmMat, w, h );
         int y0 = rect.y;
         int x0 = rect.x;
@@ -589,23 +592,23 @@ void World::paintHUD( MyWidget::Painter & p,
 
   GameObject *mobj = mouseObj();
   if( mobj ){
-    MyWidget::Rect rect = projectUnit( *mobj, gmMat, w, h );
+    Tempest::Rect rect = projectUnit( *mobj, gmMat, w, h );
 
     HintSys::setHint( mobj->hint, rect );
     }
   }
 
-MyWidget::Rect World::projectUnit( GameObject& obj,
-                                   const MyGL::Matrix4x4 & gmMat,
+Tempest::Rect World::projectUnit( GameObject& obj,
+                                   const Tempest::Matrix4x4 & gmMat,
                                    int w, int h ){
   double data1[4], data2[4];
 
-  MyGL::Matrix4x4 m = gmMat;
+  Tempest::Matrix4x4 m = gmMat;
 
   m.mul( obj._transform() );
   //m.transpose();
 
-  MyGL::Matrix4x4 mat = obj._transform();
+  Tempest::Matrix4x4 mat = obj._transform();
 
   double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
   double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
@@ -649,7 +652,7 @@ MyWidget::Rect World::projectUnit( GameObject& obj,
   int x0 = 0.5*(1+data2[0])*w;
   int x1 = 0.5*(1+data1[0])*w;
 
-  return MyWidget::Rect(x0, y0, x1-x0, y1-y0);
+  return Tempest::Rect(x0, y0, x1-x0, y1-y0);
   }
 
 Player &World::player(int id) {
@@ -741,23 +744,23 @@ void World::toogleEditLandMode(const Terrain::EditMode &m) {
   }
 
 void World::initTerrain() {
-  //terr->loadFromPixmap( MyGL::Pixmap("./terrImg/h.png") );
+  //terr->loadFromPixmap( Tempest::Pixmap("./terrImg/h.png") );
   terr->buildGeometry( graphics.lvboHolder,
                        graphics.iboHolder );
   physics.setTerrain( terrain() );
   }
 
-void World::clickEvent(int x, int y, const MyWidget::MouseEvent &e) {
-  if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+void World::clickEvent(int x, int y, const Tempest::MouseEvent &e) {
+  if( e.button==Tempest::MouseEvent::ButtonLeft ){
     tx = x;
     ty = y;
     }
 
   if( editLandMode.isEnable ){
-    if( e.button==MyWidget::MouseEvent::ButtonRight )
+    if( e.button==Tempest::MouseEvent::ButtonRight )
       terrain().brushHeight( x, y, editLandMode, true );//-200, 5 );
 
-    if( e.button==MyWidget::MouseEvent::ButtonLeft )
+    if( e.button==Tempest::MouseEvent::ButtonLeft )
       terrain().brushHeight( x, y, editLandMode, false );//200, 5 );
 
     for( size_t i=0; i<objectsCount(); ++i ){
@@ -841,7 +844,7 @@ void World::tick() {
       GameObject & obj = addObjectEnv( nonBackground[i]->getClass().name );
 
       obj.setTeamColor( src.teamColor() );
-      MyGL::Color cl = obj.teamColor();
+      Tempest::Color cl = obj.teamColor();
       float k = 0.7;
       cl.set( cl.r()*k, cl.g()*k, cl.b()*k, cl.a() );
       obj.setTeamColor( cl );
@@ -922,7 +925,7 @@ void World::serialize(GameSerializer &s) {
 
     scene.lights().direction().resize(sz);
     for( int i=0; i<sz; ++i ){
-      MyGL::DirectionLight& l = scene.lights().direction()[i];
+      Tempest::DirectionLight& l = scene.lights().direction()[i];
       float ks = 10000;
       int dir[] = {
         int(l.xDirection()*ks),
@@ -946,16 +949,16 @@ void World::serialize(GameSerializer &s) {
         +  cl[0] +  cl[1] +  cl[2]
         +  ab[0] +  ab[1] +  ab[2];
       l.setDirection( dir[0]/ks, dir[1]/ks, dir[2]/ks );
-      l.setColor    ( MyGL::Color(cl[0]/ks, cl[1]/ks, cl[2]/ks, 1) );
-      l.setAblimient( MyGL::Color(ab[0]/ks, ab[1]/ks, ab[2]/ks, 1) );
+      l.setColor    ( Tempest::Color(cl[0]/ks, cl[1]/ks, cl[2]/ks, 1) );
+      l.setAblimient( Tempest::Color(ab[0]/ks, ab[1]/ks, ab[2]/ks, 1) );
       }
     } else {
     scene.lights().direction().resize(1);
 
-    MyGL::DirectionLight light;
+    Tempest::DirectionLight light;
     light.setDirection( -2, -1, -2.0 );
-    light.setColor    ( MyGL::Color( 0.7, 0.7, 0.7 ) );
-    light.setAblimient( MyGL::Color( 0.33, 0.33,  0.35) );
+    light.setColor    ( Tempest::Color( 0.7, 0.7, 0.7 ) );
+    light.setAblimient( Tempest::Color( 0.33, 0.33,  0.35) );
 
     scene.lights().direction()[0] = light;
     }

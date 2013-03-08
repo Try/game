@@ -3,9 +3,9 @@
 
 #include "graphics/graphicssystem.h"
 #include "resource.h"
-#include <MyGL/Camera>
+#include <Tempest/Camera>
 
-#include <MyWidget/Event>
+#include <Tempest/Event>
 
 #include "game/world.h"
 #include "game/player.h"
@@ -14,7 +14,7 @@
 
 #include "gui/maingui.h"
 #include "behavior/behaviormsgqueue.h"
-#include <MyWidget/Event>
+#include <Tempest/Event>
 #include "util/fileserialize.h"
 #include "gui/inputhook.h"
 
@@ -34,18 +34,18 @@ class Game {
     void render(size_t dt);
     void resizeEvent( int w, int h );
 
-    void mouseDownEvent( MyWidget::MouseEvent &e );
-    void mouseUpEvent   ( MyWidget::MouseEvent &e );
+    void mouseDownEvent( Tempest::MouseEvent &e );
+    void mouseUpEvent   ( Tempest::MouseEvent &e );
 
-    void mouseMoveEvent ( MyWidget::MouseEvent &e );
+    void mouseMoveEvent ( Tempest::MouseEvent &e );
 
-    void mouseWheelEvent ( MyWidget::MouseEvent &e );
+    void mouseWheelEvent ( Tempest::MouseEvent &e );
 
-    void scutEvent   ( MyWidget::KeyEvent &e );
-    void keyDownEvent( MyWidget::KeyEvent &e );
-    void keyUpEvent  ( MyWidget::KeyEvent &e );
+    void scutEvent   ( Tempest::KeyEvent &e );
+    void keyDownEvent( Tempest::KeyEvent &e );
+    void keyUpEvent  ( Tempest::KeyEvent &e );
 
-    MyWidget::signal<bool> toogleFullScreen;
+    Tempest::signal<bool> toogleFullScreen;
     void toogleFullScr();
 
     Player & player( int i );
@@ -53,8 +53,8 @@ class Game {
     size_t plCount() const;
 
     void setPlaylersCount( int c );
-    void addEditorObject(const std::string &p, int pl,
-                          int x, int y , int rAngle, size_t unitPl);
+    void addEditorObject( const std::string &p, int pl,
+                          int x, int y, int rAngle, size_t unitPl);
     void moveEditorObject( int pl, int x, int y );
     void rotateEditorObject( int pl, int x );
     void nextEditorObject( int pl );
@@ -93,9 +93,9 @@ class Game {
 
     void setupMaterials( AbstractGraphicObject &obj,
                          const ProtoObject::View &src,
-                         const MyGL::Color &teamColor );
+                         const Tempest::Color &teamColor );
 
-    MyGL::Matrix4x4& shadowMat();
+    Tempest::Matrix4x4& shadowMat();
 
     void save(const std::wstring &str);
     void load(const std::wstring &str);
@@ -114,13 +114,13 @@ class Game {
 
     void setCameraPos( GameObject& obj );
     void minimapEvent( float x, float y,
-                       MyWidget::Event::MouseButton b,
+                       Tempest::Event::MouseButton b,
                        MiniMapView::Mode m);
 
     Scenario& scenario();
-    MyWidget::signal<> updateMissionTargets;
+    Tempest::signal<> updateMissionTargets;
 
-    MyWidget::signal<> exitGame;
+    Tempest::signal<> exitGame;
   private:
     void* hwnd;
     bool  paused;
@@ -150,8 +150,8 @@ class Game {
     bool mouseTracking;
     int  selectionRectTracking;
 
-    MyWidget::Point lastMPos,curMPos;
-    MyWidget::KeyEvent::KeyType   lastKEvent;
+    Tempest::Point lastMPos,curMPos;
+    Tempest::KeyEvent::KeyType   lastKEvent;
 
     struct F3{
       float data[3];

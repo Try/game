@@ -5,7 +5,7 @@
 #include "behavior/movebehavior.h"
 #include "algo/algo.h"
 
-#include <MyWidget/signal>
+#include <Tempest/signal>
 
 #include <fstream>
 

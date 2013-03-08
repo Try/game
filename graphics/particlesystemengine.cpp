@@ -16,14 +16,14 @@ ParticleSystemEngine::ParticleSystemEngine( Scene &s,
   visible.reserve( 128 );
   }
 
-void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
-                                 const MyGL::Matrix4x4 &mproj,
+void ParticleSystemEngine::exec( const Tempest::Matrix4x4 &mview,
+                                 const Tempest::Matrix4x4 &mproj,
                                  int dt,
                                  bool invCullMode ) {
   view.clear();
 
-  MyGL::Matrix4x4 mvp  = mproj;
-  MyGL::Matrix4x4 vmat = mview;
+  Tempest::Matrix4x4 mvp  = mproj;
+  Tempest::Matrix4x4 vmat = mview;
   mvp.mul( vmat );
 
   double ileft[3] = { vmat.data()[0], vmat.data()[4], vmat.data()[8] };
@@ -53,7 +53,7 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
     norm[i] /= ln;
     }
 
-  MyGL::ModelBounds bds;
+  Tempest::ModelBounds bds;
   std::fill( bds.min, bds.min+3, -0.5 );
   std::fill( bds.mid, bds.mid+3,  0   );
   std::fill( bds.max, bds.max+3,  0.5 );
@@ -61,7 +61,7 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
   visible.clear();
   for( size_t i=0; i<particles.size(); ++i ){
     ParticleSystem &p = *particles[i];
-    MyGL::ModelBounds bds1 = bds;
+    Tempest::ModelBounds bds1 = bds;
 
     float dpos[3] = {p.x(), p.y(), p.z()};
     for( int r=0; r<3; ++r ){
@@ -76,7 +76,7 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
 
   for( size_t i=0; i<dispath.size(); ++i ){
     ParticleSystem &p = *dispath[i];
-    MyGL::ModelBounds bds1 = bds;
+    Tempest::ModelBounds bds1 = bds;
 
     float dpos[3] = {p.x(), p.y(), p.z()};
     for( int r=0; r<3; ++r ){
@@ -101,7 +101,7 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
       if( currView && raw.vertex.size() ){
         GraphicObject obj(scene);
         obj.setModel( res.model( raw ) );
-        setupMaterial( obj, *currView, MyGL::Color() );
+        setupMaterial( obj, *currView, Tempest::Color() );
         view.push_back( obj );
 
         raw.vertex.clear();
@@ -116,7 +116,7 @@ void ParticleSystemEngine::exec( const MyGL::Matrix4x4 &mview,
   if( currView && raw.vertex.size() ){
     GraphicObject obj(scene);
     obj.setModel( res.model( raw ) );
-    setupMaterial( obj, *currView, MyGL::Color() );
+    setupMaterial( obj, *currView, Tempest::Color() );
     view.push_back( obj );
     }
 
@@ -137,7 +137,7 @@ void ParticleSystemEngine::update() {
 void ParticleSystemEngine::emitParticle( Model::Raw &raw,
                                          float x, float y, float z,
                                          float sz,
-                                         MyGL::Color & color ) {
+                                         Tempest::Color & color ) {
   MVertex v;
   v.u = 0.5;
   v.v = 0.5;
@@ -191,7 +191,7 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
 
 void ParticleSystemEngine::emitParticle( float x, float y, float z,
                                          float sz,
-                                         MyGL::Color & color ) {
+                                         Tempest::Color & color ) {
   emitParticle(raw, x, y, z, sz, color );
   }
 

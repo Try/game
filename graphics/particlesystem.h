@@ -5,7 +5,7 @@
 #include "game/protoobject.h"
 #include "game/particlesystemdeclaration.h"
 
-#include <MyGL/Color>
+#include <Tempest/Color>
 
 class ParticleSystemEngine;
 
@@ -41,7 +41,7 @@ class ParticleSystem {
       float x,y,z;
       float size;
 
-      MyGL::Color color;
+      Tempest::Color color;
       };
 
     std::vector<Point3> par;

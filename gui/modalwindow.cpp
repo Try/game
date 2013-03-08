@@ -15,7 +15,7 @@ ModalWindow::ModalWindow( Resource &res, Widget *owner ) {
     }
 */
   OverlayWidget *w = new OverlayWidget();
-  w->setLayout( MyWidget::Horizontal );
+  w->setLayout( Tempest::Horizontal );
   r->layout().add(w);
 
   w->setPosition(0,0);
@@ -28,23 +28,23 @@ ModalWindow::~ModalWindow() {
   onClosed();
   }
 
-void ModalWindow::mouseDownEvent(MyWidget::MouseEvent &e)
+void ModalWindow::mouseDownEvent(Tempest::MouseEvent &e)
 {
 }
 
-void ModalWindow::mouseWheelEvent(MyWidget::MouseEvent &)
+void ModalWindow::mouseWheelEvent(Tempest::MouseEvent &)
 {
 }
 
-void ModalWindow::mouseMoveEvent(MyWidget::MouseEvent &e)
+void ModalWindow::mouseMoveEvent(Tempest::MouseEvent &e)
 {
 }
 
-void ModalWindow::paintEvent(MyWidget::PaintEvent &e) {
+void ModalWindow::paintEvent(Tempest::PaintEvent &e) {
   {
-  MyWidget::Painter p(e);
+  Tempest::Painter p(e);
   p.setTexture( frame );
-  p.setBlendMode( MyWidget::alphaBlend );
+  p.setBlendMode( Tempest::alphaBlend );
   p.drawRect( 0,0, w(), h(),
               0,4, 1,1 );
   }
@@ -52,7 +52,7 @@ void ModalWindow::paintEvent(MyWidget::PaintEvent &e) {
   paintNested(e);
   }
 
-void ModalWindow::shortcutEvent(MyWidget::KeyEvent &e) {
+void ModalWindow::shortcutEvent(Tempest::KeyEvent &e) {
   Widget::shortcutEvent(e);
   e.accept();
   }

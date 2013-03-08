@@ -3,13 +3,13 @@
 #include <cstring>
 #include <cmath>
 
-MyGL::VertexDeclaration::Declarator MVertex::decl() {
-  MyGL::VertexDeclaration::Declarator d;
-  d   .add( MyGL::Decl::float3, MyGL::Usage::Position )
-      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord )
-      .add( MyGL::Decl::float3, MyGL::Usage::Normal   )
-      .add( MyGL::Decl::float4, MyGL::Usage::Color    )
-      .add( MyGL::Decl::float4, MyGL::Usage::BiNormal );
+Tempest::VertexDeclaration::Declarator MVertex::decl() {
+  Tempest::VertexDeclaration::Declarator d;
+  d   .add( Tempest::Decl::float3, Tempest::Usage::Position )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
+      .add( Tempest::Decl::float3, Tempest::Usage::Normal   )
+      .add( Tempest::Decl::float4, Tempest::Usage::Color    )
+      .add( Tempest::Decl::float4, Tempest::Usage::BiNormal );
 
   return d;
   }
@@ -61,13 +61,13 @@ void Model::computeBiNormal( MVertex &va, MVertex &vb, MVertex &vc ) {
     }
   }
 
-void Model::setModelData(const MyGL::Model<MVertex> &md) {
-  MyGL::Model<MVertex>::operator = (md);
+void Model::setModelData(const Tempest::Model<MVertex> &md) {
+  Tempest::Model<MVertex>::operator = (md);
 
   }
 
-void Model::loadMX( MyGL::VertexBufferHolder & vboHolder,
-                    MyGL::IndexBufferHolder  & iboHolder,
+void Model::loadMX( Tempest::VertexBufferHolder & vboHolder,
+                    Tempest::IndexBufferHolder  & iboHolder,
                     const std::string &fname) {
   std::fstream fin( fname.data(), std::fstream::in | std::fstream::binary );
 
@@ -85,17 +85,17 @@ void Model::loadMX( MyGL::VertexBufferHolder & vboHolder,
   fin.read( (char*)&ver,  sizeof(ver)  );
   fin.read( (char*)&size, sizeof(size) );
 
-  MyGL::Model<MyGL::DefaultVertex>::Raw raw;
+  Tempest::Model<Tempest::DefaultVertex>::Raw raw;
   raw.hasIndex = false;
   raw.vertex.resize( size );
 
-  fin.read( (char*)&raw.vertex[0], size*sizeof(MyGL::DefaultVertex) );
+  fin.read( (char*)&raw.vertex[0], size*sizeof(Tempest::DefaultVertex) );
 
   Raw rawN;
   rawN.vertex.resize( raw.vertex.size() );
   for( size_t i=0; i<rawN.vertex.size(); ++i ){
     MVertex             &v = rawN.vertex[i];
-    MyGL::DefaultVertex &d = raw.vertex[i];
+    Tempest::DefaultVertex &d = raw.vertex[i];
 
     memcpy( &v, &d, sizeof(d) );
     std::fill( v.color, v.color+4, 1) ;

@@ -1,17 +1,17 @@
 #ifndef EDITTERRAINPANEL_H
 #define EDITTERRAINPANEL_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include "landscape/terrain.h"
 
 class Resource;
 
-class EditTerrainPanel : public MyWidget::Widget {
+class EditTerrainPanel : public Tempest::Widget {
   public:
     EditTerrainPanel( Resource & res,
                       PrototypesLoader & prototypes );
 
-    MyWidget::signal<const Terrain::EditMode&> toogleEditLandMode;
+    Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
 
     void disableEdit(int /*unused*/);
   private:

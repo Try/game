@@ -5,10 +5,10 @@
 #include "hintsys.h"
 
 #include "sound/sound.h"
-#include <MyWidget/Utility>
+#include <Tempest/Utility>
 
 Button::Button(Resource &res)
-       :hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res) {
+       :hotKey(this, Tempest::KeyEvent::K_NoKey), res(res) {
   font = Font(15);
 
   back[0].data = res.pixmap("gui/buttonBack");
@@ -16,13 +16,13 @@ Button::Button(Resource &res)
 
   frame.data = res.pixmap("gui/frame");
 
-  setFocusPolicy( MyWidget::ClickFocus );
+  setFocusPolicy( Tempest::ClickFocus );
 
-  MyWidget::SizePolicy p;
-  p.maxSize = MyWidget::Size(128, 27);
-  p.minSize = MyWidget::Size(27, 27);
-  p.typeV   = MyWidget::FixedMax;
-  p.typeH   = MyWidget::FixedMax;
+  Tempest::SizePolicy p;
+  p.maxSize = Tempest::Size(128, 27);
+  p.minSize = Tempest::Size(27, 27);
+  p.typeV   = Tempest::FixedMax;
+  p.typeH   = Tempest::FixedMax;
 
   setSizePolicy(p);
 
@@ -38,7 +38,7 @@ void Button::setBackTexture(const Button::Texture &t) {
   back[1] = t;
   }
 
-void Button::setShortcut(const MyWidget::Shortcut &sc) {
+void Button::setShortcut(const Tempest::Shortcut &sc) {
   hotKey = sc;
   hotKey.activated.bind( clicked );
   hotKey.activated.bind(*this, &Button::onShortcut);
@@ -71,7 +71,7 @@ const std::wstring &Button::hint() const {
   return hnt;
   }
 
-void Button::mouseDownEvent(MyWidget::MouseEvent &) {
+void Button::mouseDownEvent(Tempest::MouseEvent &) {
   pressed  = true;
   presAnim = true;
   timePressed = clock();
@@ -79,12 +79,12 @@ void Button::mouseDownEvent(MyWidget::MouseEvent &) {
   update();
   }
 
-void Button::mouseMoveEvent( MyWidget::MouseEvent & ) {
-  MyWidget::Point p = mapToRoot(MyWidget::Point());
-  HintSys::setHint( hnt, MyWidget::Rect( p.x, p.y, w(), h() ));
+void Button::mouseMoveEvent( Tempest::MouseEvent & ) {
+  Tempest::Point p = mapToRoot(Tempest::Point());
+  HintSys::setHint( hnt, Tempest::Rect( p.x, p.y, w(), h() ));
   }
 
-void Button::mouseUpEvent(MyWidget::MouseEvent &e) {
+void Button::mouseUpEvent(Tempest::MouseEvent &e) {
   if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 ){
     clicked();
     res.sound("click").play();
@@ -94,15 +94,15 @@ void Button::mouseUpEvent(MyWidget::MouseEvent &e) {
   update();
   }
 
-void Button::paintEvent( MyWidget::PaintEvent &e ) {
-  MyWidget::Painter p(e);
+void Button::paintEvent( Tempest::PaintEvent &e ) {
+  Tempest::Painter p(e);
 
-  MyWidget::Rect vRect = viewRect();
+  Tempest::Rect vRect = viewRect();
   int px = vRect.x, py = vRect.y,
       pw = vRect.w, ph = vRect.h;
 
-  MyWidget::Rect r = p.scissor();
-  p.setScissor( r.intersected( MyWidget::Rect(px, py, pw, ph) ) );
+  Tempest::Rect r = p.scissor();
+  p.setScissor( r.intersected( Tempest::Rect(px, py, pw, ph) ) );
 
   Texture bk = back[ (hasFocus() || presAnim) ? 1:0 ];
   p.setTexture( bk );
@@ -111,7 +111,7 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
                     bk.data.rect.w, bk.data.rect.h );
 
 
-  p.setBlendMode( MyWidget::alphaBlend );
+  p.setBlendMode( Tempest::alphaBlend );
   p.setTexture( icon );
   Font f = font;
 
@@ -132,7 +132,7 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
 
   p.setFont(f);
   p.drawText( 0,0,w(),h(), txt,
-              MyWidget::AlignHCenter | MyWidget::AlignVCenter );
+              Tempest::AlignHCenter | Tempest::AlignVCenter );
 
   if( presAnim != pressed ){
     if( clock() > timePressed+CLOCKS_PER_SEC/8 )
@@ -142,10 +142,10 @@ void Button::paintEvent( MyWidget::PaintEvent &e ) {
     }
   }
 
-void Button::drawFrame( MyWidget::Painter & p ) {
+void Button::drawFrame( Tempest::Painter & p ) {
   int fx = 0, fy = 0;
 
-  MyWidget::Rect vRect = viewRect();
+  Tempest::Rect vRect = viewRect();
   int px = vRect.x, py = vRect.y,
       pw = vRect.w, ph = vRect.h;
 
@@ -179,7 +179,7 @@ void Button::drawFrame( MyWidget::Painter & p ) {
   p.unsetTexture();
   }
 
-MyWidget::Rect Button::viewRect() const {
+Tempest::Rect Button::viewRect() const {
   int px = 0, py = 0,
       pw = w(), ph = h();
 
@@ -192,11 +192,11 @@ MyWidget::Rect Button::viewRect() const {
     ph -= 2*s;
     }
 
-  return MyWidget::Rect(px, py, pw, ph);
+  return Tempest::Rect(px, py, pw, ph);
   }
 
-void Button::keyPressEvent(MyWidget::KeyEvent &e) {
-  if( false && e.key==MyWidget::KeyEvent::K_F1 ){
+void Button::keyPressEvent(Tempest::KeyEvent &e) {
+  if( false && e.key==Tempest::KeyEvent::K_F1 ){
     clicked();
     presAnim = true;
 

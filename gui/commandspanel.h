@@ -3,7 +3,7 @@
 
 #include "gui/panel.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 
 #include "game/protoobject.h"
 #include "gui/inputhook.h"
@@ -17,11 +17,11 @@ class CommandsPanel : public Panel {
 
     void bind(GameObject *u );
 
-    class Layout: public MyWidget::Layout{
+    class Layout: public Tempest::Layout{
       void applyLayout();
       };
 
-    MyWidget::signal<> onPageCanged;
+    Tempest::signal<> onPageCanged;
   private:
     Resource & res;
     BehaviorMSGQueue & msg;
@@ -59,8 +59,8 @@ class CommandsPanel : public Panel {
     void setupHook ( const std::string& unit );
     void setupHookU( const std::string& unit );
 
-    void mouseDown( MyWidget::MouseEvent& e );
-    void mouseUp  ( MyWidget::MouseEvent& e );
+    void mouseDown( Tempest::MouseEvent& e );
+    void mouseUp  ( Tempest::MouseEvent& e );
     void onRemoveHook();
   };
 

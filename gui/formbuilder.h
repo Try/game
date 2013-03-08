@@ -14,7 +14,7 @@ class TiXmlNode;
 
 class FormBuilder : public ModalWindow  {
   public:
-    FormBuilder(Resource &res, MyWidget::Widget* ow );
+    FormBuilder(Resource &res, Tempest::Widget* ow );
 
   private:
     Resource &res;

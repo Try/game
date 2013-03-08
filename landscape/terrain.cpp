@@ -1,6 +1,6 @@
 #include "terrain.h"
 
-#include <MyGL/Model>
+#include <Tempest/Model>
 
 #include "game/world.h"
 
@@ -28,7 +28,7 @@ Terrain::Terrain(int w, int h,
   aviableTiles.push_back("land.sand" );
 
   for( size_t i=0; i<aviableTiles.size(); ++i ){
-    MyGL::Color cl = res.textureAVG(prototype.get(aviableTiles[i]).view[0].name+"/diff");
+    Tempest::Color cl = res.textureAVG(prototype.get(aviableTiles[i]).view[0].name+"/diff");
     aviableColors.push_back( cl );
     }
 
@@ -52,8 +52,8 @@ Terrain::Terrain(int w, int h,
   computeEnableMap();
   }
 
-void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                             MyGL::IndexBufferHolder  & iboHolder){
+void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
+                             Tempest::IndexBufferHolder  & iboHolder){
   computePlanes();
 
   for( int i=0; i<chunks.width(); ++i )
@@ -84,8 +84,8 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
       chunks[i][r].needToUpdate  = false;
   }
 
-void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                             MyGL::IndexBufferHolder  & iboHolder,
+void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
+                             Tempest::IndexBufferHolder  & iboHolder,
                              int plane,
                              size_t texture,
                              int cX, int cY ) {
@@ -232,8 +232,8 @@ void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
     }
   }
 
-void Terrain::buildGeometry( MyGL::VertexBufferHolder & vboHolder,
-                             MyGL::IndexBufferHolder  & iboHolder,
+void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
+                             Tempest::IndexBufferHolder  & iboHolder,
                              int plane,
                              size_t texture  ) {
   for( int i=0; i<chunks.width(); ++i )
@@ -289,11 +289,11 @@ void Terrain::computePlanes() {
       }
   }
 
-MyGL::Model<WaterVertex>
-      Terrain::waterGeometry( MyGL::VertexBufferHolder & vboHolder,
-                              MyGL::IndexBufferHolder  & iboHolder,
+Tempest::Model<WaterVertex>
+      Terrain::waterGeometry( Tempest::VertexBufferHolder & vboHolder,
+                              Tempest::IndexBufferHolder  & iboHolder,
                               int cX, int cY ) const {
-  MyGL::Model<WaterVertex> model;
+  Tempest::Model<WaterVertex> model;
   WaterVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
   v.h = 0;
   v.dir[0] = 1;
@@ -361,17 +361,17 @@ MyGL::Model<WaterVertex>
           land.push_back(v);
           }
 
-  MyGL::VertexDeclaration::Declarator decl = MVertex::decl();
-  decl.add( MyGL::Decl::float1, MyGL::Usage::Depth    )
-      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord, 1 );
+  Tempest::VertexDeclaration::Declarator decl = MVertex::decl();
+  decl.add( Tempest::Decl::float1, Tempest::Usage::Depth    )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 1 );
 
   model.load( vboHolder, iboHolder, land, decl );
 
   return model;
   }
 
-Model Terrain::fogGeometry( MyGL::VertexBufferHolder & vboHolder,
-                            MyGL::IndexBufferHolder  & iboHolder,
+Model Terrain::fogGeometry( Tempest::VertexBufferHolder & vboHolder,
+                            Tempest::IndexBufferHolder  & iboHolder,
                             int cX, int cY ) const {
   Model model;
   MVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
@@ -414,7 +414,7 @@ Model Terrain::fogGeometry( MyGL::VertexBufferHolder & vboHolder,
           land.push_back(v);
           }
 
-  MyGL::VertexDeclaration::Declarator decl = MVertex::decl();
+  Tempest::VertexDeclaration::Declarator decl = MVertex::decl();
   model.load( vboHolder, iboHolder, land, decl );
 
   return model;
@@ -500,7 +500,7 @@ void Terrain::brushHeight( int x, int y,
               - aviableTiles.begin();
     if( size_t(id)==aviableTiles.size() ){
       aviableTiles.push_back( m.texture );
-      MyGL::Color cl = res.textureAVG(prototype.get(m.texture).view[0].name+"/diff");
+      Tempest::Color cl = res.textureAVG(prototype.get(m.texture).view[0].name+"/diff");
       aviableColors.push_back( cl );
       }
 
@@ -593,7 +593,7 @@ void Terrain::normalAt(int x, int y, float *out) {
   std::copy( tileset[x][y].normal, tileset[x][y].normal+3, out );
   }
 
-MyGL::Color Terrain::colorAt(int x, int y) {
+Tempest::Color Terrain::colorAt(int x, int y) {
   x = std::max(0, std::min(x, width()-1) );
   y = std::max(0, std::min(y, height()-1) );
 
@@ -813,7 +813,7 @@ void Terrain::serialize( GameSerializer &s ) {
 
     aviableColors.clear();
     for( size_t i=0; i<aviableTiles.size(); ++i ){
-      MyGL::Color cl = res.textureAVG(prototype.get(aviableTiles[i]).view[0].name+"/diff");
+      Tempest::Color cl = res.textureAVG(prototype.get(aviableTiles[i]).view[0].name+"/diff");
       aviableColors.push_back( cl );
       }
 
@@ -847,10 +847,10 @@ void Terrain::updatePolish() {
       chunks[i][r].update( res );
   }
 
-void Terrain::loadFromPixmap(const MyGL::Pixmap &p) {
+void Terrain::loadFromPixmap(const Tempest::Pixmap &p) {
   for( int i=0; i<p.width(); ++i )
     for( int r=0; r<p.height(); ++r ){
-      MyGL::Pixmap::Pixel px = p.at(i,r);
+      Tempest::Pixmap::Pixel px = p.at(i,r);
       //if( px.b>0 )
         //px.b = 32;
 

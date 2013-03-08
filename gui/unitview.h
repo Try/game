@@ -3,7 +3,7 @@
 
 #include "textureview.h"
 
-#include <MyGL/Texture2d>
+#include <Tempest/Texture2d>
 #include <memory>
 
 #include "game/gameobjectview.h"
@@ -18,21 +18,21 @@ class UnitView : public TextureView {
     UnitView( Resource & res );
     ~UnitView();
 
-    MyWidget::signal< const Scene &,
+    Tempest::signal< const Scene &,
                       ParticleSystemEngine &,
-                      MyGL::Texture2d & > renderScene;
+                      Tempest::Texture2d & > renderScene;
 
     void setupUnit( GameObject * obj );
     void setupUnit( Game &game,
                     const std::string & proto );
     void updateView();
 
-    MyWidget::signal<GameObject&> setCameraPos;
+    Tempest::signal<GameObject&> setCameraPos;
   protected:
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseUpEvent(MyWidget::MouseEvent &e);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseUpEvent(Tempest::MouseEvent &e);
 
-    void paintEvent(MyWidget::PaintEvent &e);
+    void paintEvent(Tempest::PaintEvent &e);
 
     Scene    scene;
     Resource & res;

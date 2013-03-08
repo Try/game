@@ -1,8 +1,8 @@
 #ifndef ENVOBJECT_H
 #define ENVOBJECT_H
 
-#include <MyGL/AbstractGraphicObject>
-#include <MyGL/Matrix4x4>
+#include <Tempest/AbstractGraphicObject>
+#include <Tempest/Matrix4x4>
 
 #include "resource.h"
 
@@ -20,17 +20,17 @@ class EnvObject : public AbstractGraphicObject {
     void setModel( const Model & m );
     const Model& model() const;
 
-    MyGL::Matrix4x4 transform() const;
-    void setTransform( const MyGL::Matrix4x4 & m );
+    Tempest::Matrix4x4 transform() const;
+    void setTransform( const Tempest::Matrix4x4 & m );
 
-    MyGL::ModelBounds bounds() const;
+    Tempest::ModelBounds bounds() const;
 
-    void render(const MyGL::AbstractMaterial &mat,
-                MyGL::Render &r,
-                const MyGL::Matrix4x4 &object,
-                const MyGL::AbstractCamera &camera) const;
+    void render(const Tempest::AbstractMaterial &mat,
+                Tempest::Render &r,
+                const Tempest::Matrix4x4 &object,
+                const Tempest::AbstractCamera &camera) const;
 
-    void render(  MyGL::Render &r ) const;
+    void render(  Tempest::Render &r ) const;
 
     float x() const;
     float y() const;
@@ -50,7 +50,7 @@ class EnvObject : public AbstractGraphicObject {
     size_t viewID;
   private:
     Model m_model;
-    MyGL::Matrix4x4 mat;
+    Tempest::Matrix4x4 mat;
 
     struct {
       float x,y,z,  r;

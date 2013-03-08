@@ -121,14 +121,14 @@ void Scene::onObjectRemoved( const AbstractGraphicObject *t ) {
   }
 
 void Scene::onObjectTransform( const AbstractGraphicObject *t,
-                               const MyGL::Matrix4x4 &mat ) {
+                               const Tempest::Matrix4x4 &mat ) {
   onObjectOp( t, RePos, mat );
   //onObjectAdded(t);
   }
 
 void Scene::onObjectOp( const AbstractGraphicObject *t,
                         Act ins,
-                        const MyGL::Matrix4x4 &mat ) {
+                        const Tempest::Matrix4x4 &mat ) {
   if( t->material().usage.shadowCast )
     onObjectOp( shCast, t, ins, mat );
 
@@ -169,7 +169,7 @@ void Scene::onObjectOp( const AbstractGraphicObject *t,
 void Scene::onObjectOp( Scene::Objects &obj,
                         const AbstractGraphicObject *t,
                         Act ins,
-                        const MyGL::Matrix4x4 &mat ) {
+                        const Tempest::Matrix4x4 &mat ) {
 
   float x = mat.at(3,0);
   float y = mat.at(3,1);

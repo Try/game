@@ -10,7 +10,7 @@ Panel::Panel( Resource &res ) {
   mouseTracking = false;
   dragable      = false;
 
-  setLayout( MyWidget::Horizontal );
+  setLayout( Tempest::Horizontal );
   }
 
 void Panel::setDragable(bool d) {
@@ -21,7 +21,7 @@ bool Panel::isDragable() {
   return dragable;
   }
 
-void Panel::mouseDownEvent(MyWidget::MouseEvent &e) {/*
+void Panel::mouseDownEvent(Tempest::MouseEvent &e) {/*
   e.ignore();
   Widget::mousePressEvent(e);
   if( e.isAccepted() )
@@ -33,14 +33,14 @@ void Panel::mouseDownEvent(MyWidget::MouseEvent &e) {/*
     return;
     }
 
-  if( e.button==MyWidget::MouseEvent::ButtonLeft ){
+  if( e.button==Tempest::MouseEvent::ButtonLeft ){
     mouseTracking = true;
     oldPos = pos();
     mpos   = mapToRoot( e.pos() );
     }
   }
 
-void Panel::mouseDragEvent(MyWidget::MouseEvent &e) {
+void Panel::mouseDragEvent(Tempest::MouseEvent &e) {
   if( !dragable ){
     e.ignore();
     return;
@@ -50,22 +50,22 @@ void Panel::mouseDragEvent(MyWidget::MouseEvent &e) {
     setPosition( oldPos - (mpos - mapToRoot(e.pos() )) );
   }
 
-void Panel::mouseMoveEvent(MyWidget::MouseEvent &e) {
+void Panel::mouseMoveEvent(Tempest::MouseEvent &e) {
   if( !dragable ){
     //e.ignore();
     }
   }
 
-void Panel::mouseUpEvent(MyWidget::MouseEvent &e) {
+void Panel::mouseUpEvent(Tempest::MouseEvent &e) {
   mouseTracking = false;
   }
 
-void Panel::mouseWheelEvent(MyWidget::MouseEvent &e) {
+void Panel::mouseWheelEvent(Tempest::MouseEvent &e) {
 
   }
 
-void Panel::paintEvent( MyWidget::PaintEvent &e ) {
-  MyWidget::Painter p(e);
+void Panel::paintEvent( Tempest::PaintEvent &e ) {
+  Tempest::Painter p(e);
 
   p.setTexture( back );
   p.drawRect( 0,0, w(), h() );

@@ -10,20 +10,20 @@ Material::Material():specular(0), useAlphaTest(1), alphaTrestRef(0.5) {
   teamColor  = 0;
   }
 
-MyGL::Matrix4x4 Material::animateObjMatrix( const MyGL::Matrix4x4 &object,
+Tempest::Matrix4x4 Material::animateObjMatrix( const Tempest::Matrix4x4 &object,
                                             double power ) {
-  MyGL::Float dvec[3] = { power*0.02*wind, power*0.03*wind, 0};
+  double dvec[3] = { power*0.02*wind, power*0.03*wind, 0};
 
-  MyGL::Float mx[4][4] = {
+  double mx[4][4] = {
     {1,0,0,0},
     {0,1,0,0},
     { dvec[0], dvec[1], 1,0},
     {0,0,0,1}
     };
 
-  MyGL::Matrix4x4 mobj( (MyGL::Float*)mx );
+  Tempest::Matrix4x4 mobj( (double*)mx );
   //mobj.mul( object );
-  MyGL::Matrix4x4 objR = object;
+  Tempest::Matrix4x4 objR = object;
   objR.set(3,0, 0);
   objR.set(3,1, 0);
   objR.set(3,2, 0);
@@ -37,342 +37,342 @@ MyGL::Matrix4x4 Material::animateObjMatrix( const MyGL::Matrix4x4 &object,
   return mobj;
   }
 
-void Material::gbuffer(MyGL::RenderState &rs,
-                        const MyGL::Matrix4x4 &object,
-                        const MyGL::AbstractCamera &c,
-                        MyGL::UniformTable & table ,
-                        const MyGL::Matrix4x4 &shadowMatrix) const {
-  MyGL::Matrix4x4 m = c.projective();
+void Material::gbuffer(Tempest::RenderState &rs,
+                        const Tempest::Matrix4x4 &object,
+                        const Tempest::AbstractCamera &c,
+                        Tempest::UniformTable & table ,
+                        const Tempest::Matrix4x4 &shadowMatrix) const {
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
 
   if( usage.blush ){
-    MyGL::Matrix4x4 mobj = animateObjMatrix(object);
+    Tempest::Matrix4x4 mobj = animateObjMatrix(object);
     m.mul( mobj );
     } else {
     m.mul( object );
     }
 
-  MyGL::Matrix4x4 sh = shadowMatrix;
+  Tempest::Matrix4x4 sh = shadowMatrix;
   sh.mul( object );
 
-  table.add( m,      "mvpMatrix",    MyGL::UniformTable::Vertex );
-  table.add( object, "objectMatrix", MyGL::UniformTable::Vertex );
-  table.add( sh,     "shadowMatrix", MyGL::UniformTable::Vertex );
+  table.add( m,      "mvpMatrix",    Tempest::UniformTable::Vertex );
+  table.add( object, "objectMatrix", Tempest::UniformTable::Vertex );
+  table.add( sh,     "shadowMatrix", Tempest::UniformTable::Vertex );
 
-  table.add( diffuse,  "texture",        MyGL::UniformTable::Fragment );
-  table.add( normal,   "normalMap",      MyGL::UniformTable::Fragment );
-  table.add( specular, "specularFactor", MyGL::UniformTable::Fragment );
+  table.add( diffuse,  "texture",        Tempest::UniformTable::Fragment );
+  table.add( normal,   "normalMap",      Tempest::UniformTable::Fragment );
+  table.add( specular, "specularFactor", Tempest::UniformTable::Fragment );
 
 
   if( teamColor ){// FIXME
     float cl[3] = { teamColor->r(),
                     teamColor->g(),
                     teamColor->b() };
-    table.add( cl, 3, "tmColor", MyGL::UniformTable::Fragment );
+    table.add( cl, 3, "tmColor", Tempest::UniformTable::Fragment );
     } else {
     float cl[3] = {};
-    table.add( cl, 3, "tmColor", MyGL::UniformTable::Fragment );
+    table.add( cl, 3, "tmColor", Tempest::UniformTable::Fragment );
     }
 
   if( useAlphaTest ){
-    rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
+    rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
     rs.setAlphaTestRef( alphaTrestRef );
     }
   }
 
-void Material::grass( MyGL::RenderState &rs,
-                      const MyGL::Matrix4x4 &object,
-                      const MyGL::AbstractCamera &c,
-                      MyGL::UniformTable &table,
-                      const MyGL::Matrix4x4 &shadowMatrix) const {
-  MyGL::Matrix4x4 m = c.projective();
+void Material::grass( Tempest::RenderState &rs,
+                      const Tempest::Matrix4x4 &object,
+                      const Tempest::AbstractCamera &c,
+                      Tempest::UniformTable &table,
+                      const Tempest::Matrix4x4 &shadowMatrix) const {
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
 
   if( usage.blush ){
-    MyGL::Matrix4x4 mobj = animateObjMatrix(object, 3);
+    Tempest::Matrix4x4 mobj = animateObjMatrix(object, 3);
     m.mul( mobj );
     } else {
     m.mul( object );
     }
 
-  MyGL::Matrix4x4 sh = shadowMatrix;
+  Tempest::Matrix4x4 sh = shadowMatrix;
   sh.mul( object );
 
-  table.add( m,      "mvpMatrix",    MyGL::UniformTable::Vertex );
-  table.add( object, "objectMatrix", MyGL::UniformTable::Vertex );
-  table.add( sh,     "shadowMatrix", MyGL::UniformTable::Vertex );
+  table.add( m,      "mvpMatrix",    Tempest::UniformTable::Vertex );
+  table.add( object, "objectMatrix", Tempest::UniformTable::Vertex );
+  table.add( sh,     "shadowMatrix", Tempest::UniformTable::Vertex );
 
-  table.add( diffuse,  "texture",        MyGL::UniformTable::Fragment );
-  table.add( specular, "specularFactor", MyGL::UniformTable::Fragment );
+  table.add( diffuse,  "texture",        Tempest::UniformTable::Fragment );
+  table.add( specular, "specularFactor", Tempest::UniformTable::Fragment );
 
   rs.setZWriting(0);
   rs.setBlend(1);
-  rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_alpha,
-                   MyGL::RenderState::AlphaBlendMode::one_minus_src_alpha );
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
+                   Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
 
   if( useAlphaTest ){
-    rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
+    rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
     rs.setAlphaTestRef( alphaTrestRef );
     }
   }
 
-void Material::additive( MyGL::RenderState &rs,
-                         const MyGL::Matrix4x4 &object,
-                         const MyGL::AbstractCamera &c,
-                         MyGL::UniformTable &u,
-                         const MyGL::Matrix4x4 &) const {
-  MyGL::Matrix4x4 m = c.projective();
+void Material::additive( Tempest::RenderState &rs,
+                         const Tempest::Matrix4x4 &object,
+                         const Tempest::AbstractCamera &c,
+                         Tempest::UniformTable &u,
+                         const Tempest::Matrix4x4 &) const {
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
   m.mul( object );
 
-  u.add( m,      "mvpMatrix", MyGL::UniformTable::Vertex   );
-  u.add( diffuse, "texture",  MyGL::UniformTable::Fragment );
+  u.add( m,      "mvpMatrix", Tempest::UniformTable::Vertex   );
+  u.add( diffuse, "texture",  Tempest::UniformTable::Fragment );
 
-  rs.setZTestMode( MyGL::RenderState::ZTestMode::LEqual );
+  rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
   rs.setBlend(1);
-  rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::one,
-                   MyGL::RenderState::AlphaBlendMode::one );
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
+                   Tempest::RenderState::AlphaBlendMode::one );
 
   rs.setZWriting(0);
   }
 
-void Material::terrainMinor( MyGL::RenderState &rs,
-                             const MyGL::Matrix4x4 &m,
-                             const MyGL::AbstractCamera &c,
-                             MyGL::UniformTable &u,
-                             const MyGL::Matrix4x4 &sm ) const {
+void Material::terrainMinor( Tempest::RenderState &rs,
+                             const Tempest::Matrix4x4 &m,
+                             const Tempest::AbstractCamera &c,
+                             Tempest::UniformTable &u,
+                             const Tempest::Matrix4x4 &sm ) const {
   gbuffer( rs, m, c, u, sm );
 
-  rs.setZTestMode( MyGL::RenderState::ZTestMode::Equal );
+  rs.setZTestMode( Tempest::RenderState::ZTestMode::Equal );
   rs.setZWriting(0);
 
-  rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::Always );
+  rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::Always );
   rs.setAlphaTestRef(0.5);
 
   rs.setBlend(1);
-  rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::one,
-                   MyGL::RenderState::AlphaBlendMode::one );
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
+                   Tempest::RenderState::AlphaBlendMode::one );
   }
 
-void Material::terrainMinorZ( MyGL::RenderState &rs,
-                              const MyGL::Matrix4x4 &m,
-                              const MyGL::AbstractCamera &c,
-                              MyGL::UniformTable &u,
-                              const MyGL::Matrix4x4 &sm ) const {
+void Material::terrainMinorZ( Tempest::RenderState &rs,
+                              const Tempest::Matrix4x4 &m,
+                              const Tempest::AbstractCamera &c,
+                              Tempest::UniformTable &u,
+                              const Tempest::Matrix4x4 &sm ) const {
   terrainMinor( rs, m, c, u, sm );
 
-  rs.setZTestMode( MyGL::RenderState::ZTestMode::Less );
+  rs.setZTestMode( Tempest::RenderState::ZTestMode::Less );
   rs.setZWriting(1);
   rs.setBlend(0);
 
   rs.setColorMask(0,0,0,0);
   }
 
-void Material::transparent( MyGL::RenderState &rs,
-                            const MyGL::Matrix4x4 &object,
-                            const MyGL::AbstractCamera &c,
-                            MyGL::UniformTable &table,
-                            const MyGL::Matrix4x4 &shadowMatrix ) const {
+void Material::transparent( Tempest::RenderState &rs,
+                            const Tempest::Matrix4x4 &object,
+                            const Tempest::AbstractCamera &c,
+                            Tempest::UniformTable &table,
+                            const Tempest::Matrix4x4 &shadowMatrix ) const {
 
-  MyGL::Matrix4x4 m = c.projective();
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
 
   if( usage.blush ){
-    MyGL::Matrix4x4 mobj = animateObjMatrix(object);
+    Tempest::Matrix4x4 mobj = animateObjMatrix(object);
     m.mul( mobj );
     } else {
     m.mul( object );
     }
 
-  MyGL::Matrix4x4 sh = shadowMatrix;
+  Tempest::Matrix4x4 sh = shadowMatrix;
   sh.mul( object );
 
-  table.add( m,      "mvpMatrix",    MyGL::UniformTable::Vertex );
-  table.add( object, "objectMatrix", MyGL::UniformTable::Vertex );
-  table.add( sh,     "shadowMatrix", MyGL::UniformTable::Vertex );
+  table.add( m,      "mvpMatrix",    Tempest::UniformTable::Vertex );
+  table.add( object, "objectMatrix", Tempest::UniformTable::Vertex );
+  table.add( sh,     "shadowMatrix", Tempest::UniformTable::Vertex );
 
-  table.add( diffuse,  "texture",        MyGL::UniformTable::Fragment );
-  table.add( normal,   "normalMap",      MyGL::UniformTable::Fragment );
-  table.add( specular, "specularFactor", MyGL::UniformTable::Fragment );
+  table.add( diffuse,  "texture",        Tempest::UniformTable::Fragment );
+  table.add( normal,   "normalMap",      Tempest::UniformTable::Fragment );
+  table.add( specular, "specularFactor", Tempest::UniformTable::Fragment );
 
   rs.setBlend(1);
   rs.setAlphaTestRef(0.01);
-  rs.setZTestMode( MyGL::RenderState::ZTestMode::LEqual );
-  rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_alpha,
-                   MyGL::RenderState::AlphaBlendMode::one_minus_src_alpha );
+  rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
+                   Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
   }
 
-void Material::transparentZ(MyGL::RenderState &rs,
-                            const MyGL::Matrix4x4 &m,
-                            const MyGL::AbstractCamera &c,
-                            MyGL::UniformTable &u,
-                            const MyGL::Matrix4x4 &sm ) const {
+void Material::transparentZ(Tempest::RenderState &rs,
+                            const Tempest::Matrix4x4 &m,
+                            const Tempest::AbstractCamera &c,
+                            Tempest::UniformTable &u,
+                            const Tempest::Matrix4x4 &sm ) const {
   transparent( rs, m, c, u, sm );
   rs.setBlend(0);
   rs.setColorMask(0,0,0,0);
   }
 
-void Material::glowPass(MyGL::RenderState & rs,
-                         const MyGL::Matrix4x4 &object,
-                         const MyGL::AbstractCamera &c,
-                         MyGL::UniformTable & table,
-                        const MyGL::Matrix4x4 &unused) const {
-  rs.setZTestMode( MyGL::RenderState::ZTestMode::LEqual );
+void Material::glowPass(Tempest::RenderState & rs,
+                         const Tempest::Matrix4x4 &object,
+                         const Tempest::AbstractCamera &c,
+                         Tempest::UniformTable & table,
+                        const Tempest::Matrix4x4 &unused) const {
+  rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
   rs.setZTest(true);
   rs.setZWriting(false);
 
-  MyGL::Matrix4x4 m = c.projective();
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
   m.mul( object );
 
-  table.add( m,     "mvpMatrix",  MyGL::UniformTable::Vertex   );
-  table.add( glow,  "texture",    MyGL::UniformTable::Fragment );
+  table.add( m,     "mvpMatrix",  Tempest::UniformTable::Vertex   );
+  table.add( glow,  "texture",    Tempest::UniformTable::Fragment );
   }
 
-void Material::shadow( MyGL::RenderState &rs,
-                       const MyGL::Matrix4x4 &object,
-                       const MyGL::AbstractCamera &,
-                       MyGL::UniformTable & table,
-                       const MyGL::Matrix4x4 &sh ) const {
-  MyGL::Matrix4x4 m = sh;
+void Material::shadow( Tempest::RenderState &rs,
+                       const Tempest::Matrix4x4 &object,
+                       const Tempest::AbstractCamera &,
+                       Tempest::UniformTable & table,
+                       const Tempest::Matrix4x4 &sh ) const {
+  Tempest::Matrix4x4 m = sh;
 
   if( !usage.blush )
     m.mul( object ); else
     m.mul( Material::animateObjMatrix( object ) );
 
-  table.add( m,     "mvpMatrix", MyGL::UniformTable::Vertex );
-  table.add( diffuse, "texture", MyGL::UniformTable::Fragment );
+  table.add( m,     "mvpMatrix", Tempest::UniformTable::Vertex );
+  table.add( diffuse, "texture", Tempest::UniformTable::Fragment );
 
-  rs.setCullFaceMode( MyGL::RenderState::CullMode::front );
+  rs.setCullFaceMode( Tempest::RenderState::CullMode::front );
 
   if( useAlphaTest ){
-    rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
+    rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
     rs.setAlphaTestRef( alphaTrestRef );
     }
   }
 
-void Material::displace( MyGL::RenderState &rs,
-                         const MyGL::Matrix4x4 &object,
-                         const MyGL::AbstractCamera &c,
-                         MyGL::UniformTable &table ,
-                         const MyGL::Matrix4x4 &shadowMatrix ) const {
-  rs.setZTestMode( MyGL::RenderState::ZTestMode::LEqual );
+void Material::displace( Tempest::RenderState &rs,
+                         const Tempest::Matrix4x4 &object,
+                         const Tempest::AbstractCamera &c,
+                         Tempest::UniformTable &table ,
+                         const Tempest::Matrix4x4 &shadowMatrix ) const {
+  rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
   rs.setZTest(true);
   rs.setZWriting( true );
 
-  MyGL::Matrix4x4 m = c.projective();
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
   m.mul( object );
 
-  MyGL::Matrix4x4 vp = c.projective();
+  Tempest::Matrix4x4 vp = c.projective();
   vp.mul( c.view() );
 
-  MyGL::Matrix4x4 sh = shadowMatrix;
+  Tempest::Matrix4x4 sh = shadowMatrix;
   sh.mul( object );
 
-  table.add( m,       "mvpMatrix",    MyGL::UniformTable::Vertex );
-  table.add( vp,      "mvpMatrix",    MyGL::UniformTable::Fragment );
+  table.add( m,       "mvpMatrix",    Tempest::UniformTable::Vertex );
+  table.add( vp,      "mvpMatrix",    Tempest::UniformTable::Fragment );
 
-  table.add( object,  "objectMatrix", MyGL::UniformTable::Vertex );
+  table.add( object,  "objectMatrix", Tempest::UniformTable::Vertex );
 
-  table.add( normal,  "normalMap",    MyGL::UniformTable::Fragment );
+  table.add( normal,  "normalMap",    Tempest::UniformTable::Fragment );
 
   if( useAlphaTest ){
-    rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
+    rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
     rs.setAlphaTestRef( alphaTrestRef );
     }
   }
 
-void Material::water(MyGL::RenderState &rs,
-                      const MyGL::Matrix4x4 &object,
-                      const MyGL::AbstractCamera &c,
-                      MyGL::UniformTable & table,
-                      const MyGL::Matrix4x4 &shadowMatrix ) const {
-  rs.setZTestMode( MyGL::RenderState::ZTestMode::LEqual );
+void Material::water(Tempest::RenderState &rs,
+                      const Tempest::Matrix4x4 &object,
+                      const Tempest::AbstractCamera &c,
+                      Tempest::UniformTable & table,
+                      const Tempest::Matrix4x4 &shadowMatrix ) const {
+  rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
   rs.setZTest(true);
   rs.setZWriting( true );
 
-  MyGL::Matrix4x4 m = c.projective();
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
   m.mul( object );
 
-  MyGL::Matrix4x4 vp = c.projective();
+  Tempest::Matrix4x4 vp = c.projective();
   vp.mul( c.view() );
 
-  MyGL::Matrix4x4 sh = shadowMatrix;
+  Tempest::Matrix4x4 sh = shadowMatrix;
   sh.mul( object );
 
-  MyGL::Matrix4x4 invMat = c.projective();
+  Tempest::Matrix4x4 invMat = c.projective();
   invMat.mul( c.view() );
   invMat.mul( object );
   invMat.inverse();
 
-  table.add( vp,      "mvpMatrix",    MyGL::UniformTable::Fragment );
-  table.add( m,       "mvpMatrix",    MyGL::UniformTable::Vertex   );
-  table.add( object,  "objectMatrix", MyGL::UniformTable::Vertex   );
-  table.add( sh,     "shadowMatrix",  MyGL::UniformTable::Vertex   );
-  table.add( invMat, "invMatrix",     MyGL::UniformTable::Fragment );
+  table.add( vp,      "mvpMatrix",    Tempest::UniformTable::Fragment );
+  table.add( m,       "mvpMatrix",    Tempest::UniformTable::Vertex   );
+  table.add( object,  "objectMatrix", Tempest::UniformTable::Vertex   );
+  table.add( sh,     "shadowMatrix",  Tempest::UniformTable::Vertex   );
+  table.add( invMat, "invMatrix",     Tempest::UniformTable::Fragment );
 
-  table.add( diffuse, "texture",      MyGL::UniformTable::Fragment );
-  //table.add( normals, "normalMap",    MyGL::UniformTable::Fragment );
-  //table.add( *shadowMap, "shadowMap", MyGL::UniformTable::Fragment );
-  table.add( 1, "specularFactor", MyGL::UniformTable::Fragment );
+  table.add( diffuse, "texture",      Tempest::UniformTable::Fragment );
+  //table.add( normals, "normalMap",    Tempest::UniformTable::Fragment );
+  //table.add( *shadowMap, "shadowMap", Tempest::UniformTable::Fragment );
+  table.add( 1, "specularFactor", Tempest::UniformTable::Fragment );
 
   if( useAlphaTest ){
-    rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
+    rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
     rs.setAlphaTestRef( alphaTrestRef );
     }
   }
 
-void Material::omni( MyGL::RenderState &rs,
-                     const MyGL::Matrix4x4 &object,
-                     const MyGL::AbstractCamera &c,
-                     MyGL::UniformTable &u,
-                     const MyGL::Matrix4x4 &shM ) const {
-  MyGL::Matrix4x4 invMat = c.projective();
+void Material::omni( Tempest::RenderState &rs,
+                     const Tempest::Matrix4x4 &object,
+                     const Tempest::AbstractCamera &c,
+                     Tempest::UniformTable &u,
+                     const Tempest::Matrix4x4 &shM ) const {
+  Tempest::Matrix4x4 invMat = c.projective();
   invMat.mul( c.view() );
   invMat.mul( object );
   invMat.inverse();
 
-  MyGL::Matrix4x4 sm = shM;
+  Tempest::Matrix4x4 sm = shM;
   sm.mul( object );
 
-  MyGL::Matrix4x4 m = c.projective();
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
   m.mul( object );
 
-  u.add( m,      "mvpMatrix",  MyGL::UniformTable::Vertex   );
-  u.add( sm,     "shMatrix",   MyGL::UniformTable::Fragment );
-  u.add( invMat, "invMatrix",  MyGL::UniformTable::Fragment );
+  u.add( m,      "mvpMatrix",  Tempest::UniformTable::Vertex   );
+  u.add( sm,     "shMatrix",   Tempest::UniformTable::Fragment );
+  u.add( invMat, "invMatrix",  Tempest::UniformTable::Fragment );
 
   rs.setZWriting(0);
   rs.setBlend(1);
 
-  rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::Greater );
+  rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::Greater );
   rs.setAlphaTestRef(0.0);
 
-  rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::one,
-                   MyGL::RenderState::AlphaBlendMode::one );
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
+                   Tempest::RenderState::AlphaBlendMode::one );
   }
 
-void Material::fogOfWar( MyGL::RenderState &rs,
-                         const MyGL::Matrix4x4 &object,
-                         const MyGL::AbstractCamera &c,
-                         MyGL::UniformTable &table,
+void Material::fogOfWar( Tempest::RenderState &rs,
+                         const Tempest::Matrix4x4 &object,
+                         const Tempest::AbstractCamera &c,
+                         Tempest::UniformTable &table,
                          bool zpass ) const {
 
   if( !zpass ){
-    rs.setZTestMode( MyGL::RenderState::ZTestMode::Equal );
+    rs.setZTestMode( Tempest::RenderState::ZTestMode::Equal );
     rs.setZTest( true );
     rs.setZWriting( false );
     }
 
-  MyGL::Matrix4x4 m = c.projective();
+  Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );
   m.mul( object );
 
-  table.add( m,       "mvpMatrix",    MyGL::UniformTable::Vertex   );
-  table.add( object,  "objectMatrix", MyGL::UniformTable::Vertex   );
+  table.add( m,       "mvpMatrix",    Tempest::UniformTable::Vertex   );
+  table.add( object,  "objectMatrix", Tempest::UniformTable::Vertex   );
 
-  rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::Always );
+  rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::Always );
   }

@@ -1,7 +1,7 @@
 #ifndef UNITLIST_H
 #define UNITLIST_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include "scroolwidget.h"
 
 class Resource;
@@ -21,7 +21,7 @@ class UnitList : public ScroolWidget {
     void setup( const std::vector<GameObject *> &u );
     void onUnitDied(GameObject &obj);
 
-    MyWidget::signal<GameObject&> setCameraPos;
+    Tempest::signal<GameObject&> setCameraPos;
   private:
     struct View;
     struct Btn;

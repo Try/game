@@ -1,12 +1,12 @@
 #include "ui_unitinfo.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "gui/button.h"
 #include "gui/panel.h"
 #include "gui/scroolwidget.h"
 #include "gui/lineedit.h"
 
-using namespace MyWidget;
+using namespace Tempest;
 
 void UI::UnitInfo::setupUi( Widget* w, Resource & res ) {
   w->setSizePolicy( Expanding, Expanding );
@@ -14,13 +14,13 @@ void UI::UnitInfo::setupUi( Widget* w, Resource & res ) {
   w->setMinimumSize( 20, 20 );
   w->setLayout( Horizontal );
   { Widget* owner = w;
-    w = new MyWidget::Widget();
+    w = new Tempest::Widget();
     w->setSizePolicy( Preferred, Preferred );
     w->setMaximumSize( 65536, 65536 );
     w->setMinimumSize( 20, 20 );
     w->setLayout( Vertical );
     { Widget* owner = w;
-      w = new MyWidget::Widget();
+      w = new Tempest::Widget();
       priview = w;
       w->setSizePolicy( Preferred, Preferred );
       w->setMaximumSize( 65536, 65536 );
@@ -54,7 +54,7 @@ void UI::UnitInfo::setupUi( Widget* w, Resource & res ) {
     w = owner;
     } 
   { Widget* owner = w;
-    w = new MyWidget::Widget();
+    w = new Tempest::Widget();
     w->setSizePolicy( Preferred, Preferred );
     w->setMaximumSize( 65536, 65536 );
     w->setMinimumSize( 20, 20 );
@@ -71,7 +71,7 @@ void UI::UnitInfo::setupUi( Widget* w, Resource & res ) {
       w = owner;
       } 
     { Widget* owner = w;
-      w = new MyWidget::Widget();
+      w = new Tempest::Widget();
       status = w;
       w->setSizePolicy( Preferred, Preferred );
       w->setMaximumSize( 65536, 65536 );

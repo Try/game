@@ -1,25 +1,25 @@
 #include "guipass.h"
 
-#include <MyGL/Render>
-#include <MyGL/VertexBufferHolder>
-#include <MyGL/Algo/PostProcessHelper>
+#include <Tempest/Render>
+#include <Tempest/VertexBufferHolder>
+#include <Tempest/PostProcessHelper>
 
 #include "resource.h"
 #include "gui/maingui.h"
 
-GUIPass::GUIPass( const MyGL::VertexShader   & vsh,
-                  const MyGL::FragmentShader & fsh,
-                  MyGL::VertexBufferHolder &vbo,
-                  MyGL::Size &s  )
+GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
+                  const Tempest::FragmentShader & fsh,
+                  Tempest::VertexBufferHolder &vbo,
+                  Tempest::Size &s  )
   : vs(vsh), fs(fsh), vbHolder(vbo), size(s) {
-  MyGL::VertexDeclaration::Declarator decl;
-  decl.add( MyGL::Decl::float2, MyGL::Usage::Position )
-      .add( MyGL::Decl::float2, MyGL::Usage::TexCoord, 0 )
-      .add( MyGL::Decl::float4, MyGL::Usage::TexCoord, 1 );
+  Tempest::VertexDeclaration::Declarator decl;
+  decl.add( Tempest::Decl::float2, Tempest::Usage::Position )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 0 )
+      .add( Tempest::Decl::float4, Tempest::Usage::TexCoord, 1 );
 
-  vdecl = MyGL::VertexDeclaration( vbo.device(), decl );
+  vdecl = Tempest::VertexDeclaration( vbo.device(), decl );
 
-  texSize = MyWidget::Size(2048);
+  texSize = Tempest::Size(2048);
 
   //noTexture = res.texture("gui/noTexture");
   //testTex   = res.texture("gui/frame");
@@ -29,8 +29,8 @@ GUIPass::GUIPass( const MyGL::VertexShader   & vsh,
   setColor(1,1,1,1);
   }
 
-void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
-                    MyGL::Texture2d &depth, MyGL::Device &device ) {
+void GUIPass::exec( MainGui &gui, Tempest::Texture2d &rt,
+                    Tempest::Texture2d &depth, Tempest::Device &device ) {
   setColor(1,1,1,1);
   dev = &device;
 
@@ -39,21 +39,21 @@ void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
       Layer& lay = layers[i];
 
       if( lay.needToUpdate ){
-        lay.guiGeometry = MyGL::VertexBuffer<Vertex>();
+        lay.guiGeometry = Tempest::VertexBuffer<Vertex>();
         lay.guiGeometry = vbHolder.load( lay.guiRawData.data(),
                                          lay.guiRawData.size() );
         }
       }
     }
 
-  MyGL::RenderState rs = makeRS( MyWidget::noBlend );
+  Tempest::RenderState rs = makeRS( Tempest::noBlend );
 
   device.setRenderState(rs);
 
   dTexCoord[0] = 1.0f/size.w;
   dTexCoord[1] = 1.0f/size.h;
 
-  MyGL::RenderState currntRS = rs;
+  Tempest::RenderState currntRS = rs;
   device.beginPaint(rt, depth);
   device.setUniform( vs, dTexCoord, 2, "dTexCoord" );
 
@@ -73,7 +73,7 @@ void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
           device.setRenderState( b.state );
           }
 
-        device.drawPrimitive( MyGL::AbstractAPI::Triangle,
+        device.drawPrimitive( Tempest::AbstractAPI::Triangle,
                               vs, fs,
                               vdecl,
                               lay.guiGeometry,
@@ -84,7 +84,7 @@ void GUIPass::exec( MainGui &gui, MyGL::Texture2d &rt,
     }
 
   device.endPaint();
-  device.setRenderState( MyGL::RenderState() );
+  device.setRenderState( Tempest::RenderState() );
 
   stateStk.clear();
   }
@@ -151,17 +151,17 @@ void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
     }
 
   if( t.nonPool ){
-    texRect = MyWidget::Rect(0,0, t.nonPool->width(), t.nonPool->height() );
+    texRect = Tempest::Rect(0,0, t.nonPool->width(), t.nonPool->height() );
     texSize = texRect.size();
     } else {
     if( t.tex ){
-      MyGL::Texture2d &tx = (*t.tex)[ t.id ].t;
-      texSize = MyWidget::Size(tx.width(), tx.height());
+      Tempest::Texture2d &tx = (*t.tex)[ t.id ].t;
+      texSize = Tempest::Size(tx.width(), tx.height());
       }
     }
 
   GeometryBlock b;
-  b.state = makeRS( MyWidget::noBlend );
+  b.state = makeRS( Tempest::noBlend );
 
   if( lay.geometryBlocks.size() ){
     b = lay.geometryBlocks.back();
@@ -185,7 +185,7 @@ void GUIPass::unsetTexture() {
   b.begin   = lay.guiRawData.size();
   b.size    = 0;
 
-  b.state = makeRS( MyWidget::noBlend );
+  b.state = makeRS( Tempest::noBlend );
 
   lay.geometryBlocks.push_back(b);
   }
@@ -200,10 +200,10 @@ void GUIPass::clearBuffers() {
   lay.geometryBlocks.back().size    = 0;
   lay.geometryBlocks.back().texture.tex = 0;
 
-  lay.geometryBlocks.back().state = makeRS( MyWidget::noBlend );
+  lay.geometryBlocks.back().state = makeRS( Tempest::noBlend );
   }
 
-void GUIPass::setBlendMode( MyWidget::BlendMode m ) {
+void GUIPass::setBlendMode( Tempest::BlendMode m ) {
   Layer& lay = layers[curLay];
 
   GeometryBlock b;
@@ -252,36 +252,36 @@ void GUIPass::popState() {
             state.color[3] );
   }
 
-MyGL::RenderState GUIPass::makeRS(MyWidget::BlendMode m) {
-  MyGL::RenderState rs;
+Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
+  Tempest::RenderState rs;
   rs.setZTest(false);
   rs.setZWriting( true );
 
-  rs.setAlphaTestMode( MyGL::RenderState::AlphaTestMode::GEqual );
+  rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
   rs.setBlend(0);
-  rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_alpha,
-                   MyGL::RenderState::AlphaBlendMode::one_minus_src_alpha );
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
+                   Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
 
   rs.setAlphaTestRef( 0.05 );
 
-  if( m==MyWidget::addBlend ){
+  if( m==Tempest::addBlend ){
     rs.setBlend(1);
     rs.setZWriting(0);
-    rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::one,
-                     MyGL::RenderState::AlphaBlendMode::one );
+    rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
+                     Tempest::RenderState::AlphaBlendMode::one );
     }
 
-  if( m==MyWidget::alphaBlend ){
+  if( m==Tempest::alphaBlend ){
     rs.setBlend(1);
     rs.setZWriting(0);
     }
 
-  if( m==MyWidget::multiplyBlend ){
+  if( m==Tempest::multiplyBlend ){
     rs.setBlend(1);
     rs.setZWriting(0);
 
-    rs.setBlendMode( MyGL::RenderState::AlphaBlendMode::src_color,
-                     MyGL::RenderState::AlphaBlendMode::dst_color );
+    rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_color,
+                     Tempest::RenderState::AlphaBlendMode::dst_color );
     }
 
   return rs;

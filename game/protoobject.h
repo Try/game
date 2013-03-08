@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <MyWidget/Shortcut>
+#include <Tempest/Shortcut>
 
 struct ProtoObject {
   public:
@@ -84,7 +84,7 @@ struct ProtoObject {
 
       std::string  taget, icon;
       std::wstring hint;
-      MyWidget::KeyEvent::KeyType hotkey;
+      Tempest::KeyEvent::KeyType hotkey;
       int x,y;
       };
     struct Commans{

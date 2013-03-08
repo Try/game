@@ -2,7 +2,7 @@
 
 #include "resource.h"
 
-using namespace MyWidget;
+using namespace Tempest;
 
 LineEdit::LineEdit(Resource &res):res(res) {
   frame.data = res.pixmap("gui/colors");
@@ -72,7 +72,7 @@ bool LineEdit::isEditable() const {
   return editable;
   }
 
-void LineEdit::mouseDownEvent(MyWidget::MouseEvent &e) {
+void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
   sp = e.pos();
   ep = e.pos();
 
@@ -80,7 +80,7 @@ void LineEdit::mouseDownEvent(MyWidget::MouseEvent &e) {
   update();
   }
 
-void LineEdit::mouseUpEvent(MyWidget::MouseEvent &e) {
+void LineEdit::mouseUpEvent(Tempest::MouseEvent &e) {
   if( sedit > eedit )
     std::swap( sedit, eedit );
   update();
@@ -94,7 +94,7 @@ void LineEdit::mouseDragEvent(MouseEvent &e) {
     }
   }
 
-void LineEdit::paintEvent( MyWidget::PaintEvent &pe ) {
+void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   Painter p(pe);
 
   p.setFont( font );
@@ -234,7 +234,7 @@ void LineEdit::updateSel() {
   for( size_t i=0; i<txt.size(); ++i ){
     Font::Leter l = font.leter(res, txt[i]);
 
-    if( MyWidget::Rect( l.dpos.x+x, 0,
+    if( Tempest::Rect( l.dpos.x+x, 0,
                         w(), h() ).contains(a) ){
       sedit = i;
       }

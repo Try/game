@@ -1,25 +1,25 @@
 #ifndef PROGRASSBAR_H
 #define PROGRESSBAR_H
 
-#include <MyWidget/Widget>
-#include <MyWidget/Shortcut>
+#include <Tempest/Widget>
+#include <Tempest/Shortcut>
 #include "graphics/paintergui.h"
 
 #include <ctime>
 
 class Resource;
 
-class ProgressBar : public MyWidget::Widget {
+class ProgressBar : public Tempest::Widget {
   public:
-    typedef MyWidget::Bind::UserTexture Texture;
+    typedef Tempest::Bind::UserTexture Texture;
     ProgressBar( Resource & res );
 
-    MyWidget::signal<> clicked;
+    Tempest::signal<> clicked;
 
     Texture frame, back[2], icon;
 
     void setBackTexture( const Texture & t );
-    void setShortcut( const MyWidget::Shortcut & sc );
+    void setShortcut( const Tempest::Shortcut & sc );
 
     const std::wstring text() const;
     void setText( const std::wstring& t );
@@ -27,25 +27,25 @@ class ProgressBar : public MyWidget::Widget {
 
     void setValue( int v );
     int  value() const;
-    MyWidget::signal<int> onValueChanged;
+    Tempest::signal<int> onValueChanged;
 
     void setRange(int min, int max);
     int  min() const;
     int  max() const;
-    MyWidget::signal<int, int> onRangeChanged;
+    Tempest::signal<int, int> onRangeChanged;
   protected:
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseMoveEvent(MyWidget::MouseEvent &e);
-    void mouseUpEvent(MyWidget::MouseEvent &e);
-    void paintEvent( MyWidget::PaintEvent &p);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseMoveEvent(Tempest::MouseEvent &e);
+    void mouseUpEvent(Tempest::MouseEvent &e);
+    void paintEvent( Tempest::PaintEvent &p);
 
-    void keyPressEvent(MyWidget::KeyEvent &e);
+    void keyPressEvent(Tempest::KeyEvent &e);
 
     void focusChange(bool);
     std::wstring txt;
 
     int val, minV, maxV;
-    MyWidget::Shortcut hotKey;
+    Tempest::Shortcut hotKey;
     Resource & res;
   };
 

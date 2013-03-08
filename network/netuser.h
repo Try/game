@@ -1,7 +1,7 @@
 #ifndef NETUSER_H
 #define NETUSER_H
 
-#include <MyWidget/signal>
+#include <Tempest/signal>
 #include <string>
 
 #ifdef _WIN32
@@ -26,8 +26,8 @@ class NetUser {
     NetUser();
     virtual ~NetUser();
 
-    MyWidget::signal< const std::vector<char> & > onRecv;
-    MyWidget::signal< const std::string& > onError;
+    Tempest::signal< const std::vector<char> & > onRecv;
+    Tempest::signal< const std::string& > onError;
 
     virtual void start() = 0;
     virtual void sendMsg( const std::vector<char> & v ) = 0;

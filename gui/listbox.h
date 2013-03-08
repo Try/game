@@ -15,18 +15,18 @@ class ListBox : public AbstractListBox {
     void setItemList( const std::vector<std::wstring> & list );
     const std::vector<std::wstring> & items() const;
 
-    MyWidget::signal<size_t> onItemSelected;
-    MyWidget::signal<const std::wstring&> onItemSelectedW;
+    Tempest::signal<size_t> onItemSelected;
+    Tempest::signal<const std::wstring&> onItemSelectedW;
 
     void setCurrentItem( size_t i );
   protected:
-    void mouseWheelEvent(MyWidget::MouseEvent &e);
+    void mouseWheelEvent(Tempest::MouseEvent &e);
 
   private:
     Resource &res;
     int selected;
 
-    MyWidget::Widget *createDropList();
+    Tempest::Widget *createDropList();
     std::vector<std::wstring> data;
 
     class ItemBtn;

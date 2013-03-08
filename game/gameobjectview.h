@@ -2,7 +2,7 @@
 #define GAMEOBJECTVIEW_H
 
 #include "physics/physics.h"
-#include <MyGL/GraphicObject>
+#include <Tempest/GraphicObject>
 #include "envobject.h"
 #include "game/protoobject.h"
 #include "graphics/particlesystem.h"
@@ -39,14 +39,14 @@ class GameObjectView {
 
     ~GameObjectView();
 
-    MyGL::Color teamColor;
+    Tempest::Color teamColor;
 
     void freePhysic();
 
     void loadView(const Resource &r, Physics &p, bool env );
     void loadView(const Resource &r, const ProtoObject::View &src, bool isEnv ) ;
     void loadView(const Model &model, const ProtoObject::View &view);
-    void loadView(const MyGL::Model<WaterVertex> &model);
+    void loadView(const Tempest::Model<WaterVertex> &model);
 
     void setViewPosition(float x, float y );
     void setViewPosition(float x, float y, float z );
@@ -91,7 +91,7 @@ class GameObjectView {
     void serialize( GameSerializer &s);
 
     const ProtoObject &getClass() const;
-    MyGL::Matrix4x4 _transform() const;
+    Tempest::Matrix4x4 _transform() const;
 
     void applyForce( float x, float y, float z );
   private:

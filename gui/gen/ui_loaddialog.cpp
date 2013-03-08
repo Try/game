@@ -1,12 +1,12 @@
 #include "ui_loaddialog.h"
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "gui/button.h"
 #include "gui/panel.h"
 #include "gui/scroolwidget.h"
 #include "gui/lineedit.h"
 
-using namespace MyWidget;
+using namespace Tempest;
 
 void UI::LoadDialog::setupUi( Widget* w, Resource & res ) {
   w->setSizePolicy( Expanding, Expanding );
@@ -14,7 +14,7 @@ void UI::LoadDialog::setupUi( Widget* w, Resource & res ) {
   w->setMinimumSize( 20, 20 );
   w->setLayout( Vertical );
   { Widget* owner = w;
-    w = new MyWidget::Widget();
+    w = new Tempest::Widget();
     topWidget = w;
     w->setSizePolicy( Preferred, Preferred );
     w->setMaximumSize( 65536, 65536 );
@@ -28,7 +28,7 @@ void UI::LoadDialog::setupUi( Widget* w, Resource & res ) {
       w->setMinimumSize( 20, 20 );
       w->setLayout( Horizontal );
       { Widget* owner = w;
-        w = new MyWidget::Widget();
+        w = new Tempest::Widget();
         w->setSizePolicy( Preferred, Preferred );
         w->setMaximumSize( 65536, 65536 );
         w->setMinimumSize( 20, 20 );
@@ -48,7 +48,7 @@ void UI::LoadDialog::setupUi( Widget* w, Resource & res ) {
         w = owner;
         } 
       { Widget* owner = w;
-        w = new MyWidget::Widget();
+        w = new Tempest::Widget();
         w->setSizePolicy( Preferred, Preferred );
         w->setMaximumSize( 65536, 65536 );
         w->setMinimumSize( 20, 20 );
@@ -63,7 +63,7 @@ void UI::LoadDialog::setupUi( Widget* w, Resource & res ) {
     w = owner;
     } 
   { Widget* owner = w;
-    w = new MyWidget::Widget();
+    w = new Tempest::Widget();
     central = w;
     w->setSizePolicy( Preferred, Preferred );
     w->setMaximumSize( 65536, 65536 );
@@ -75,7 +75,7 @@ void UI::LoadDialog::setupUi( Widget* w, Resource & res ) {
       w->setSizePolicy( Preferred, Preferred );
       w->setMaximumSize( 65536, 65536 );
       w->setMinimumSize( 20, 20 );
-      MyWidget::Widget *pw = w;
+      Tempest::Widget *pw = w;
       w = &((ScroolWidget*)w)->centralWidget();
       w = pw;
       owner->layout().add(w);
@@ -85,7 +85,7 @@ void UI::LoadDialog::setupUi( Widget* w, Resource & res ) {
     w = owner;
     } 
   { Widget* owner = w;
-    w = new MyWidget::Widget();
+    w = new Tempest::Widget();
     bottom = w;
     w->setSizePolicy( Preferred, Preferred );
     w->setMaximumSize( 65536, 65536 );
@@ -103,7 +103,7 @@ void UI::LoadDialog::setupUi( Widget* w, Resource & res ) {
       w = owner;
       } 
     { Widget* owner = w;
-      w = new MyWidget::Widget();
+      w = new Tempest::Widget();
       w->setSizePolicy( Preferred, Preferred );
       w->setMaximumSize( 65536, 65536 );
       w->setMinimumSize( 20, 20 );

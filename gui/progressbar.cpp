@@ -4,19 +4,19 @@
 #include "font.h"
 
 ProgressBar::ProgressBar(Resource &res)
-            :hotKey(this, MyWidget::KeyEvent::K_NoKey), res(res) {
+            :hotKey(this, Tempest::KeyEvent::K_NoKey), res(res) {
  back[0].data = res.pixmap("gui/hp");
  back[1].data = res.pixmap("gui/gray");
 
  frame.data = res.pixmap("gui/frame");
 
- setFocusPolicy( MyWidget::ClickFocus );
+ setFocusPolicy( Tempest::ClickFocus );
 
- MyWidget::SizePolicy p;
- p.maxSize = MyWidget::Size(p.maxSize.w, 27);
- p.minSize = MyWidget::Size(27, 27);
- p.typeV   = MyWidget::FixedMax;
- p.typeH   = MyWidget::Preferred;
+ Tempest::SizePolicy p;
+ p.maxSize = Tempest::Size(p.maxSize.w, 27);
+ p.minSize = Tempest::Size(27, 27);
+ p.typeV   = Tempest::FixedMax;
+ p.typeH   = Tempest::Preferred;
 
  setSizePolicy(p);
 
@@ -32,7 +32,7 @@ void ProgressBar::setBackTexture(const ProgressBar::Texture &t) {
  back[1] = t;
  }
 
-void ProgressBar::setShortcut(const MyWidget::Shortcut &sc) {
+void ProgressBar::setShortcut(const Tempest::Shortcut &sc) {
  hotKey = sc;
  hotKey.activated.bind( clicked );
  }
@@ -95,20 +95,20 @@ int ProgressBar::max() const {
   return maxV;
   }
 
-void ProgressBar::mouseDownEvent(MyWidget::MouseEvent &) {
+void ProgressBar::mouseDownEvent(Tempest::MouseEvent &) {
   }
 
-void ProgressBar::mouseMoveEvent(MyWidget::MouseEvent &e) {
+void ProgressBar::mouseMoveEvent(Tempest::MouseEvent &e) {
   e.accept();
   }
 
-void ProgressBar::mouseUpEvent(MyWidget::MouseEvent &e) {
+void ProgressBar::mouseUpEvent(Tempest::MouseEvent &e) {
   if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 )
    clicked();
   }
 
-void ProgressBar::paintEvent( MyWidget::PaintEvent &e ) {
- MyWidget::Painter p(e);
+void ProgressBar::paintEvent( Tempest::PaintEvent &e ) {
+ Tempest::Painter p(e);
 
  int fx = 0, fy = 0,
      px = 0, py = 0,
@@ -162,7 +162,7 @@ void ProgressBar::paintEvent( MyWidget::PaintEvent &e ) {
  p.unsetTexture();
 
 
- p.setBlendMode( MyWidget::alphaBlend );
+ p.setBlendMode( Tempest::alphaBlend );
  p.setTexture( icon );
  Font f;
 
@@ -179,11 +179,11 @@ void ProgressBar::paintEvent( MyWidget::PaintEvent &e ) {
 
  p.setFont(f);
  p.drawText( 0,0,w(),h(), txt,
-             MyWidget::AlignHCenter | MyWidget::AlignVCenter );
+             Tempest::AlignHCenter | Tempest::AlignVCenter );
  }
 
-void ProgressBar::keyPressEvent(MyWidget::KeyEvent &e) {
- if( false && e.key==MyWidget::KeyEvent::K_F1 ){
+void ProgressBar::keyPressEvent(Tempest::KeyEvent &e) {
+ if( false && e.key==Tempest::KeyEvent::K_F1 ){
    clicked();
    } else
    e.ignore();

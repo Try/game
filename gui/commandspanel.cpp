@@ -33,7 +33,7 @@ class CommandsPanel::BuyBtn: public BtnBase{
       }
 
     std::string taget;
-    MyWidget::signal< const std::string& > clicked;
+    Tempest::signal< const std::string& > clicked;
   };
 
 class CommandsPanel::PageBtn: public BtnBase{
@@ -48,7 +48,7 @@ class CommandsPanel::PageBtn: public BtnBase{
 
     std::string taget;
     int page;
-    MyWidget::signal< int > clicked;
+    Tempest::signal< int > clicked;
   };
 
 class CommandsPanel::SpellBtn: public BtnBase{
@@ -64,18 +64,18 @@ class CommandsPanel::SpellBtn: public BtnBase{
       clicked( taget );
       }
 
-    void paintEvent(MyWidget::PaintEvent &e){
+    void paintEvent(Tempest::PaintEvent &e){
       BtnBase::paintEvent(e);
 
-      MyWidget::Painter p(e);
+      Tempest::Painter p(e);
       p.setTexture( texture );
-      p.setBlendMode( MyWidget::alphaBlend );
+      p.setBlendMode( Tempest::alphaBlend );
 
       p.drawRect( 0, h()-coolDown, w(), coolDown,
                   2,        4, 1, 1 );
       }
 
-    void customEvent( MyWidget::CustomEvent & ){
+    void customEvent( Tempest::CustomEvent & ){
       assert(u0);
       int maxT = u0->game().prototypes().spell(taget).coolDown;
 
@@ -99,10 +99,10 @@ class CommandsPanel::SpellBtn: public BtnBase{
     std::string taget;
     size_t      tagetID;
     GameObject  *  u0;
-    MyWidget::Bind::UserTexture texture;
+    Tempest::Bind::UserTexture texture;
     int coolDown;
 
-    MyWidget::signal< const std::string& > clicked;
+    Tempest::signal< const std::string& > clicked;
   };
 
 CommandsPanel::CommandsPanel( Resource & r, BehaviorMSGQueue &q )
@@ -246,9 +246,9 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       b->setHint( p.btn[i].hint );
       b->x = p.btn[i].x;
       b->y = p.btn[i].y;
-      b->setShortcut( MyWidget::Shortcut(b,p.btn[i].hotkey) );
+      b->setShortcut( Tempest::Shortcut(b,p.btn[i].hotkey) );
 
-      b->setMaximumSize( MyWidget::SizePolicy::maxWidgetSize() );
+      b->setMaximumSize( Tempest::SizePolicy::maxWidgetSize() );
       layout().add( b  );
       }
     }
@@ -355,12 +355,12 @@ void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
     b->icon.data = res.pixmap( icon[i] );
     b->setHint( hint[i] );
 
-    MyWidget::KeyEvent::KeyType t = MyWidget::Event::K_A;
-    t = MyWidget::KeyEvent::KeyType( int(t) + k[i] - 'a' );
+    Tempest::KeyEvent::KeyType t = Tempest::Event::K_A;
+    t = Tempest::KeyEvent::KeyType( int(t) + k[i] - 'a' );
 
-    b->setShortcut( MyWidget::Shortcut(b, t) );
+    b->setShortcut( Tempest::Shortcut(b, t) );
 
-    b->setMaximumSize( MyWidget::SizePolicy::maxWidgetSize() );
+    b->setMaximumSize( Tempest::SizePolicy::maxWidgetSize() );
     layout().add( b  );
     }
 
@@ -405,12 +405,12 @@ void CommandsPanel::setupHookU(const std::string &s) {
     }
   }
 
-void CommandsPanel::mouseDown(MyWidget::MouseEvent &e) {
+void CommandsPanel::mouseDown(Tempest::MouseEvent &e) {
   e.accept();
   }
 
-void CommandsPanel::mouseUp(MyWidget::MouseEvent &e) {
-  if( e.button==MyWidget::MouseEvent::ButtonLeft && u0 ){
+void CommandsPanel::mouseUp(Tempest::MouseEvent &e) {
+  if( e.button==Tempest::MouseEvent::ButtonLeft && u0 ){
     if( mode==CastToCoord ){
       u0->game().message( u0->playerNum(),
                           BehaviorMSGQueue::SpellCast,

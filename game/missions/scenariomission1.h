@@ -2,9 +2,9 @@
 #define SCENARIOMISSION1_H
 
 #include "game/scenario.h"
-#include <MyWidget/signal>
+#include <Tempest/signal>
 
-#include <MyGL/Camera>
+#include <Tempest/Camera>
 
 class Game;
 class MainGui;
@@ -32,7 +32,7 @@ class ScenarioMission1 : public Scenario {
       bool active;
       float t;
 
-      MyGL::Camera camera;
+      Tempest::Camera camera;
       } cutScene;
 
     class IntroWidget;

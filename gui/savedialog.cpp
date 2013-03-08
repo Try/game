@@ -2,7 +2,7 @@
 
 #include <dirent.h>
 
-#include <MyWidget/Layout>
+#include <Tempest/Layout>
 #include "panel.h"
 #include "scroolwidget.h"
 #include "button.h"
@@ -42,9 +42,9 @@ SaveDialog::SaveDialog(Resource &res, Widget *w)
   menu.setupUi(p, res);
   p->layout().setMargin(8);
 
-  setLayout( MyWidget::Vertical );
+  setLayout( Tempest::Vertical );
   p->setMaximumSize(300, 400);
-  p->setSizePolicy( MyWidget::FixedMax );
+  p->setSizePolicy( Tempest::FixedMax );
 
   layout().add(p);
   layout().add( new Widget() );
@@ -53,12 +53,12 @@ SaveDialog::SaveDialog(Resource &res, Widget *w)
   menu.topWidget->setMaximumSize( menu.topPanel->sizePolicy().maxSize.w,
                                  30 );
   menu.topWidget->setSizePolicy( menu.topPanel->sizePolicy().typeH,
-                                MyWidget::FixedMax );
+                                Tempest::FixedMax );
 
   menu.bottom->setMaximumSize( menu.bottom->sizePolicy().maxSize.w,
                                30 );
   menu.bottom->setSizePolicy( menu.bottom->sizePolicy().typeH,
-                              MyWidget::FixedMax );
+                              Tempest::FixedMax );
   menu.topWidget->layout().setMargin(0);
 
   menu.inputName->setFocus(1);

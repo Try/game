@@ -4,7 +4,7 @@
 #include "material.h"
 #include "octotree.h"
 
-class Scene : public MyGL::AbstractScene< AbstractGraphicObject > {
+class Scene : public Tempest::AbstractScene< AbstractGraphicObject > {
   public:
     Scene( int sz );
     typedef OcTree<const AbstractGraphicObject*> Objects;
@@ -35,7 +35,7 @@ class Scene : public MyGL::AbstractScene< AbstractGraphicObject > {
 
     void onObjectAdded  ( const AbstractGraphicObject *);
     void onObjectRemoved( const AbstractGraphicObject *);
-    void onObjectTransform(const AbstractGraphicObject *t, const MyGL::Matrix4x4&);
+    void onObjectTransform(const AbstractGraphicObject *t, const Tempest::Matrix4x4&);
 
     enum Act{
       Add,
@@ -43,9 +43,9 @@ class Scene : public MyGL::AbstractScene< AbstractGraphicObject > {
       RePos
       };
 
-    void onObjectOp( const AbstractGraphicObject *t, Act ins, const MyGL::Matrix4x4& );
+    void onObjectOp( const AbstractGraphicObject *t, Act ins, const Tempest::Matrix4x4& );
     void onObjectOp( Objects & obj, const AbstractGraphicObject *t,
-                     Act ins, const MyGL::Matrix4x4& );
+                     Act ins, const Tempest::Matrix4x4& );
 
     void remove( Objects & obj, const AbstractGraphicObject *t,
                  float x, float y, float z );

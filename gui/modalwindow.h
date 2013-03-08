@@ -1,27 +1,27 @@
 #ifndef MODALWINDOW_H
 #define MODALWINDOW_H
 
-#include <MyWidget/Widget>
+#include <Tempest/Widget>
 #include "graphics/paintergui.h"
 
 class Resource;
 
-class ModalWindow : public MyWidget::Widget {
+class ModalWindow : public Tempest::Widget {
   public:
-    ModalWindow(Resource &res, MyWidget::Widget* owner );
+    ModalWindow(Resource &res, Tempest::Widget* owner );
     ~ModalWindow();
 
-    MyWidget::signal<> onClosed;
+    Tempest::signal<> onClosed;
   protected:
-    void mouseDownEvent(MyWidget::MouseEvent &e);
-    void mouseWheelEvent(MyWidget::MouseEvent &e);
-    void mouseMoveEvent(MyWidget::MouseEvent &e);
+    void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseWheelEvent(Tempest::MouseEvent &e);
+    void mouseMoveEvent(Tempest::MouseEvent &e);
 
-    void paintEvent(MyWidget::PaintEvent &e);
+    void paintEvent(Tempest::PaintEvent &e);
 
-    void shortcutEvent(MyWidget::KeyEvent &e);
+    void shortcutEvent(Tempest::KeyEvent &e);
   private:
-    MyWidget::Bind::UserTexture frame;
+    Tempest::Bind::UserTexture frame;
   };
 
 #endif // MODALWINDOW_H
