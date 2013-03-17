@@ -128,7 +128,6 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   omniData.fs = res.fshader("omni");
 
   scrOffset.setName("dTexCoord");
-  scrOffset.set( 1.0f/screenSize.w, 1.0f/screenSize.h );
 
   cpyOffset = scrOffset;
 
@@ -261,6 +260,7 @@ bool GraphicsSystem::render( Scene &scene,
 
   Tempest::Texture2d gbuffer[4], rsm[4];
   Tempest::Texture2d mainDepth = depth( screenSize );
+  scrOffset.set( 1.0f/screenSize.w, 1.0f/screenSize.h );
 
   for( int i=0; i<3; ++i ){
     gbuffer[i] = colorBuf( screenSize.w, screenSize.h );
@@ -290,9 +290,6 @@ bool GraphicsSystem::render( Scene &scene,
 
   if( widget )
     gui.exec( *widget, gbuffer[0], mainDepth, device );
-  blt( gbuffer[0] );
-  device.present();
-  return 1;
 
   Tempest::Texture2d glow, bloomTex;
   drawGlow( glow, mainDepth, scene, 512 );
@@ -306,16 +303,16 @@ bool GraphicsSystem::render( Scene &scene,
   { final.setSampler( reflect );
 
     Tempest::Texture2d depth = this->depth( final.width(),
-                                         final.height() );
+                                            final.height() );
 
     Tempest::Render render( device,
-                         final, depth,
-                         finalData.vs, finalData.fs );
+                            final, depth,
+                            finalData.vs, finalData.fs );
 
     render.setRenderState( Tempest::RenderState::PostProcess );
 
     cpyOffset.set( 1.0/final.width(), 1.0/final.height() );
-    device.setUniform( bloomData.vs, cpyOffset );
+    device.setUniform( finalData.vs, cpyOffset );
 
     finalData.bloom.set( &bloomTex );
     finalData.scene.set( &gbuffer[0] );
@@ -367,8 +364,8 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
   Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
 
   Tempest::Render render( device,
-                       sm, depthSm,
-                       smap.vs, smap.fs );
+                          sm, depthSm,
+                          smap.vs, smap.fs );
   {
     render.clear( Tempest::Color(1.0), 1 );
     if( !(sm.width()==1 && sm.height()==1) ){

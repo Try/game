@@ -1,4 +1,15 @@
+#include <Tempest/Application>
 #include "game.h"
+
+int main( int, char** ){
+  Tempest::Application app;
+  Game game( 800, 600, false );
+  game.show();
+
+  return app.exec();
+  }
+
+/*
 #include <Tempest/Event>
 
 #ifndef STRICT
@@ -88,9 +99,9 @@ DWORD GetMainThreadId () {
   }
 
 int WINAPI WinMain( HINSTANCE hInstance,
-                    HINSTANCE /*hPrevInstance*/,
-                    LPSTR     /*lpCmdLine*/,
-                    int       /*nCmdShow*/ ) {
+                    HINSTANCE ,
+                    LPSTR     ,
+                    int      ) {
     Lang::load("./lang/ru.lang");
 
     WNDCLASSEX winClass; 
@@ -116,7 +127,6 @@ int WINAPI WinMain( HINSTANCE hInstance,
     if( !RegisterClassEx(&winClass) )
         return E_FAIL;
 
-    /*try*/
     {
 
     bool isFullScreen = 0;
@@ -157,7 +167,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
 
       Game demo( g_hWnd,
                  rectWindow.right-rectWindow.left,
-                 rectWindow.bottom-rectWindow.left,
+                 rectWindow.bottom-rectWindow.top,
                  isFullScreen );
 
       mgl_demo = &demo;
@@ -226,11 +236,7 @@ int WINAPI WinMain( HINSTANCE hInstance,
       mgl_demo = 0;
       }
 
-    }/*
-    catch(...){
-      std::cout << "err";
-      }*/
-
+    }
     UnregisterClass( wclass.data(), winClass.hInstance );
 
     return uMsg.wParam;
@@ -425,3 +431,4 @@ LRESULT CALLBACK WindowProc( HWND   hWnd,
 
     return 0;
 }
+*/

@@ -9,9 +9,6 @@ win32:RC_FILE = game.rc
 INCLUDEPATH += include
 INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 
-INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest2/Tempest/include"
-LIBS        += -L"C:/Users/Try/Home/Programming/Tempest2/lib" -l"Tempest_dx"
-
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 

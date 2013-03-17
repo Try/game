@@ -24,9 +24,10 @@
 
 #include <cmath>
 
-Game::Game( void *ihwnd, int iw, int ih, bool isFS )
-  : graphics( ihwnd, iw, ih, isFS, isFS ? 2048:1024 ),
-    soundDev( ihwnd ),
+Game::Game( int iw, int ih, bool isFS )
+    :Window(iw, ih),
+    graphics( handle(), iw, ih, isFS, isFS ? 2048:1024 ),
+    soundDev( handle() ),
     resource( graphics.texHolder,
               graphics.localTex,
               graphics.vboHolder,
@@ -37,16 +38,15 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
     gui( graphics.device, iw, ih, resource, proto ),
     msg(*this),
     serializator(L"./serialize_tmp.obj", Serialize::Write ){
-  w = iw;
-  h = ih;
+  //w = iw;
+  //h = ih;
   isFullScreen = isFS;
   paused = false;
 
   acceptMouseObj = true;
 
-  curMPos = Tempest::Point(w/2, h/2);
+  curMPos = Tempest::Point(w()/2, h()/2);
 
-  hwnd = ihwnd;
   currentPlayer = 1;
 
   mouseTracking         = 0;
@@ -113,7 +113,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
   gui.save.bind( *this, &Game::save );
   gui.load.bind( *this, &Game::load );
 
-  graphics.load( resource, gui, w, h );
+  graphics.load( resource, gui, w(), h() );
   graphics.onRender.bind( *this, &Game::onRender );
 
   gui.renderScene.bind( graphics, &GraphicsSystem::renderSubScene );
@@ -122,7 +122,7 @@ Game::Game( void *ihwnd, int iw, int ih, bool isFS )
                                                       256, 256) ) );
 
   world = worlds[0].get();
-  world->camera.setPerespective( true, w, h );
+  world->camera.setPerespective( true, w(), h() );
   world->setupMaterial.bind(*this, &Game::setupMaterials );
 
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
@@ -158,7 +158,7 @@ void Game::tick() {
   if( acceptMouseObj ){
     world->setMouseObject( world->unitUnderMouse( curMPos.x,
                                                   curMPos.y,
-                                                  w, h ) );
+                                                  w(), h() ) );
     } else {
     world->setMouseObject( -1 );
     }
@@ -214,10 +214,10 @@ void Game::tick() {
 void Game::onRender( double dt ){  
   World::CameraViewBounds b;
   F3 vb[4];
-  vb[0] = unProject( 0, 0 );
-  vb[1] = unProject( w, 0 );
-  vb[2] = unProject( 0, h );
-  vb[3] = unProject( w, h );
+  vb[0] = unProject(   0, 0   );
+  vb[1] = unProject( w(), 0   );
+  vb[2] = unProject(   0, h() );
+  vb[3] = unProject( w(), h() );
 
   for( int i=0; i<4; ++i ){
     b.x[i] = World::coordCastD(vb[i].data[0]);
@@ -244,13 +244,16 @@ void Game::onRender( double dt ){
   world->onRender(dt);
   }
 
-void Game::render( size_t dt ) {
+void Game::render() {
+  tick();//FIXME
+
   gui.updateValues();
 
   //world->camera.setSpinX(spinX);
   //world->camera.setSpinY(spinY);
 
   DWORD time = GetTickCount();
+  DWORD dt = time;
 
   if( graphics.render( world->getScene(),
                        world->getParticles(),
@@ -264,7 +267,7 @@ void Game::render( size_t dt ) {
 
   if( fps.n>100 || ( fps.n>0 && fps.time>1000 ) ){
     double f = 1000.0*double(fps.n)/std::max(1, fps.time);
-    SetWindowTextA( HWND(hwnd),
+    SetWindowTextA( HWND( handle() ),
                     Lexical::upcast( f ).data() );
 
     fps.n    = 0;
@@ -273,16 +276,16 @@ void Game::render( size_t dt ) {
 
   }
 
-void Game::resizeEvent( int iw, int ih ){
-  w = iw;
-  h = ih;
+void Game::resizeEvent( Tempest::SizeEvent &e ){
+  //w = e.w;
+  //h = e.h;
 
   // std::cout << w << " " << h << std::endl;
 
-  //world->camera.setPerespective(true, w, h );
+  world->camera.setPerespective(true, w(), h() );
 
-  graphics.resizeEvent( w, h, isFullScreen );
-  gui.resizeEvent(w,h);
+  graphics.resizeEvent( e.w, e.h, isFullScreen );
+  gui.resizeEvent( e.w, e.h );
   }
 
 void Game::mouseDownEvent( Tempest::MouseEvent &e) {
@@ -324,12 +327,12 @@ void Game::mouseUpEvent( Tempest::MouseEvent &e) {
       if( selectionRectTracking==2 )
         world->updateSelectionFlag( msg, currentPlayer ); else
         world->updateSelectionClick( msg, currentPlayer, e.x, e.y,
-                                     w, h );
+                                     w(), h() );
       }
 
     if( e.button==Tempest::MouseEvent::ButtonRight ){
       size_t obj = world->unitUnderMouse( e.x, e.y,
-                                          w, h );
+                                          w(), h() );
 
       if( obj==size_t(-1) ){
         msg.message( currentPlayer,
@@ -376,7 +379,7 @@ void Game::mouseMoveEvent( Tempest::MouseEvent &e ) {
 
     //gui.update();
 
-    double ww = w/2.0, hh = h/2.0;
+    double ww = w()/2.0, hh = h()/2.0;
     world->updateMouseOverFlag(    r.x/ww - 1.0,
                                  -(r.y/hh - 1.0),
                                   (r.x+r.w)/ww - 1.0,
@@ -600,8 +603,8 @@ Game::F3 Game::unProject( int x, int y, float destZ ) {
   mat.mul( world->camera.view() );
   mat.inverse();
 
-  double px =  2.0*(x-w/2.0)/double(w),
-         py = -2.0*(y-h/2.0)/double(h);
+  double px =  2.0*(x-w()/2.0)/double(w()),
+         py = -2.0*(y-h()/2.0)/double(h());
 
   double vec1[4], vec2[4];
   mat.project( px, py, 0, 1,
@@ -675,14 +678,14 @@ void Game::moveCamera() {
   if( curMPos.x < sensetive || lastKEvent==Tempest::KeyEvent::K_Left ){
     world->moveCamera( -cameraStep, 0 );
     }
-  if( curMPos.x > w - sensetive || lastKEvent==Tempest::KeyEvent::K_Right ){
+  if( curMPos.x > w() - sensetive || lastKEvent==Tempest::KeyEvent::K_Right ){
     world->moveCamera( cameraStep, 0 );
     }
 
   if( curMPos.y < sensetive || lastKEvent==Tempest::KeyEvent::K_Up ){
     world->moveCamera( 0, -cameraStep );
     }
-  if( curMPos.y > h-sensetive || lastKEvent==Tempest::KeyEvent::K_Down ){
+  if( curMPos.y > h() - sensetive || lastKEvent==Tempest::KeyEvent::K_Down ){
     world->moveCamera( 0, cameraStep );
     }
   }
@@ -881,7 +884,7 @@ void Game::serialize( GameSerializer &s ) {
       worlds.push_back( std::unique_ptr<World>( new World(*this,
                                                           128, 128) ) );
       world = worlds.back().get();
-      world->camera.setPerespective( true, w, h );
+      world->camera.setPerespective( true, w(), h() );
       world->camera.setPosition( 2, 3, 0 );
       world->camera.setDistance( 4 );
       world->setupMaterial.bind(*this, &Game::setupMaterials );

@@ -23,22 +23,23 @@
 
 #include "game/scenario.h"
 
+#include <Tempest/Window>
+
 class GameSerializer;
 class Scenario;
 
-class Game {
+class Game : public Tempest::Window {
   public:
-    Game( void* hwnd, int w, int h, bool isFullScreen );
+    Game(int w, int h, bool isFullScreen );
 
     void tick();
-    void render(size_t dt);
-    void resizeEvent( int w, int h );
+    //void render(size_t dt);
+    void render();
+    void resizeEvent( Tempest::SizeEvent& );
 
-    void mouseDownEvent( Tempest::MouseEvent &e );
+    void mouseDownEvent ( Tempest::MouseEvent &e );
     void mouseUpEvent   ( Tempest::MouseEvent &e );
-
     void mouseMoveEvent ( Tempest::MouseEvent &e );
-
     void mouseWheelEvent ( Tempest::MouseEvent &e );
 
     void scutEvent   ( Tempest::KeyEvent &e );
@@ -122,7 +123,6 @@ class Game {
 
     Tempest::signal<> exitGame;
   private:
-    void* hwnd;
     bool  paused;
     bool isFullScreen;
 
@@ -146,7 +146,6 @@ class Game {
     World * world;
 
     //double spinX, spinY;
-    int w, h;
     bool mouseTracking;
     int  selectionRectTracking;
 

@@ -146,6 +146,7 @@ const Model::Raw &Resource::rawModel(const std::string &key) const {
     Model::Raw  *model = new Model::Raw();
 
     model->vertex.resize( m.size()*3 );
+
     m.vertexes().get( model->vertex.begin(),
                       model->vertex.end(),
                       0 );
