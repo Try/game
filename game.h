@@ -30,7 +30,7 @@ class Scenario;
 
 class Game : public Tempest::Window {
   public:
-    Game(int w, int h, bool isFullScreen );
+    Game( Tempest::Window::ShowMode s );
 
     void tick();
     //void render(size_t dt);
@@ -101,8 +101,6 @@ class Game : public Tempest::Window {
     void save(const std::wstring &str);
     void load(const std::wstring &str);
 
-    bool isFullScr() const;
-
     void setCurrectPlayer( int pl );
     void setupAsServer();
     void setupAsClient(const std::wstring &str);
@@ -124,7 +122,7 @@ class Game : public Tempest::Window {
     Tempest::signal<> exitGame;
   private:
     bool  paused;
-    bool isFullScreen;
+    //bool isFullScreen;
 
     bool acceptMouseObj;
 

@@ -77,6 +77,13 @@ struct Resource::XML{
           }
         }
       }
+#ifdef TEMPEST_OPENGL
+    def += "#define opengl\n";
+#endif
+
+#ifdef TEMPEST_DIRECTX
+    def += "#define directx\n";
+#endif
 
     def += "#line 0\n";
     //std::cout << def << std::endl;

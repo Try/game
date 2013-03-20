@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <Tempest/DirectX9>
+#include <Tempest/Opengl2x>
 #include <Tempest/Device>
 
 #include <Tempest/VertexBufferHolder>
@@ -36,7 +37,7 @@ class ParticleSystemEngine;
 
 class GraphicsSystem {
   public:
-    GraphicsSystem( void *hwnd, int w, int h, bool isFullScreen, int smSize );
+    GraphicsSystem(void *hwnd, bool isFullScreen, int smSize );
 
     bool render( Scene &scene,
                  ParticleSystemEngine &e, Tempest::Camera camera,
@@ -52,7 +53,13 @@ class GraphicsSystem {
     Tempest::signal<double> onRender;
     void setFog( const Tempest::Pixmap& p );
   private:
-    Tempest::DirectX9 directx;
+#ifdef TEMPEST_OPENGL
+    Tempest::Opengl2x api;
+#endif
+
+#ifdef TEMPEST_DIRECTX
+    Tempest::DirectX9 api;
+#endif
 
     static Tempest::Device::Options makeOpt( bool isFullScreen );
   public:
@@ -83,6 +90,7 @@ class GraphicsSystem {
       };
 
     static void mkFrustum( const Tempest::AbstractCamera& c, Frustum& out );
+    static void mkFrustum( const Tempest::Matrix4x4& c, Frustum& out );
 
     enum VisibleRet{
       NotVisible = 0,
@@ -93,7 +101,7 @@ class GraphicsSystem {
     static VisibleRet isVisible( const AbstractGraphicObject& c, const Frustum& f );
     static VisibleRet isVisible( float x, float y, float z, float r, const Frustum& f );
   private:
-    GUIPass gui;
+    std::unique_ptr<GUIPass> gui;
     MainGui * widget;
     ParticleSystemEngine * particles;
 

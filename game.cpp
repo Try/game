@@ -24,23 +24,23 @@
 
 #include <cmath>
 
-Game::Game( int iw, int ih, bool isFS )
-    :Window(iw, ih),
-    graphics( handle(), iw, ih, isFS, isFS ? 2048:1024 ),
-    soundDev( handle() ),
-    resource( graphics.texHolder,
-              graphics.localTex,
-              graphics.vboHolder,
-              graphics.lvboHolder,
-              graphics.iboHolder,
-              graphics.vsHolder,
-              graphics.fsHolder ),
-    gui( graphics.device, iw, ih, resource, proto ),
-    msg(*this),
-    serializator(L"./serialize_tmp.obj", Serialize::Write ){
+Game::Game( ShowMode sm )
+     :Window(sm),
+      graphics( handle(), isFullScreenMode(), isFullScreenMode() ? 2048:1024 ),
+      soundDev( handle() ),
+      resource( graphics.texHolder,
+                graphics.localTex,
+                graphics.vboHolder,
+                graphics.lvboHolder,
+                graphics.iboHolder,
+                graphics.vsHolder,
+                graphics.fsHolder ),
+      gui( graphics.device, w(), h(), resource, proto ),
+      msg(*this),
+      serializator(L"./serialize_tmp.obj", Serialize::Write ){
   //w = iw;
   //h = ih;
-  isFullScreen = isFS;
+  //isFullScreen = isFS;
   paused = false;
 
   acceptMouseObj = true;
@@ -52,7 +52,7 @@ Game::Game( int iw, int ih, bool isFS )
   mouseTracking         = 0;
   selectionRectTracking = 0;
 
-  initFactorys();  
+  initFactorys();
 
   /*
   Tempest::Model<>::Raw m = Tempest::Model<>::loadRawData("./data/models/grass/0.mx");
@@ -137,7 +137,7 @@ Game::Game( int iw, int ih, bool isFS )
 
   setPlaylersCount(1);
 
-  //load(L"./campagin/0.sav");
+  load(L"./campagin/0.sav");
   mscenario->onStartGame();
   }
 
@@ -284,7 +284,7 @@ void Game::resizeEvent( Tempest::SizeEvent &e ){
 
   world->camera.setPerespective(true, w(), h() );
 
-  graphics.resizeEvent( e.w, e.h, isFullScreen );
+  graphics.resizeEvent( e.w, e.h, isFullScreenMode() );
   gui.resizeEvent( e.w, e.h );
   }
 
@@ -427,8 +427,8 @@ void Game::keyUpEvent( Tempest::KeyEvent & e ) {
   }
 
 void Game::toogleFullScr() {
-  isFullScreen = !isFullScreen;
-  toogleFullScreen( isFullScreen );
+  //isFullScreen = !isFullScreen;
+  toogleFullScreen( isFullScreenMode() );
   }
 
 void Game::setPlaylersCount(int c) {
@@ -842,10 +842,6 @@ void Game::load( const std::wstring& f ) {
 
   if( s.isOpen() )
     serialize(s);
-  }
-
-bool Game::isFullScr() const {
-  return isFullScreen;
   }
 
 void Game::serialize( GameSerializer &s ) {

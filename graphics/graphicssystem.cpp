@@ -14,10 +14,10 @@
 
 #include <resource.h>
 
-GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
+GraphicsSystem::GraphicsSystem( void *hwnd,
                                 bool isFullScreen,
                                 int smSize = 1024 )
-  : device(directx, makeOpt(isFullScreen), hwnd ),
+  : device( api, makeOpt(isFullScreen), hwnd ),
     texHolder ( device ),
     localTex  ( device ),
     vboHolder ( device ),
@@ -26,11 +26,7 @@ GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
     vsHolder  ( device ),
     fsHolder  ( device ),
 
-    ppHelper( vboHolder, iboHolder ),
-    gui( vsHolder.load("./data/sh/gui.vert"),
-         fsHolder.load("./data/sh/gui.frag"),
-         lvboHolder,
-         screenSize  ) {
+    ppHelper( vboHolder, iboHolder ){
   widget    = 0;
   time      = -1;
   particles = 0;
@@ -42,8 +38,12 @@ GraphicsSystem::GraphicsSystem( void *hwnd, int w, int h,
   }
 
 void GraphicsSystem::makeRenderAlgo( Resource &res,
-                                     MainGui &gui,
+                                     MainGui &,
                                      int w, int h ) {
+  gui.reset( new GUIPass( res.vshader("gui"),
+                          res.fshader("gui"),
+                          lvboHolder,
+                          screenSize  ) );
   screenSize.w = w;
   screenSize.h = h;
 
@@ -83,8 +83,8 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   displaceData.fsWater = res.fshader("water");
 
   gaussData.texture.setName("texture");
-  gaussData.vs = vsHolder.load("./data/sh/postProcess.vert");
-  gaussData.fs = fsHolder.load("./data/sh/gauss.frag");
+  gaussData.vs = res.vshader("gauss");
+  gaussData.fs = res.fshader("gauss");
 
   gaussData.vsGB = res.vshader("gauss_gb");
   gaussData.fsGB = res.fshader("gauss_gb");
@@ -101,9 +101,10 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   volumetricData.vs = gaussData.vs;
   volumetricData.fs = res.fshader("volumetricLight");
 
-  bloomData.vs = gaussData.vs;
-  bloomData.brightPass = fsHolder.load("./data/sh/brightPass.frag");
-  bloomData.combine    = fsHolder.load("./data/sh/bloomCombine.frag");
+  bloomData.vs         = res.vshader("brightPass");
+  bloomData.brightPass = res.fshader("brightPass");
+
+  bloomData.combine    = res.fshader("bloomCombine");
   bloomData.b[0].setName("b0");
   bloomData.b[1].setName("b1");
   bloomData.b[2].setName("b2");
@@ -116,8 +117,8 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   water.vs = vsHolder.load("./data/sh/htonorm.vert");
   water.fs = fsHolder.load("./data/sh/htonorm.frag");
 
-  finalData.vs = gaussData.vs;
-  finalData.fs     = fsHolder.load("./data/sh/final.frag");
+  finalData.vs     = res.vshader("final");
+  finalData.fs     = res.fshader("final");
   finalData.avatar = fsHolder.load("./data/sh/avatar_final.frag");
 
   finalData.scene.setName("scene");
@@ -132,8 +133,8 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   cpyOffset = scrOffset;
 
   bltData.texture.setName("texture");
-  bltData.vs = vsHolder.load("./data/sh/blitShader.vert");
-  bltData.fs = fsHolder.load("./data/sh/blitShader.frag");
+  bltData.vs = res.vshader("blt");
+  bltData.fs = res.fshader("blt");
 
   ssaoData.vs       = gaussData.vs;
   ssaoData.fs       = fsHolder.load("./data/sh/ssao_macro.frag");
@@ -278,22 +279,23 @@ bool GraphicsSystem::render( Scene &scene,
   device.present();
   return 1;
   */
-
+/*
   renderScene( scene,
                scene.camera(),
                gbuffer, mainDepth, rsm,
                2048, true );
-
+*/
   Tempest::Texture2d fog;
+  /*
   drawFogOfWar(fog, scene);
   aceptFog( gbuffer[0], fog );
-
+*/
   if( widget )
-    gui.exec( *widget, gbuffer[0], mainDepth, device );
+    gui->exec( *widget, gbuffer[0], mainDepth, device );
 
   Tempest::Texture2d glow, bloomTex;
-  drawGlow( glow, mainDepth, scene, 512 );
-  aceptFog( glow, fog );
+  //drawGlow( glow, mainDepth, scene, 512 );
+  //aceptFog( glow, fog );
 
   bloom( bloomTex, gbuffer[0] );
   //blt( glow );
@@ -333,7 +335,7 @@ bool GraphicsSystem::render( Scene &scene,
   blt( final );
   //blt( gao );
   //blt( ssaoTexDet );
-  //blt( gbuffer[2] );
+  //blt( bloomTex );
 
   device.present();
   return 1;
@@ -385,7 +387,7 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
   const Tempest::AbstractCamera & camera = scene.camera();
 
   Frustum frustum;
-  mkFrustum( camera, frustum );
+  mkFrustum( matrix, frustum );
 
   draw( render,
         frustum,
@@ -965,8 +967,8 @@ void GraphicsSystem::gauss( Tempest::Texture2d &out,
   Tempest::Texture2d depth = this->depth( w,h );
 
   Tempest::Render render( device,
-                       out, depth,
-                       gaussData.vs, gaussData.fs );
+                          out, depth,
+                          gaussData.vs, gaussData.fs );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -974,8 +976,9 @@ void GraphicsSystem::gauss( Tempest::Texture2d &out,
   cpyOffset.set( 1.0f/w, 1.0f/h );
   device.setUniform( gaussData.vs, cpyOffset );
 
-  cpyOffset.set( dx/w, dy/h );
-  device.setUniform( gaussData.fs, cpyOffset );
+  //cpyOffset.set( dx/w, dy/h );
+  float blurCoord[2] = { dx/w, dy/h };
+  device.setUniform( gaussData.fs, blurCoord, 2, "blurCoord" );
   device.setUniform( gaussData.fs, bltData.texture );
 
   ppHelper.drawFullScreenQuad( device, gaussData.vs, gaussData.fs );
@@ -1051,8 +1054,8 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
     Tempest::Texture2d depth = this->depth( w,h );
 
     Tempest::Render render( device,
-                         tmp[0], depth,
-                         bloomData.vs, bloomData.brightPass );
+                            tmp[0], depth,
+                            bloomData.vs, bloomData.brightPass );
 
     render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1084,8 +1087,8 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
                                          result.height() );
 
     Tempest::Render render( device,
-                         result, depth,
-                         bloomData.vs, bloomData.brightPass );
+                            result, depth,
+                            bloomData.vs, bloomData.brightPass );
 
     render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1390,7 +1393,7 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
     Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
 
     Frustum frustum;
-    mkFrustum( camera, frustum );
+    mkFrustum( matrix, frustum );
 
     draw( render,
           frustum,
@@ -1399,27 +1402,6 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
           v,
           &Material::shadow,
           std::ref(matrix) );
-
-    /*
-    for( size_t i=0; i<v.size(); ++i ){
-      const AbstractGraphicObject& ptr = *v[i];
-      Tempest::Matrix4x4 m = matrix;
-
-      if( !ptr.material().usage.blush )
-        m.mul( ptr.transform() ); else
-        m.mul( Material::animateObjMatrix( ptr.transform() ) );
-
-      if( isVisible( ptr, frustum ) ){
-        Tempest::UniformTable table( device, smap.vs, smap.fs );
-        Tempest::RenderState rs;
-
-        table.add( m, "mvpMatrix", Tempest::UniformTable::Vertex );
-        ptr.material().shadow( rs, ptr.transform(), camera, table );
-
-        device.setRenderState(rs);
-        render.draw( ptr );
-        }
-      }*/
     }
   }
 
@@ -1438,11 +1420,11 @@ void GraphicsSystem::blurSm( Tempest::Texture2d &sm,
   gauss( tmp,  sm, sm.width(), sm.height(), s, 0 );
   gauss(  sm, tmp, sm.width(), sm.height(), 0, s );
 
-  gauss_gb( tmp,  sm, sm.width(), sm.height(), s*2, 0 );
-  gauss_gb(  sm, tmp, sm.width(), sm.height(), 0, s*2 );
+  gauss_gb( tmp,  sm, sm.width(), sm.height(), s*3, 0 );
+  gauss_gb(  sm, tmp, sm.width(), sm.height(), 0, s*3 );
 
-  gauss_b( tmp,  sm, sm.width(), sm.height(),  s*3, 0 );
-  gauss_b(  sm, tmp, sm.width(), sm.height(),  0, s*3 );
+  gauss_b( tmp,  sm, sm.width(), sm.height(),  s*4, 0 );
+  gauss_b(  sm, tmp, sm.width(), sm.height(),  0, s*4 );
 
   Tempest::Texture2d::Sampler sampler = reflect;
   sampler.uClamp = Tempest::Texture2d::ClampMode::Clamp;
@@ -1491,8 +1473,11 @@ void GraphicsSystem::mkFrustum( const Tempest::AbstractCamera &c,
                                 GraphicsSystem::Frustum    &out ) {
   Tempest::Matrix4x4 cl = c.projective();
   cl.mul( c.view() );
-  //cl.transpose();
+  mkFrustum(cl, out);
+  }
 
+void GraphicsSystem::mkFrustum( const Tempest::Matrix4x4 &cl,
+                                GraphicsSystem::Frustum    &out ) {
   float clip[16], t;
   std::copy( cl.data(), cl.data()+16, clip );
 
@@ -1624,12 +1609,12 @@ void GraphicsSystem::renderScene( const Scene &scene,
   closure.shadow.matrix = makeShadowMatrix( scene, dir );
 
   Tempest::Texture2d shadowMap = localTex.create( shadowMapSize,
-                                               shadowMapSize,
-                                               Tempest::AbstractTexture::Format::Luminance16 );
+                                                  shadowMapSize,
+                                                  Tempest::AbstractTexture::Format::Luminance16 );
   fillShadowMap( shadowMap, scene );
 
   Tempest::Texture2d shadowMapCl = localTex.create(shadowMapSize, shadowMapSize),
-                  depth = this->depth(shadowMapSize, shadowMapSize);
+                     depth = this->depth(shadowMapSize, shadowMapSize);
   fillTranscurentMap(shadowMapCl, depth, scene);
 
   fillGBuf( gbuffer, mainDepth,
@@ -1642,11 +1627,11 @@ void GraphicsSystem::renderScene( const Scene &scene,
   drawOmni( gbuffer, mainDepth, topSm, scene );
 
   //blt( shadowMap );
-  Tempest::Texture2d sceneCopy;
 
   if( useAO ){
     Tempest::Texture2d ssaoTex;
     blurSm(topSm, scene);
+
     ssao( ssaoTex, gbuffer[3], topSm, scene );
 
     Tempest::Texture2d aoAcepted;
@@ -1659,6 +1644,7 @@ void GraphicsSystem::renderScene( const Scene &scene,
     gbuffer[0] = aoAcepted;
     }
 
+  Tempest::Texture2d sceneCopy;
   copy( sceneCopy, gbuffer[0] );
 
   drawTranscurent( gbuffer[0], mainDepth, sceneCopy,
@@ -1694,6 +1680,8 @@ void GraphicsSystem::renderScene( const Scene &scene,
 void GraphicsSystem::renderSubScene( const Scene &scene,
                                      ParticleSystemEngine &e,
                                      Tempest::Texture2d &out  ) {
+  return;
+
   particles = &e;
 
   int w = out.width(),
@@ -1702,11 +1690,17 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
   Tempest::Texture2d gbuffer[4], rsm[4];
   Tempest::Texture2d mainDepth = this->depth(w,h);
 
+  scrOffset.set( 1.0f/w, 1.0f/h );
+
   for( int i=0; i<3; ++i ){
     gbuffer[i] = colorBuf( w, h );
     }
-  gbuffer[3] = localTex.create( w, h,
-                                Tempest::Texture2d::Format::RG16 );
+
+  if( useHDR )
+    gbuffer[3] = localTex.create( w, h,
+                                  Tempest::Texture2d::Format::RGBA16 ); else
+    gbuffer[3] = localTex.create( w, h,
+                                  Tempest::Texture2d::Format::RG16 );
 
   renderScene( scene,
                scene.camera(),
@@ -1719,13 +1713,13 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
                                          out.height() );
 
     Tempest::Render render( device,
-                         out, depth,
-                         bloomData.vs, bloomData.brightPass );
+                            out, depth,
+                            finalData.vs, finalData.avatar );
 
     render.setRenderState( Tempest::RenderState::PostProcess );
 
     cpyOffset.set( 1.0/out.width(), 1.0/out.height() );
-    device.setUniform( bloomData.vs, cpyOffset );
+    device.setUniform( finalData.vs, cpyOffset );
 
     finalData.scene.set( &gbuffer[0] );
     finalData.glow .set( &glow );

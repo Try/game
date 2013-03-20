@@ -1,9 +1,12 @@
 #include <Tempest/Application>
 #include "game.h"
+#include "lang/lang.h"
 
 int main( int, char** ){
+  Lang::load("./lang/ru.lang");
+
   Tempest::Application app;
-  Game game( 800, 600, false );
+  Game game( Tempest::Window::Maximized );
   game.show();
 
   return app.exec();
