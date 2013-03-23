@@ -273,7 +273,8 @@ SOURCES += \
     graphics/material.cpp \
     graphics/scene.cpp \
     threads/time.cpp \
-    stlconf.cpp
+    stlconf.cpp \
+    jniBind.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
