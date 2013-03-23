@@ -1,6 +1,7 @@
 #ifndef FONT_H
 #define FONT_H
 
+#include "stlconf.h"
 #include <string>
 #include "graphics/paintergui.h"
 
@@ -40,7 +41,8 @@ namespace Bind{
 
       void setSize( int s );
     private:
-      typedef std::unordered_map< wchar_t, Leter > Leters;
+      typedef std::unordered_map< wchar_t, Leter,
+                                  std::hash<size_t> > Leters;
       Leters * lt;
 
       struct FreeTypeLib;

@@ -395,7 +395,7 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
         camera,
         v,
         &Material::shadow,
-        std::ref(matrix) );
+        ref(matrix) );
   }
 
 void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
@@ -747,7 +747,7 @@ void GraphicsSystem::drawObjects( Tempest::VertexShader   & vs,
 
   Frustum frustum;
   mkFrustum( camera, frustum );
-  draw( render, frustum, true, camera, v, func, std::ref(matrix) );
+  draw( render, frustum, true, camera, v, func, ref(matrix) );
   }
 
 void GraphicsSystem::drawTranscurent( Tempest::Texture2d& screen,
@@ -772,7 +772,7 @@ void GraphicsSystem::drawTranscurent( Tempest::Texture2d& screen,
 
   Frustum frustum;
   mkFrustum( camera, frustum );
-  draw( render, frustum, true, camera, v, &Material::displace, std::ref(matrix) );
+  draw( render, frustum, true, camera, v, &Material::displace, ref(matrix) );
   }
 
 template< class ... Args, class ... FArgs >
@@ -863,7 +863,7 @@ void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
         camera,
         v,
         &Material::water,
-        std::ref(matrix) );
+        ref(matrix) );
   }
 
 void GraphicsSystem::drawGlow (Tempest::Texture2d &out,
@@ -1401,7 +1401,7 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
           camera,
           v,
           &Material::shadow,
-          std::ref(matrix) );
+          ref(matrix) );
     }
   }
 

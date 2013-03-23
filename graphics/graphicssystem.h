@@ -383,6 +383,11 @@ class GraphicsSystem {
       Tempest::Matrix4x4 v, p;
       };
 
+    template< class T >
+    T& ref( T& t ){
+      return t;
+      }
+
     template< class ... Args, class ... FArgs >
     void draw( Tempest::Render & render,
                const Frustum &frustum,

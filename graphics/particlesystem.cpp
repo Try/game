@@ -68,7 +68,7 @@ ParticleSystem::~ParticleSystem() {
       *p = *this;
       p->dispathMode = true;
 
-      engine->dispath.push_back( std::unique_ptr<ParticleSystem>(p) );
+      engine->dispath.push_back( std::shared_ptr<ParticleSystem>(p) );
       return;
       }
   }

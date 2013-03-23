@@ -11,7 +11,7 @@ std::wstring Lang::leters;
 
 void Lang::load(const char *f) {
   std::ifstream fout( f, std::ios::binary );
-  std::unordered_set<wchar_t> let;
+  std::unordered_set<wchar_t, std::hash<size_t> > let;
 
   size_t c = 0;
   fout.read( (char*)&c, sizeof(c) );

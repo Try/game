@@ -2,24 +2,13 @@
 
 #include <limits>
 #include <cstdio>
+
+#ifdef __WIN32
 #include <winsock2.h>
-/*
-Serialize::Serialize( const std::string &s, OpenMode m ) {
-  static const char * modes[] = {
-    "rb",
-    "wb",
-    "wb+"
-    };
+#else
+#include <arpa/inet.h>
+#endif
 
-  f = fopen( s.data(), modes[m] );
-  mode = m;
-  }
-
-Serialize::~Serialize() {
-  if( isOpen() )
-    fclose(f);
-  }
-*/
 void Serialize::write(int val) {
   unsigned int x = val - std::numeric_limits<int>::min();
   write(x);

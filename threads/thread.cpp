@@ -24,8 +24,11 @@ void Thread::join() {
 void Thread::cancel() {
   if( !valid )
     return;
-
+#ifndef __ANDROID__
   pthread_cancel(thread);
+#else
+  pthread_kill(thread, SIGUSR1);
+#endif
   valid = false;
   }
 

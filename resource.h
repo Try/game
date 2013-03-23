@@ -1,6 +1,8 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
+#include "stlconf.h"
+
 #include <unordered_map>
 #include <string>
 

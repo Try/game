@@ -2,19 +2,16 @@
 
 #include <limits>
 #include <cstdio>
+
+#ifdef __WIN32
 #include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
 
 #include <cassert>
 
 FileSerialize::FileSerialize( const std::wstring &s, OpenMode m ) {
-  /*
-  static const char * modes[] = {
-    "rb",
-    "wb",
-    "wb+"
-    };
-  */
-
   f = fopen( s.data(), m==Read );
   mode = m;
   }
@@ -113,6 +110,7 @@ bool FileSerialize::isReader() const {
 
 
 FileSerialize::File *FileSerialize::fopen(const wchar_t *f, bool r) {
+#ifdef __WIN32
   HANDLE hFile = 0;
 
   if( r ){
@@ -132,10 +130,14 @@ FileSerialize::File *FileSerialize::fopen(const wchar_t *f, bool r) {
     }
 
   return (FileSerialize::File*)hFile;
+#endif
+  return 0;
   }
 
 void FileSerialize::fclose( FileSerialize::File *f ) {
+#ifdef __WIN32
   CloseHandle( f );
+#endif
   }
 
 bool FileSerialize::feof( FileSerialize::File * ) const {
@@ -146,17 +148,23 @@ size_t FileSerialize::fwrite( const void * data,
                               size_t s,
                               size_t c,
                               FileSerialize::File *f) {
+#ifdef __WIN32
   DWORD wmWritten = 0;
   WriteFile( f, data, s*c, &wmWritten, NULL );
   assert( s*c==wmWritten );
   return wmWritten;
+#endif
+  return 0;
   }
 
 size_t FileSerialize::fread( void *data,
                              size_t s, size_t c,
                              FileSerialize::File *f) {
+#ifdef __WIN32
   DWORD wmWritten = 0;
   ReadFile(f, data, s*c, &wmWritten, NULL);
   assert( s*c==wmWritten );
   return wmWritten;
+#endif
+  return 0;
   }

@@ -1,11 +1,15 @@
 #include "nativesavedialog.h"
 
+#ifndef __ANDROID__
 #include <windows.h>
+#endif
 
 struct NativeSaveDialog::PImpl {
+#ifndef __ANDROID__
   static HWND getHwnd(){
     return FindWindow(L"game", L"game");
     }
+#endif
   };
 
 NativeSaveDialog::NativeSaveDialog() {
@@ -13,6 +17,7 @@ NativeSaveDialog::NativeSaveDialog() {
   }
 
 bool NativeSaveDialog::load() {
+#ifndef __ANDROID__
   WCHAR fileName[MAX_PATH] = {};
   OPENFILENAME of;
   ZeroMemory( &of, sizeof(of) );
@@ -41,7 +46,7 @@ bool NativeSaveDialog::load() {
     }
 
   SetCurrentDirectory(dir);
-
+#endif
   return 0;
   }
 
@@ -50,6 +55,7 @@ const std::wstring NativeSaveDialog::fileName() const {
   }
 
 bool NativeSaveDialog::save() {
+#ifndef __ANDROID__
   WCHAR fileName[MAX_PATH] = {};
   OPENFILENAME of;
   ZeroMemory( &of, sizeof(of) );
@@ -78,6 +84,6 @@ bool NativeSaveDialog::save() {
     }
 
   SetCurrentDirectory(dir);
-
+#endif
   return 0;
   }

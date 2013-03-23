@@ -1,6 +1,8 @@
 #ifndef PARTICLESYSTEMENGINE_H
 #define PARTICLESYSTEMENGINE_H
 
+#include "stlconf.h"
+
 #include <Tempest/GraphicObject>
 #include <vector>
 
@@ -36,7 +38,7 @@ class ParticleSystemEngine {
 
     std::vector<GraphicObject> view;
     std::vector<ParticleSystem*> particles, visible;
-    std::vector< std::unique_ptr<ParticleSystem> > dispath;
+    std::vector< std::shared_ptr<ParticleSystem> > dispath;
 
     void emitParticle( Model::Raw &v,
                        float x, float y, float z , float sz,

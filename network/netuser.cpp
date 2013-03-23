@@ -39,16 +39,16 @@ int NetUser::sendStr(SOCKET sock, const std::vector<char> &str) {
 
   unsigned sz = htonl( str.size() );
 
-  if( send(sock, (char*)(&sz), sizeof(sz), 0)== SOCKET_ERROR )
-    return SOCKET_ERROR;
+  if( send(sock, (char*)(&sz), sizeof(sz), 0) == -1 )
+    return -1;
 
   for( size_t i=0; i<str.size(); i+=blockMaxSZ ){
     size_t sz = blockMaxSZ;
     if( i+blockMaxSZ>=str.size() )
       sz = str.size()-i;
 
-    if( send(sock, &str[i], sz, 0)== SOCKET_ERROR )
-      return SOCKET_ERROR;
+    if( send(sock, &str[i], sz, 0)== -1 )
+      return -1;
     }
 
   return 0;

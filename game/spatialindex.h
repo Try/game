@@ -1,6 +1,7 @@
 #ifndef SPATIALINDEX_H
 #define SPATIALINDEX_H
 
+#include "stlconf.h"
 #include <vector>
 #include <memory>
 

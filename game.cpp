@@ -4,7 +4,8 @@
 #include <Tempest/Event>
 #include <iostream>
 
-#include <windows.h>
+#include "threads/time.h"
+
 #include "util/lexicalcast.h"
 #include "util/factory.h"
 
@@ -118,7 +119,7 @@ Game::Game( ShowMode sm )
 
   gui.renderScene.bind( graphics, &GraphicsSystem::renderSubScene );
 
-  worlds.push_back( std::unique_ptr<World>( new World(*this,
+  worlds.push_back( std::shared_ptr<World>( new World(*this,
                                                       256, 256) ) );
 
   world = worlds[0].get();
@@ -146,7 +147,7 @@ void Game::tick() {
 
   moveCamera();
 
-  DWORD time = GetTickCount();
+  size_t time = Time::tickCount();
 
   F3 v = unProject( curMPos.x, curMPos.y );
   int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
@@ -208,7 +209,7 @@ void Game::tick() {
     mscenario->tick();
     }
 
-  fps.time += int(GetTickCount() - time);
+  fps.time += int(Time::tickCount() - time);
   }
 
 void Game::onRender( double dt ){  
@@ -252,8 +253,8 @@ void Game::render() {
   //world->camera.setSpinX(spinX);
   //world->camera.setSpinY(spinY);
 
-  DWORD time = GetTickCount();
-  DWORD dt = time;
+  size_t time = Time::tickCount();
+  size_t dt   = time;
 
   if( graphics.render( world->getScene(),
                        world->getParticles(),
@@ -263,13 +264,14 @@ void Game::render() {
     }
 
   ++fps.n;
-  fps.time += int(GetTickCount() - time);
+  fps.time += int(Time::tickCount() - time);
 
   if( fps.n>100 || ( fps.n>0 && fps.time>1000 ) ){
     double f = 1000.0*double(fps.n)/std::max(1, fps.time);
+#ifdef __WIN32
     SetWindowTextA( HWND( handle() ),
                     Lexical::upcast( f ).data() );
-
+#endif
     fps.n    = 0;
     fps.time = 0;
     }
@@ -408,7 +410,7 @@ void Game::mouseWheelEvent( Tempest::MouseEvent &e ) {
     }
 }
 
-void Game::scutEvent(Tempest::KeyEvent &e) {
+void Game::shortcutEvent(Tempest::KeyEvent &e) {
   gui.scutEvent(e);
   }
 
@@ -549,7 +551,7 @@ const PrototypesLoader &Game::prototypes() const {
   }
 
 void Game::addPlayer() {
-  players.push_back( std::unique_ptr<Player>( new Player( players.size() ) ) );
+  players.push_back( std::shared_ptr<Player>( new Player( players.size() ) ) );
 
   if( players.size() == 2 ){
     players[1]->setHostCtrl(1);
@@ -877,7 +879,7 @@ void Game::serialize( GameSerializer &s ) {
 
   if( s.isReader() ){
     for( int i=0; i<wCount; ++i ){
-      worlds.push_back( std::unique_ptr<World>( new World(*this,
+      worlds.push_back( std::shared_ptr<World>( new World(*this,
                                                           128, 128) ) );
       world = worlds.back().get();
       world->camera.setPerespective( true, w(), h() );

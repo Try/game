@@ -42,7 +42,7 @@ class Game : public Tempest::Window {
     void mouseMoveEvent ( Tempest::MouseEvent &e );
     void mouseWheelEvent ( Tempest::MouseEvent &e );
 
-    void scutEvent   ( Tempest::KeyEvent &e );
+    void shortcutEvent( Tempest::KeyEvent &e );
     void keyDownEvent( Tempest::KeyEvent &e );
     void keyUpEvent  ( Tempest::KeyEvent &e );
 
@@ -139,8 +139,8 @@ class Game : public Tempest::Window {
     void addPlayer();
     int currentPlayer;
     void createEditorObject( const ProtoObject & p, int pl );
-    std::vector< std::unique_ptr<Player> > players;
-    std::vector< std::unique_ptr<World> >  worlds;
+    std::vector< std::shared_ptr<Player> > players;
+    std::vector< std::shared_ptr<World> >  worlds;
     World * world;
 
     //double spinX, spinY;

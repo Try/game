@@ -1,8 +1,10 @@
 #include "physics.h"
 
-// #include <tokamak.h>
+#ifndef NO_PHYSIC
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
+#endif
+
 #include <iostream>
 
 #include "game/world.h"
@@ -11,6 +13,7 @@
 #include <unordered_set>
 
 struct Physics::Data{
+#ifndef NO_PHYSIC
   std::unique_ptr<btBroadphaseInterface>               broadphase;
   std::unique_ptr<btDefaultCollisionConfiguration>     collisionConfiguration;
   std::unique_ptr<btCollisionDispatcher>               dispatcher;
@@ -51,9 +54,12 @@ struct Physics::Data{
       std::cout << "physics: out of rigid pool" << std::endl; else
       std::cout << "physics: too many zerglings!!!" << std::endl;
     }
+#endif
+
   };
 
 struct Physics::RigidBody{
+#ifndef NO_PHYSIC
   RigidBody( float x, float y, float z, float d, float mass )
     : mstate(
         btTransform( btQuaternion(0,0,0,1),
@@ -103,15 +109,19 @@ struct Physics::RigidBody{
   btBoxShape           box;
 
   btRigidBody          body;
+#endif
   };
 
 struct Physics::AnimatedBody:public Physics::RigidBody {
+#ifndef NO_PHYSIC
   AnimatedBody( float x, float y, float z, float d ): RigidBody(x,y,z,d,0){}
   AnimatedBody( float  x, float  y, float  z,
                 float sx, float sy, float sz ): RigidBody(x,y,z,sx,sy,sz,0){}
+#endif
   };
 
 struct Physics::TerrainBody{
+#ifndef NO_PHYSIC
   TerrainBody( const Terrain &t,
                const std::vector<float> & data,
                float min,
@@ -147,12 +157,14 @@ struct Physics::TerrainBody{
   std::vector<float>          heightData;
   btHeightfieldTerrainShape   hmap;
   btRigidBody                 body;
+#endif
   };
 
 
 Physics::Physics(int /*tw*/, int /*th*/) {
   data = new Data();
 
+#ifndef NO_PHYSIC
   Lock lock(data->physicMutex);
   (void)lock;
 
@@ -170,27 +182,33 @@ Physics::Physics(int /*tw*/, int /*th*/) {
                               data->collisionConfiguration.get() ) );
 
   data->dynamicsWorld->setGravity( btVector3( 0, 0, -5 ) );
+#endif
   }
 
 Physics::~Physics() {
+#ifndef NO_PHYSIC
   { Lock lock(data->physicMutex);
     (void)lock;
 
     if( data->terrain )
       data->dynamicsWorld->removeRigidBody( &data->terrain->body );
     }
+#endif
 
   delete data;
   }
 
 void Physics::tick() {
+#ifndef NO_PHYSIC
   Lock lock(data->physicMutex);
   (void)lock;
 
   data->dynamicsWorld->stepSimulation( 1/60.f, 5 );
+#endif
   }
 
 void Physics::setTerrain( const Terrain &t ) {
+#ifndef NO_PHYSIC
   std::vector<float> heightMap( t.width()*t.height() );
 
   float min = World::coordCast( t.at(0,0) ), max = min;
@@ -220,7 +238,7 @@ void Physics::setTerrain( const Terrain &t ) {
 
   data->dynamicsWorld->addRigidBody( &data->terrain->body );
   //btDiscreteDynamicsWorld *w = data->dynamicsWorld.get();
-
+#endif
   //w->;
   }
 
@@ -228,16 +246,18 @@ void Physics::setTerrain( const Terrain &t ) {
 Physics::Sphere Physics::createSphere( float x, float y, float z, float d ) {
   Physics::Sphere s;
 
+#ifndef NO_PHYSIC
   Lock lock(data->physicMutex);
   (void)lock;
 
   s.data = new RigidBody( x, y, z, d, 0.1 );
   data->dynamicsWorld->addRigidBody( &s.data->body );
-
+#endif
   return s;
   }
 
 void Physics::free( Physics::Rigid &s) {
+#ifndef NO_PHYSIC
   if( s.data ){
     Lock lock(data->physicMutex);
     (void)lock;
@@ -246,18 +266,21 @@ void Physics::free( Physics::Rigid &s) {
     --data->rigidCount;
     s.data = 0;
     }
+#endif
   }
 
 Physics::Box Physics::createBox(float x, float y, float z,
                                 float sx, float sy, float sz) {
   Physics::Box s;
 
+#ifndef NO_PHYSIC
   Lock lock(data->physicMutex);
   (void)lock;
 
   s.data = new RigidBody( x, y, z, sx, sy, sz, 0.1 );
   s.engine = data;
   data->dynamicsWorld->addRigidBody( &s.data->body );
+#endif
 
   return s;
   }
@@ -266,12 +289,14 @@ Physics::AnimatedSphere Physics::createAnimatedSphere( float x, float y,
                                                        float z, float d ){
   Physics::AnimatedSphere s;
 
+#ifndef NO_PHYSIC
   Lock lock(data->physicMutex);
   (void)lock;
 
   s.data = new AnimatedBody( x, y, z, d );
   s.engine = data;
   data->dynamicsWorld->addRigidBody( &s.data->body );
+#endif
 
   return s;
   }
@@ -280,17 +305,20 @@ Physics::AnimatedBox Physics::createAnimatedBox( float  x, float  y, float  z,
                                                  float sx, float sy, float sz ){
   Physics::AnimatedBox s;
 
+#ifndef NO_PHYSIC
   Lock lock(data->physicMutex);
   (void)lock;
 
   s.data = new AnimatedBody( x, y, z, sx, sy, sz );
   s.engine = data;
   data->dynamicsWorld->addRigidBody( &s.data->body );
+#endif
 
   return s;
   }
 
 void Physics::free(Physics::AnimatedSphere &s) {
+#ifndef NO_PHYSIC
   if( s.data ){
     Lock lock(data->physicMutex);
     (void)lock;
@@ -299,9 +327,11 @@ void Physics::free(Physics::AnimatedSphere &s) {
     --data->animCount;
     s.data = 0;
     }
+#endif
   }
 
 void Physics::free(Physics::AnimatedBox &s) {
+#ifndef NO_PHYSIC
   if( s.data ){
     Lock lock(data->physicMutex);
     (void)lock;
@@ -310,14 +340,19 @@ void Physics::free(Physics::AnimatedBox &s) {
     --data->animCount;
     s.data = 0;
     }
+#endif
   }
 
 void Physics::beginUpdate() {
+#ifndef NO_PHYSIC
   data->physicMutex.lock();
+#endif
   }
 
 void Physics::endUpdate() {
+#ifndef NO_PHYSIC
   data->physicMutex.unlock();
+#endif
   }
 
 Physics::Rigid::Rigid() {
@@ -329,6 +364,7 @@ Physics::Rigid::Rigid() {
   }
 
 float Physics::Rigid::x() const {
+#ifndef NO_PHYSIC
   Lock lock(engine->physicMutex);
   (void)lock;
 
@@ -336,9 +372,13 @@ float Physics::Rigid::x() const {
   data->body.getMotionState()->getWorldTransform(trans);
 
   return trans.getOrigin().x();
+#else
+  return 0;
+#endif
   }
 
 float Physics::Rigid::y() const {
+#ifndef NO_PHYSIC
   Lock lock(engine->physicMutex);
   (void)lock;
 
@@ -346,9 +386,13 @@ float Physics::Rigid::y() const {
   data->body.getMotionState()->getWorldTransform(trans);
 
   return trans.getOrigin().y();
+#else
+  return 0;
+#endif
   }
 
 float Physics::Rigid::z() const {
+#ifndef NO_PHYSIC
   Lock lock(engine->physicMutex);
   (void)lock;
 
@@ -356,21 +400,21 @@ float Physics::Rigid::z() const {
   data->body.getMotionState()->getWorldTransform(trans);
 
   return trans.getOrigin().z();
+#else
+  return 0;
+#endif
   }
 
 Tempest::Matrix4x4 Physics::Rigid::transform() {
   return matrix;
-
-  /*
-  Lock lock(engine->physicMutex);
-  (void)lock;
-
-  update();
-  */
   }
 
 float Physics::Rigid::diameter() const {
+#ifndef NO_PHYSIC
   return data->sphere.getRadius()*2;
+#else
+  return 0;
+#endif
   }
 
 bool Physics::Rigid::isValid() const {
@@ -378,33 +422,33 @@ bool Physics::Rigid::isValid() const {
   }
 
 void Physics::Rigid::activate() {
+#ifndef NO_PHYSIC
   if( Lock(engine->physicMutex) )
     data->body.activate(true);
+#endif
   }
 
 bool Physics::Rigid::isActive() {
+#ifndef NO_PHYSIC
   if( Lock(engine->physicMutex) )
     return data->body.isActive();
-
+#endif
   return 0;
   }
 
 void Physics::Rigid::setPosition(float x, float y, float z) {
-  // Lock lock(engine->physicMutex);
-  // (void)lock;
-
+#ifndef NO_PHYSIC
   btTransform tr;
   data->body.getMotionState()->getWorldTransform(tr);
   tr.setOrigin( btVector3(x,y,z) );
 
   data->mstate.setWorldTransform( tr );
   data->body.setCenterOfMassTransform( tr );
+#endif
   }
 
-void Physics::Rigid::setAngle(float rx, float ry) {
-  // Lock lock(engine->physicMutex);
-  // (void)lock;
-
+void Physics::Rigid::setAngle(float rx, float ry) { 
+#ifndef NO_PHYSIC
   rx = rx*M_PI/180.0;
   ry = ry*M_PI/180.0;
 
@@ -414,16 +458,17 @@ void Physics::Rigid::setAngle(float rx, float ry) {
 
   data->mstate.setWorldTransform( tr );
   data->body.setCenterOfMassTransform( tr );
+#endif
   }
 
 void Physics::Rigid::applyForce(float x, float y, float z) {
-  // Lock lock(engine->physicMutex);
-  // (void)lock;
-
+#ifndef NO_PHYSIC
   data->body.applyForce( btVector3(x,y,z), btVector3(0,0,1) );
+#endif
   }
 
 void Physics::Rigid::update() {
+#ifndef NO_PHYSIC
   btTransform n;
   data->body.getMotionState()->getWorldTransform(n);
   //data->body.activate(true);
@@ -441,10 +486,15 @@ void Physics::Rigid::update() {
                              v[1][0], v[1][1], v[1][2], 0,
                              v[2][0], v[2][1], v[2][2], 0,
                               pos[0],  pos[1],  pos[2], 1 );
+#endif
   }
 
 float Physics::AnimatedSphere::diameter() const {
+#ifndef NO_PHYSIC
   return data->sphere.getRadius()*2;
+#else
+  return 0;
+#endif
   }
 
 Physics::Animated::Animated() {
@@ -471,15 +521,14 @@ bool Physics::Animated::isValid() const {
   }
 
 void Physics::Animated::update() {
-  //Lock lock(engine->physicMutex);
-  //(void)lock;
-
+#ifndef NO_PHYSIC
   btTransform tr;
   data->body.getMotionState()->getWorldTransform(tr);
   tr.setOrigin( btVector3(x,y,z) );
 
   data->mstate.setWorldTransform( tr );
   data->body.setCenterOfMassTransform( tr );
+#endif
   }
 
 

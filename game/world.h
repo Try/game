@@ -145,14 +145,14 @@ class World {
 
     std::vector< PGameObject > gameObjects, eviObjects;
     std::vector< PGameObject > nonBackground;
-    std::unordered_set<GameObjectView*> updatePosIntents;
+    std::unordered_set<GameObjectView*, std::hash<void*> > updatePosIntents;
 
     SpatialIndex spatialId;
     // std::vector< PGameObject > selected;
     std::vector< WeakWorldPtr* > wptrs;
     GameObject* mouseObject;
 
-    std::vector< std::unique_ptr<HudAnim> > hudAnims;
+    std::vector< std::shared_ptr<HudAnim> > hudAnims;
 
     std::vector< GameObject* > warehouses, resouces;
 

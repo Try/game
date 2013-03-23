@@ -80,7 +80,7 @@ struct UnitInfo::Stats : public PanelBase {
       };
 
     for( size_t i=0; i<2; ++i ){
-      btns.push_back( std::unique_ptr<Btn>(new Btn(res)) );
+      btns.push_back( std::shared_ptr<Btn>(new Btn(res)) );
       btns.back()->icon.data = res.pixmap(icon[i]);
       btns.back()->setHint( hint[i] );
 
@@ -94,7 +94,7 @@ struct UnitInfo::Stats : public PanelBase {
   Resource  & res;
   GameObject& obj;
 
-  std::vector< std::unique_ptr<Btn> > btns;
+  std::vector< std::shared_ptr<Btn> > btns;
   };
 
 struct UnitInfo::Production : public PanelBase {
@@ -105,14 +105,14 @@ struct UnitInfo::Production : public PanelBase {
 
     top = new Widget();
     top->setLayout( Tempest::Horizontal );
-    btns.push_back( std::unique_ptr<Btn>(new Btn(res)) );
+    btns.push_back( std::shared_ptr<Btn>(new Btn(res)) );
     top->layout().add( btns[0].get() );
     top->layout().add( le );
 
     bottom = new Widget();
     bottom->setLayout( Tempest::Horizontal );
     for( size_t i=0; i<5; ++i ){
-      btns.push_back( std::unique_ptr<Btn>(new Btn(res)) );
+      btns.push_back( std::shared_ptr<Btn>(new Btn(res)) );
       bottom->layout().add( btns.back().get() );
       }
 
@@ -156,7 +156,7 @@ struct UnitInfo::Production : public PanelBase {
 
   Widget *top, *bottom;
 
-  std::vector< std::unique_ptr<Btn> > btns;
+  std::vector< std::shared_ptr<Btn> > btns;
   };
 
 

@@ -1,6 +1,8 @@
 #ifndef WAYFINDALGO_H
 #define WAYFINDALGO_H
 
+#include "stlconf.h"
+
 #include "util/array2d.h"
 #include <memory>
 

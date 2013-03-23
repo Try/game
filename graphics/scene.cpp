@@ -80,43 +80,6 @@ void Scene::onObjectAdded( const AbstractGraphicObject *t ) {
   }
 
 void Scene::onObjectRemoved( const AbstractGraphicObject *t ) {
-  /*
-  if( x->material().usage.shadowCast )
-    remove( shCast, x );
-
-  if( x->material().usage.mainPass )
-    remove( mainObj, x );
-
-  if( !x->material().glow.isEmpty() )
-    remove( glowObj, x );
-
-  if( x->material().usage.terrainMinor )
-    remove( terrainMinor, x );
-
-  if( x->material().usage.displace )
-    remove( displaceObj, x );
-
-  if( x->material().usage.water )
-    remove( waterObj, x );
-
-  if( x->material().usage.add )
-    remove( addObj, x );
-
-  if( x->material().usage.transparent ){
-    remove( transpObj, x );
-    if( x->material().zWrighting )
-      remove( transpObjZW, x );
-    }
-
-  if( x->material().usage.fogOfWar )
-    remove( fogOfWarObj, x );
-
-  if( x->material().usage.omni )
-    remove( omniObj, x );
-
-  if( x->material().usage.grass )
-    remove( grassObj, x );*/
-
   onObjectOp( t, Del, t->transform() );
   }
 

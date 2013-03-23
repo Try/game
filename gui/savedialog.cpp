@@ -10,15 +10,20 @@
 
 #include "gen/ui_loaddialog.h"
 
+#ifndef __ANDROID__
 #include <windows.h>
+#endif
 
-static BOOL FileExists( const WCHAR* szPath)
-{
+static bool FileExists( const wchar_t* szPath) {
+#ifndef __ANDROID__
   DWORD dwAttrib = GetFileAttributes(szPath);
 
   return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
          !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
-}
+#else
+  return 0;
+#endif
+  }
 
 struct SaveDialog::Btn:public Button {
   Btn( SaveDialog & s, Resource & res ):Button(res), dlg(s){
@@ -92,11 +97,12 @@ void SaveDialog::acceptAction() {
   }
 
 std::vector<std::wstring> SaveDialog::filesInDir( const std::wstring &dirName ){
-  _WDIR *dir = _wopendir ( L"./save" );//data->curDir;
-  struct _wdirent *ent;
-
   std::vector<std::wstring> vec;
 
+#ifndef __ANDROID__
+  _WDIR *dir = _wopendir ( L"./save" );//data->curDir;
+  struct _wdirent *ent;
+  
   //dir = _wopendir ( dirName.c_str() );
   if (dir != NULL) {
     /* print all the files and directories within directory */
@@ -107,6 +113,7 @@ std::vector<std::wstring> SaveDialog::filesInDir( const std::wstring &dirName ){
     } else {
     //return EXIT_FAILURE;
     }
+#endif
 
   return vec;
   }

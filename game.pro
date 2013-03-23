@@ -13,6 +13,8 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 
 CONFIG += opengl
+#CONFIG += sound
+#CONFIG += physic
 
 opengl:{
   LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_gl"
@@ -28,28 +30,37 @@ opengl:{
   DEFINES += TEMPEST_DIRECTX
   }
 
+physic:{
+  INCLUDEPATH += "$$(BULLET_INCLUDE_PATH)"
+  LIBS += -L"$$(BULLET_LIB_PATH)" \
+          -l"BulletDynamics"   \
+          -l"BulletCollision"  \
+          -l"BulletFileLoader" \
+          -l"BulletMultiThreaded" \
+          -l"BulletSoftBody"      \
+          -l"BulletWorldImporter" \
+          -l"LinearMath"
+  } else {
+  DEFINES += NO_PHYSIC
+  }
+
+sound:{
+  INCLUDEPATH += "$$(BASS_INCLUDE_PATH)"
+  LIBS += -L"$$(BASS_LIB_PATH)" -lbass
+  } else {
+  DEFINES += NO_SOUND
+  }
+
 INCLUDEPATH += "$$(DXSDK_DIR)/include"\
                "$$(CG_INC_PATH)" \
-               "$$(BULLET_INCLUDE_PATH)" \
                "$$(FREETYPE_INCLUDE_PATH)" \
-               "$$(FREETYPE_INCLUDE_PATH)/freetype2" \
-               "$$(BASS_INCLUDE_PATH)"
+               "$$(FREETYPE_INCLUDE_PATH)/freetype2"
 
 LIBS += -l"gdi32" -l"ws2_32" -l"comdlg32" -l"pthread"
 
 LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
 LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
 LIBS += -L"$$(DEVIL_LIB_PATH)" -l"DevIL"
-LIBS += -L"$$(BASS_LIB_PATH)" -lbass
-
-LIBS += -L"$$(BULLET_LIB_PATH)" \
-        -l"BulletDynamics"   \
-        -l"BulletCollision"  \
-        -l"BulletFileLoader" \
-        -l"BulletMultiThreaded" \
-        -l"BulletSoftBody"      \
-        -l"BulletWorldImporter" \
-        -l"LinearMath"
 
 LIBS += -L"$$(FREETYPE_LIB_PATH)" -l"freetype"
 
@@ -155,7 +166,9 @@ HEADERS += \
     game/particlesystemdeclaration.h \
     graphics/material.h \
     graphics/scene.h \
-    graphics/octotree.h
+    graphics/octotree.h \
+    stlconf.h \
+    threads/time.h
 
 SOURCES += \
     main.cpp \
@@ -258,7 +271,9 @@ SOURCES += \
     game/missions/deatmachscenarion.cpp \
     game/particlesystemdeclaration.cpp \
     graphics/material.cpp \
-    graphics/scene.cpp
+    graphics/scene.cpp \
+    threads/time.cpp \
+    stlconf.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
@@ -276,5 +291,6 @@ OTHER_FILES += \
     ../game-build-desktop/data/land.xml \
     ../game-build-desktop/data/spell.xml \
     ../game-build-desktop/data/hud.xml \
-    ../game-build-desktop/data/particle.xml
+    ../game-build-desktop/data/particle.xml \
+    Android.mk
 

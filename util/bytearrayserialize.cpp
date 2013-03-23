@@ -2,7 +2,12 @@
 
 #include <limits>
 #include <cstdio>
+
+#ifdef __WIN32
 #include <winsock2.h>
+#else
+#include <arpa/inet.h>
+#endif
 
 ByteArraySerialize::ByteArraySerialize( std::vector<char> &io,
                                         Serialize::OpenMode m ) {

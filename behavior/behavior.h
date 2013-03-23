@@ -1,6 +1,7 @@
 #ifndef BEHAVIOR_H
 #define BEHAVIOR_H
 
+#include "stlconf.h"
 #include "behavior/abstractbehavior.h"
 #include <vector>
 #include <string>

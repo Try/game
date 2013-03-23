@@ -9,6 +9,12 @@
 #else
     #include <sys/socket.h>
     #include <netinet/in.h>
+
+    #include <string.h>
+    #include <sys/types.h>
+    #include <arpa/inet.h>
+
+    typedef int SOCKET;
 #endif
 
 #include "threads/async.h"

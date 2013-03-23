@@ -1,6 +1,7 @@
 #ifndef OCTOTREE_H
 #define OCTOTREE_H
 
+#include "stlconf.h"
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -113,7 +114,14 @@ class OcTree {
     static const int leafLinearSize = 1;
 
   private:
-    std::unordered_map<T, OcTree*> nodes;
+    struct hash{
+      template< class Tx >
+      size_t operator ()( Tx t ) const {
+        return size_t(t);
+        }
+      };
+    std::unordered_map<T, OcTree*, hash > nodes;
   };
 
 #endif // OCTOTREE_H
+   

@@ -1,6 +1,11 @@
 #include "localserver.h"
 
 #include <string>
+#include <unistd.h>
+
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET    (~(0))
+#endif
 
 LocalServer::LocalServer() {
   isRunning = false;
@@ -24,7 +29,12 @@ void LocalServer::start() {
   listenSocket = socket(PF_INET, SOCK_STREAM, 0);
   listenAddress.sin_family = AF_INET;
   listenAddress.sin_port = htons(1313);
-  listenAddress.sin_addr.S_un.S_addr = INADDR_ANY;
+
+#ifdef _WIN32
+    listenAddress.sin_addr.S_un.S_addr = INADDR_ANY;
+#else
+    listenAddress.sin_addr.s_addr = INADDR_ANY;
+#endif
 
   if (bind( listenSocket,
             (sockaddr*)(&listenAddress),
@@ -41,7 +51,7 @@ void LocalServer::sendMsg(const std::vector<char> &v) {
 
 void LocalServer::sendMsg( const std::vector<char> &v,
                            LocalServer::Client &c ) {
-  if (sendStr(c.sock, v) == SOCKET_ERROR){
+  if( sendStr(c.sock, v) == -1 ){
     onError("Send error");
     }
   }
@@ -93,7 +103,11 @@ int LocalServer::serverListen( void * ){
         }
       }
 
+#ifdef __WIN32
     Sleep(1000);
+#else
+    sleep(1000);
+#endif
     }
 
   clientsMut.lock();
@@ -101,7 +115,11 @@ int LocalServer::serverListen( void * ){
   for( size_t i=0; i<clients.size(); ++i ){
     Client &c = *clients[i];
     c.thread.cancel();
+#ifdef __WIN32
     closesocket(c.sock);
+#else
+    close(c.sock);
+#endif
     delete clients[i];
     }
   clients.clear();
@@ -124,7 +142,7 @@ int LocalServer::clientRecieve( void* data ){
       onError("Client quit");
       break;
       }else
-    if (recieved == SOCKET_ERROR){
+    if (recieved == -1){
       onError("Recieve error");
       break;
       }
@@ -151,7 +169,11 @@ int LocalServer::clientRecieve( void* data ){
 
   if( cdel ){
     onDisConnected(*this, *cdel);
+#ifdef __WIN32
     closesocket(cdel->sock);
+#else
+    close(cdel->sock);
+#endif
 
     delete cdel;
     }

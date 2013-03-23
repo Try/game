@@ -13,7 +13,7 @@
 
 #include "util/lexicalcast.h"
 
-#include <array>
+//#include <array>
 #include "util/array2d.h"
 
 struct CommandsPanel::BtnBase: public Button{

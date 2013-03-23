@@ -232,7 +232,7 @@ void GameObjectView::loadView( const Resource & r,
                                                                src );
         object->setModel( model, src.name+"/model" );
 
-        smallViews.push_back( std::unique_ptr<SmallGraphicsObject>(object) );
+        smallViews.push_back( std::shared_ptr<SmallGraphicsObject>(object) );
         if( src.randRotate ){
           smallViews.back()->setRotation(0, rand()%360 );
           }
@@ -322,7 +322,7 @@ void GameObjectView::setViewPosition( float x, float y, float z,
       dp[r] = dp[r]*getClass().view[ env[i].viewID ].size[r];
       }
 
-    float a = atan2( m.intentDirY, m.intentDirX );
+    float a = atan2( (double)m.intentDirY, (double)m.intentDirX );
     float s = sin(a), c = cos(a);
     float ax = dp[0], ay = dp[1];
     dp[0] = c*ax - s*ay;
@@ -553,7 +553,7 @@ void GameObjectView::setVisible(bool v) {
   }
 
 void GameObjectView::rotate( int delta ) {
-  double a = atan2( m.intentDirY, m.intentDirX ) + delta;
+  double a = atan2( (double)m.intentDirY, (double)m.intentDirX ) + delta;
 
   for( size_t i=0; i<view.size(); ++i ){
     a = view[i].angleZ() + delta;
@@ -637,7 +637,7 @@ void GameObjectView::tick() {
       }
     }
 
-  double a  = 180.0*atan2( m.intentDirY, m.intentDirX )/M_PI;
+  double a  = 180.0*atan2( (double)m.intentDirY, (double)m.intentDirX )/M_PI;
   double at = cls->rotateSpeed;
 
   for( size_t i=0; i<view.size(); ++i ){

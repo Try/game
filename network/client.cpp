@@ -55,7 +55,11 @@ void Client::clientConnect( const char* in ){
 
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(1313);
+#ifdef _WIN32
     serverAddress.sin_addr.S_un.S_addr = ip;
+#else
+    serverAddress.sin_addr.s_addr = ip;
+#endif
 
     if( ::connect( serverSocket,
                    (sockaddr*)(&serverAddress),
@@ -84,7 +88,7 @@ int Client::reciever(void *){
       onError("Server closed");
       break;
       }else
-    if (recieved == SOCKET_ERROR){
+    if (recieved == -1){
       onError("Recieve error");
       break;
       }
@@ -93,7 +97,11 @@ int Client::reciever(void *){
     buffer.clear();
     }
 
+#ifdef _WIN32
   closesocket(serverSocket);
+#else
+  close(serverSocket);
+#endif
 
   //removeConsoleListener(sender);
   connected = false;

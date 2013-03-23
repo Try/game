@@ -130,7 +130,7 @@ class GameObjectView {
 
     std::vector< EnvObject > env;
     std::vector< GraphicObject > view;
-    std::vector< std::unique_ptr<SmallGraphicsObject> > smallViews;
+    std::vector< std::shared_ptr<SmallGraphicsObject> > smallViews;
     std::vector< ParticleSystem >      particles;
 
     Physics * physic;

@@ -1,5 +1,9 @@
 #include "world.h"
 
+#ifdef __ANDROID__
+#include <unistd.h>
+#endif
+
 #include "prototypesloader.h"
 
 #include <cmath>
@@ -83,7 +87,7 @@ void World::emitHudAnim( const std::string &s,
 
   a->setPosition( x, y, z+zAt(x,y) );
 
-  hudAnims.push_back( std::unique_ptr<HudAnim>(a) );
+  hudAnims.push_back( std::shared_ptr<HudAnim>(a) );
   }
 
 float World::zAt(float x, float y) const {
@@ -150,7 +154,11 @@ void World::createTestMap() {
 void World::computePhysic( void * ) {
   while( isRunning ){
     physics.tick();
+    #ifndef __ANDROID__
     Sleep(50);
+    #else
+    sleep(50);
+    #endif
     }
   }
 

@@ -37,7 +37,7 @@ void Bullet::tick() {
 
   if( l0==0 ){
     l0 = l;
-    view.setRotation( atan2(vecY, vecX)*180.0/M_PI );
+    view.setRotation( atan2( (double)vecY, (double)vecX)*180.0/M_PI );
     }
 
   view.setViewPosition( World::coordCast(x),

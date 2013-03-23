@@ -461,7 +461,7 @@ void Terrain::brushHeight( int x, int y,
     for( int i=lx; i<rx; ++i )
       for( int r=ly; r<ry; ++r ){
         double factor = std::max(0.0,
-                                 (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
+                                 (R-sqrt( (double)(x-i)*(x-i)+(y-r)*(y-r))) )/R;
         factor = (1.0-factor)*(1.0-factor);
         factor = 1.0 - std::max(factor-0.8, 0.0)/0.2;
 
@@ -478,7 +478,7 @@ void Terrain::brushHeight( int x, int y,
     for( int i=lx; i<rx; ++i )
       for( int r=ly; r<ry; ++r ){
         double factor = std::max(0.0,
-                                 (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
+                                 (R-sqrt((double)(x-i)*(x-i)+(y-r)*(y-r))) )/R;
         factor = 1.0-(1.0-factor)*(1.0-factor);
 
         for( int dx = 0; dx<2; ++dx)
@@ -507,7 +507,7 @@ void Terrain::brushHeight( int x, int y,
     for( int i=lx; i<rx; ++i )
       for( int r=ly; r<ry; ++r ){
         double factor = std::max(0.0,
-                                 (R-sqrt((x-i)*(x-i)+(y-r)*(y-r))) )/R;
+                                 (R-sqrt((double)(x-i)*(x-i)+(y-r)*(y-r))) )/R;
         factor = 1.0-(1.0-factor)*(1.0-factor);
 
         if( factor>0 ){

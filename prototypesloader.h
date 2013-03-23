@@ -1,6 +1,7 @@
 #ifndef PROTOTYPESLOADER_H
 #define PROTOTYPESLOADER_H
 
+#include "stlconf.h"
 #include "xml/abstractxmlreader.h"
 
 #include <unordered_map>

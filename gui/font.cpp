@@ -52,8 +52,13 @@ Tempest::Bind::UserFont::UserFont( const std::string &name, int sz)  {
   }
 
 Tempest::Bind::UserFont::UserFont(int sz) {
+#ifdef __ANDROID__
+  key.name = "/system/fonts/DroidSans.ttf";
+  key.baseName = "/system/fonts/DroidSans";
+#else
   key.name = "./data/arial.ttf";
   key.baseName = "./data/arial";
+#endif
 
   key.size = sz;
   key.bold   = false;
@@ -67,8 +72,13 @@ Tempest::Bind::UserFont::UserFont(int sz) {
   }
 
 Tempest::Bind::UserFont::UserFont() {
-  key.name     = "./data/arial.ttf";
+#ifdef __ANDROID__
+  key.name = "/system/fonts/DroidSans.ttf";
+  key.baseName = "/system/fonts/DroidSans";
+#else
+  key.name = "./data/arial.ttf";
   key.baseName = "./data/arial";
+#endif
 
   key.size = 16;
   key.bold   = false;

@@ -40,7 +40,7 @@ void GUIPass::exec( MainGui &gui, Tempest::Texture2d &rt,
 
       if( lay.needToUpdate ){
         lay.guiGeometry = Tempest::VertexBuffer<Vertex>();
-        lay.guiGeometry = vbHolder.load( lay.guiRawData.data(),
+        lay.guiGeometry = vbHolder.load( &lay.guiRawData[0],
                                          lay.guiRawData.size() );
         }
       }

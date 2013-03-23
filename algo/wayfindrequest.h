@@ -3,7 +3,7 @@
 
 #include <map>
 #include <vector>
-#include <tuple>
+//#include <tuple>
 
 class GameObject;
 class Terrain;
@@ -17,7 +17,12 @@ class WayFindRequest {
     struct Tg{
       int x,y;
       bool operator < ( const Tg & t ) const{
-        return std::tie(x,y) < std::tie(t.x, t.y);
+        if( x<t.x )
+          return 1;
+        if( x>t.x )
+          return 0;
+
+        return y<t.y;
         }
       };
     void tick( const Terrain& t );
