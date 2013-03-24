@@ -39,9 +39,6 @@ Game::Game( ShowMode sm )
       gui( graphics.device, w(), h(), resource, proto ),
       msg(*this),
       serializator(L"./serialize_tmp.obj", Serialize::Write ){
-  //w = iw;
-  //h = ih;
-  //isFullScreen = isFS;
   paused = false;
 
   acceptMouseObj = true;
@@ -97,8 +94,8 @@ Game::Game( ShowMode sm )
   Tempest::Model<>::saveRawData("./data/models/grass/0.mx", m);
   */
 
-  resource.load("./data/data.xml");
-  proto   .load("./data/game.xml");
+  resource.load("data/data.xml");
+  proto   .load("data/game.xml");
 
   mscenario.reset( new DeatmachScenarion() );
 
@@ -138,7 +135,9 @@ Game::Game( ShowMode sm )
 
   setPlaylersCount(1);
 
-  load(L"./campagin/0.sav");
+#ifndef __ANDROID__
+  load(L"campagin/0.sav");
+#endif
   mscenario->onStartGame();
   }
 

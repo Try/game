@@ -55,7 +55,7 @@ void GUIPass::exec( MainGui &gui, Tempest::Texture2d &rt,
 
   Tempest::RenderState currntRS = rs;
   device.beginPaint(rt, depth);
-  //device.clear( Tempest::Color(1,1,1,1) );
+  device.clear( Tempest::Color(0,0,0,1) );
 
   device.setUniform( vs, dTexCoord, 2, "dTexCoord" );
 
@@ -260,7 +260,11 @@ Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
   rs.setZWriting( true );
 
   rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
+#ifndef __ANDROID__
   rs.setBlend(0);
+#else
+  rs.setBlend(1);
+#endif
   rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
                    Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
 

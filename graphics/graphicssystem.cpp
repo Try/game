@@ -64,8 +64,8 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   gbuf.lightAblimient.setName("lightAblimient");
   gbuf.view          .setName("view");
 
-  smap.vs = vsHolder.load("./data/sh/shadow_map.vert");
-  smap.fs = fsHolder.load("./data/sh/shadow_map.frag");
+  smap.vs = res.vshader("shadow_map");
+  smap.fs = res.fshader("shadow_map");
 
   transparentData.vs = res.vshader("transparent_material");
   transparentData.fs = res.fshader("transparent_material");
@@ -109,17 +109,17 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   bloomData.b[1].setName("b1");
   bloomData.b[2].setName("b2");
 
-  water.waterHeightMap[0] = texHolder.load("./data/textures/water/hmap.png");
-  water.waterHeightMap[1] = texHolder.load("./data/textures/water/hmap1.png");
+  water.waterHeightMap[0] = texHolder.load("data/textures/water/hmap.png");
+  water.waterHeightMap[1] = texHolder.load("data/textures/water/hmap1.png");
 
   water.envMap = res.texture("sky0/diff");
 
-  water.vs = vsHolder.load("./data/sh/htonorm.vert");
-  water.fs = fsHolder.load("./data/sh/htonorm.frag");
+  water.vs     = res.vshader("htonorm");
+  water.fs     = res.fshader("htonorm");
 
   finalData.vs     = res.vshader("final");
   finalData.fs     = res.fshader("final");
-  finalData.avatar = fsHolder.load("./data/sh/avatar_final.frag");
+  finalData.avatar = res.fshader("avatar_final");
 
   finalData.scene.setName("scene");
   finalData.bloom.setName("bloom");
@@ -137,10 +137,10 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   bltData.fs = res.fshader("blt");
 
   ssaoData.vs       = gaussData.vs;
-  ssaoData.fs       = fsHolder.load("./data/sh/ssao_macro.frag");
-  ssaoData.detail   = fsHolder.load("./data/sh/ssao_detail.frag");
-  ssaoData.accept   = fsHolder.load("./data/sh/ssao_accept.frag");
-  ssaoData.acceptGI = fsHolder.load("./data/sh/gi_accept.frag");
+  ssaoData.fs       = res.fshader("ssao_macro");
+  ssaoData.detail   = res.fshader("ssao_detail");
+  ssaoData.accept   = res.fshader("ssao_accept");
+  ssaoData.acceptGI = res.fshader("gi_accept");
 
   ssaoData.texture.setName("texture");
   ssaoData.blured. setName("blured");
@@ -251,6 +251,8 @@ bool GraphicsSystem::render( Scene &scene,
 
   //return false;
   onRender( std::max<size_t>(dt-time, 0) );
+  //screenSize.w = 512;
+  //screenSize.h = 512;
 
   time = dt;//(time+dt);
   unsigned tx = time%(16*1024);
@@ -262,7 +264,7 @@ bool GraphicsSystem::render( Scene &scene,
   Tempest::Texture2d gbuffer[4], rsm[4];
   Tempest::Texture2d mainDepth = depth( screenSize );
   scrOffset.set( 1.0f/screenSize.w, 1.0f/screenSize.h );
-
+  
   for( int i=0; i<3; ++i ){
     gbuffer[i] = colorBuf( screenSize.w, screenSize.h );
     }
@@ -1039,14 +1041,21 @@ void GraphicsSystem::gauss_b( Tempest::Texture2d &out,
 void GraphicsSystem::bloom( Tempest::Texture2d &result,
                             const Tempest::Texture2d &in ) {
   //bloomData
-  const int w = 256, h = w;
 
-  result = colorBuf( w,h );
-  Tempest::Texture2d tmp[4];
-
+#ifdef __ANDROID__
+  Tempest::Size sizes[3] = {
+    {128, 128}, {32, 32}, {16, 16}
+    };
+#else
   Tempest::Size sizes[3] = {
     {256, 256}, {64, 64}, {16, 16}
     };
+#endif
+
+  const int w = sizes[0].w, h = w;
+
+  result = colorBuf( w,h );
+  Tempest::Texture2d tmp[4];
 
   {
     tmp[0] = colorBuf( w,h );

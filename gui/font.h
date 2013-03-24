@@ -65,6 +65,7 @@ namespace Bind{
 
       static std::map<Key, Leters*> letterBox;
       const Leter& fetchLeter( Resource &res, wchar_t ch ) const;
+      const Leter& nullLeter( Resource &res, wchar_t ch ) const;
 
       void update();
     };

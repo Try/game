@@ -168,7 +168,8 @@ HEADERS += \
     graphics/scene.h \
     graphics/octotree.h \
     stlconf.h \
-    threads/time.h
+    threads/time.h \
+    util/ifstream.h
 
 SOURCES += \
     main.cpp \
@@ -274,7 +275,8 @@ SOURCES += \
     graphics/scene.cpp \
     threads/time.cpp \
     stlconf.cpp \
-    jniBind.cpp
+    jniBind.cpp \
+    util/ifstream.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

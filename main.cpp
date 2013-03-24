@@ -3,7 +3,7 @@
 #include "lang/lang.h"
 
 int main( int, char** ){
-  Lang::load("./lang/ru.lang");
+  Lang::load("lang/ru.lang");
 
   Tempest::Application app;
   Game game( Tempest::Window::Maximized );

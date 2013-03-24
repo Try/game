@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <cmath>
+#include "util/ifstream.h"
 
 Tempest::VertexDeclaration::Declarator MVertex::decl() {
   Tempest::VertexDeclaration::Declarator d;
@@ -69,13 +70,13 @@ void Model::setModelData(const Tempest::Model<MVertex> &md) {
 void Model::loadMX( Tempest::VertexBufferHolder & vboHolder,
                     Tempest::IndexBufferHolder  & iboHolder,
                     const std::string &fname) {
-  std::fstream fin( fname.data(), std::fstream::in | std::fstream::binary );
+  ifstream fin( fname.data() );
 
   char magic[6] = {};
   fin.read( magic, 5 );
 
   if( std::string(magic)!="Model" ){
-    fin.close();
+    //fin.close();
     return;
     }
 
@@ -177,7 +178,7 @@ void Model::loadMX( Tempest::VertexBufferHolder & vboHolder,
       }
     }
 
-  fin.close();
+  //fin.close();
   }
 
 float Model::cenX() const {

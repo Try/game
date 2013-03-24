@@ -4,6 +4,8 @@
 #include <Tempest/LocalVertexBufferHolder>
 #include <Tempest/LocalTexturesHolder>
 
+#include <Tempest/AbstractSystemAPI>
+
 #include "sound/sound.h"
 
 #include <tinyxml.h>
@@ -132,15 +134,15 @@ Resource::Resource( Tempest::TextureHolder       & tx,
     pixmaps( ltexHolder ){
   Model model;
 
-  model.loadMX( vboHolder, iboHolder, "./data/models/model.mx" );
+  model.loadMX( vboHolder, iboHolder, "data/models/util/cube.mx" );
 
   models  .add("null", model);
-  textures.add("null",      texHolder.load("./data/textures/w.png") );
-  textures.add("null/norm", texHolder.load("./data/textures/norm.png") );
+  textures.add("null",      texHolder.load("data/textures/w.png") );
+  textures.add("null/norm", texHolder.load("data/textures/norm.png") );
   texturesAvg.add( "null", Tempest::Color() );
 
-  vs.add("null", vsHolder.load("./data/sh/main_material.vert") );
-  fs.add("null", fsHolder.load("./data/sh/main_material.frag") );
+  //load( vs, "null", "data/sh/main_material.vert", "" );
+  //load( fs, "null", "data/sh/main_material.frag", "" );
   }
 
 const Model& Resource::model(const std::string &key) const {
@@ -325,9 +327,14 @@ void Resource::load( Box<Tempest::VertexShader> &vs,
   }
 
 void Resource::load( Box<Tempest::FragmentShader> &fs,
-                     const std::string &k, const std::string &f,
+                     const std::string &k,
+                     const std::string &f,
                      const std::string &def ) {
+#ifdef __ANDROID__
+  std::string src = def + "precision mediump float;\n#line 0\n" + loadSrc(f);
+#else
   std::string src = def + loadSrc(f);
+#endif
   fs.add(k, fsHolder.loadFromSource(src) );
   }
 
@@ -378,20 +385,5 @@ void Resource::readElement( TiXmlNode *node ) {
 }
 
 std::string Resource::loadSrc(const std::string &f) {
-  int length;
-  std::string buffer;
-
-  std::ifstream is;
-  is.open( f.data(), std::ios::binary );
-
-  is.seekg (0, std::ios::end);
-  length = is.tellg();
-  is.seekg (0, std::ios::beg);
-
-  buffer.resize( length );
-
-  is.read ( &buffer[0], length );
-  is.close();
-
-  return buffer;
+  return Tempest::AbstractSystemAPI::loadText( f.data() );
   }

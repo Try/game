@@ -103,9 +103,15 @@ const Tempest::Bind::UserFont::Leter&
   FT_Face       face;
   FT_Vector     pen = {};
   FT_Error err = 0;
+
   err = FT_New_Face( ft().library, key.name.c_str(), 0, &face );
+  if( err )
+    return nullLeter(res, ch);
 
   err = FT_Set_Pixel_Sizes( face, key.size, key.size );
+  if( err )
+    return nullLeter(res, ch);
+
   FT_Set_Transform( face, 0, &pen );
 
   Leter letter;
@@ -135,7 +141,7 @@ const Tempest::Bind::UserFont::Leter&
   letter.surf.data = res.pixmap( pixmap, false );
   letter.size      = Tempest::Size( pixmap.width(), pixmap.height() );
   letter.advance   = Tempest::Point( slot->advance.x >> 6,
-                                      slot->advance.y >> 6 );
+                                     slot->advance.y >> 6 );
 
   FT_Done_Face( face );
 
@@ -144,14 +150,25 @@ const Tempest::Bind::UserFont::Leter&
   return ref;
   }
 
+const Tempest::Bind::UserFont::Leter &
+  Tempest::Bind::UserFont::nullLeter(Resource &, wchar_t ch) const {
+  Leters & leters = *lt;
+  Leter letter;
+
+  Leter &ref = leters[ch];
+  ref = letter;
+  ref.surf.data.tex = 0;
+  return ref;
+  }
+
 void Tempest::Bind::UserFont::fetch( Resource &res,
-                                      const std::wstring &str ) const {
+                                     const std::wstring &str ) const {
   for( size_t i=0; i<str.size(); ++i )
     fetchLeter( res, str[i] );
   }
 
 Tempest::Size Tempest::Bind::UserFont::textSize( Resource &res,
-                                                   const std::wstring & str ) {
+                                                 const std::wstring & str ) {
   int tx = 0, ty = 0, tw = 0, th = 0;
   for( size_t i=0; i<str.size(); ++i ){
     const Font::Leter& l = leter( res, str[i] );

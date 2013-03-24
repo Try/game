@@ -5,16 +5,19 @@
 #include <unordered_set>
 
 #include "gui/font.h"
+#include "util/ifstream.h"
 
 std::unordered_map<std::wstring, std::wstring> Lang::lang;
 std::wstring Lang::leters;
 
 void Lang::load(const char *f) {
-  std::ifstream fout( f, std::ios::binary );
+  ifstream fin( f );
   std::unordered_set<wchar_t, std::hash<size_t> > let;
 
   size_t c = 0;
-  fout.read( (char*)&c, sizeof(c) );
+  fin.read( (char*)&c, sizeof(c) );
+
+  std::vector<int16_t> tmpBuf;
 
   for( size_t i=0; i<c; ++i ){
     std::wstring kv[2];
@@ -23,9 +26,13 @@ void Lang::load(const char *f) {
       std::wstring& str = kv[r];
       size_t sz = str.size();
 
-      fout.read( (char*)&sz, sizeof(sz) );
+      fin.read( (char*)&sz, sizeof(sz) );
       str.resize( sz );
-      fout.read( (char*)str.data(), sz*sizeof(wchar_t) );
+      tmpBuf.resize( std::max(sz, tmpBuf.size()) );
+
+      fin.read( (char*)&tmpBuf[0], sz*sizeof(int16_t) );
+
+      str.assign( tmpBuf.begin(), tmpBuf.begin()+sz );
 
       for( size_t q=0; q<sz; ++q )
         let.insert(str[q]);

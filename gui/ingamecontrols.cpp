@@ -256,7 +256,7 @@ Widget *InGameControls::createEditPanel() {
 
   p->layout().add( lbox );
 
-  tabs->setVisible(0);
+  //tabs->setVisible(0);
   return tabs;
   }
 

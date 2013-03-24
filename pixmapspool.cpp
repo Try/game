@@ -3,6 +3,12 @@
 #include <cassert>
 #include <string>
 
+#ifdef __ANDROID__
+const int PixmapsPool::pageSize = 512;
+#else
+const int PixmapsPool::pageSize = 512;
+#endif
+
 PixmapsPool::PixmapsPool(Tempest::TextureHolder &h):holder(h) {
   needToflush = true;
   addPage();
@@ -13,6 +19,19 @@ PixmapsPool::TexturePtr PixmapsPool::add(const Tempest::Pixmap &p) {
     TexturePtr n;
     n.tex = 0;
     n.id  = 0;
+    return n;
+    }
+
+  if( p.width() > pageSize ||
+      p.height() > pageSize ){
+    Page pg;
+    pg.p = p;
+
+    page.push_back( pg );
+
+    TexturePtr n;
+    n.tex = &page;
+    n.id  = page.size()-1;
     return n;
     }
 
@@ -43,8 +62,8 @@ void PixmapsPool::flush() {
       s.anisotropic = false;
 
       page[i].t.setSampler(s);
-      std::string str = "./debug*.png";
-      str[7] = i+'0';
+      //std::string str = "./debug*.png";
+      //str[7] = i+'0';
       // page[i].p.save( str );
       }
 
@@ -55,7 +74,7 @@ void PixmapsPool::flush() {
 
 void PixmapsPool::addPage() {
   Page p;
-  p.p = Tempest::Pixmap(2048, 2048, true);
+  p.p = Tempest::Pixmap(pageSize, pageSize, true);
   p.rects.push_back( Tempest::Rect(0,0, p.p.width(), p.p.height() ) );
 
   page.push_back( p );
