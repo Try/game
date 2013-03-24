@@ -12,7 +12,7 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 
-CONFIG += opengl
+CONFIG += directx
 #CONFIG += sound
 #CONFIG += physic
 

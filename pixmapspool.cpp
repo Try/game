@@ -44,7 +44,8 @@ PixmapsPool::TexturePtr PixmapsPool::add(const Tempest::Pixmap &p) {
       return r;
       }
 
-    addPage();
+    if( i+1==page.size() )
+      addPage();
     }
 
   return PixmapsPool::TexturePtr();

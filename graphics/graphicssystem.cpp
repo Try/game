@@ -281,12 +281,12 @@ bool GraphicsSystem::render( Scene &scene,
   device.present();
   return 1;
   */
-/*
+
   renderScene( scene,
                scene.camera(),
                gbuffer, mainDepth, rsm,
                2048, true );
-*/
+
   Tempest::Texture2d fog;
   /*
   drawFogOfWar(fog, scene);

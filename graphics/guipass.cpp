@@ -55,7 +55,7 @@ void GUIPass::exec( MainGui &gui, Tempest::Texture2d &rt,
 
   Tempest::RenderState currntRS = rs;
   device.beginPaint(rt, depth);
-  device.clear( Tempest::Color(0,0,0,1) );
+  //device.clear( Tempest::Color(0,0,0,1) );
 
   device.setUniform( vs, dTexCoord, 2, "dTexCoord" );
 
