@@ -100,6 +100,8 @@ class GraphicsSystem {
 
     static VisibleRet isVisible( const AbstractGraphicObject& c, const Frustum& f );
     static VisibleRet isVisible( float x, float y, float z, float r, const Frustum& f );
+
+    static int dipOptimizeRef();
   private:
     std::unique_ptr<GUIPass> gui;
     MainGui * widget;
@@ -107,7 +109,7 @@ class GraphicsSystem {
 
     bool useFog, useHDR;
 
-    Tempest::Size  screenSize;
+    Tempest::Size  screenSize, potScreenSize;
     static  float smMatSize( const Scene & s );
     static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s );
     static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s, double *dxyz );
@@ -346,6 +348,7 @@ class GraphicsSystem {
     void ssaoGMap( const Scene &s,
                    Tempest::Texture2d &out );
 
+    Tempest::Texture2d shadowMap( int w, int h );
     Tempest::Texture2d colorBuf( int w, int h );
     Tempest::Texture2d depth( int w, int h );
     Tempest::Texture2d depth( const Tempest::Size& sz );
@@ -387,6 +390,24 @@ class GraphicsSystem {
     T& ref( T& t ){
       return t;
       }
+
+    bool isPot( int v ){
+      return (v & (v-1)) == 0;
+      }
+
+    uint32_t nextPot( uint32_t v ){
+      v--;
+      v |= v >> 1;
+      v |= v >> 2;
+      v |= v >> 4;
+      v |= v >> 8;
+      v |= v >> 16;
+      v++;
+
+      return v;
+      }
+
+    void setupScreenSize( int w, int h );
 
     template< class ... Args, class ... FArgs >
     void draw( Tempest::Render & render,

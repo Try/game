@@ -44,8 +44,7 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
                           res.fshader("gui"),
                           lvboHolder,
                           screenSize  ) );
-  screenSize.w = w;
-  screenSize.h = h;
+  setupScreenSize(w,h);
 
   glowData.vs = res.vshader("glow");
   glowData.fs = res.fshader("glow");
@@ -214,9 +213,7 @@ Tempest::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene,
     }
 
 void GraphicsSystem::resizeEvent( int w, int h, bool isFullScreen ){
-  screenSize.w = w;
-  screenSize.h = h;
-
+  setupScreenSize(w,h);
   device.reset( makeOpt(isFullScreen) );
   }
 
@@ -249,10 +246,7 @@ bool GraphicsSystem::render( Scene &scene,
   if( !device.startRender() )
     return false;
 
-  //return false;
   onRender( std::max<size_t>(dt-time, 0) );
-  //screenSize.w = 512;
-  //screenSize.h = 512;
 
   time = dt;//(time+dt);
   unsigned tx = time%(16*1024);
@@ -262,18 +256,22 @@ bool GraphicsSystem::render( Scene &scene,
   particles = &par;
 
   Tempest::Texture2d gbuffer[4], rsm[4];
-  Tempest::Texture2d mainDepth = depth( screenSize );
+  Tempest::Texture2d mainDepth = depth( potScreenSize );
   scrOffset.set( 1.0f/screenSize.w, 1.0f/screenSize.h );
   
   for( int i=0; i<3; ++i ){
     gbuffer[i] = colorBuf( screenSize.w, screenSize.h );
     }
 
+#ifdef TEMPEST_OPENGL
+  gbuffer[3] = colorBuf( screenSize.w, screenSize.h );
+#else
   if( useHDR )
     gbuffer[3] = localTex.create( screenSize.w, screenSize.h,
                                   Tempest::Texture2d::Format::RGBA16 ); else
     gbuffer[3] = localTex.create( screenSize.w, screenSize.h,
                                   Tempest::Texture2d::Format::RG16 );
+#endif
   //buildRSM( scene, rsm, 512, 0 );
   scene.setCamera( camera );
   /*
@@ -295,6 +293,11 @@ bool GraphicsSystem::render( Scene &scene,
   if( widget )
     gui->exec( *widget, gbuffer[0], mainDepth, device );
 
+  blt( gbuffer[0] );
+  device.present();
+  return 1;
+
+
   Tempest::Texture2d glow, bloomTex;
   //drawGlow( glow, mainDepth, scene, 512 );
   //aceptFog( glow, fog );
@@ -306,11 +309,8 @@ bool GraphicsSystem::render( Scene &scene,
   Tempest::Texture2d final = localTex.create( screenSize.w, screenSize.h );
   { final.setSampler( reflect );
 
-    Tempest::Texture2d depth = this->depth( final.width(),
-                                            final.height() );
-
     Tempest::Render render( device,
-                            final, depth,
+                            final,
                             finalData.vs, finalData.fs );
 
     render.setRenderState( Tempest::RenderState::PostProcess );
@@ -425,9 +425,9 @@ void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
                     light.yDirection(),
                     light.zDirection() };
   Tempest::Render render( device,
-                       sm, depthSm,
-                       transparentData.vsSh,
-                       transparentData.fsSh );
+                          sm, depthSm,
+                          transparentData.vsSh,
+                          transparentData.fsSh );
   render.clear( light.color(), 1 );
 
   if( sm.width()==1 && sm.height()==1 )
@@ -502,6 +502,8 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                                const Tempest::Texture2d& smCl,
                                const Scene & scene,
                                const Tempest::AbstractCamera & camera ) {
+  int gbuffSize = 1;
+
   setupLight( scene, gbuf.terrainFs, sm, smCl );
   particles->exec( scene.camera().view(),
                    scene.camera().projective(),
@@ -513,7 +515,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                gbuf.terrainFs,
                gbuffer,
                mainDepth,
-               4,
+               gbuffSize,
                scene,
                camera,
                scene.terrainMinorObjects(),
@@ -521,11 +523,9 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                true,
                true );
   {
-    Tempest::Texture2d d = depth( mainDepth.width(), mainDepth.height() );
     Tempest::Render render( device,
-                         gbuffer, 4,
-                         d,
-                         gbuf.terrainVs, gbuf.terrainFs );
+                            gbuffer, gbuffSize,
+                            gbuf.terrainVs, gbuf.terrainFs );
     render.clear( Tempest::Color(0) );
   }
 
@@ -534,7 +534,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                gbuf.terrainFs,
                gbuffer,
                mainDepth,
-               4,
+               gbuffSize,
                scene,
                camera,
                scene.terrainMinorObjects(),
@@ -545,7 +545,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
 
   drawObjects( gbuffer,
                mainDepth,
-               4,
+               gbuffSize,
                scene,
                camera,
                scene.mainObjects(),
@@ -557,7 +557,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                gbuf.grassFs,
                gbuffer,
                mainDepth,
-               4,
+               gbuffSize,
                scene,
                camera,
                scene.grassObjects(),
@@ -633,8 +633,8 @@ void GraphicsSystem::renderVolumeLight( const Scene &scene,
                                          mainDepth.height() );
 
     Tempest::Render render( device,
-                         gbuffer, depth,
-                         bltData.vs, bltData.fs );
+                            gbuffer, depth,
+                            bltData.vs, bltData.fs );
 
     Tempest::RenderState rs = Tempest::RenderState::PostProcess;
     rs.setBlend(1);
@@ -919,11 +919,9 @@ void GraphicsSystem::copy( Tempest::Texture2d &out,
   out = colorBuf( w,h );
   out.setSampler( reflect );
 
-  Tempest::Texture2d depth = this->depth( w,h );
-
   Tempest::Render render( device,
-                       out, depth,
-                       bltData.vs, bltData.fs );
+                          out,
+                          bltData.vs, bltData.fs );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -943,11 +941,9 @@ void GraphicsSystem::copyDepth( Tempest::Texture2d &out,
   out = localTex.create( w, h, Tempest::Texture2d::Format::RG16 );
   out.setSampler( reflect );
 
-  Tempest::Texture2d depth = this->depth( w,h );
-
   Tempest::Render render( device,
-                       out, depth,
-                       bltData.vs, bltData.fs );
+                          out,
+                          bltData.vs, bltData.fs );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -966,10 +962,8 @@ void GraphicsSystem::gauss( Tempest::Texture2d &out,
   out = colorBuf( w,h );
   out.setSampler( reflect );
 
-  Tempest::Texture2d depth = this->depth( w,h );
-
   Tempest::Render render( device,
-                          out, depth,
+                          out,
                           gaussData.vs, gaussData.fs );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
@@ -993,11 +987,9 @@ void GraphicsSystem::gauss_gb( Tempest::Texture2d &out,
   out = localTex.create( w,h );
   out.setSampler( reflect );
 
-  Tempest::Texture2d depth = this->depth( w,h );
-
   Tempest::Render render( device,
-                       out, depth,
-                       gaussData.vsGB, gaussData.fsGB );
+                          out,
+                          gaussData.vsGB, gaussData.fsGB );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1019,11 +1011,9 @@ void GraphicsSystem::gauss_b( Tempest::Texture2d &out,
   out = localTex.create( w,h );
   out.setSampler( reflect );
 
-  Tempest::Texture2d depth = this->depth( w,h );
-
   Tempest::Render render( device,
-                       out, depth,
-                       gaussData.vsB, gaussData.fsB );
+                          out,
+                          gaussData.vsB, gaussData.fsB );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1060,10 +1050,9 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
   {
     tmp[0] = colorBuf( w,h );
     tmp[0].setSampler( reflect );
-    Tempest::Texture2d depth = this->depth( w,h );
 
     Tempest::Render render( device,
-                            tmp[0], depth,
+                            tmp[0],
                             bloomData.vs, bloomData.brightPass );
 
     render.setRenderState( Tempest::RenderState::PostProcess );
@@ -1092,11 +1081,8 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
 
   { result.setSampler( reflect );
 
-    Tempest::Texture2d depth = this->depth( result.width(),
-                                         result.height() );
-
     Tempest::Render render( device,
-                            result, depth,
+                            result,
                             bloomData.vs, bloomData.brightPass );
 
     render.setRenderState( Tempest::RenderState::PostProcess );
@@ -1119,15 +1105,15 @@ void GraphicsSystem::drawFogOfWar( Tempest::Texture2d &out,
 
   Tempest::Texture2d depth  = this->depth( size, size );
   Tempest::Texture2d buffer = localTex.create( depth.width(),
-                                            depth.height(),
-                                            Tempest::Texture2d::Format::RGBA );
+                                               depth.height(),
+                                               Tempest::Texture2d::Format::RGBA );
 
   {
     Tempest::Render render( device,
-                         buffer,
-                         depth,
-                         fogOfWar.vs,
-                         fogOfWar.fs );
+                            buffer,
+                            depth,
+                            fogOfWar.vs,
+                            fogOfWar.fs );
     render.clear( Tempest::Color(0,0,0, 1), 1 );
     device.setUniform( fogOfWar.fs, fogView, "texture" );
 
@@ -1153,14 +1139,14 @@ void GraphicsSystem::aceptFog( Tempest::Texture2d &in_out,
     return;
 
   Tempest::Texture2d depth = this->depth( in_out.width(),
-                                       in_out.height() );
+                                          in_out.height() );
   Tempest::Texture2d tmp;
   copy(tmp, in_out);
 
   Tempest::Render render( device,
-                       in_out, depth,
-                       fogOfWar.vsAcept,
-                       fogOfWar.fsAcept );
+                          in_out, depth,
+                          fogOfWar.vsAcept,
+                          fogOfWar.fsAcept );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1181,10 +1167,9 @@ void GraphicsSystem::waves( Tempest::Texture2d &out,
   out = localTex.create( w,h );
   //out.setSampler( reflect );
 
-  Tempest::Texture2d depth = this->depth(w,h);
   Tempest::Render render( device,
-                       out, depth,
-                       water.vs, water.fs );
+                          out,
+                          water.vs, water.fs );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1215,11 +1200,9 @@ void GraphicsSystem::ssaoDetail( Tempest::Texture2d &out,
   gauss( out, tmp, w, h, 2, 0 );
   gauss( tmp, out, w, h, 0, 2 );
 
-  Tempest::Texture2d depth = this->depth( w,h );
-
   Tempest::Render render( device,
-                       out, depth,
-                       ssaoData.vs, ssaoData.detail );
+                          out,
+                          ssaoData.vs, ssaoData.detail );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1258,11 +1241,9 @@ void GraphicsSystem::ssao( Tempest::Texture2d &out,
   out = localTex.create( w, h, Tempest::Texture2d::Format::Luminance8 );
   out.setSampler( reflect );
 
-  Tempest::Texture2d depth = this->depth( w,h );
-
   Tempest::Render render( device,
-                       out, depth,
-                       ssaoData.vs, ssaoData.fs );
+                          out,
+                          ssaoData.vs, ssaoData.fs );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1297,11 +1278,9 @@ void GraphicsSystem::aceptGI(   const Scene & s,
   out = colorBuf( w,h );
   out.setSampler( reflect );
 
-  Tempest::Texture2d depth = this->depth( w,h );
-
   Tempest::Render render( device,
-                       out, depth,
-                       ssaoData.vs, ssaoData.accept );
+                          out,
+                          ssaoData.vs, ssaoData.accept );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1361,8 +1340,8 @@ void GraphicsSystem::aceptSsao( const Scene & s,
   Tempest::Texture2d depth = this->depth( w,h );
 
   Tempest::Render render( device,
-                       out, depth,
-                       ssaoData.vs, ssaoData.accept );
+                          out,
+                          ssaoData.vs, ssaoData.accept );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1391,8 +1370,8 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
   Tempest::Texture2d depthSm = depth( sm.width(), sm.height() );
   { const Scene::Objects &v = scene.shadowCasters();
     Tempest::Render render( device,
-                         sm, depthSm,
-                         smap.vs, smap.fs );
+                            sm, depthSm,
+                            smap.vs, smap.fs );
     render.clear( Tempest::Color(1.0), 1 );
     render.setRenderState( rstate );
 
@@ -1412,6 +1391,14 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
           &Material::shadow,
           ref(matrix) );
     }
+  }
+
+Tempest::Texture2d GraphicsSystem::shadowMap(int w, int h) {
+#ifdef TEMPEST_OPENGL
+  return localTex.create(w,h, Tempest::AbstractTexture::Format::RGB );
+#else
+  return localTex.create(w,h, Tempest::AbstractTexture::Format::Luminance16 );
+#endif
   }
 
 Tempest::Texture2d GraphicsSystem::colorBuf(int w, int h) {
@@ -1476,6 +1463,14 @@ void GraphicsSystem::buildRSM( Scene &scene,
                c,
                gbuffer,
                mainDepth, rsmNo, 1, 0 );
+  }
+
+void GraphicsSystem::setupScreenSize(int w, int h) {
+  screenSize.w = w;
+  screenSize.h = h;
+
+  potScreenSize.w = nextPot(w);
+  potScreenSize.h = nextPot(h);
   }
 
 void GraphicsSystem::mkFrustum( const Tempest::AbstractCamera &c,
@@ -1599,6 +1594,14 @@ GraphicsSystem::VisibleRet GraphicsSystem::isVisible( float x,
     return PartialVisible;
   }
 
+int GraphicsSystem::dipOptimizeRef() {
+#ifdef TEMPEST_OPENGL
+  return 0;
+#else
+  return 32*3;
+#endif
+  }
+
 void GraphicsSystem::renderScene( const Scene &scene,
                                   const Tempest::AbstractCamera & camera,
                                   Tempest::Texture2d gbuffer[4],
@@ -1617,9 +1620,7 @@ void GraphicsSystem::renderScene( const Scene &scene,
 
   closure.shadow.matrix = makeShadowMatrix( scene, dir );
 
-  Tempest::Texture2d shadowMap = localTex.create( shadowMapSize,
-                                                  shadowMapSize,
-                                                  Tempest::AbstractTexture::Format::Luminance16 );
+  Tempest::Texture2d shadowMap = this->shadowMap( shadowMapSize, shadowMapSize );
   fillShadowMap( shadowMap, scene );
 
   Tempest::Texture2d shadowMapCl = localTex.create(shadowMapSize, shadowMapSize),
@@ -1630,6 +1631,7 @@ void GraphicsSystem::renderScene( const Scene &scene,
             shadowMap, shadowMapCl,
             scene, camera );
 
+  return;
   Tempest::Texture2d topSm;
   ssaoGMap( scene, topSm );
 
@@ -1718,11 +1720,9 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
   Tempest::Texture2d glow;
   drawGlow( glow, mainDepth, scene, 128 );
 
-  { Tempest::Texture2d depth = this->depth( out.width(),
-                                         out.height() );
-
+  {
     Tempest::Render render( device,
-                            out, depth,
+                            out,
                             finalData.vs, finalData.avatar );
 
     render.setRenderState( Tempest::RenderState::PostProcess );

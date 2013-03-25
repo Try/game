@@ -215,7 +215,8 @@ void GameObjectView::loadView( const Resource & r,
 
     } else {
     if( src.isParticle.size()==0 ){
-      if( model.size() > 32*3 || !getClass().data.isBackground ){
+      if( model.size() > GraphicsSystem::dipOptimizeRef() ||
+          !getClass().data.isBackground ){
         GraphicObject object( scene );
         object.setModel( model );
 

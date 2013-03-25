@@ -15,7 +15,7 @@
 
 struct Resource::XML{
   template< class Box, class ... Args >
-  static void loadFile( Box & b, Resource &r, TiXmlElement* pElement, Args...args ){
+  static void loadFile( Box & b, Resource &r, TiXmlElement* pElement ){
     if ( !pElement )
       return;
 
@@ -33,7 +33,34 @@ struct Resource::XML{
         name = pAttrib->Value();
       }
 
-    r.load(b, name, file, args... );
+    b.preload(name, file);
+    //r.load(b, name, file );
+    }
+
+  template< class Box, class ... Args >
+  static void loadFile( Box & b, Resource &r, TiXmlElement* pElement, bool avg ){
+    if ( !pElement )
+      return;
+
+    std::string file, name;
+
+    for( TiXmlAttribute* pAttrib=pElement->FirstAttribute();
+         pAttrib;
+         pAttrib=pAttrib->Next() ) {
+      std::string n = pAttrib->Name();
+
+      if( n=="file" )
+        file = pAttrib->Value();
+
+      if( n=="name" )
+        name = pAttrib->Value();
+      }
+
+    if( !avg ){
+      b.preload(name, file);
+      } else {
+      r.load(b, name, file, avg );
+      }
     }
 
   template< class Box, class Box1 >
@@ -132,6 +159,12 @@ Resource::Resource( Tempest::TextureHolder       & tx,
     vsHolder(vsh),
     fsHolder(fsh),
     pixmaps( ltexHolder ){
+  models.owner   = this;
+  textures.owner = this;
+  vs.owner = this;
+  fs.owner = this;
+  px.owner = this;
+
   Model model;
 
   model.loadMX( vboHolder, iboHolder, "data/models/util/cube.mx" );
@@ -258,6 +291,36 @@ void Resource::load( Box<Model> &m,
     m.add(k, model );
     m.loaded[f] = k;
     }
+  }
+
+void Resource::load( Box<  std::shared_ptr<Model::Raw>  > &,
+                     const std::string &,
+                     const std::string & ){
+  assert(0);
+  }
+
+void Resource::load( Box< Tempest::Color  > &,
+                     const std::string &,
+                     const std::string & ){
+  assert(0);
+  }
+
+void Resource::load( Box< Tempest::VertexShader > &,
+                     const std::string &,
+                     const std::string & ){
+  assert(0);
+  }
+
+void Resource::load( Box< Tempest::FragmentShader > &,
+                     const std::string &,
+                     const std::string & ){
+  assert(0);
+  }
+
+void Resource::load(Box<PixmapsPool::TexturePtr> &,
+                    const std::string &,
+                    const std::string & ) {
+  assert(0);
   }
 
 void Resource::load(PixmapsPool::TexturePtr p, const std::string &f) {

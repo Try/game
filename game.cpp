@@ -136,7 +136,7 @@ Game::Game( ShowMode sm )
   setPlaylersCount(1);
 
 #ifndef __ANDROID__
-  load(L"campagin/0.sav");
+  //load(L"campagin/0.sav");
 #endif
   mscenario->onStartGame();
   }

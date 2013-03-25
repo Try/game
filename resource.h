@@ -71,56 +71,112 @@ class Resource : public AbstractXMLReader {
 private:
     template< class T >
     struct Box{
+      Box():owner(0){}
+
+      Resource * owner;
       std::unordered_map< std::string, T > data;
+      std::unordered_map< std::string, std::string > toLoad;
 
       bool contains( const std::string & s ){
-        typename std::unordered_map< std::string, T >::iterator i;
-        i = data.find(s);
+        if( data.find(s)!=data.end() )
+          return true;
 
-        if( i!=data.end() )
+        if( toLoad.find(s)!=toLoad.end() )
           return true;
 
         return false;
         }
 
       T& get( const std::string & s ){
+        {
+        typename std::unordered_map< std::string, std::string >::const_iterator i;
+        i = toLoad.find(s);
+
+        if( i!=toLoad.end() ){
+          owner->load(*this, s, i->second);
+          toLoad.erase(i);
+          }
+        }
+
+        {
         typename std::unordered_map< std::string, T >::iterator i;
         i = data.find(s);
 
         if( i!=data.end() )
           return i->second;
+        }
 
         return data["null"];
         }
 
       T& get( const std::string & s, T& def ){
+        {
+        typename std::unordered_map< std::string, std::string >::const_iterator i;
+        i = toLoad.find(s);
+
+        if( i!=toLoad.end() ){
+          owner->load(*this, s, i->second);
+          toLoad.erase(i);
+          }
+        }
+
+        {
         typename std::unordered_map< std::string, T >::iterator i;
         i = data.find(s);
 
         if( i!=data.end() )
           return i->second;
+        }
 
         return def;
         }
 
       const T& get( const std::string & s ) const {
+        {
+        typename std::unordered_map< std::string, std::string >::const_iterator i;
+        i = toLoad.find(s);
+
+        if( i!=toLoad.end() ){
+          owner->load(*this, s, i->second);
+          toLoad.erase(i);
+          }
+        }
+
+        {
         typename std::unordered_map< std::string, T >::const_iterator i;
         i = data.find(s);
 
         if( i!=data.end() )
           return i->second;
+        }
 
         return data.find("null")->second;
         }
 
       const T& get( const std::string & s, const T& def ) const {
+        {
+        typename std::unordered_map< std::string, std::string >::const_iterator i;
+        i = toLoad.find(s);
+
+        if( i!=toLoad.end() ){
+          owner->load(*this, s, i->second);
+          toLoad.erase(i);
+          }
+        }
+
+        {
         typename std::unordered_map< std::string, T >::const_iterator i;
         i = data.find(s);
 
         if( i!=data.end() )
           return i->second;
+        }
 
         return def;
+        }
+
+      void preload( const std::string & key, const std::string& v ){
+        toLoad.insert( std::make_pair(key, v) );
         }
 
       void add( const std::string & key, const T& v ){
@@ -130,8 +186,8 @@ private:
       std::unordered_map< std::string, std::string > loaded;
       };
 
-    void load(Box<Tempest::Texture2d>& textures,
-               const std::string &k, const std::string & f , bool avg);
+    void load( Box<Tempest::Texture2d>& textures,
+               const std::string &k, const std::string & f, bool avg = false );
 
     void load( Box< std::shared_ptr<Sound> >& sounds,
                const std::string &k, const std::string & f );
@@ -146,17 +202,33 @@ private:
 
     void load( Box<Model >& m,
                const std::string &k, const std::string & f );
+
+    void load( Box< std::shared_ptr<Model::Raw> >& m,
+               const std::string &k, const std::string & f );
+
+    void load( Box<Tempest::Color>& m,
+               const std::string &k, const std::string & f );
+
+    void load( Box<Tempest::VertexShader>& vs,
+               const std::string &k, const std::string & f );
+
+    void load( Box<Tempest::FragmentShader>& fs,
+               const std::string &k, const std::string & f );
+
+    void load( Box<PixmapsPool::TexturePtr>& fs,
+               const std::string &k, const std::string & f );
+
     void load( PixmapsPool::TexturePtr p, const std::string & f );
 
-    Box< Model > models;
+    mutable Box< Model > models;
     mutable Box< std::shared_ptr<Model::Raw> > rawModels;
-    Box<Tempest::Texture2d> textures;
-    Box<Tempest::Color>     texturesAvg;
+    mutable Box<Tempest::Texture2d> textures;
+    mutable Box<Tempest::Color>     texturesAvg;
     Box<Tempest::VertexShader>   vs;
     Box<Tempest::FragmentShader> fs;
     Box<PixmapsPool::TexturePtr> px;
 
-    Box< std::shared_ptr<Sound> > sounds;
+    mutable Box< std::shared_ptr<Sound> > sounds;
 
     Tempest::VertexBufferHolder      & vboHolder;
     Tempest::LocalVertexBufferHolder & lvboHolder;
