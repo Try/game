@@ -54,7 +54,7 @@ PixmapsPool::TexturePtr PixmapsPool::add(const Tempest::Pixmap &p) {
 void PixmapsPool::flush() {
   if( needToflush ){
     for( size_t i=0; i<page.size(); ++i ){
-      page[i].t = holder.create( page[i].p );
+      page[i].t = holder.create( page[i].p, false, false );
 
       Tempest::Texture2d::Sampler s;
       s.mipFilter = Tempest::Texture2d::FilterType::Nearest;

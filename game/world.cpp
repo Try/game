@@ -844,9 +844,15 @@ void World::tick() {
       }
     }
 
+  bool createRigid = true;
+#ifdef NO_PHYSIC
+  createRigid = false;
+#endif
+
   for( size_t i=0; i<nonBackground.size(); ++i )
     if( nonBackground[i]->hp() <= 0 &&
-        nonBackground[i]->getClass().deathAnim==ProtoObject::Physic
+        nonBackground[i]->getClass().deathAnim==ProtoObject::Physic &&
+        createRigid
         /*nonBackground[i]->behavior.find<MoveBehavior>()*/ ) {
       GameObject & src = *nonBackground[i];
       GameObject & obj = addObjectEnv( nonBackground[i]->getClass().name );

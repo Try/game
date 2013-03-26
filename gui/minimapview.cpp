@@ -67,7 +67,7 @@ void MiniMapView::render( World &wx ) {
         terr.set(i,r, pix);
         }
 
-    this->terr = res.ltexHolder.create(terr, false);
+    this->terr = res.ltexHolder.create(terr, false, false);
     }
 
 
@@ -86,12 +86,12 @@ void MiniMapView::render( World &wx ) {
 
     drawUnits(renderTo, wx);
     //aceptFog(renderTo, wx.game.player().fog() );
-    units = res.ltexHolder.create(renderTo, false);
+    units = res.ltexHolder.create(renderTo, false, false);
 
     Tempest::Pixmap fogTex = Tempest::Pixmap(w(), h(), true);
     aceptFog(fogTex, wx.game.player().fog() );
 
-    fog   = res.ltexHolder.create(fogTex, false);
+    fog   = res.ltexHolder.create(fogTex, false, false);
     }
 
   static Tempest::Pixmap hudPx = Tempest::Pixmap(w(), h(), true);
@@ -115,7 +115,7 @@ void MiniMapView::render( World &wx ) {
   lineTo( hudPx, b.x[0], b.y[0], b.x[2], b.y[2] );
   lineTo( hudPx, b.x[1], b.y[1], b.x[3], b.y[3] );
   lineTo( hudPx, b.x[3], b.y[3], b.x[2], b.y[2] );
-  hud   = res.ltexHolder.create(hudPx, false);
+  hud   = res.ltexHolder.create(hudPx, false, false);
 
   //setTexture( Tempest::Texture2d() );
   //setTexture( res.ltexHolder.create( renderTo, 0) );

@@ -114,6 +114,10 @@ struct Resource::XML{
     def += "#define directx\n";
 #endif
 
+#ifdef __ANDROID__
+    def += "#define oes_render\n";
+#endif
+
     def += "#line 0\n";
     //std::cout << def << std::endl;
     r.load(b,  name, file, def  );

@@ -293,11 +293,6 @@ bool GraphicsSystem::render( Scene &scene,
   if( widget )
     gui->exec( *widget, gbuffer[0], mainDepth, device );
 
-  blt( gbuffer[0] );
-  device.present();
-  return 1;
-
-
   Tempest::Texture2d glow, bloomTex;
   //drawGlow( glow, mainDepth, scene, 512 );
   //aceptFog( glow, fog );
@@ -306,16 +301,12 @@ bool GraphicsSystem::render( Scene &scene,
   //blt( glow );
   //blt( bloomTex );
 
-  Tempest::Texture2d final = localTex.create( screenSize.w, screenSize.h );
-  { final.setSampler( reflect );
-
-    Tempest::Render render( device,
-                            final,
+  { Tempest::Render render( device,
                             finalData.vs, finalData.fs );
 
     render.setRenderState( Tempest::RenderState::PostProcess );
 
-    cpyOffset.set( 1.0/final.width(), 1.0/final.height() );
+    cpyOffset.set( 1.0/screenSize.w, 1.0/screenSize.h );
     device.setUniform( finalData.vs, cpyOffset );
 
     finalData.bloom.set( &bloomTex );
@@ -334,7 +325,7 @@ bool GraphicsSystem::render( Scene &scene,
   //blt( waterWaves );
 //  blt( shadowMap );
   //blt( fog );
-  blt( final );
+  //blt( final );
   //blt( gao );
   //blt( ssaoTexDet );
   //blt( bloomTex );
@@ -410,11 +401,10 @@ void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
 
   Tempest::Texture2d lightColor = localTex.create(1,1);
   {
-    Tempest::Texture2d depthSm = depth(1,1);
     Tempest::Render render( device,
-                         sm, depthSm,
-                         transparentData.vsSh,
-                         transparentData.fsSh );
+                            sm, 
+                            transparentData.vsSh,
+                            transparentData.fsSh );
     render.clear( light.color(), 1 );
     }
 
