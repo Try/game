@@ -22,6 +22,14 @@ class Lexical {
 
       return s.str();
       }
+
+    template< class T >
+    static std::wstring upcastw( const T& src ){
+      std::wostringstream s;
+      s << src;
+
+      return s.str();
+      }
   };
 
 #endif // LEXICALCAST_H

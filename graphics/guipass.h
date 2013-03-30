@@ -9,8 +9,12 @@
 
 #include <Tempest/VertexShader>
 #include <Tempest/FragmentShader>
+
 #include <Tempest/VertexBufferHolder>
 #include <Tempest/VertexBuffer>
+
+#include <Tempest/IndexBufferHolder>
+#include <Tempest/IndexBuffer>
 
 #include "pixmapspool.h"
 
@@ -28,10 +32,13 @@ class GUIPass {
     GUIPass( const Tempest::VertexShader   & vsh,
              const Tempest::FragmentShader & fsh,
              Tempest::VertexBufferHolder &vbo,
+             Tempest::IndexBufferHolder  &ibo,
              Tempest::Size &s );
 
-    void exec( MainGui &gui, Tempest::Texture2d &rt,
-               Tempest::Texture2d &depth, Tempest::Device &device );
+    void exec( MainGui &gui,
+               Tempest::Texture2d *rt,
+               Tempest::Texture2d *depth,
+               Tempest::Device &device );
 
     void rect( int x0, int y0, int x1, int y1,
                int texDx, int texDy, int tw, int th );
@@ -64,13 +71,14 @@ class GUIPass {
 
     struct Layer{
       std::vector<GeometryBlock> geometryBlocks;
-      Tempest::VertexBuffer<Vertex> guiGeometry;
+      Tempest::VertexBuffer<Vertex>  guiGeometry;
 
       std::vector<Vertex> guiRawData;
       bool needToUpdate;
       };
 
     std::vector<Layer> layers;
+    Tempest::IndexBuffer<uint16_t> guiIndex;
     int curLay;
 
     Tempest::VertexDeclaration    vdecl;
@@ -78,6 +86,7 @@ class GUIPass {
     Tempest::VertexShader   vs;
     Tempest::FragmentShader fs;
     Tempest::VertexBufferHolder & vbHolder;
+    Tempest::IndexBufferHolder  & ibHolder;
 
     Tempest::Texture2d noTexture, testTex;
 
@@ -96,6 +105,7 @@ class GUIPass {
     Tempest::Device *dev;
 
     static Tempest::RenderState makeRS( Tempest::BlendMode m );
+    std::vector<uint16_t> iboTmp;
   };
 
 #endif // GUIPASS_H

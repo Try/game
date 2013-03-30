@@ -10,8 +10,9 @@
 GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
                   const Tempest::FragmentShader & fsh,
                   Tempest::VertexBufferHolder &vbo,
+                  Tempest::IndexBufferHolder  &ibo,
                   Tempest::Size &s  )
-  : vs(vsh), fs(fsh), vbHolder(vbo), size(s) {
+  : vs(vsh), fs(fsh), vbHolder(vbo), ibHolder(ibo), size(s) {
   Tempest::VertexDeclaration::Declarator decl;
   decl.add( Tempest::Decl::float2, Tempest::Usage::Position )
       .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 0 )
@@ -27,23 +28,43 @@ GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
   setCurrentBuffer(0);
 
   setColor(1,1,1,1);
+  iboTmp.reserve( 8096 );
   }
 
-void GUIPass::exec( MainGui &gui, Tempest::Texture2d &rt,
-                    Tempest::Texture2d &depth, Tempest::Device &device ) {
+void GUIPass::exec( MainGui &gui,
+                    Tempest::Texture2d *rt,
+                    Tempest::Texture2d *depth,
+                    Tempest::Device &device ) {
   setColor(1,1,1,1);
   dev = &device;
 
   if( gui.draw( *this ) ){
+    size_t sz = 0;
     for( size_t i=0; i<layers.size(); ++i ){
       Layer& lay = layers[i];
 
       if( lay.needToUpdate ){
         lay.guiGeometry = Tempest::VertexBuffer<Vertex>();
-        lay.guiGeometry = vbHolder.load( &lay.guiRawData[0],
-                                         lay.guiRawData.size() );
+        lay.guiGeometry = vbHolder.load( lay.guiRawData );
+        sz = std::max( lay.guiRawData.size(), sz );
         }
       }
+
+    guiIndex    = Tempest::IndexBuffer<uint16_t>();
+    iboTmp.resize( 6*sz/4 );
+
+    for( size_t i=0, id = 0; i<iboTmp.size(); i+=6, id+=4 ){
+      uint16_t *ib = &iboTmp[i];
+      ib[0] = id+0;
+      ib[1] = id+1;
+      ib[2] = id+2;
+
+      ib[3] = id+0;
+      ib[4] = id+2;
+      ib[5] = id+3;
+      }
+
+    guiIndex = ibHolder.load( iboTmp );
     }
 
   Tempest::RenderState rs = makeRS( Tempest::noBlend );
@@ -54,7 +75,10 @@ void GUIPass::exec( MainGui &gui, Tempest::Texture2d &rt,
   dTexCoord[1] = 1.0f/size.h;
 
   Tempest::RenderState currntRS = rs;
-  device.beginPaint(rt, depth);
+
+  if( rt )
+    device.beginPaint(*rt, *depth); else
+    device.beginPaint();
 
   //device.clear( Tempest::Color(0,0,0,1) );//FOR DROD TESTS
 
@@ -76,12 +100,14 @@ void GUIPass::exec( MainGui &gui, Tempest::Texture2d &rt,
           device.setRenderState( b.state );
           }
 
-        device.drawPrimitive( Tempest::AbstractAPI::Triangle,
-                              vs, fs,
-                              vdecl,
-                              lay.guiGeometry,
-                              b.begin,
-                              b.size/3 );
+        device.drawIndexed( Tempest::AbstractAPI::Triangle,
+                            vs, fs,
+                            vdecl,
+                            lay.guiGeometry,
+                            guiIndex,
+                            b.begin,
+                            0,
+                            b.size/2 );
         }
       }
     }
@@ -133,11 +159,11 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
   lay.guiRawData.push_back( v[1] );
   lay.guiRawData.push_back( v[2] );
 
-  lay.guiRawData.push_back( v[0] );
-  lay.guiRawData.push_back( v[2] );
+  //lay.guiRawData.push_back( v[0] );
+  //lay.guiRawData.push_back( v[2] );
   lay.guiRawData.push_back( v[3] );
 
-  lay.geometryBlocks.back().size += 6;
+  lay.geometryBlocks.back().size += 4;
   }
 
 void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
@@ -261,11 +287,7 @@ Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
   rs.setZWriting( true );
 
   rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
-#ifndef __ANDROID__
   rs.setBlend(0);
-#else
-  rs.setBlend(1);
-#endif
   rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
                    Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
 

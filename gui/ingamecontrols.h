@@ -37,6 +37,7 @@ class InGameControls : public Tempest::Widget {
 
     Tempest::signal< Tempest::Painter&, int , int> paintObjectsHud;
     Tempest::signal<const ProtoObject&, int> addObject;
+    Tempest::signal< int > onSetPlayer, toogleEditTab;
     Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
 
     Tempest::signal<> save, load;

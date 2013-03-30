@@ -34,6 +34,7 @@ MainGui::MainGui( Tempest::Device &,
                   PrototypesLoader &pr )
   : res(r), prototypes(pr) {
   mainwidget = 0;
+  fps = -1;
   central.resize(w,h);
 
   std::wstring str;
@@ -82,6 +83,9 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   //updateView.bind( mainwidget->updateView );
 
   mainwidget->addObject.bind( addObject );
+  mainwidget->onSetPlayer.bind( onSetPlayer );
+  mainwidget->toogleEditTab.bind( toogleEditTab );
+
   mainwidget->toogleEditLandMode.bind( toogleEditLandMode );
   mainwidget->paintObjectsHud.bind( paintObjectsHud );
 
@@ -193,6 +197,11 @@ bool MainGui::draw(GUIPass &pass) {
       MainGui::drawFrame( p, hintFrame, pos, dpos );
       RichText::renderText( pos.x+15, pos.y+15, res, p, HintSys::hint() );
       //p.drawText( pos.x+15, pos.y+15, HintSys::hint() );
+      }
+
+    if( fps>=0 ){
+      p.setFont( Font(14) );
+      RichText::renderText( 0, 0, res, p, L"fps = "+Lexical::upcastw(fps) );
       }
     }
 
@@ -335,6 +344,10 @@ MainGui::Widget *MainGui::centralWidget() {
 
 void MainGui::setCutsceneMode(bool cs) {
   mainwidget->setVisible(cs==0);
+  }
+
+void MainGui::setFPS(float f) {
+  fps = f;
   }
 
 void MainGui::saveGame() {

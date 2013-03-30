@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <string>
+#include <vector>
 
 #include "serialize.h"
 
@@ -50,6 +51,8 @@ class FileSerialize : public Serialize {
 
     struct File;
     File * f;
+    std::vector<char> data;
+    size_t rpos;
 
     File *fopen(const wchar_t*, bool r );
     void  fclose( File *  );

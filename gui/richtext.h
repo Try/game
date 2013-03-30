@@ -14,7 +14,8 @@ class RichText : public Tempest::Widget {
   public:
     RichText( Resource & res );
 
-    static void renderText(int x, int y, Resource &res, Tempest::Painter & p,
+    static void renderText( int x, int y, Resource &res,
+                            Tempest::Painter & p,
                             const std::wstring& txt );
     static Tempest::Size bounds( Resource & res,
                                   const std::wstring& txt );

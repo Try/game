@@ -557,6 +557,7 @@ void World::paintHUD( Tempest::Painter & p,
 
   //double data1[4], data2[4];
 
+  p.setBlendMode( Tempest::alphaBlend );
   for( size_t plN = 1; plN<game.plCount(); ++plN )
     for( size_t i=0; i<game.player(plN).unitsCount(); ++i ){
       GameObject & obj = game.player(plN).unit(i);

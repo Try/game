@@ -67,9 +67,6 @@ void Panel::mouseWheelEvent(Tempest::MouseEvent &e) {
 void Panel::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
 
-  p.setTexture( back );
-  p.drawRect( 0,0, w(), h() );
-
   if( 1 || hasFocus() ){
     p.setTexture( frame );
 
@@ -102,6 +99,10 @@ void Panel::paintEvent( Tempest::PaintEvent &e ) {
 
     p.unsetTexture();
     }
+
+  int sz = 8;
+  p.setTexture( back );
+  p.drawRect( sz,sz-1, w()-2*sz, h()-2*sz+2 );
 
   paintNested(e);
   }

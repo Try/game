@@ -105,6 +105,9 @@ Game::Game( ShowMode sm )
   gui.enableHooks( !serializator.isReader() );
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
   gui.addObject.bind( *this, &Game::createEditorObject );
+  gui.onSetPlayer.bind(*this, &Game::setEditorObjectPl );
+  gui.toogleEditTab.bind(*this, &Game::cancelEdit );
+
   gui.setCameraPos.bind(*this, &Game::setCameraPos );
   gui.minimapEvent.bind(*this, &Game::minimapEvent );
 
@@ -147,36 +150,6 @@ void Game::tick() {
   moveCamera();
 
   size_t time = Time::tickCount();
-
-  F3 v = unProject( curMPos.x, curMPos.y );
-  int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
-      vy = World::coordCastD(v.data[1])/Terrain::quadSize;
-
-  world->setMousePos( vx*Terrain::quadSize,
-                      vy*Terrain::quadSize,
-                      World::coordCastD(v.data[2]) );
-  if( acceptMouseObj ){
-    world->setMouseObject( world->unitUnderMouse( curMPos.x,
-                                                  curMPos.y,
-                                                  w(), h() ) );
-    } else {
-    world->setMouseObject( -1 );
-    }
-
-  if( player().editObj ){
-    int x = World::coordCastD(v.data[0]),
-        y = World::coordCastD(v.data[1]);
-
-    if( player().editObj &&
-        player().editObj->behavior.find<BuildingBehavior>() ){
-      x = (x/Terrain::quadSize)*Terrain::quadSize;
-      y = (y/Terrain::quadSize)*Terrain::quadSize;
-      }
-
-    msg.message( currentPlayer,
-                 Behavior::EditMove,
-                 x, y );
-    }
 
   bool isLag = false;
   ++sendDelay;
@@ -270,6 +243,8 @@ void Game::render() {
 #ifdef __WIN32
     SetWindowTextA( HWND( handle() ),
                     Lexical::upcast( f ).data() );
+#else
+    gui.setFPS( f );
 #endif
     fps.n    = 0;
     fps.time = 0;
@@ -302,13 +277,7 @@ void Game::mouseDownEvent( Tempest::MouseEvent &e) {
 
   lastMPos = Tempest::Point( e.x, e.y );
 
-  if( e.button==Tempest::MouseEvent::ButtonLeft && player().editObj ){
-    msg.message( currentPlayer, Behavior::EditNext );
-    }
-
-  if( e.button==Tempest::MouseEvent::ButtonRight && player().editObj ){
-    msg.message( currentPlayer, Behavior::EditDel );
-    }
+  updateMousePos(e);
   }
 
 void Game::mouseUpEvent( Tempest::MouseEvent &e) {
@@ -349,6 +318,16 @@ void Game::mouseUpEvent( Tempest::MouseEvent &e) {
     }
 
   selectionRectTracking = false;
+  updateMousePos(e);  
+
+  if( e.button==Tempest::MouseEvent::ButtonLeft && player().editObj ){
+    msg.message( currentPlayer, Behavior::EditNext );
+    }
+
+  if( e.button==Tempest::MouseEvent::ButtonRight && player().editObj ){
+    msg.message( currentPlayer, Behavior::EditDel );
+    }
+
   world->clickEvent( World::coordCastD(v.data[0]),
                      World::coordCastD(v.data[1]),
                      e );
@@ -387,6 +366,7 @@ void Game::mouseMoveEvent( Tempest::MouseEvent &e ) {
                                 -((r.y+r.h)/hh - 1.0) );
     }
 
+  updateMousePos(e);
   }
 
 void Game::mouseWheelEvent( Tempest::MouseEvent &e ) {
@@ -407,7 +387,41 @@ void Game::mouseWheelEvent( Tempest::MouseEvent &e ) {
       world->camera.setDistance( world->camera.distance() * 1.1 ); else
       world->camera.setDistance( world->camera.distance() / 1.1 );
     }
-}
+  }
+
+void Game::updateMousePos(Tempest::MouseEvent &e) {
+  curMPos = Tempest::Point(e.x, e.y);
+
+  F3 v = unProject( curMPos.x, curMPos.y );
+  int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
+      vy = World::coordCastD(v.data[1])/Terrain::quadSize;
+
+  world->setMousePos( vx*Terrain::quadSize,
+                      vy*Terrain::quadSize,
+                      World::coordCastD(v.data[2]) );
+  if( acceptMouseObj ){
+    world->setMouseObject( world->unitUnderMouse( curMPos.x,
+                                                  curMPos.y,
+                                                  w(), h() ) );
+    } else {
+    world->setMouseObject( -1 );
+    }
+
+  if( player().editObj ){
+    int x = World::coordCastD(v.data[0]),
+        y = World::coordCastD(v.data[1]);
+
+    if( player().editObj &&
+        player().editObj->behavior.find<BuildingBehavior>() ){
+      x = (x/Terrain::quadSize)*Terrain::quadSize;
+      y = (y/Terrain::quadSize)*Terrain::quadSize;
+      }
+
+    msg.message( currentPlayer,
+                 Behavior::EditMove,
+                 x, y );
+    }
+  }
 
 void Game::shortcutEvent(Tempest::KeyEvent &e) {
   gui.scutEvent(e);
@@ -559,7 +573,13 @@ void Game::addPlayer() {
   players.back()->onUnitSelected.bind( *this, &Game::onUnitsSelected );
   players.back()->onUnitDied    .bind( *this, &Game::onUnitDied );
   //if( world )
-    //players.back()->computeFog(world);
+  //players.back()->computeFog(world);
+  }
+
+void Game::cancelEdit(int) {
+  if( player().editObj ){
+    msg.message( currentPlayer, Behavior::EditDel );
+    }
   }
 
 Player &Game::player(int i) {
@@ -584,6 +604,17 @@ void Game::createEditorObject(const ProtoObject &p, int pl) {
                World::coordCastD(world->camera.y()),
                p.name,
                pl );
+  }
+
+void Game::setEditorObjectPl(int pl) {
+  if( player().editObj ){
+    msg.message( currentPlayer,
+                 Behavior::EditAdd,
+                 player().editObj->x(),
+                 player().editObj->y(),
+                 player().editObj->getClass().name,
+                 pl );
+    }
   }
 
 void Game::onUnitsSelected( std::vector<GameObject *> &u,
@@ -673,6 +704,7 @@ void Game::moveCamera() {
   if( selectionRectTracking )
     return;
 
+#ifndef __ANDROID__
   const double cameraStep = 0.1;
   const int sensetive = 20;
 
@@ -689,6 +721,7 @@ void Game::moveCamera() {
   if( curMPos.y > h() - sensetive || lastKEvent==Tempest::KeyEvent::K_Down ){
     world->moveCamera( 0, cameraStep );
     }
+#endif
   }
 
 void Game::setCameraPos(GameObject &obj) {

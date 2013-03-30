@@ -42,6 +42,8 @@ class Game : public Tempest::Window {
     void mouseMoveEvent ( Tempest::MouseEvent &e );
     void mouseWheelEvent ( Tempest::MouseEvent &e );
 
+    void updateMousePos( Tempest::MouseEvent &e );
+
     void shortcutEvent( Tempest::KeyEvent &e );
     void keyDownEvent( Tempest::KeyEvent &e );
     void keyUpEvent  ( Tempest::KeyEvent &e );
@@ -137,8 +139,11 @@ class Game : public Tempest::Window {
     FileSerialize serializator;
 
     void addPlayer();
+    void cancelEdit( int );
+
     int currentPlayer;
     void createEditorObject( const ProtoObject & p, int pl );
+    void setEditorObjectPl( int pl );
     std::vector< std::shared_ptr<Player> > players;
     std::vector< std::shared_ptr<World> >  worlds;
     World * world;

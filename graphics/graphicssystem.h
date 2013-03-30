@@ -107,7 +107,7 @@ class GraphicsSystem {
     MainGui * widget;
     ParticleSystemEngine * particles;
 
-    bool useFog, useHDR;
+    bool useFog, useHDR, useDirectRender;
 
     Tempest::Size  screenSize, potScreenSize;
     static  float smMatSize( const Scene & s );
@@ -246,8 +246,8 @@ class GraphicsSystem {
                         const Scene &scene,
                         const Scene::Objects &v );
 
-    void drawObjects( Tempest::Texture2d* gbuffer,
-                      Tempest::Texture2d &mainDepth,
+    int drawObjects( Tempest::Texture2d* gbuffer,
+                      Tempest::Texture2d* mainDepth,
                       int bufC,
                       const Scene &scene,
                       const Tempest::AbstractCamera &camera,
@@ -259,10 +259,10 @@ class GraphicsSystem {
                                               const Tempest::Matrix4x4 & ) const,
                       bool clr );
 
-    void drawObjects(Tempest::VertexShader &vs,
+    int drawObjects(Tempest::VertexShader &vs,
                       Tempest::FragmentShader &fs,
                       Tempest::Texture2d* gbuffer,
-                      Tempest::Texture2d &mainDepth,
+                      Tempest::Texture2d* mainDepth,
                       int bufC,
                       const Scene &scene,
                       const Tempest::AbstractCamera &camera,
@@ -364,6 +364,7 @@ class GraphicsSystem {
                    int shadowMapSize);
 
     size_t time;
+    int smapSize;
 
     friend class DisplaceMaterial;
     friend class GlowMaterial;
@@ -410,7 +411,7 @@ class GraphicsSystem {
     void setupScreenSize( int w, int h );
 
     template< class ... Args, class ... FArgs >
-    void draw( Tempest::Render & render,
+    int draw( Tempest::Render & render,
                const Frustum &frustum,
                bool  deepVTest,
                const Tempest::AbstractCamera & camera,

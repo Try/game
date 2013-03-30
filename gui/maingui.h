@@ -55,6 +55,8 @@ class MainGui {
     void createControls( BehaviorMSGQueue &msg,
                          Game &game );
     Tempest::signal<const ProtoObject&, int> addObject;
+    Tempest::signal< int > onSetPlayer, toogleEditTab;
+
     Tempest::signal< Tempest::Painter&, int, int> paintObjectsHud;
     Tempest::signal<> toogleFullScreen;
     Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
@@ -107,6 +109,7 @@ class MainGui {
     Tempest::Widget* centralWidget();
 
     void setCutsceneMode( bool cs );
+    void setFPS( float f );
   private:
     typedef Tempest::PainterDevice Painter;
     typedef Tempest::Widget  Widget;
@@ -114,6 +117,7 @@ class MainGui {
     typedef Tempest::SizePolicy        SizePolicy;
 
     InGameControls *mainwidget;
+    float fps;
 
     CentralWidget central;
     Resource & res;

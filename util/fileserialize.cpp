@@ -3,6 +3,8 @@
 #include <limits>
 #include <cstdio>
 
+#include <Tempest/AbstractSystemAPI>
+
 #ifdef __WIN32
 #include <winsock2.h>
 #else
@@ -120,6 +122,7 @@ FileSerialize::File *FileSerialize::fopen(const wchar_t *f, bool r) {
                         OPEN_ALWAYS,
                         FILE_ATTRIBUTE_NORMAL,
                         NULL );
+    //data = Tempest::AbstractSystemAPI::loadBytes(f);
     } else {
     hFile = CreateFile( f,
                         GENERIC_READ|GENERIC_WRITE,

@@ -212,6 +212,7 @@ Widget *InGameControls::createEditPanel() {
   tabs->addTab(p);
   EditTerrainPanel *eterr = createLandEdit();
   tabs->onTabChanged.bind( *eterr, &EditTerrainPanel::disableEdit );
+  tabs->onTabChanged.bind( toogleEditTab );
   tabs->addTab( eterr );
 
   tabs->setDragable(1);
@@ -273,6 +274,8 @@ void InGameControls::toogleEditPanel() {
 
 void InGameControls::setCurrPl(size_t i) {
   currPl = i;
+  onSetPlayer(i);
+  //addObject( p, currPl );
   }
 
 void InGameControls::showFormBuilder() {

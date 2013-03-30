@@ -103,7 +103,7 @@ class Terrain {
     World                  & world;
     const PrototypesLoader & prototype;
 
-    std::vector< std::string > aviableTiles;
+    std::vector< std::string >    aviableTiles;
     std::vector< Tempest::Color > aviableColors;
 
     struct Tile {

@@ -44,6 +44,7 @@ EditTerrainPanel::EditTerrainPanel(Resource &res , PrototypesLoader &prototypes)
   sb->setOrientation( Tempest::Horizontal );
   sb->valueChanged.bind( *this, &EditTerrainPanel::setR );
   sb->setRange(0, 20);
+
   layout().add( sb );
 
   Widget* w = new Widget();

@@ -181,7 +181,8 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
       }
 
   if( land.size() ){
-    model.load( vboHolder, iboHolder, land, MVertex::decl() );
+    model.load( vboHolder, iboHolder,
+                land, MVertex::decl() );
 
     TerrainChunk::View view;
     view.view.reset( new GameObjectView( scene,
