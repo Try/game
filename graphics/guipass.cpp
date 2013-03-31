@@ -7,6 +7,8 @@
 #include "resource.h"
 #include "gui/maingui.h"
 
+#include <iostream>
+
 GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
                   const Tempest::FragmentShader & fsh,
                   Tempest::VertexBufferHolder &vbo,
@@ -42,30 +44,35 @@ void GUIPass::exec( MainGui &gui,
     size_t sz = 0;
     for( size_t i=0; i<layers.size(); ++i ){
       Layer& lay = layers[i];
+      sz = std::max( lay.guiRawData.size(), sz );
 
       if( lay.needToUpdate ){
         lay.guiGeometry = Tempest::VertexBuffer<Vertex>();
         lay.guiGeometry = vbHolder.load( lay.guiRawData );
-        sz = std::max( lay.guiRawData.size(), sz );
+        lay.needToUpdate = false;
         }
       }
 
-    guiIndex    = Tempest::IndexBuffer<uint16_t>();
-    iboTmp.resize( 6*sz/4 );
+    if( sz && int(sz)!=guiIndex.size() ){
+      guiIndex    = Tempest::IndexBuffer<uint16_t>();
+      iboTmp.resize( 6*sz/4 );
 
-    for( size_t i=0, id = 0; i<iboTmp.size(); i+=6, id+=4 ){
-      uint16_t *ib = &iboTmp[i];
-      ib[0] = id+0;
-      ib[1] = id+1;
-      ib[2] = id+2;
+      for( size_t i=0, id = 0; i<iboTmp.size(); i+=6, id+=4 ){
+        uint16_t *ib = &iboTmp[i];
+        ib[0] = id+0;
+        ib[1] = id+1;
+        ib[2] = id+2;
 
-      ib[3] = id+0;
-      ib[4] = id+2;
-      ib[5] = id+3;
+        ib[3] = id+0;
+        ib[4] = id+2;
+        ib[5] = id+3;
+        }
+
+      guiIndex = ibHolder.load( iboTmp );
       }
-
-    guiIndex = ibHolder.load( iboTmp );
     }
+
+  //std::cerr <<"guiIndex = " << guiIndex.size() << std::endl;
 
   Tempest::RenderState rs = makeRS( Tempest::noBlend );
 
@@ -179,6 +186,9 @@ void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
     return;
     }
 
+  if( t.tex==0 && t.nonPool==0 )
+    return;
+
   if( t.nonPool ){
     texRect = Tempest::Rect(0,0, t.nonPool->width(), t.nonPool->height() );
     texSize = texRect.size();
@@ -207,6 +217,8 @@ void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
   }
 
 void GUIPass::unsetTexture() {
+  return;
+
   Layer& lay = layers[curLay];
 
   GeometryBlock b;
@@ -242,11 +254,20 @@ void GUIPass::setBlendMode( Tempest::BlendMode m ) {
     b = lay.geometryBlocks.back();
     }
 
-  b.begin   = lay.guiRawData.size();
-  b.state   = makeRS( m );
-  b.size    = 0;
+  bool e = false;
+  while( lay.geometryBlocks.size() && lay.geometryBlocks.back().size==0 ){
+    lay.geometryBlocks.pop_back();
+    e = true;
+    }
 
-  lay.geometryBlocks.push_back(b);
+  Tempest::RenderState rs = makeRS( m );
+  if( b.state!=rs || e ){
+    b.begin   = lay.guiRawData.size();
+    b.state   = rs;
+    b.size    = 0;
+
+    lay.geometryBlocks.push_back(b);
+    }
   }
 
 void GUIPass::setCurrentBuffer(int i) {
@@ -293,6 +314,12 @@ Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
 
   rs.setAlphaTestRef( 0.05 );
 
+  bool trasparentZW = false;
+#ifdef __ANDROID__
+  //rs.setBlend(1);
+  trasparentZW = true;
+#endif
+
   if( m==Tempest::addBlend ){
     rs.setBlend(1);
     rs.setZWriting(0);
@@ -302,12 +329,12 @@ Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
 
   if( m==Tempest::alphaBlend ){
     rs.setBlend(1);
-    rs.setZWriting(0);
+    rs.setZWriting(trasparentZW);
     }
 
   if( m==Tempest::multiplyBlend ){
     rs.setBlend(1);
-    rs.setZWriting(0);
+    rs.setZWriting(trasparentZW);
 
     rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_color,
                      Tempest::RenderState::AlphaBlendMode::dst_color );

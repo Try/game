@@ -12,7 +12,7 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 
-CONFIG += directx
+CONFIG += opengl
 #CONFIG += sound
 #CONFIG += physic
 
@@ -169,7 +169,8 @@ HEADERS += \
     graphics/octotree.h \
     stlconf.h \
     threads/time.h \
-    util/ifstream.h
+    util/ifstream.h \
+    util/tnloptimize.h
 
 SOURCES += \
     main.cpp \
@@ -276,7 +277,8 @@ SOURCES += \
     threads/time.cpp \
     stlconf.cpp \
     jniBind.cpp \
-    util/ifstream.cpp
+    util/ifstream.cpp \
+    util/tnloptimize.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

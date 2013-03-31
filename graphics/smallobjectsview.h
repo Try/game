@@ -62,7 +62,7 @@ class SmallGraphicsObject {
     void applyTransform();
     Tempest::Matrix4x4 transformV;
 
-    size_t glocation;
+    size_t glocation, ilocation;
 
     TerrainChunk::PolishView& chunk();
     TerrainChunk& chunkBase();

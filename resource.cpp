@@ -191,11 +191,15 @@ const Model::Raw &Resource::rawModel(const std::string &key) const {
     const Model& m = models.get(key);
     Model::Raw  *model = new Model::Raw();
 
-    model->vertex.resize( m.size()*3 );
+    model->index. resize( m.indexes().size()  );
+    model->vertex.resize( m.vertexes().size() );
 
     m.vertexes().get( model->vertex.begin(),
                       model->vertex.end(),
                       0 );
+    m.indexes().get( model->index.begin(),
+                     model->index.end(),
+                     0 );
     rawModels.add( key, std::shared_ptr<Model::Raw>(model) );
     }
 

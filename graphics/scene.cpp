@@ -43,6 +43,10 @@ const Scene::Objects &Scene::additiveObjects() const {
   return addObj;
   }
 
+const Scene::Objects &Scene::terrainObjects() const {
+  return terrain;
+  }
+
 const Scene::Objects &Scene::terrainMinorObjects() const {
   return terrainMinor;
   }
@@ -100,6 +104,9 @@ void Scene::onObjectOp( const AbstractGraphicObject *t,
 
   if( !t->material().glow.isEmpty() )
     onObjectOp( glowObj, t, ins, mat );
+
+  if( t->material().usage.terrainMain )
+    onObjectOp( terrain, t, ins, mat );
 
   if( t->material().usage.terrainMinor )
     onObjectOp( terrainMinor, t, ins, mat );

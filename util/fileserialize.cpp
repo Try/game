@@ -18,6 +18,14 @@ FileSerialize::FileSerialize( const std::wstring &s, OpenMode m ) {
   mode = m;
   }
 
+FileSerialize::FileSerialize(const std::string &s) {
+  f = 0;
+  mode = Read;
+  rpos = 0;
+
+  data = Tempest::AbstractSystemAPI::loadBytes(s.data());
+  }
+
 FileSerialize::~FileSerialize() {
   if( isOpen() )
     fclose(f);
@@ -103,7 +111,7 @@ bool FileSerialize::isEof() const {
   }
 
 bool FileSerialize::isOpen() const {
-  return f;
+  return f || data.size();
   }
 
 bool FileSerialize::isReader() const {
@@ -139,7 +147,8 @@ FileSerialize::File *FileSerialize::fopen(const wchar_t *f, bool r) {
 
 void FileSerialize::fclose( FileSerialize::File *f ) {
 #ifdef __WIN32
-  CloseHandle( f );
+  if( isOpen() )
+    CloseHandle( f );
 #endif
   }
 
@@ -160,12 +169,22 @@ size_t FileSerialize::fwrite( const void * data,
   return 0;
   }
 
-size_t FileSerialize::fread( void *data,
+size_t FileSerialize::fread( void *odata,
                              size_t s, size_t c,
                              FileSerialize::File *f) {
+  if( data.size() ){
+    s *= c;
+    while( s ){
+      *((char*)odata) = data[rpos];
+      ++rpos;
+      ++((char*&)odata);
+      --s;
+      }
+    }
+
 #ifdef __WIN32
   DWORD wmWritten = 0;
-  ReadFile(f, data, s*c, &wmWritten, NULL);
+  ReadFile(f, odata, s*c, &wmWritten, NULL);
   assert( s*c==wmWritten );
   return wmWritten;
 #endif

@@ -2,6 +2,8 @@
 #define MODEL_MX_H
 
 #include <Tempest/Model>
+#include <cstring>
+#include <functional>
 
 struct MVertex {
   float x,y,z;
@@ -10,6 +12,14 @@ struct MVertex {
   float color[4];
 
   float bnormal[4];
+
+  bool operator == ( const MVertex& v ) const {
+    return memcmp( this, &v, sizeof(*this) )==0;
+    }
+
+  struct hash{
+    size_t operator()( const MVertex& mv ) const;
+    };
 
   static Tempest::VertexDeclaration::Declarator decl();
   };

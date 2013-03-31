@@ -10,6 +10,7 @@
 class FileSerialize : public Serialize {
   public:
     FileSerialize(const std::wstring &s, OpenMode m );
+    FileSerialize(const std::string &s);
     ~FileSerialize();
 
     FileSerialize( const FileSerialize&  )              = delete;

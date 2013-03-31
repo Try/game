@@ -4,6 +4,8 @@
 #include <cmath>
 #include "util/ifstream.h"
 
+#include "util/tnloptimize.h"
+
 Tempest::VertexDeclaration::Declarator MVertex::decl() {
   Tempest::VertexDeclaration::Declarator d;
   d   .add( Tempest::Decl::float3, Tempest::Usage::Position )
@@ -119,7 +121,9 @@ void Model::loadMX( Tempest::VertexBufferHolder & vboHolder,
   for( int r=0; r<3; ++r )
     cen[r] /= rawN.vertex.size();
 
-  load( vboHolder, iboHolder, rawN, MVertex::decl() );
+  TnlOptimize::index( rawN.vertex, rawN.index );
+  load( vboHolder, iboHolder, rawN.vertex, rawN.index, MVertex::decl() );
+  //load( vboHolder, iboHolder, rawN, MVertex::decl() );
 
   if( ver>=1 ){
     uint16_t groupsSz = 0;
@@ -207,4 +211,15 @@ float Model::boxSzY() const {
 
 float Model::boxSzZ() const {
   return pbounds[2][0] - pbounds[2][1];
+  }
+
+size_t MVertex::hash::operator ()(const MVertex &mv) const {
+  size_t ret = 0;
+  char *v  = (char*)&mv;
+  char *vx = v+sizeof(*this);
+
+  for(; v!=vx; ++v)
+    ret += *v;
+
+  return ret;
   }

@@ -96,6 +96,7 @@ void Button::mouseUpEvent(Tempest::MouseEvent &e) {
 
 void Button::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
+  p.setBlendMode( Tempest::alphaBlend );
 
   Tempest::Rect vRect = viewRect();
   int px = vRect.x, py = vRect.y,
@@ -111,21 +112,22 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
                     bk.data.rect.w, bk.data.rect.h );
 
 
-  p.setBlendMode( Tempest::alphaBlend );
-  p.setTexture( icon );
+  if( !icon.data.rect.isEmpty() ){
+    p.setTexture( icon );
+
+    int sz = std::min(w(), h());
+
+    float k = std::min( sz/float(icon.data.rect.w),
+                        sz/float(icon.data.rect.h) );
+
+    int icW = icon.data.rect.w*k,
+        icH = icon.data.rect.h*k;
+
+    p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
+                0, 0, icon.data.rect.w, icon.data.rect.h );
+    }
+
   Font f = font;
-
-  int sz = std::min(w(), h());
-
-  float k = std::min( sz/float(icon.data.rect.w),
-                      sz/float(icon.data.rect.h) );
-
-  int icW = icon.data.rect.w*k,
-      icH = icon.data.rect.h*k;
-
-  p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
-              0, 0, icon.data.rect.w, icon.data.rect.h );
-
   p.setScissor(r);
 
   drawFrame( p );

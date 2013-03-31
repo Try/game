@@ -14,6 +14,7 @@ class Scene : public Tempest::AbstractScene< AbstractGraphicObject > {
     const Objects& glowObjects() const;
     const Objects& additiveObjects() const;
 
+    const Objects& terrainObjects() const;
     const Objects& terrainMinorObjects() const;
     const Objects& displaceObjects() const;
     const Objects& waterObjects() const;
@@ -26,7 +27,7 @@ class Scene : public Tempest::AbstractScene< AbstractGraphicObject > {
     const Objects& omni() const;
 
   private:
-    Objects shCast, mainObj, glowObj, terrainMinor,
+    Objects shCast, mainObj, glowObj, terrainMinor, terrain,
             displaceObj, waterObj, addObj, transpObj,
             transpObjZW, fogOfWarObj,
             omniObj, grassObj;

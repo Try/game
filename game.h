@@ -102,6 +102,7 @@ class Game : public Tempest::Window {
 
     void save(const std::wstring &str);
     void load(const std::wstring &str);
+    void loadMission(const std::string  &str);
 
     void setCurrectPlayer( int pl );
     void setupAsServer();

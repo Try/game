@@ -10,6 +10,8 @@
 #include <memory>
 #include <algorithm>
 
+#include "util/tnloptimize.h"
+
 const int Terrain::chunkSize = 32;
 
 Terrain::Terrain(int w, int h,
@@ -107,15 +109,20 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
   land.clear();
   minor.clear();
 
+
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
+  /*
+  const int dx[] = {0, 1, 1, 0},
+            dy[] = {0, 0, 1, 1};*/
+  int dcount = 6;
 
   const double texCoordScale = 0.1;
 
   for( int i=lx; i+1<rx; ++i )
     for( int r=ly; r+1<ry; ++r ){
       int k = 0, tk = 0, tid = (plane==2 ? 0:1);
-      for( int q=0; q<6; ++q ){
+      for( int q=0; q<dcount; ++q ){
         if( plane == tileset[i+dx[q]][r+dy[q]].plane )
           ++k;
         if( texture == tileset[i+dx[q]][r+dy[q]].textureID[tid] )
@@ -123,7 +130,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
         }
 
       if( k!=0 && tk!=0 ){
-        for( int q=0; q<6; ++q ){
+        for( int q=0; q<dcount; ++q ){
           int x = (i+dx[q]),
               y = (r+dy[q]);
           v.x = World::coordCast( x*quadSize );
@@ -163,9 +170,9 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
 
         //int nplane = tileset[ i ][ r ].plane;
 
-        if( ( k>0 && (k<6 || tk<6) ) && ( tk>0 && (k<6 || tk<6) ) ){
-          for( int q=0; q<6; ++q ){
-            minor.push_back( land[ land.size()-6+q] );
+        if( ( k>0 && (k<dcount || tk<dcount) ) && ( tk>0 && (k<dcount || tk<dcount) ) ){
+          for( int q=0; q<dcount; ++q ){
+            minor.push_back( land[ land.size()-dcount+q] );
             Model::Vertex & v = minor.back();
 
             if( plane  !=tileset[i+dx[q]][r+dy[q]].plane ||
@@ -175,35 +182,48 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
             }
           }
 
-        if( k!=6 || tk!=6 )
-          land.resize( land.size()-6 );
+        if( k!=dcount || tk!=dcount ){
+          land.resize( land.size()-dcount );
+          }
         }
       }
 
+  std::vector<uint16_t> index;
   if( land.size() ){
+    TnlOptimize::index( land, index );
     model.load( vboHolder, iboHolder,
-                land, MVertex::decl() );
+                land, index, MVertex::decl() );
 
     TerrainChunk::View view;
+    ProtoObject obj = prototype.get( aviableTiles[texture] );
+    for( size_t i=0; i<obj.view.size(); ++i ){
+      for( size_t r=0; r<obj.view[i].materials.size(); ++r ){
+        if( obj.view[i].materials[r]=="phong" )
+          obj.view[i].materials[r] = "terrain.main";
+        }
+      }
+
     view.view.reset( new GameObjectView( scene,
                                          world,
-                                         prototype.get( aviableTiles[texture] ),
+                                         obj,
                                          prototype) );
-    view.view->loadView( model,
-                         prototype.get( aviableTiles[texture] ).view[0] );
+    view.view->loadView( model, obj.view[0] );
 
     chunk.landView.push_back( view );
     }
 
   if( minor.size() ){
-    model.load( vboHolder, iboHolder, minor, MVertex::decl() );
+    TnlOptimize::index( minor, index );
+    model.load( vboHolder, iboHolder, minor, index, MVertex::decl() );
 
     TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
-    for( size_t i=0; i<obj.view.size(); ++i )
-      for( size_t r=0; r<obj.view[i].materials.size(); ++r )
+    for( size_t i=0; i<obj.view.size(); ++i ){
+      for( size_t r=0; r<obj.view[i].materials.size(); ++r ){
         if( obj.view[i].materials[r]=="phong" )
           obj.view[i].materials[r] = "terrain.minor";
+        }
+      }
 
     view.view.reset( new GameObjectView( scene,
                                          world,

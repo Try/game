@@ -24,6 +24,7 @@ namespace Tempest{
 
   class VertexBufferHolder;
   class IndexBufferHolder;
+
   class LocalVertexBufferHolder;
 
   class VertexShaderHolder;

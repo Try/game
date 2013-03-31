@@ -136,6 +136,14 @@ void Material::additive( Tempest::RenderState &rs,
   rs.setZWriting(0);
   }
 
+void Material::terrainMain( Tempest::RenderState & rs,
+                            const Tempest::Matrix4x4 &m,
+                            const Tempest::AbstractCamera &c,
+                            Tempest::UniformTable &u,
+                            const Tempest::Matrix4x4 &sm ) const {
+  gbuffer( rs, m, c, u, sm );
+  }
+
 void Material::terrainMinor( Tempest::RenderState &rs,
                              const Tempest::Matrix4x4 &m,
                              const Tempest::AbstractCamera &c,

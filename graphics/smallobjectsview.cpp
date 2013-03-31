@@ -144,8 +144,13 @@ void SmallGraphicsObject::updateFull() {
   if( !vx.needToUpdate )
     return;
 
+  vx.geometry.hasIndex = true;
+
   glocation = vx.geometry.vertex.size();
+  ilocation = vx.geometry.index.size();
+
   vx.geometry.vertex.resize( vx.geometry.vertex.size() + model->vertex.size() );
+  vx.geometry.index .resize( vx.geometry.index .size() + model->index .size() );
 
   applyTransform();
   }
@@ -202,6 +207,11 @@ void SmallGraphicsObject::applyTransform() {
     v->normal[2] = z;
     }
 
+  uint16_t * id = &vx.geometry.index[ ilocation ];
+  for( size_t i=0; i<model->index.size(); ++i, ++id ){
+    *id = glocation+model->index[i];
+    }
+
   needToUpdate = false;
   }
 
@@ -222,8 +232,10 @@ TerrainChunk::PolishView &SmallGraphicsObject::chunk() {
   c.polish.push_back( std::shared_ptr<TerrainChunk::PolishView>(vx) );
   glocation = 0;
 
-  if( model )
+  if( model ){
     vx->geometry.vertex.resize( model->vertex.size() );
+    vx->geometry.index .resize( model->index.size()  );
+    }
 
   return *vx;
   }

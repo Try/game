@@ -70,6 +70,7 @@ class GraphicsSystem {
     Tempest::VertexBufferHolder      vboHolder;
     Tempest::LocalVertexBufferHolder lvboHolder;
     Tempest::IndexBufferHolder       iboHolder;
+    Tempest::LocalIndexBufferHolder  liboHolder;
 
     Tempest::VertexShaderHolder   vsHolder;
     Tempest::FragmentShaderHolder fsHolder;

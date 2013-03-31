@@ -169,6 +169,9 @@ void Player::computeFog(void *curW) {
   }
 
 void Player::fillFog(Tempest::Pixmap &p, World &wx ) {
+#ifdef __ANDROID__
+  return;
+#endif
   const bool useFog = 0;
 
   if( p.width()  != wx.terrain().width() ||

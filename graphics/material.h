@@ -23,7 +23,7 @@ class Material {
     const Tempest::Color *teamColor;
 
     struct Usage{
-      bool mainPass, shadowCast, terrainMinor,
+      bool mainPass, shadowCast, terrainMinor, terrainMain,
            displace, water, blush, add,
            transparent, fogOfWar,
            omni, grass;
@@ -46,6 +46,12 @@ class Material {
                    const Tempest::AbstractCamera&,
                    Tempest::UniformTable &,
                    const Tempest::Matrix4x4 &shadowMatrix ) const;
+
+    void terrainMain( Tempest::RenderState& /*d*/,
+                      const Tempest::Matrix4x4 & /*object*/,
+                      const Tempest::AbstractCamera&,
+                      Tempest::UniformTable &,
+                      const Tempest::Matrix4x4 &shadowMatrix ) const;
 
     void terrainMinor( Tempest::RenderState& /*d*/,
                        const Tempest::Matrix4x4 & /*object*/,

@@ -15,6 +15,9 @@ void TerrainChunk::update( Resource & res ) {
       r.vertex.reserve( r.vertex.size() );
       r.vertex.resize(0);
 
+      r.index.reserve( r.index.size() );
+      r.index.resize(0);
+
       wrk = true;
       }
 

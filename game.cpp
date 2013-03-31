@@ -138,8 +138,11 @@ Game::Game( ShowMode sm )
 
   setPlaylersCount(1);
 
+  loadMission("campagin/0.sav");
 #ifndef __ANDROID__
   //load(L"campagin/0.sav");
+#else
+  loadMission("campagin/0.sav");
 #endif
   mscenario->onStartGame();
   }
@@ -814,6 +817,12 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
 
   if( contains( src.materials, "terrain.minor" ) ){
     material.usage.terrainMinor = true;
+    material.usage.shadowCast   = false;
+    }
+
+  if( contains( src.materials, "terrain.main" ) ){
+    material.usage.terrainMain = true;
+    material.usage.shadowCast  = false;
     }
 
   if( contains( src.materials, "displace" ) ){
@@ -873,6 +882,13 @@ void Game::save( const std::wstring& f ) {
 
 void Game::load( const std::wstring& f ) {
   GameSerializer s( f, Serialize::Read );
+
+  if( s.isOpen() )
+    serialize(s);
+  }
+
+void Game::loadMission(const std::string &f) {
+  GameSerializer s( f );
 
   if( s.isOpen() )
     serialize(s);

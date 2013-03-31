@@ -23,6 +23,7 @@ GraphicsSystem::GraphicsSystem( void *hwnd,
     vboHolder ( device ),
     lvboHolder( device ),
     iboHolder ( device ),
+    liboHolder( device ),
     vsHolder  ( device ),
     fsHolder  ( device ),
 
@@ -57,7 +58,7 @@ void GraphicsSystem::makeRenderAlgo( Resource &res,
   gui.reset( new GUIPass( res.vshader("gui"),
                           res.fshader("gui"),
                           lvboHolder,
-                          iboHolder,
+                          liboHolder,
                           screenSize  ) );
   setupScreenSize(w,h);
 
@@ -570,6 +571,17 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                camera,
                scene.terrainMinorObjects(),
                &Material::terrainMinor,
+               false );
+
+  drawObjects( gbuf.terrainVs,
+               gbuf.terrainFs,
+               gbuffer,
+               &mainDepth,
+               gbuffSize,
+               scene,
+               camera,
+               scene.terrainObjects(),
+               &Material::terrainMain,
                false );
 
   setupLight( scene, gbuf.fs, sm, smCl );
@@ -1655,7 +1667,11 @@ GraphicsSystem::VisibleRet GraphicsSystem::isVisible( float x,
 
 int GraphicsSystem::dipOptimizeRef() {
 #ifdef TEMPEST_OPENGL
-  return 0;
+#ifdef __ANDROID__
+  return 32*6;
+#else
+  return 32*6;
+#endif
 #else
   return 32*3;
 #endif
