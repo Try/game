@@ -19,6 +19,9 @@ Tempest::VertexDeclaration::Declarator MVertex::decl() {
 
 Model::Model() {
   std::fill( cen, cen+3, 0 );
+  std::fill( pbounds[0], pbounds[0]+2, 0 );
+  std::fill( pbounds[1], pbounds[1]+2, 0 );
+  std::fill( pbounds[2], pbounds[2]+2, 0 );
   r = 0;
 
   physicType = Sphere;

@@ -13,13 +13,16 @@
 #include "util/tnloptimize.h"
 
 const int Terrain::chunkSize = 32;
+//const int Terrain::chunkSize = 16;
 
-Terrain::Terrain(int w, int h,
+Terrain::Terrain( int w, int h,
                   Resource & res,
+                  Tempest::VertexBufferHolder & vb,
+                  Tempest::IndexBufferHolder  & ib,
                   Scene &s,
                   World &wrld,
                   const PrototypesLoader &pl)
-  :scene(s), world(wrld), prototype(pl), res(res) {
+  :scene(s), world(wrld), prototype(pl), vboHolder(vb), iboHolder(ib), res(res) {
   //groupMask = 0;
 
   land. reserve( w*h*6 );
@@ -35,6 +38,7 @@ Terrain::Terrain(int w, int h,
     }
 
   tileset.resize( w+1, h+1 );
+  tileinf.resize( w+1, h+1 );
 
   for( int i=0; i<=w; ++i )
     for( int r=0; r<=h; ++r ){
@@ -54,14 +58,15 @@ Terrain::Terrain(int w, int h,
   computeEnableMap();
   }
 
-void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
-                             Tempest::IndexBufferHolder  & iboHolder){
+void Terrain::buildGeometry(){
   computePlanes();
 
   for( int i=0; i<chunks.width(); ++i )
-    for( int r=0; r<chunks.height(); ++r )
+    for( int r=0; r<chunks.height(); ++r ){
+      chunks[i][r].needToUpdate = true;
       if( chunks[i][r].needToUpdate )
         chunks[i][r].landView.clear();
+      }
 
   std::vector<size_t> texIDS[2];
   for( int i=0; i<tileset.width(); ++i )
@@ -86,6 +91,55 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
       chunks[i][r].needToUpdate  = false;
   }
 
+MVertex Terrain::mkVertex(int x, int y, int plane) {
+  const double texCoordScale = 0.1;
+
+  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1}, {-1,0,0,0} };
+
+  v.x = World::coordCast( x*quadSize );
+  v.y = World::coordCast( y*quadSize );
+
+  int dz   = waterMap[ x ][ y ];
+  float z  = -(heightMap[ x ][ y ]-dz)/quadSizef;
+
+  v.z = World::coordCast( heightMap[ x ][ y ]-dz );
+
+  if( y+1 < heightMap.height() ){
+    v.bnormal[2] = World::coordCast(  heightMap[ x ][ y+1 ]
+                                     - waterMap[ x ][ y+1 ] ) - v.z;
+    }
+
+  //int plane = tileset[ i+dx[q] ][ r+dy[q] ].plane;
+
+  if( plane==2 ){
+    v.u = x*texCoordScale;
+    v.v = y*texCoordScale;
+    }
+  if( plane==1 ){
+    v.u = x*texCoordScale;
+    v.v = z*texCoordScale;
+    }
+  if( plane==0 ){
+    v.u = z*texCoordScale;
+    v.v = y*texCoordScale;
+    }
+
+  float *n = tileset[x][y].normal;
+  std::copy( n, n+3, v.normal );
+
+  return v;
+  }
+
+bool Terrain::isSame(const MVertex &z0, const MVertex &z1) {
+  bool next = ( z0.z==z1.z);
+  for( int q=0; q<3; ++q ){
+    next &= (z0. normal[q]==z1. normal[q]);
+    next &= (z0.bnormal[q]==z1.bnormal[q]);
+    }
+
+  return next;
+  }
+
 void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                              Tempest::IndexBufferHolder  & iboHolder,
                              int plane,
@@ -105,7 +159,6 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
   ry = std::min(ry, heightMap.height());
 
   Model model;
-  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1}, {-1,0,0,0} };
   land.clear();
   minor.clear();
 
@@ -117,73 +170,153 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
             dy[] = {0, 0, 1, 1};*/
   int dcount = 6;
 
-  const double texCoordScale = 0.1;
-
   for( int i=lx; i+1<rx; ++i )
     for( int r=ly; r+1<ry; ++r ){
       int k = 0, tk = 0, tid = (plane==2 ? 0:1);
+
       for( int q=0; q<dcount; ++q ){
-        if( plane == tileset[i+dx[q]][r+dy[q]].plane )
+        Tile & t = tileset[i+dx[q]][r+dy[q]];
+        if( plane == t.plane )
           ++k;
-        if( texture == tileset[i+dx[q]][r+dy[q]].textureID[tid] )
+        if( texture == t.textureID[tid] )
           ++tk;
         }
 
+      tileinf[i][r].land  = false;
+      tileinf[i][r].minor = false;
+
       if( k!=0 && tk!=0 ){
-        for( int q=0; q<dcount; ++q ){
-          int x = (i+dx[q]),
-              y = (r+dy[q]);
-          v.x = World::coordCast( x*quadSize );
-          v.y = World::coordCast( y*quadSize );
-
-          int dz = waterMap[ i+dx[q] ][ r+dy[q] ];
-          float z  = -(heightMap[ i+dx[q] ][ r+dy[q] ]-dz)/quadSizef;
-
-          v.z = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q] ]-dz );
-
-          if( r+dy[q]+1 < heightMap.height() ){
-            v.bnormal[2] = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q]+1 ]
-                                             - waterMap[ i+dx[q] ][ r+dy[q]+1 ] )
-                            - v.z;
-            }
-
-          //int plane = tileset[ i+dx[q] ][ r+dy[q] ].plane;
-
-          if( plane==2 ){
-            v.u = x*texCoordScale;
-            v.v = y*texCoordScale;
-            }
-          if( plane==1 ){
-            v.u = x*texCoordScale;
-            v.v = z*texCoordScale;
-            }
-          if( plane==0 ){
-            v.u = z*texCoordScale;
-            v.v = y*texCoordScale;
-            }
-
-          float *n = tileset[ i+dx[q] ][ r+dy[q] ].normal;
-          std::copy( n, n+3, v.normal );
-
-          land.push_back(v);
-          }
-
-        //int nplane = tileset[ i ][ r ].plane;
-
+        tileinf[i][r].land = true;
         if( ( k>0 && (k<dcount || tk<dcount) ) && ( tk>0 && (k<dcount || tk<dcount) ) ){
-          for( int q=0; q<dcount; ++q ){
-            minor.push_back( land[ land.size()-dcount+q] );
-            Model::Vertex & v = minor.back();
+          tileinf[i][r].minor = true;
 
-            if( plane  !=tileset[i+dx[q]][r+dy[q]].plane ||
-                texture!=tileset[i+dx[q]][r+dy[q]].textureID[tid] )
-              std::fill(v.color+0, v.color+4, 0); else
-              std::fill(v.color+0, v.color+4, 1);
+          for( int q=0; q<dcount; ++q ){
+            tileinf[i][r].black[q] =
+                ( plane  !=tileset[i+dx[q]][r+dy[q]].plane ||
+                  texture!=tileset[i+dx[q]][r+dy[q]].textureID[tid] );
             }
           }
 
         if( k!=dcount || tk!=dcount ){
-          land.resize( land.size()-dcount );
+          tileinf[i][r].land = false;
+          }
+        }
+      }
+
+  land.clear();
+  minor.clear();
+/*
+  for( int i=lx; i+1<rx; ++i )
+    for( int r=ly; r+1<ry; ){
+      TileInfo &inf = tileinf[i][r];
+      if( inf.land ){
+        int r0 = r, dr0 = 0;
+        int r1 = r, dr1 = 0;
+
+        MVertex z0 = mkVertex(  i,r,plane);
+        MVertex z1 = mkVertex(i+1,r0,plane);
+
+        int oldDr0 = dr0;
+        while( r0+1<ry &&
+               tileinf[i][r0].land &&
+               (i!=lx && tileinf[i-1][r0].land) &&
+               isSame( z0, mkVertex(i,  r0+1,plane) )&&
+               isSame( z1, mkVertex(i+1,r0+1,plane) ) ){
+          ++r0;
+          ++dr0;
+          }
+        r0  = std::max(r+1,r0);
+        dr0 = std::max(1,dr0);
+
+        while( r1!=r0 ){
+          if( r1<r0 ){
+            land.push_back( mkVertex(i+0, r+0, plane) );
+            land.push_back( mkVertex(i+1, r+dr1, plane) );
+
+            //MVertex z0 = mkVertex(i  ,r1,plane);
+            MVertex z1 = mkVertex(i+1,r1,plane);
+
+            bool v = false;
+            while( r1+1<ry &&
+                   //r1<r0 &&
+                   tileinf[i  ][r1].land &&
+                   tileinf[i+1][r1].land &&
+                   isSame( z0, mkVertex(i  ,r1+1,plane) ) &&
+                   isSame( z1, mkVertex(i+1,r1+1,plane) )
+                   ){
+              ++r1;
+              ++dr1;
+              v = true;
+              }
+
+            if( !v ){
+              ++r1;
+              ++dr1;
+              }
+
+            oldDr0 = dr0;
+            land.push_back( mkVertex(i+1, r+dr1, plane) );
+            } else {
+            MVertex z0 = mkVertex(i  ,r0,plane);
+            MVertex z1 = mkVertex(i+1,r0,plane);
+
+            bool v = false;
+            while( r0+1<ry &&
+                   tileinf[i][r0].land &&
+                   (i!=lx && tileinf[i-1][r0].land) &&
+                   isSame( z0, mkVertex(i  ,r0+1,plane) )&&
+                   isSame( z1, mkVertex(i+1,r0+1,plane) )   ){
+              ++r0;
+              ++dr0;
+              v = true;
+              }
+
+            if( !v ){
+              ++r0;
+              ++dr0;
+              }
+
+            land.push_back( mkVertex(i+0, r+dr0, plane) );
+            land.push_back( mkVertex(i+0, r+oldDr0, plane) );
+            oldDr0 = dr0;
+            land.push_back( mkVertex(i+1, r+std::max(dr0, dr1), plane) );
+            }
+          }
+
+        land.push_back( mkVertex(i+0, r+dr0, plane) );
+        land.push_back( mkVertex(i+0, r+oldDr0, plane) );
+        land.push_back( mkVertex(i+1, r+std::max(dr0, dr1), plane) );
+
+        r = std::max(r1, r0);
+        } else {
+        ++r;
+        }
+
+      }*/
+
+  for( int i=lx; i+1<rx; ++i )
+    for( int r=ly; r+1<ry; ++r ){
+      TileInfo &inf = tileinf[i][r];
+
+      if( inf.land ){
+        for( int q=0; q<dcount; ++q ){
+          MVertex v = mkVertex(i+dx[q], r+dy[q], plane);
+          land.push_back( v );
+          }
+        }
+      }
+
+  for( int i=lx; i+1<rx; ++i )
+    for( int r=ly; r+1<ry; ++r ){
+      TileInfo &inf = tileinf[i][r];
+
+      if( inf.minor ){
+        for( int q=0; q<dcount; ++q ){
+          MVertex v = mkVertex(i+dx[q], r+dy[q], plane);
+          if( inf.black[q] )
+            std::fill(v.color+0, v.color+4, 0); else
+            std::fill(v.color+0, v.color+4, 1);
+          minor.push_back( v );
           }
         }
       }
@@ -234,12 +367,12 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     chunk.landView.push_back( view );
     }
 
-  if( plane==0 ){
+  if( plane==2 ){
     chunk.waterView.view.reset( new GameObjectView( scene,
                                                     world,
                                                     prototype.get( "water" ),
                                                     prototype) );
-    chunk.waterView.view->loadView( waterGeometry(vboHolder, iboHolder, cX, cY) );
+    chunk.waterView.view->loadView( waterGeometry(cX, cY) );
 
     chunk.fogView.view.reset( new GameObjectView( scene,
                                                   world,
@@ -249,7 +382,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     vf.materials.clear();
     vf.materials.push_back("fog_of_war");
 
-    chunk.fogView.view->loadView( fogGeometry(vboHolder, iboHolder, cX, cY), vf );
+    chunk.fogView.view->loadView( fogGeometry(cX, cY), vf );
     }
   }
 
@@ -258,9 +391,10 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                              int plane,
                              size_t texture  ) {
   for( int i=0; i<chunks.width(); ++i )
-    for( int r=0; r<chunks.height(); ++r )
+    for( int r=0; r<chunks.height(); ++r ){
       buildGeometry( vboHolder, iboHolder, plane, texture,
                      i, r );
+      }
   }
 
 void Terrain::computePlanes() {
@@ -311,9 +445,7 @@ void Terrain::computePlanes() {
   }
 
 Tempest::Model<WaterVertex>
-      Terrain::waterGeometry( Tempest::VertexBufferHolder & vboHolder,
-                              Tempest::IndexBufferHolder  & iboHolder,
-                              int cX, int cY ) const {
+      Terrain::waterGeometry(int cX, int cY ) const {
   Tempest::Model<WaterVertex> model;
   WaterVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
   v.h = 0;
@@ -391,9 +523,7 @@ Tempest::Model<WaterVertex>
   return model;
   }
 
-Model Terrain::fogGeometry( Tempest::VertexBufferHolder & vboHolder,
-                            Tempest::IndexBufferHolder  & iboHolder,
-                            int cX, int cY ) const {
+Model Terrain::fogGeometry(int cX, int cY ) const {
   Model model;
   MVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
 
@@ -802,6 +932,7 @@ void Terrain::serialize( GameSerializer &s ) {
   waterMap .resize( w+1, h+1 );
   buildingsMap.resize(w+1, h+1);
   tileset.resize( w+1, h+1 );
+  tileinf.resize( w+1, h+1 );
   chunks.resize( w/chunkSize+1, h/chunkSize+1 );
 
   if( s.isReader() )

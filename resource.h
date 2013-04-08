@@ -16,6 +16,8 @@
 #include "pixmapspool.h"
 #include "model_mx.h"
 
+#include "gui/graphicssettingswidget.h"
+
 #include <memory>
 
 namespace Tempest{
@@ -69,7 +71,11 @@ class Resource : public AbstractXMLReader {
 
     Tempest::TextureHolder       &  texHolder;
     Tempest::LocalTexturesHolder &  ltexHolder;
+
+    void setupSettings( const GraphicsSettingsWidget::Settings& settings );
 private:
+    GraphicsSettingsWidget::Settings settings;
+
     template< class T >
     struct Box{
       Box():owner(0){}
@@ -187,17 +193,26 @@ private:
       std::unordered_map< std::string, std::string > loaded;
       };
 
+    template< class Sh >
+    struct Shader{
+      Sh sh;
+      std::string settings;
+      std::string def, src;
+      };
+    typedef Shader<Tempest::VertexShader>   VShader;
+    typedef Shader<Tempest::FragmentShader> FShader;
+
     void load( Box<Tempest::Texture2d>& textures,
                const std::string &k, const std::string & f, bool avg = false );
 
     void load( Box< std::shared_ptr<Sound> >& sounds,
                const std::string &k, const std::string & f );
 
-    void load( Box<Tempest::VertexShader>& vs,
+    void load( Box<VShader>& vs,
                const std::string &k, const std::string & f,
                const std::string &def );
 
-    void load( Box<Tempest::FragmentShader>& fs,
+    void load( Box<FShader>& fs,
                const std::string &k, const std::string & f,
                const std::string &def  );
 
@@ -210,10 +225,10 @@ private:
     void load( Box<Tempest::Color>& m,
                const std::string &k, const std::string & f );
 
-    void load( Box<Tempest::VertexShader>& vs,
+    void load( Box< VShader >& vs,
                const std::string &k, const std::string & f );
 
-    void load( Box<Tempest::FragmentShader>& fs,
+    void load( Box< FShader >& fs,
                const std::string &k, const std::string & f );
 
     void load( Box<PixmapsPool::TexturePtr>& fs,
@@ -225,8 +240,8 @@ private:
     mutable Box< std::shared_ptr<Model::Raw> > rawModels;
     mutable Box<Tempest::Texture2d> textures;
     mutable Box<Tempest::Color>     texturesAvg;
-    Box<Tempest::VertexShader>   vs;
-    Box<Tempest::FragmentShader> fs;
+    Box< VShader > vs;
+    Box< FShader > fs;
     Box<PixmapsPool::TexturePtr> px;
 
     mutable Box< std::shared_ptr<Sound> > sounds;
@@ -242,6 +257,7 @@ private:
 
     struct XML;
     PixmapsPool pixmaps;
+    std::string settingsStr;
     std::string loadSrc( const std::string & f );
   };
 

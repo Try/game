@@ -7,6 +7,7 @@
 
 #include "landscape/terrain.h"
 #include "gui/minimapview.h"
+#include "gui/graphicssettingswidget.h"
 
 class Resource;
 class BehaviorMSGQueue;
@@ -39,6 +40,8 @@ class InGameControls : public Tempest::Widget {
     Tempest::signal<const ProtoObject&, int> addObject;
     Tempest::signal< int > onSetPlayer, toogleEditTab;
     Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
+
+    Tempest::signal<const GraphicsSettingsWidget::Settings&> onSettingsChanged;
 
     Tempest::signal<> save, load;
     Tempest::signal<> updateView;
@@ -79,6 +82,8 @@ class InGameControls : public Tempest::Widget {
   private:
     Widget* createConsole( BehaviorMSGQueue & q );
     Widget* createEditPanel();
+    Widget* createSettingsPanel();
+
     EditTerrainPanel* createLandEdit();
 
     Resource & res;

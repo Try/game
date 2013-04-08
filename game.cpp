@@ -111,6 +111,8 @@ Game::Game( ShowMode sm )
   gui.setCameraPos.bind(*this, &Game::setCameraPos );
   gui.minimapEvent.bind(*this, &Game::minimapEvent );
 
+  gui.onSettingsChanged.bind( *this, &Game::settingsChanged );
+
   gui.save.bind( *this, &Game::save );
   gui.load.bind( *this, &Game::load );
 
@@ -138,11 +140,11 @@ Game::Game( ShowMode sm )
 
   setPlaylersCount(1);
 
-  loadMission("campagin/0.sav");
 #ifndef __ANDROID__
   //load(L"campagin/0.sav");
+  loadMission("campagin/td map.sav");
 #else
-  loadMission("campagin/0.sav");
+  loadMission("campagin/td map.sav");
 #endif
   mscenario->onStartGame();
   }
@@ -1022,4 +1024,9 @@ void Game::setCurrectPlayer(int pl) {
   player(currentPlayer).setHostCtrl(0);
   currentPlayer = pl;
   player(currentPlayer).setHostCtrl(1);
+  }
+
+void Game::settingsChanged(const GraphicsSettingsWidget::Settings &s) {
+  resource.setupSettings(s);
+  graphics.setSettings(s);
   }

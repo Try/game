@@ -41,7 +41,14 @@ World::World( Game & gm,
 
   memset(&lcamBds, 0, sizeof(lcamBds) );
 
-  terr.reset( new Terrain( w,h, resource, scene, *this, prototypes) );
+  terr.reset( new Terrain( w,
+                           h,
+                           resource,
+                           graphics.lvboHolder,
+                           graphics.liboHolder,
+                           scene,
+                           *this,
+                           prototypes) );
 
   particles.setupMaterial.bind( setupMaterial );
 
@@ -754,8 +761,7 @@ void World::toogleEditLandMode(const Terrain::EditMode &m) {
 
 void World::initTerrain() {
   //terr->loadFromPixmap( Tempest::Pixmap("./terrImg/h.png") );
-  terr->buildGeometry( graphics.lvboHolder,
-                       graphics.iboHolder );
+  terr->buildGeometry();
   physics.setTerrain( terrain() );
   }
 
@@ -780,8 +786,7 @@ void World::clickEvent(int x, int y, const Tempest::MouseEvent &e) {
       obj.setPosition( obj.x(), obj.y(), terrain().heightAt(wx,wy) );
       }
 
-    terr->buildGeometry( graphics.vboHolder,
-                         graphics.iboHolder );
+    terr->buildGeometry();
     physics.setTerrain( *terr );
     }
   }
@@ -901,9 +906,7 @@ void World::serialize(GameSerializer &s) {
                             terr->height() );
 
   if( s.isReader() ){
-    terr->buildGeometry( graphics.vboHolder,
-                         graphics.iboHolder );
-
+    terr->buildGeometry();
     physics.setTerrain( *terr );
     }
 

@@ -24,7 +24,7 @@ class ListBox : public AbstractListBox {
 
   private:
     Resource &res;
-    int selected;
+    size_t selected;
 
     Tempest::Widget *createDropList();
     std::vector<std::wstring> data;

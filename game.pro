@@ -12,22 +12,32 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 
-CONFIG += opengl
+CONFIG += directx opengl
 #CONFIG += sound
 #CONFIG += physic
 
 opengl:{
-  LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_gl"
   LIBS += -L"$$(CG_LIB_PATH)" -l"opengl32" -l"cg" -l"cgGL"
   LIBS += -L"$$(GLEW_PATH)/lib"  -l"glew32" -l"glew32"
 
   DEFINES += TEMPEST_OPENGL
-  } else {
-  LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_dx"
+  }
+
+directx:{
   LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
   LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
 
   DEFINES += TEMPEST_DIRECTX
+  }
+
+opengl:{
+  directx:{
+    LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest"
+    } else {
+    LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_gl"
+    }
+  } else {
+  LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_dx"
   }
 
 physic:{
@@ -170,7 +180,8 @@ HEADERS += \
     stlconf.h \
     threads/time.h \
     util/ifstream.h \
-    util/tnloptimize.h
+    util/tnloptimize.h \
+    gui/graphicssettingswidget.h
 
 SOURCES += \
     main.cpp \
@@ -278,7 +289,8 @@ SOURCES += \
     stlconf.cpp \
     jniBind.cpp \
     util/ifstream.cpp \
-    util/tnloptimize.cpp
+    util/tnloptimize.cpp \
+    gui/graphicssettingswidget.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

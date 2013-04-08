@@ -24,6 +24,7 @@
 
 #include "graphics/guipass.h"
 #include "graphics/scene.h"
+#include "gui/graphicssettingswidget.h"
 
 #include <Tempest/signal>
 
@@ -42,6 +43,7 @@ class GraphicsSystem {
     bool render( Scene &scene,
                  ParticleSystemEngine &e, Tempest::Camera camera,
                  size_t dt );
+
     void resizeEvent( int w, int h, bool isFullScreen );
 
     void load( Resource & r, MainGui & gui, int w, int h );
@@ -52,14 +54,11 @@ class GraphicsSystem {
 
     Tempest::signal<double> onRender;
     void setFog( const Tempest::Pixmap& p );
-  private:
-#ifdef TEMPEST_OPENGL
-    Tempest::Opengl2x api;
-#endif
 
-#ifdef TEMPEST_DIRECTX
-    Tempest::DirectX9 api;
-#endif
+    void setSettings( const GraphicsSettingsWidget::Settings& s );
+
+  private:
+    std::shared_ptr<Tempest::AbstractAPI> api;
 
     static Tempest::Device::Options makeOpt( bool isFullScreen );
   public:
@@ -77,6 +76,7 @@ class GraphicsSystem {
 
     Tempest::PostProcessHelper    ppHelper;
     Tempest::Texture2d    fogView;
+    Resource * resource;
 
 
     struct ObjectsClosure{
@@ -104,23 +104,30 @@ class GraphicsSystem {
 
     static int dipOptimizeRef();
   private:
+    void renderES( Scene &scene,
+                   ParticleSystemEngine &e, Tempest::Camera camera,
+                   size_t dt );
+
+    GraphicsSettingsWidget::Settings settings;
     std::unique_ptr<GUIPass> gui;
     MainGui * widget;
     ParticleSystemEngine * particles;
 
     bool useFog, useHDR, useDirectRender;
 
-    Tempest::Size  screenSize, potScreenSize;
+    Tempest::Size  guiSize, screenSize, potScreenSize;
+    size_t nFrame;
+
     static  float smMatSize( const Scene & s );
     static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s );
     static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s, double *dxyz );
 
     Tempest::Texture2d::Sampler reflect, bufSampler;
 
-    void makeRenderAlgo( Resource &res,
-                         MainGui &gui,
-                         int w, int h );
-    void blurSm(Tempest::Texture2d &sm , const Scene &scene);
+    void makeRenderAlgo(int w, int h );
+    void blurSm( Tempest::Texture2d &sm,
+                 Tempest::Texture2d &out,
+                 const Scene &scene );
 
     struct Sm{
       Tempest::VertexShader   vs;
@@ -180,8 +187,8 @@ class GraphicsSystem {
 
     struct Gauss{
       Tempest::Uniform< Tempest::Texture2d > texture;
-      Tempest::VertexShader   vs, vsGB, vsB;
-      Tempest::FragmentShader fs, fsGB, fsB;
+      Tempest::VertexShader   vs, vsAO, vsGB, vsB;
+      Tempest::FragmentShader fs, fsAO, fsGB, fsB;
       } gaussData;
 
     struct Omni{
@@ -213,10 +220,10 @@ class GraphicsSystem {
 
     Tempest::Uniform<float[2]> scrOffset, cpyOffset;
 
-    void fillGBuf( Tempest::Texture2d *gbuffer,
+    void fillGBuf(Tempest::Texture2d *gbuffer,
                    Tempest::Texture2d &mainDepth,
                    const Tempest::Texture2d &sm,
-                   const Tempest::Texture2d &smCl,
+                   const Tempest::Texture2d &smCl, const Tempest::Texture2d &ao,
                    const Scene &scene,
                    const Tempest::AbstractCamera &camera);
 
@@ -230,10 +237,10 @@ class GraphicsSystem {
                    Tempest::Texture2d &sm,
                    const Scene &scene);
 
-    void setupLight( const Scene &scene,
+    void setupLight(const Scene &scene, Tempest::VertexShader &vs,
                      Tempest::FragmentShader & fs,
                      const Tempest::Texture2d &sm,
-                     const Tempest::Texture2d &smCl);
+                     const Tempest::Texture2d &smCl, const Tempest::Texture2d &ao);
 
     void fillShadowMap( Tempest::Texture2d &sm,
                         const Scene &scene );
@@ -256,8 +263,7 @@ class GraphicsSystem {
                       void (Material::*func)( Tempest::RenderState& /*d*/,
                                               const Tempest::Matrix4x4 & /*object*/,
                                               const Tempest::AbstractCamera&,
-                                              Tempest::UniformTable &,
-                                              const Tempest::Matrix4x4 & ) const,
+                                              Tempest::UniformTable & ) const,
                       bool clr );
 
     int drawObjects(Tempest::VertexShader &vs,
@@ -268,11 +274,10 @@ class GraphicsSystem {
                       const Scene &scene,
                       const Tempest::AbstractCamera &camera,
                       const Scene::Objects &v,
-                      void (Material::*func)( Tempest::RenderState& /*d*/,
-                                              const Tempest::Matrix4x4 & /*object*/,
-                                              const Tempest::AbstractCamera&,
-                                              Tempest::UniformTable &,
-                                              const Tempest::Matrix4x4 & ) const,
+                      void (Material::*func)(Tempest::RenderState &,
+                                             const Tempest::Matrix4x4 &,
+                                             const Tempest::AbstractCamera &,
+                                             Tempest::UniformTable &) const,
                       bool clr = false,
                       bool clrDepth = false);
 
@@ -282,11 +287,11 @@ class GraphicsSystem {
                           const Scene &scene,
                           const Scene::Objects &v ) ;
 
-    void drawWater( Tempest::Texture2d &screen,
+    void drawWater(Tempest::Texture2d &screen,
                     Tempest::Texture2d& mainDepth,
                     Tempest::Texture2d &sceneCopy,
                     Tempest::Texture2d &sm, Tempest::Texture2d &smCl,
-                    Tempest::Texture2d& sceneDepth,
+                    Tempest::Texture2d& sceneDepth, Tempest::Texture2d &ao,
                     const Scene &scene,
                     const Scene::Objects &v ) ;
 
@@ -306,6 +311,9 @@ class GraphicsSystem {
     void gauss( Tempest::Texture2d &out,
                 const Tempest::Texture2d& in,
                 int w, int h, float dx, float dy );
+    void gauss_ao( Tempest::Texture2d &out,
+                   const Tempest::Texture2d& in,
+                   int w, int h, float dx, float dy );
     void gauss_gb( Tempest::Texture2d &out,
                    const Tempest::Texture2d& in,
                    int w, int h, float dx, float dy );
@@ -354,18 +362,17 @@ class GraphicsSystem {
     Tempest::Texture2d depth( int w, int h );
     Tempest::Texture2d depth( const Tempest::Size& sz );
 
-    void renderScene( const Scene &scene,
+    void renderScene(const Scene &scene,
                       const Tempest::AbstractCamera &camera,
-                      Tempest::Texture2d gbuffer[4],
-                      Tempest::Texture2d & depthBuffer,
-                      Tempest::Texture2d rsm[],
-                      int shadowMapSize, bool useAO);
+                      Tempest::Texture2d *gbuffer,
+                      Tempest::Texture2d & depthBuffer, int gbufferSize,
+                      Tempest::Texture2d *rsm,
+                      int shadowMapSize);
     void buildRSM( Scene &scene,
                    Tempest::Texture2d gbuffer[4],
                    int shadowMapSize);
 
     size_t time;
-    int smapSize;
 
     friend class DisplaceMaterial;
     friend class GlowMaterial;
@@ -409,6 +416,7 @@ class GraphicsSystem {
       return v;
       }
 
+    static Tempest::AbstractAPI* createAPI();
     void setupScreenSize( int w, int h );
 
     template< class ... Args, class ... FArgs >

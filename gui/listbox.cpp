@@ -44,8 +44,10 @@ void ListBox::setCurrentItem(size_t i) {
     return;
 
   i = std::min( data.size()-1, i );
-  selected = i;
-  onItem(selected);
+  if( selected!=i ){
+    selected = i;
+    onItem(selected);
+    }
   }
 
 void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
@@ -56,10 +58,9 @@ void ListBox::mouseWheelEvent(Tempest::MouseEvent &e) {
 
   if( data.size() ){
     if( e.delta < 0 )
-      selected = (selected+1)%data.size(); else
-    if( e.delta > 0 )
-      selected = (selected-1)%data.size();
-    onItem(selected);
+      setCurrentItem(selected+1); else
+    if( e.delta > 0 && selected>0 )
+      setCurrentItem(selected-1);
     }
   }
 
@@ -72,12 +73,21 @@ Tempest::Widget* ListBox::createDropList() {
 
   ScroolWidget *sw = new ScroolWidget( res );
 
+  int h = box->layout().margin().yMargin();
   for( size_t i=0; i<data.size(); ++i ){
     ItemBtn * b = new ItemBtn(res, i);
     b->setText( data[i] );
     b->clickedEx.bind( *this, &ListBox::onItem );
 
     sw->centralWidget().layout().add( b );
+    h += b->sizePolicy().maxSize.h;
+    }
+
+  h += data.size()*sw->centralWidget().layout().spacing();
+
+  if( h<box->h() ){
+    sw->setScroolBarVisible(0);
+    box->resize( box->w(), h );
     }
 
   box->layout().add(sw);

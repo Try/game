@@ -9,9 +9,17 @@
 AbstractListBox::AbstractListBox( Resource &r) : Button(r), res(r) {
   clicked.bind( *this, &AbstractListBox::showList );
   overlay = 0;
+  needToShow = 1;
+  }
+
+AbstractListBox::~AbstractListBox() {
+  close();
   }
 
 void AbstractListBox::showList() {
+  if( !needToShow )
+    return;
+
   Widget* r = findRoot();
 
   while( r->layout().widgets().size()>1 ){
@@ -34,6 +42,7 @@ void AbstractListBox::showList() {
 
 void AbstractListBox::close() {
   if( overlay ){
+    overlay->onDestroy.ubind( *this, &AbstractListBox::rmOverlay );
     overlay->deleteLater();
     overlay = 0;
     }
@@ -41,6 +50,11 @@ void AbstractListBox::close() {
 
 void AbstractListBox::rmOverlay(Tempest::Widget *) {
   overlay = 0;
+  }
+
+void AbstractListBox::mouseDownEvent(Tempest::MouseEvent &e) {
+  Button::mouseDownEvent(e);
+  needToShow = (overlay==0);
   }
 
 Tempest::Widget* AbstractListBox::createDropList() {

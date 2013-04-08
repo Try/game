@@ -16,6 +16,7 @@
 #include "gui/inputhook.h"
 
 #include "gui/font.h"
+#include "gui/graphicssettingswidget.h"
 
 #include <memory>
 
@@ -56,6 +57,8 @@ class MainGui {
                          Game &game );
     Tempest::signal<const ProtoObject&, int> addObject;
     Tempest::signal< int > onSetPlayer, toogleEditTab;
+
+    Tempest::signal<const GraphicsSettingsWidget::Settings&> onSettingsChanged;
 
     Tempest::signal< Tempest::Painter&, int, int> paintObjectsHud;
     Tempest::signal<> toogleFullScreen;

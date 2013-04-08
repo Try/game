@@ -24,6 +24,7 @@ class Material {
 
     struct Usage{
       bool mainPass, shadowCast, terrainMinor, terrainMain,
+           atest,
            displace, water, blush, add,
            transparent, fogOfWar,
            omni, grass;
@@ -32,56 +33,47 @@ class Material {
     void gbuffer( Tempest::RenderState& /*d*/,
                   const Tempest::Matrix4x4 & /*object*/,
                   const Tempest::AbstractCamera&,
-                  Tempest::UniformTable &,
-                  const Tempest::Matrix4x4 &shadowMatrix ) const;
+                  Tempest::UniformTable &) const;
 
     void grass( Tempest::RenderState& /*d*/,
                 const Tempest::Matrix4x4 & /*object*/,
                 const Tempest::AbstractCamera&,
-                Tempest::UniformTable &,
-                const Tempest::Matrix4x4 &shadowMatrix ) const;
+                Tempest::UniformTable &) const;
 
     void additive( Tempest::RenderState& /*d*/,
                    const Tempest::Matrix4x4 & /*object*/,
                    const Tempest::AbstractCamera&,
-                   Tempest::UniformTable &,
-                   const Tempest::Matrix4x4 &shadowMatrix ) const;
+                   Tempest::UniformTable &) const;
 
     void terrainMain( Tempest::RenderState& /*d*/,
                       const Tempest::Matrix4x4 & /*object*/,
                       const Tempest::AbstractCamera&,
-                      Tempest::UniformTable &,
-                      const Tempest::Matrix4x4 &shadowMatrix ) const;
+                      Tempest::UniformTable &) const;
 
     void terrainMinor( Tempest::RenderState& /*d*/,
                        const Tempest::Matrix4x4 & /*object*/,
                        const Tempest::AbstractCamera&,
-                       Tempest::UniformTable &,
-                       const Tempest::Matrix4x4 &shadowMatrix ) const;
+                       Tempest::UniformTable &) const;
 
     void terrainMinorZ( Tempest::RenderState& /*d*/,
                         const Tempest::Matrix4x4 & /*object*/,
                         const Tempest::AbstractCamera&,
-                        Tempest::UniformTable &,
-                        const Tempest::Matrix4x4 &shadowMatrix ) const;
+                        Tempest::UniformTable &) const;
 
     void transparent( Tempest::RenderState& /*d*/,
                       const Tempest::Matrix4x4 & /*object*/,
                       const Tempest::AbstractCamera&,
-                      Tempest::UniformTable &,
-                      const Tempest::Matrix4x4 &shadowMatrix ) const;
+                      Tempest::UniformTable & ) const;
 
-    void transparentZ( Tempest::RenderState& /*d*/,
+    void transparentZ(Tempest::RenderState& /*d*/,
                       const Tempest::Matrix4x4 & /*object*/,
                       const Tempest::AbstractCamera&,
-                      Tempest::UniformTable &,
-                      const Tempest::Matrix4x4 &shadowMatrix ) const;
+                      Tempest::UniformTable &) const;
 
-    void glowPass( Tempest::RenderState& /*d*/,
+    void glowPass(Tempest::RenderState& /*d*/,
                    const Tempest::Matrix4x4 & /*object*/,
                    const Tempest::AbstractCamera&,
-                   Tempest::UniformTable &,
-                   const Tempest::Matrix4x4 &unused ) const;
+                   Tempest::UniformTable &) const;
 
     void shadow( Tempest::RenderState& /*d*/,
                  const Tempest::Matrix4x4 & /*object*/,
@@ -92,14 +84,12 @@ class Material {
     void displace( Tempest::RenderState& /*d*/,
                    const Tempest::Matrix4x4 & /*object*/,
                    const Tempest::AbstractCamera&,
-                   Tempest::UniformTable &,
-                   const Tempest::Matrix4x4 &shadowMatrix ) const;
+                   Tempest::UniformTable & ) const;
 
     void water( Tempest::RenderState& /*d*/,
                 const Tempest::Matrix4x4 & /*object*/,
                 const Tempest::AbstractCamera&,
-                Tempest::UniformTable &,
-                const Tempest::Matrix4x4 &shadowMatrix ) const;
+                Tempest::UniformTable & ) const;
 
     void omni(Tempest::RenderState& /*d*/,
                const Tempest::Matrix4x4 & /*object*/,

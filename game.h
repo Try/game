@@ -182,6 +182,8 @@ class Game : public Tempest::Window {
 
     void onRender(double dt);
 
+    void settingsChanged( const GraphicsSettingsWidget::Settings &s );
+
   friend class World;
   };
 

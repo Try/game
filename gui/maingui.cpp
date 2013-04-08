@@ -80,6 +80,8 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   mainwidget->setCameraPos.bind( setCameraPos );
   mainwidget->minimapEvent.bind( minimapEvent );
 
+  mainwidget->onSettingsChanged.bind( onSettingsChanged );
+
   //updateView.bind( mainwidget->updateView );
 
   mainwidget->addObject.bind( addObject );

@@ -27,19 +27,20 @@ Tempest::Widget &ScroolWidget::centralWidget() {
   }
 
 void ScroolWidget::setScroolBarVisible(bool v) {
-  layout().take( &sb );
+  if( v==sb.isVisible() )
+    return;
 
-  if( v )
-    layout().add( &sb );
+  sb.setVisible(v);
+  resizeEv( w(), h() );
   }
 
 void ScroolWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
-  if( !rect().contains(e.x+x(), e.y+y()) ){
+  if( !rect().contains(e.x+x(), e.y+y()) || !sb.isVisible() ){
     e.ignore();
     return;
     }
 
-  sb.setValue( sb.value() - e.delta);//*std::max(1, int(sb.range()*0.05)) );
+  sb.setValue(sb.value() - e.delta);//*std::max(1, int(sb.range()*0.05)) );
   }
 
 void ScroolWidget::scrool(int v) {
@@ -48,6 +49,9 @@ void ScroolWidget::scrool(int v) {
 
 void ScroolWidget::resizeEv(int , int ) {
   int s = sb.sizePolicy().minSize.w;
+  if( !sb.isVisible() )
+    s = 0;
+
   sb.setGeometry( w()-s, 0,
                   s, h());
 

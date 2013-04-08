@@ -12,6 +12,8 @@ class TnlOptimize {
 
     static void index( std::vector<MVertex>& v,
                        std::vector<uint16_t>& ibo );
+
+    static void optimizeTerrain( std::vector<MVertex>& v );
   };
 
 #endif // TNLOPTIMIZE_H

@@ -106,19 +106,12 @@ struct Resource::XML{
           }
         }
       }
-#ifdef TEMPEST_OPENGL
-    def += "#define opengl\n";
-#endif
-
-#ifdef TEMPEST_DIRECTX
-    def += "#define directx\n";
-#endif
-
 #ifdef __ANDROID__
     def += "#define oes_render\n";
 #endif
 
     def += "#line 0\n";
+
     //std::cout << def << std::endl;
     r.load(b,  name, file, def  );
     r.load(b1, name, file1, def );
@@ -168,6 +161,8 @@ Resource::Resource( Tempest::TextureHolder       & tx,
   vs.owner = this;
   fs.owner = this;
   px.owner = this;
+
+  setupSettings(settings);
 
   Model model;
 
@@ -259,11 +254,25 @@ Sound &Resource::sound(const std::string &key) const {
   }
 
 Tempest::VertexShader &Resource::vshader(const std::string &key) {
-  return vs.get(key);
+  VShader &s = vs.get(key);
+
+  if( s.settings!=settingsStr ){
+    s.settings = settingsStr;
+    s.sh       = vsHolder.loadFromSource( s.settings +"\n" + s.def + s.src );
+    }
+
+  return s.sh;
   }
 
 Tempest::FragmentShader &Resource::fshader(const std::string &key){
-  return fs.get(key);
+  FShader &s = fs.get(key);
+
+  if( s.settings!=settingsStr ){
+    s.settings = settingsStr;
+    s.sh       = fsHolder.loadFromSource( s.settings +"\n"+ s.def + s.src );
+    }
+
+  return s.sh;
   }
 
 PixmapsPool::TexturePtr Resource::pixmap(const std::string &key) {
@@ -283,6 +292,26 @@ PixmapsPool::TexturePtr Resource::pixmap( const Tempest::Pixmap &px,
 
 void Resource::flushPixmaps() {
   pixmaps.flush();
+  }
+
+void Resource::setupSettings( const GraphicsSettingsWidget::Settings &s ) {
+  settings = s;
+  std::ostringstream ss;
+
+#ifdef __ANDROID__
+  ss << "precision lowp float;\n";
+  ss << "#define oes_render\n";
+#endif
+
+  if( s.api==GraphicsSettingsWidget::Settings::openGL )
+    ss << "#define opengl\n";
+
+  ss << "#define settings_shadowmapres "    << s.shadowMapRes << "\n"
+     << "#define settings_shadowmapfilter " << s.shadowFilterQ << "\n"
+     << "#define settings_glow "            << (s.glow? 1:0)  << "\n"
+     << "#define settings_bloom "           << (s.bloom?1:0)  << "\n";
+
+  settingsStr = ss.str();
   }
 
 void Resource::load( Box<Model> &m,
@@ -313,13 +342,13 @@ void Resource::load( Box< Tempest::Color  > &,
   assert(0);
   }
 
-void Resource::load( Box< Tempest::VertexShader > &,
+void Resource::load(Box<VShader> &,
                      const std::string &,
                      const std::string & ){
   assert(0);
   }
 
-void Resource::load( Box< Tempest::FragmentShader > &,
+void Resource::load(Box<FShader> &,
                      const std::string &,
                      const std::string & ){
   assert(0);
@@ -361,7 +390,7 @@ void Resource::load( Box<Tempest::Texture2d>& textures,
   if( it!=textures.loaded.end() ){
     textures.add(k, textures.get( it->second ) );
     } else {
-    textures.add(k,  texHolder.load(f) );
+    textures.add(k, texHolder.load(f) );
     textures.loaded[f] = k;
     }
 
@@ -383,30 +412,34 @@ void Resource::load( Box<Tempest::Texture2d>& textures,
       }
 
     texturesAvg.add(k, Tempest::Color( cl[0]/255.0,
-                                    cl[1]/255.0,
-                                    cl[2]/255.0,
-                                    cl[3]/255.0 ) );
+                                       cl[1]/255.0,
+                                       cl[2]/255.0,
+                                       cl[3]/255.0 ) );
     }
   }
 
-void Resource::load( Box<Tempest::VertexShader> &vs,
+void Resource::load( Box<VShader> &vs,
                      const std::string &k,
                      const std::string &f,
                      const std::string &def ) {
-  std::string src = def + loadSrc(f);
-  vs.add(k, vsHolder.loadFromSource(src) );
+  VShader sh;
+  sh.def = def;
+  sh.src = loadSrc(f);
+
+  sh.settings = "! notloaded\n";
+  vs.add(k, sh );
   }
 
-void Resource::load( Box<Tempest::FragmentShader> &fs,
+void Resource::load(Box<FShader> &fs,
                      const std::string &k,
                      const std::string &f,
                      const std::string &def ) {
-#ifdef __ANDROID__
-  std::string src = def + "precision mediump float;\n#line 0\n" + loadSrc(f);
-#else
-  std::string src = def + loadSrc(f);
-#endif
-  fs.add(k, fsHolder.loadFromSource(src) );
+  FShader sh;
+  sh.def = def;
+  sh.src = loadSrc(f);
+  sh.settings = "! notloaded\n";
+
+  fs.add(k, sh );
   }
 
 void Resource::readElement( TiXmlNode *node ) {

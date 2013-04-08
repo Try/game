@@ -25,10 +25,13 @@
 #include "gui/textureview.h"
 #include "gui/unitview.h"
 #include "gui/minimapview.h"
+#include "gui/lineedit.h"
 
 #include "gui/tabwidget.h"
 #include "editterrainpanel.h"
 #include "missiontargets.h"
+
+#include "graphicssettingswidget.h"
 
 #include <sstream>
 
@@ -116,6 +119,7 @@ InGameControls::InGameControls(Resource &res,
 
   Tempest::Widget * box = new Tempest::Widget();
   box->layout().add( editPanel );
+  box->layout().add( createSettingsPanel() );
   cen->layout().add( box );
 
   cen->useScissor( false );
@@ -259,6 +263,12 @@ Widget *InGameControls::createEditPanel() {
 
   //tabs->setVisible(0);
   return tabs;
+  }
+
+Widget *InGameControls::createSettingsPanel() {
+  GraphicsSettingsWidget * s =new GraphicsSettingsWidget(res);
+  s->onSettingsChanged.bind( onSettingsChanged );
+  return s;
   }
 
 EditTerrainPanel *InGameControls::createLandEdit() {

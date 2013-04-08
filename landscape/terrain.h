@@ -29,6 +29,8 @@ class Terrain {
   public:
     Terrain( int w, int h,
              Resource & res,
+             Tempest::VertexBufferHolder & vboHolder,
+             Tempest::IndexBufferHolder  & iboHolder,
              Scene & s,
              World       & wrld,
              const PrototypesLoader & pl );
@@ -49,16 +51,11 @@ class Terrain {
       std::string texture;
       };
 
-    void buildGeometry( Tempest::VertexBufferHolder & vboHolder,
-                        Tempest::IndexBufferHolder  & iboHolder );
+    void buildGeometry();
 
-    Tempest::Model<WaterVertex> waterGeometry( Tempest::VertexBufferHolder & vboHolder,
-                                            Tempest::IndexBufferHolder  & iboHolder,
-                                            int cX, int cY ) const;
+    Tempest::Model<WaterVertex> waterGeometry( int cX, int cY ) const;
 
-    Model fogGeometry( Tempest::VertexBufferHolder & vboHolder,
-                       Tempest::IndexBufferHolder  & iboHolder,
-                       int cX, int cY ) const;
+    Model fogGeometry( int cX, int cY ) const;
 
     int width() const;
     int height() const;
@@ -103,6 +100,9 @@ class Terrain {
     World                  & world;
     const PrototypesLoader & prototype;
 
+    Tempest::VertexBufferHolder & vboHolder;
+    Tempest::IndexBufferHolder  & iboHolder;
+
     std::vector< std::string >    aviableTiles;
     std::vector< Tempest::Color > aviableColors;
 
@@ -112,7 +112,12 @@ class Terrain {
       float normal[3];
       Tempest::Color color;
       };
-    array2d<Tile> tileset;
+
+    struct TileInfo{
+      bool land, minor, black[6];
+      };
+    array2d<Tile>     tileset;
+    array2d<TileInfo> tileinf;
     array2d<TerrainChunk> chunks;
 
     std::vector< Model::Vertex > land, minor;
@@ -142,6 +147,9 @@ class Terrain {
     Resource & res;
 
     friend class SmallGraphicsObject;
+
+    MVertex mkVertex( int x, int y, int plane );
+    static bool isSame( const MVertex& a, const MVertex& b );
 
     static const int chunkSize;
   };
