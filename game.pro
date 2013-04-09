@@ -14,7 +14,7 @@ LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" 
 
 CONFIG += directx opengl
 #CONFIG += sound
-#CONFIG += physic
+CONFIG += physic
 
 opengl:{
   LIBS += -L"$$(CG_LIB_PATH)" -l"opengl32" -l"cg" -l"cgGL"

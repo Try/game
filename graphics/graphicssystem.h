@@ -215,7 +215,7 @@ class GraphicsSystem {
       Tempest::Uniform<float[3]> lightAblimient;
 
       Tempest::VertexShader   vs;
-      Tempest::FragmentShader fs, detail, accept, acceptGI;
+      Tempest::FragmentShader acceptGI;
       } ssaoData;
 
     Tempest::Uniform<float[2]> scrOffset, cpyOffset;
@@ -331,17 +331,6 @@ class GraphicsSystem {
                 const Tempest::Texture2d& in,
                 const Tempest::Texture2d &in1);
 
-    void ssao( Tempest::Texture2d &out,
-               const Tempest::Texture2d& in,
-               const Tempest::Texture2d &gao,
-               const Scene &scene);
-
-    void aceptSsao( const Scene &s,
-                    Tempest::Texture2d &out,
-                    const Tempest::Texture2d& scene,
-                    const Tempest::Texture2d &diff,
-                    const Tempest::Texture2d &ssao);
-
     void aceptGI( const Scene &s,
                   Tempest::Texture2d &out,
                   const Tempest::Texture2d& scene,
@@ -349,10 +338,6 @@ class GraphicsSystem {
                   const Tempest::Texture2d &norm,
                   const Tempest::Texture2d &depth,
                   const Tempest::Texture2d gi[4] );
-
-    void ssaoDetail( Tempest::Texture2d &out,
-                     const Tempest::Texture2d& in,
-                     const Tempest::Texture2d &macro );
 
     void ssaoGMap( const Scene &s,
                    Tempest::Texture2d &out );

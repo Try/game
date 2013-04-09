@@ -5,7 +5,7 @@
 #include <Tempest/Layout>
 
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
-  = GraphicsSettingsWidget::Settings::openGL;
+  = GraphicsSettingsWidget::Settings::directX;
 
 GraphicsSettingsWidget::Settings::Settings() {
   shadowMapRes = 1024;

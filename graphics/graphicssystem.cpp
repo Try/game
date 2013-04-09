@@ -156,9 +156,6 @@ void GraphicsSystem::makeRenderAlgo( int w, int h ) {
   bltData.fs = res.fshader("blt");
 
   ssaoData.vs       = gaussData.vs;
-  ssaoData.fs       = res.fshader("ssao_macro");
-  ssaoData.detail   = res.fshader("ssao_detail");
-  ssaoData.accept   = res.fshader("ssao_accept");
   ssaoData.acceptGI = res.fshader("gi_accept");
 
   ssaoData.texture.setName("texture");
@@ -498,13 +495,13 @@ void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
   if( scene.lights().direction().size() > 0 )
     light = scene.lights().direction()[0];
 
-  Tempest::Texture2d lightColor = localTex.create(1,1);
+  //Tempest::Texture2d lightColor = localTex.create(1,1);
   {
     Tempest::Render render( device,
                             sm, 
                             transparentData.vsSh,
                             transparentData.fsSh );
-    render.clear( light.color(), 1 );
+    render.clear( light.color() );
     }
 
   Tempest::RenderState rstate;
@@ -1378,77 +1375,6 @@ void GraphicsSystem::waves( Tempest::Texture2d &out,
   ppHelper.drawFullScreenQuad( device, water.vs, water.fs );
   }
 
-void GraphicsSystem::ssaoDetail( Tempest::Texture2d &out,
-                                 const Tempest::Texture2d &in ,
-                                 const Tempest::Texture2d &macro ) {
-  int w = 512, h = w;
-
-  Tempest::Texture2d tmp;
-  copy( tmp, in, w, h );
-  gauss( out, tmp, w, h, 2, 0 );
-  gauss( tmp, out, w, h, 0, 2 );
-
-  Tempest::Render render( device,
-                          out,
-                          ssaoData.vs, ssaoData.detail );
-
-  render.setRenderState( Tempest::RenderState::PostProcess );
-
-  ssaoData.texture.set( &in );
-  ssaoData.blured .set( &tmp );
-  ssaoData.macro  .set( &macro );
-
-  cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( ssaoData.vs, cpyOffset );
-  device.setUniform( ssaoData.detail, ssaoData.texture );
-  device.setUniform( ssaoData.detail, ssaoData.blured  );
-  device.setUniform( ssaoData.detail, ssaoData.macro  );
-
-  ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.detail );
-  }
-
-void GraphicsSystem::ssao( Tempest::Texture2d &out,
-                           const Tempest::Texture2d &in,
-                           const Tempest::Texture2d & gao,
-                           const Scene & scene ) {
-  int w = in.width(), h = in.height();
-
-  const Tempest::AbstractCamera &camera = scene.camera();
-
-  Tempest::Matrix4x4 mat = camera.projective();
-  mat.mul( camera.view() );
-  mat.inverse();
-
-  double dir[] = {0,0, -1};
-  Tempest::Matrix4x4 shMatrix = makeShadowMatrix(scene, dir);
-
-  const Tempest::Camera &view =
-      reinterpret_cast<const Tempest::Camera&>( scene.camera() );
-  float scaleSize = 0.3/std::max( view.distance(), 1.0 )/3.0;
-
-  //out = localTex.create( w, h, Tempest::Texture2d::Format::Luminance8 );
-  out = shadowMap(w,h);
-
-  out.setSampler( reflect );
-
-  Tempest::Render render( device,
-                          out,
-                          ssaoData.vs, ssaoData.fs );
-
-  render.setRenderState( Tempest::RenderState::PostProcess );
-
-  ssaoData.texture.set( &gao );
-  cpyOffset.set( 1.0f/screenSize.w, 1.0f/screenSize.h );
-  device.setUniform( ssaoData.vs, cpyOffset );
-  device.setUniform( ssaoData.fs, ssaoData.texture );
-  device.setUniform( ssaoData.fs, mat,      "invMatrix");
-  device.setUniform( ssaoData.fs, shMatrix, "shMatrix" );
-  device.setUniform( ssaoData.fs, in, "dBuf" );
-  device.setUniform( ssaoData.fs, &scaleSize, 1, "scaleSize" );
-
-  ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.fs );
-  }
-
 void GraphicsSystem::aceptGI(   const Scene & s,
                                 Tempest::Texture2d &out,
                                 const Tempest::Texture2d &scene,
@@ -1470,7 +1396,7 @@ void GraphicsSystem::aceptGI(   const Scene & s,
 
   Tempest::Render render( device,
                           out,
-                          ssaoData.vs, ssaoData.accept );
+                          ssaoData.vs, ssaoData.acceptGI );
 
   render.setRenderState( Tempest::RenderState::PostProcess );
 
@@ -1508,45 +1434,6 @@ void GraphicsSystem::aceptGI(   const Scene & s,
   device.setUniform( ssaoData.acceptGI, ssaoData.lightAblimient  );
 
   ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.acceptGI );
-  }
-
-void GraphicsSystem::aceptSsao( const Scene & s,
-                                Tempest::Texture2d &out,
-                                const Tempest::Texture2d &scene,
-                                const Tempest::Texture2d &diff,
-                                const Tempest::Texture2d &ssao ) {
-  //ssaoData.lightAblimient.set(1,1,1);
-
-  if( s.lights().direction().size()>0 ){
-    Tempest::DirectionLight l = s.lights().direction()[0];
-    ssaoData.lightAblimient.set( l, Tempest::LightAblimient );
-    }
-
-  int w = scene.width(), h = scene.height();
-
-  out = colorBuf( w,h );
-  out.setSampler( reflect );
-
-  Tempest::Texture2d depth = this->depth( w,h );
-
-  Tempest::Render render( device,
-                          out,
-                          ssaoData.vs, ssaoData.accept );
-
-  render.setRenderState( Tempest::RenderState::PostProcess );
-
-  cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( ssaoData.vs, cpyOffset );
-
-  ssaoData.scene.set( &scene );
-  ssaoData.diff .set( &diff  );
-  ssaoData.ssao .set( &ssao  );
-  device.setUniform( ssaoData.accept, ssaoData.scene );
-  device.setUniform( ssaoData.accept, ssaoData.diff  );
-  device.setUniform( ssaoData.accept, ssaoData.ssao  );
-  device.setUniform( ssaoData.accept, ssaoData.lightAblimient  );
-
-  ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.accept );
   }
 
 void GraphicsSystem::ssaoGMap( const Scene &scene,
@@ -1959,7 +1846,9 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
 
     //device.setUniform( finalData.fs, finalData.bloom );
     device.setUniform( finalData.avatar, finalData.scene );
-    device.setUniform( finalData.avatar, finalData.glow );
+
+    if( settings.glow )
+      device.setUniform( finalData.avatar, finalData.glow );
 
     ppHelper.drawFullScreenQuad( device, finalData.vs, finalData.avatar );
     }

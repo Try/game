@@ -53,7 +53,7 @@ void GUIPass::exec( MainGui &gui,
         }
       }
 
-    if( sz && int(sz)!=guiIndex.size() ){
+    if( sz && int(sz)>=guiIndex.size() ){
       guiIndex    = Tempest::IndexBuffer<uint16_t>();
       iboTmp.resize( 6*sz/4 );
 

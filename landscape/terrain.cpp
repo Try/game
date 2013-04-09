@@ -324,8 +324,8 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
   std::vector<uint16_t> index;
   if( land.size() ){
     TnlOptimize::index( land, index );
-    model.load( vboHolder, iboHolder,
-                land, index, MVertex::decl() );
+    model.load( vboHolder, iboHolder, land, index, MVertex::decl() );
+    //model.load( vboHolder, iboHolder, land,  MVertex::decl() );
 
     TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
