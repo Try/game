@@ -63,7 +63,6 @@ void Terrain::buildGeometry(){
 
   for( int i=0; i<chunks.width(); ++i )
     for( int r=0; r<chunks.height(); ++r ){
-      chunks[i][r].needToUpdate = true;
       if( chunks[i][r].needToUpdate )
         chunks[i][r].landView.clear();
       }
@@ -126,6 +125,7 @@ MVertex Terrain::mkVertex(int x, int y, int plane) {
 
   float *n = tileset[x][y].normal;
   std::copy( n, n+3, v.normal );
+
 
   return v;
   }
@@ -294,6 +294,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
 
       }*/
 
+
   for( int i=lx; i+1<rx; ++i )
     for( int r=ly; r+1<ry; ++r ){
       TileInfo &inf = tileinf[i][r];
@@ -305,7 +306,12 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
           }
         }
       }
-
+/*
+  int ddx = rx-lx-1, ddy = ry-ly-1;
+  for( int q=0; q<dcount; ++q )
+    if( tileinf[lx][ly].land )
+      land.push_back( mkVertex(lx+dx[q]*ddx, ly+dy[q]*ddy, plane) );
+*/
   for( int i=lx; i+1<rx; ++i )
     for( int r=ly; r+1<ry; ++r ){
       TileInfo &inf = tileinf[i][r];
@@ -367,7 +373,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     chunk.landView.push_back( view );
     }
 
-  if( plane==2 ){
+  if( plane==0 ){
     chunk.waterView.view.reset( new GameObjectView( scene,
                                                     world,
                                                     prototype.get( "water" ),
@@ -518,7 +524,9 @@ Tempest::Model<WaterVertex>
   decl.add( Tempest::Decl::float1, Tempest::Usage::Depth    )
       .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 1 );
 
-  model.load( vboHolder, iboHolder, land, decl );
+  std::vector<uint16_t> index;
+  TnlOptimize::index( land, index );
+  model.load( vboHolder, iboHolder, land, index, decl );
 
   return model;
   }

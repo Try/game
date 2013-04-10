@@ -38,7 +38,7 @@ class ParticleSystemEngine;
 
 class GraphicsSystem {
   public:
-    GraphicsSystem(void *hwnd, bool isFullScreen, int smSize );
+    GraphicsSystem(void *hwnd, bool isFullScreen);
 
     bool render( Scene &scene,
                  ParticleSystemEngine &e, Tempest::Camera camera,
@@ -104,10 +104,6 @@ class GraphicsSystem {
 
     static int dipOptimizeRef();
   private:
-    void renderES( Scene &scene,
-                   ParticleSystemEngine &e, Tempest::Camera camera,
-                   size_t dt );
-
     GraphicsSettingsWidget::Settings settings;
     std::unique_ptr<GUIPass> gui;
     MainGui * widget;
@@ -118,9 +114,10 @@ class GraphicsSystem {
     Tempest::Size  guiSize, screenSize, potScreenSize;
     size_t nFrame;
 
-    static  float smMatSize( const Scene & s );
+    static  float smMatSize(const Scene & s, float sv = 0 );
     static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s );
-    static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s, double *dxyz );
+    static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s, double *dxyz,
+                                                 float sv = 0 );
 
     Tempest::Texture2d::Sampler reflect, bufSampler;
 

@@ -169,6 +169,7 @@ class Game : public Tempest::Window {
       int n, time;
       } fps;
 
+    size_t  updateTime;
     int     sendDelay;
     std::unique_ptr<NetUser>  netUser;
     std::unique_ptr<Scenario> mscenario;

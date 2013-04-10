@@ -27,7 +27,7 @@
 
 Game::Game( ShowMode sm )
      :Window(sm),
-      graphics( handle(), isFullScreenMode(), isFullScreenMode() ? 2048:1024 ),
+      graphics( handle(), isFullScreenMode() ),
       soundDev( handle() ),
       resource( graphics.texHolder,
                 graphics.localTex,
@@ -141,12 +141,13 @@ Game::Game( ShowMode sm )
   setPlaylersCount(1);
 
 #ifndef __ANDROID__
-  //load(L"campagin/0.sav");
-  loadMission("campagin/td map.sav");
+  load(L"campagin/0.sav");
+  //loadMission("campagin/td map.sav");
 #else
-  loadMission("campagin/td map.sav");
+  //loadMission("campagin/td map.sav");
 #endif
   mscenario->onStartGame();
+  updateTime = Time::tickCount();
   }
 
 void Game::tick() {
@@ -223,12 +224,18 @@ void Game::onRender( double dt ){
   }
 
 void Game::render() {
-  tick();//FIXME
+  static const size_t updateDT = 1000/35;
+  size_t tnow = Time::tickCount();
+  if( (tnow-updateTime)/updateDT>0 ){
+    int c = (tnow-updateTime)/updateDT;
+    for( ; c; --c ){
+      updateTime += updateDT;
+      tick();
+      }
 
-  gui.updateValues();
-
-  //world->camera.setSpinX(spinX);
-  //world->camera.setSpinY(spinY);
+    if( c>3 )
+      updateTime = tnow;
+    }
 
   size_t time = Time::tickCount();
   size_t dt   = time;
@@ -857,6 +864,7 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
   if( contains( src.materials, "transparent_no_zw" ) ){
     material.usage.transparent = true;
     material.zWrighting        = false;
+    material.alphaTrestRef     = 0.1;
     }
 
   if( contains( src.materials, "fog_of_war" ) ){

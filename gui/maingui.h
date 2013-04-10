@@ -121,6 +121,7 @@ class MainGui {
 
     InGameControls *mainwidget;
     float fps;
+    std::wstring fpsStr;
 
     CentralWidget central;
     Resource & res;

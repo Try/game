@@ -8,7 +8,7 @@ GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
   = GraphicsSettingsWidget::Settings::directX;
 
 GraphicsSettingsWidget::Settings::Settings() {
-  shadowMapRes = 1024;
+  shadowMapRes = 2*1024;
   bloom        = Hight;
   glow         = true;
 
@@ -28,6 +28,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   l.push_back(L"sm 1024x1024");
   l.push_back(L"sm 2048x2048");
   //l.push_back(L"sm 4096x4096");
+
   b->setItemList(l);
   b->setCurrentItem(1);
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::shadowMapRes);

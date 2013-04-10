@@ -172,7 +172,7 @@ void Player::fillFog(Tempest::Pixmap &p, World &wx ) {
 #ifdef __ANDROID__
   return;
 #endif
-  const bool useFog = 0;
+  const bool useFog = 1;
 
   if( p.width()  != wx.terrain().width() ||
       p.height() != wx.terrain().height() ){

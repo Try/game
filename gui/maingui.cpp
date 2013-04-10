@@ -203,7 +203,7 @@ bool MainGui::draw(GUIPass &pass) {
 
     if( fps>=0 ){
       p.setFont( Font(14) );
-      RichText::renderText( 0, 0, res, p, L"fps = "+Lexical::upcastw(fps) );
+      RichText::renderText( 0, 0, res, p, fpsStr);
       }
     }
 
@@ -349,7 +349,10 @@ void MainGui::setCutsceneMode(bool cs) {
   }
 
 void MainGui::setFPS(float f) {
-  fps = f;
+  if( fps!=f ){
+    fpsStr = L"fps = "+Lexical::upcastw(f);
+    fps = f;
+    }
   }
 
 void MainGui::saveGame() {

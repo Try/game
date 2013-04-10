@@ -62,7 +62,8 @@ InGameControls::InGameControls(Resource &res,
                : res(res),
                  game(game),
                  prototypes(prototypes),
-                 showEditPanel(this, Tempest::KeyEvent::K_F9) {
+                 showEditPanel(this, Tempest::KeyEvent::K_F9),
+                 showSettings (this, Tempest::KeyEvent::K_F8) {
   isHooksEnabled = true;
   currPl         = 1;
   setFocusPolicy( Tempest::ClickFocus );
@@ -114,18 +115,24 @@ InGameControls::InGameControls(Resource &res,
   top->setSizePolicy(p);
 
   editPanel = createEditPanel();
+  settingsPanel = createSettingsPanel();
+
   cen->setLayout( Tempest::Horizontal );
   cen->layout().add( new MissionTargets(game, res) );
 
   Tempest::Widget * box = new Tempest::Widget();
   box->layout().add( editPanel );
-  box->layout().add( createSettingsPanel() );
+  box->layout().add( settingsPanel );
   cen->layout().add( box );
 
   cen->useScissor( false );
   box->useScissor( false );
 
+  editPanel->setVisible(0);
+  settingsPanel->setVisible(0);
+
   showEditPanel.activated.bind( *this, &InGameControls::toogleEditPanel );
+  showSettings. activated.bind( *this, &InGameControls::toogleSettingsPanel );
   }
 
 InGameControls::~InGameControls() {
@@ -280,6 +287,10 @@ EditTerrainPanel *InGameControls::createLandEdit() {
 
 void InGameControls::toogleEditPanel() {
   editPanel->setVisible( !editPanel->isVisible() );
+  }
+
+void InGameControls::toogleSettingsPanel() {
+  settingsPanel->setVisible( !settingsPanel->isVisible() );
   }
 
 void InGameControls::setCurrPl(size_t i) {

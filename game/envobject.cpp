@@ -48,7 +48,7 @@ const Model &EnvObject::model() const {
   return m_model;
   }
 
-Tempest::Matrix4x4 EnvObject::transform() const {
+const Tempest::Matrix4x4 &EnvObject::transform() const {
   return mat;
   }
 

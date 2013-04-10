@@ -210,6 +210,7 @@ void Material::transparent(Tempest::RenderState &rs,
   rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
   rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
                    Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
+  rs.setZWriting( zWrighting );
   }
 
 void Material::transparentZ(Tempest::RenderState &rs,

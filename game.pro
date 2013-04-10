@@ -13,7 +13,7 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 
 CONFIG += directx opengl
-#CONFIG += sound
+CONFIG += sound
 CONFIG += physic
 
 opengl:{

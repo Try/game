@@ -45,7 +45,7 @@ World::World( Game & gm,
                            h,
                            resource,
                            graphics.lvboHolder,
-                           graphics.iboHolder,
+                           graphics.liboHolder,
                            scene,
                            *this,
                            prototypes) );

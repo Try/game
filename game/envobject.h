@@ -20,7 +20,7 @@ class EnvObject : public AbstractGraphicObject {
     void setModel( const Model & m );
     const Model& model() const;
 
-    Tempest::Matrix4x4 transform() const;
+    const Tempest::Matrix4x4& transform() const;
     void setTransform( const Tempest::Matrix4x4 & m );
 
     Tempest::ModelBounds bounds() const;

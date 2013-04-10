@@ -91,9 +91,10 @@ class InGameControls : public Tempest::Widget {
     PrototypesLoader & prototypes;
 
     void toogleEditPanel();
+    void toogleSettingsPanel();
 
-    Tempest::Shortcut showEditPanel;
-    Widget        *editPanel;
+    Tempest::Shortcut showEditPanel, showSettings;
+    Widget        *editPanel, *settingsPanel;
     CommandsPanel *commands;
     UnitList      *units;
     Button *gold, *lim;
