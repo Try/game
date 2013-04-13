@@ -228,7 +228,9 @@ void Game::render() {
   size_t tnow = Time::tickCount();
   if( (tnow-updateTime)/updateDT>0 ){
     int c = (tnow-updateTime)/updateDT;
-    for( ; c; --c ){
+    int cx = std::min(c,3);
+
+    for( ; cx; --cx ){
       updateTime += updateDT;
       tick();
       }

@@ -21,7 +21,10 @@ struct MVertex {
     size_t operator()( const MVertex& mv ) const;
     };
 
-  static Tempest::VertexDeclaration::Declarator decl();
+  static const Tempest::VertexDeclaration::Declarator& decl();
+
+  private:
+    static Tempest::VertexDeclaration::Declarator mkDecl();
   };
 
 class Model : public Tempest::Model<MVertex> {

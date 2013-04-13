@@ -7,11 +7,6 @@
 
 #ifdef __ANDROID__
 
-namespace std{
-struct bad_alloc : public exception { bad_alloc operator()(){}};
-struct bad_cast  : public exception { bad_alloc operator()(){}};
-}
-
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/smart_ptr/scoped_ptr.hpp>
 #include <boost/smart_ptr/make_shared.hpp>

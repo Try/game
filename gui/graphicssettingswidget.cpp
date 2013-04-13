@@ -5,10 +5,10 @@
 #include <Tempest/Layout>
 
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
-  = GraphicsSettingsWidget::Settings::directX;
+  = GraphicsSettingsWidget::Settings::openGL;
 
 GraphicsSettingsWidget::Settings::Settings() {
-  shadowMapRes = 2*1024;
+  shadowMapRes = 1024;
   bloom        = Hight;
   glow         = true;
 

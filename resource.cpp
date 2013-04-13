@@ -299,11 +299,13 @@ void Resource::setupSettings( const GraphicsSettingsWidget::Settings &s ) {
   std::ostringstream ss;
 
 #ifdef __ANDROID__
-  ss << "precision lowp float;\n";
+  ss << "precision highp float;\n";
   ss << "#define oes_render\n";
 #endif
 
+#ifndef __ANDROID__
   if( s.api==GraphicsSettingsWidget::Settings::openGL )
+#endif
     ss << "#define opengl\n";
 
   ss << "#define settings_shadowmapres "    << s.shadowMapRes << "\n"

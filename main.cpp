@@ -50,7 +50,7 @@ int main( int, char** ){
 
   Tempest::Application app;
   setupTh();
-  Game game( Tempest::Window::FullScreen );
+  Game game( Tempest::Window::Maximized );
   game.show();
 
   return app.exec();

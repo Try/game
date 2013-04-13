@@ -9,6 +9,7 @@ EnvObject::EnvObject( Scene &s ): AbstractGraphicObject(s){
   }
 
 EnvObject::EnvObject(const EnvObject &x): AbstractGraphicObject(x) {
+  viewID = -1;
   form    = x.form;
   m       = x.m;
   m_model = x.m_model;

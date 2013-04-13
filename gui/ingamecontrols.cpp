@@ -128,8 +128,8 @@ InGameControls::InGameControls(Resource &res,
   cen->useScissor( false );
   box->useScissor( false );
 
-  editPanel->setVisible(0);
-  settingsPanel->setVisible(0);
+  //editPanel->setVisible(0);
+  //settingsPanel->setVisible(0);
 
   showEditPanel.activated.bind( *this, &InGameControls::toogleEditPanel );
   showSettings. activated.bind( *this, &InGameControls::toogleSettingsPanel );

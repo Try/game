@@ -1753,14 +1753,14 @@ void GraphicsSystem::renderScene( const Scene &scene,
              aoBlured,
              scene,
              scene.waterObjects() );
-  /*
+
 
   if( useFog )
     renderVolumeLight( scene,
                        gbuffer[0],
                        gbuffer[3],
                        shadowMap );
-
+/*
   if(1){
     setupLight( scene, transparentData.fs, shadowMap, shadowMapCl );
     drawObjects( transparentData.vs, transparentData.fs,
@@ -1768,13 +1768,16 @@ void GraphicsSystem::renderScene( const Scene &scene,
                  scene,
                  camera,
                  scene.objects<TransparentMaterialNoZW>() );
-    }
-*/
+    }*/
+
   }
 
 void GraphicsSystem::renderSubScene( const Scene &scene,
                                      ParticleSystemEngine &e,
                                      Tempest::Texture2d &out  ) {
+#ifdef __ANDROID__
+  return;
+#endif
   particles = &e;
 
   int w = out.width(),

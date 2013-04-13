@@ -98,9 +98,10 @@ void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {
   }
 
 bool MainGui::draw(GUIPass &pass) {
-  res.flushPixmaps();
+  res.flushPixmaps();  
 
   if( mainwidget ){
+    updateValues();
     mainwidget->updateValues();
     mainwidget->updateView();
     updateView();

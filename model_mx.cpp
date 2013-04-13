@@ -6,7 +6,7 @@
 
 #include "util/tnloptimize.h"
 
-Tempest::VertexDeclaration::Declarator MVertex::decl() {
+Tempest::VertexDeclaration::Declarator MVertex::mkDecl() {
   Tempest::VertexDeclaration::Declarator d;
   d   .add( Tempest::Decl::float3, Tempest::Usage::Position )
       .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
@@ -14,6 +14,11 @@ Tempest::VertexDeclaration::Declarator MVertex::decl() {
       .add( Tempest::Decl::float4, Tempest::Usage::Color    )
       .add( Tempest::Decl::float4, Tempest::Usage::BiNormal );
 
+  return d;
+  }
+
+const Tempest::VertexDeclaration::Declarator &MVertex::decl() {
+  static Tempest::VertexDeclaration::Declarator d = mkDecl();
   return d;
   }
 
