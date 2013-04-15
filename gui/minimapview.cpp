@@ -116,11 +116,6 @@ void MiniMapView::render( World &wx ) {
   lineTo( hudPx, b.x[1], b.y[1], b.x[3], b.y[3] );
   lineTo( hudPx, b.x[3], b.y[3], b.x[2], b.y[2] );
   hud   = res.ltexHolder.create(hudPx, false, false);
-
-  //setTexture( Tempest::Texture2d() );
-  //setTexture( res.ltexHolder.create( renderTo, 0) );
-
-  //update();
   }
 
 void MiniMapView::lineTo( Tempest::Pixmap &renderTo,

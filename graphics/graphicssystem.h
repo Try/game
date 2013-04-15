@@ -292,10 +292,10 @@ class GraphicsSystem {
                     const Scene &scene,
                     const Scene::Objects &v ) ;
 
-    void drawGlow( Tempest::Texture2d &out,
+    void drawGlow(Tempest::Texture2d &out,
                    Tempest::Texture2d &depth,
                    const Scene &scene,
-                   int size );
+                   int size , int w, int h);
 
     void aceptFog(Tempest::Texture2d &in_out, const Tempest::Texture2d &fog);
 

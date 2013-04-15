@@ -288,11 +288,7 @@ bool GraphicsSystem::render( Scene &scene,
 */
 
   Tempest::Texture2d gbuffer[4], rsm[4];
-#ifdef __ANDROID__
-  Tempest::Texture2d mainDepth = depth( potScreenSize );
-#else
   Tempest::Texture2d mainDepth = depth( screenSize );
-#endif
 
   scrOffset.set( 1.0f/screenSize.w, 1.0f/screenSize.h );
 
@@ -349,7 +345,9 @@ bool GraphicsSystem::render( Scene &scene,
   Tempest::Texture2d glow, bloomTex;
 
   if( settings.glow ){
-    drawGlow( glow, mainDepth, scene, 512 );
+    drawGlow( glow, mainDepth, scene, 512,
+              gbuffer[0].width(),
+              gbuffer[0].height() );
     aceptFog( glow, fog );
     }
 
@@ -963,7 +961,8 @@ void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
 void GraphicsSystem::drawGlow (Tempest::Texture2d &out,
                                Tempest::Texture2d &depth,
                                const Scene &scene,
-                               int size ) {
+                               int size,
+                               int w, int h ) {
   if( !settings.glow ){
     out = colorBuf( 16, 16 );
     device.beginPaint(out);
@@ -972,8 +971,7 @@ void GraphicsSystem::drawGlow (Tempest::Texture2d &out,
     return;
     }
 
-  Tempest::Texture2d buffer = colorBuf( screenSize.w,
-                                        screenSize.h );
+  Tempest::Texture2d buffer = colorBuf( w,h );
 
   const Tempest::AbstractCamera & camera = scene.camera();
 
@@ -1807,7 +1805,9 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
                256 );
 
   Tempest::Texture2d glow;
-  drawGlow( glow, mainDepth, scene, 128 );
+  drawGlow( glow, mainDepth, scene, 128,
+            gbuffer[0].width(),
+            gbuffer[0].height() );
 
   {
     Tempest::Render render( device,
