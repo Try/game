@@ -306,6 +306,7 @@ Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
   Tempest::RenderState rs;
   rs.setZTest(false);
   rs.setZWriting( true );
+  //rs.setPolygonRenderMode( Tempest::RenderState::PolyRenderMode::Line );
 
   rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
   rs.setBlend(0);

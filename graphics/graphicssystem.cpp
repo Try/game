@@ -279,13 +279,6 @@ bool GraphicsSystem::render( Scene &scene,
   Material::wind = sin( 2.0*M_PI*tx/(16*1024.0) );
 
   particles = &par;
-/*
-#ifdef TEMPEST_OPENGL
-  renderES( scene, par, camera, dt );
-  device.present();
-  return 1;
-#endif
-*/
 
   Tempest::Texture2d gbuffer[4], rsm[4];
   Tempest::Texture2d mainDepth = depth( screenSize );
@@ -328,8 +321,10 @@ bool GraphicsSystem::render( Scene &scene,
                settings.shadowMapRes );
 
   Tempest::Texture2d fog;
-  drawFogOfWar(fog, scene);
-  aceptFog( gbuffer[0], fog );
+  if( fogView.width()>0 ){
+    drawFogOfWar(fog, scene);
+    aceptFog( gbuffer[0], fog );
+    }
 
   if( widget ){
     if( useDirectRender )
@@ -348,7 +343,8 @@ bool GraphicsSystem::render( Scene &scene,
     drawGlow( glow, mainDepth, scene, 512,
               gbuffer[0].width(),
               gbuffer[0].height() );
-    aceptFog( glow, fog );
+    if( fogView.width()>0 )
+      aceptFog( glow, fog );
     }
 
   if( settings.bloom )
@@ -1774,7 +1770,7 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
                                      ParticleSystemEngine &e,
                                      Tempest::Texture2d &out  ) {
 #ifdef __ANDROID__
-  return;
+  //return;
 #endif
   particles = &e;
 

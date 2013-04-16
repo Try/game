@@ -483,9 +483,9 @@ void Physics::Rigid::update() {
   btVector3 pos = n.getOrigin();
 
   matrix =  Tempest::Matrix4x4( v[0][0], v[0][1], v[0][2], 0,
-                             v[1][0], v[1][1], v[1][2], 0,
-                             v[2][0], v[2][1], v[2][2], 0,
-                              pos[0],  pos[1],  pos[2], 1 );
+                                v[1][0], v[1][1], v[1][2], 0,
+                                v[2][0], v[2][1], v[2][2], 0,
+                                pos[0],  pos[1],  pos[2], 1 );
 #endif
   }
 

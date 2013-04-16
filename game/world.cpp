@@ -159,6 +159,7 @@ void World::createTestMap() {
   }
 
 void World::computePhysic( void * ) {
+  #ifndef __ANDROID__
   while( isRunning ){
     physics.tick();
     #ifndef __ANDROID__
@@ -167,6 +168,7 @@ void World::computePhysic( void * ) {
     sleep(50);
     #endif
     }
+  #endif
   }
 
 void World::createResp(int pl, int x, int y, int minX, int minY) {

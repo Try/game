@@ -4,8 +4,13 @@
 #include "lineedit.h"
 #include <Tempest/Layout>
 
+#ifdef __ANDROID__
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
   = GraphicsSettingsWidget::Settings::openGL;
+#else
+GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
+  = GraphicsSettingsWidget::Settings::openGL;
+#endif
 
 GraphicsSettingsWidget::Settings::Settings() {
   shadowMapRes = 1024;

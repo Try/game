@@ -92,7 +92,8 @@ void UnitView::mouseUpEvent(Tempest::MouseEvent &) {
 
 void UnitView::paintEvent(Tempest::PaintEvent &e) {
   //updateView();
-  TextureView::paintEvent(e);
+  if( curUnit )
+    TextureView::paintEvent(e);
   }
 
 void UnitView::setupCamera() {
