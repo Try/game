@@ -4,6 +4,8 @@
 #include <Tempest/Texture2d>
 #include <Tempest/GraphicObject>
 
+#include "gui/graphicssettingswidget.h"
+
 namespace Tempest{
   class VertexShader;
   class FragmentShader;
@@ -106,6 +108,8 @@ class Material {
   //private:
     static Tempest::Matrix4x4 animateObjMatrix( const Tempest::Matrix4x4 &object,
                                              double power = 1 );
+
+    static GraphicsSettingsWidget::Settings settings;
   };
 
 typedef Tempest::AbstractGraphicObject<Material> AbstractGraphicObject;

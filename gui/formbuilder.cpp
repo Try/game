@@ -252,7 +252,8 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
       w->layout().setMargin(m);
       }
 
-    void setMargin( FormWidget<ScroolWidget>* w, int m ){
+    void setMargin( FormWidget<ScroolWidget>* , int m ){
+      (void)m;
       //w->layout().setMargin(m);
       }
 

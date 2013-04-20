@@ -4,6 +4,8 @@
 
 float Material::wind = 0;
 
+GraphicsSettingsWidget::Settings Material::settings;
+
 Material::Material():specular(0), useAlphaTest(1), alphaTrestRef(0.5) {
   memset( &usage, 0, sizeof(usage) );
   zWrighting = true;
@@ -59,9 +61,9 @@ void Material::gbuffer( Tempest::RenderState &rs,
   //table.add( sh,     "shadowMatrix", Tempest::UniformTable::Vertex );
 
   table.add( diffuse,  "texture",        Tempest::UniformTable::Fragment );
-  table.add( normal,   "normalMap",      Tempest::UniformTable::Fragment );
+  if( settings.normalMap )
+    table.add( normal,   "normalMap",      Tempest::UniformTable::Fragment );
   table.add( specular, "specularFactor", Tempest::UniformTable::Fragment );
-
 
   if( teamColor ){// FIXME
     float cl[3] = { teamColor->r(),

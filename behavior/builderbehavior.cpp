@@ -7,7 +7,7 @@
 #include "behavior/buildingbehavior.h"
 
 BuilderBehavior::BuilderBehavior( GameObject & o,
-                                  Behavior::Closure & c )
+                                  Behavior::Closure &  )
                 : obj(o), hud(o.getScene()), hudIntent(o.getScene()) {
   instaled = 0;
   hud.setVisible(0);
@@ -78,7 +78,7 @@ void BuilderBehavior::build() {
 
 bool BuilderBehavior::message( AbstractBehavior::Message msg,
                                const std::string & s,
-                               AbstractBehavior::Modifers md ) {
+                               AbstractBehavior::Modifers  ) {
   if( msg!=Buy ){
     taget.clear();
     return 0;

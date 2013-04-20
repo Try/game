@@ -106,10 +106,6 @@ struct Resource::XML{
           }
         }
       }
-#ifdef __ANDROID__
-    def += "#define oes_render\n";
-#endif
-
     def += "#line 0\n";
 
     //std::cout << def << std::endl;
@@ -308,10 +304,11 @@ void Resource::setupSettings( const GraphicsSettingsWidget::Settings &s ) {
 #endif
     ss << "#define opengl\n";
 
-  ss << "#define settings_shadowmapres "    << s.shadowMapRes << "\n"
-     << "#define settings_shadowmapfilter " << s.shadowFilterQ << "\n"
-     << "#define settings_glow "            << (s.glow? 1:0)  << "\n"
-     << "#define settings_bloom "           << (s.bloom?1:0)  << "\n";
+  ss << "#define settings_shadowmapres "    << s.shadowMapRes     << std::endl
+     << "#define settings_shadowmapfilter " << s.shadowFilterQ    << std::endl
+     << "#define settings_glow "            << (s.glow? 1:0)      << std::endl
+     << "#define settings_bloom "           << (s.bloom?1:0)      << std::endl
+     << "#define settings_normalMap "       << (s.normalMap?1:0)  << std::endl;
 
   settingsStr = ss.str();
   }

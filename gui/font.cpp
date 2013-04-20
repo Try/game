@@ -101,7 +101,7 @@ const Tempest::Bind::UserFont::Leter&
 
 
   FT_Face       face;
-  FT_Vector     pen = {};
+  FT_Vector     pen = {0,0};
   FT_Error err = 0;
 
   err = FT_New_Face( ft().library, key.name.c_str(), 0, &face );

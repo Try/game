@@ -1,4 +1,6 @@
 QT    -= core gui
+CONFIG -= app_bundle
+CONFIG -= qt
 
 TARGET = game
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
@@ -12,11 +14,11 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 
-CONFIG += directx opengl
+CONFIG += directx ogl
 CONFIG += sound
 CONFIG += physic
 
-opengl:{
+ogl:{
   LIBS += -L"$$(CG_LIB_PATH)" -l"opengl32" -l"cg" -l"cgGL"
   LIBS += -L"$$(GLEW_PATH)/lib"  -l"glew32" -l"glew32"
 
@@ -30,7 +32,7 @@ directx:{
   DEFINES += TEMPEST_DIRECTX
   }
 
-opengl:{
+ogl:{
   directx:{
     LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest"
     } else {
@@ -42,14 +44,7 @@ opengl:{
 
 physic:{
   INCLUDEPATH += "$$(BULLET_INCLUDE_PATH)"
-  LIBS += -L"$$(BULLET_LIB_PATH)" \
-          -l"BulletDynamics"   \
-          -l"BulletCollision"  \
-          -l"BulletFileLoader" \
-          -l"BulletMultiThreaded" \
-          -l"BulletSoftBody"      \
-          -l"BulletWorldImporter" \
-          -l"LinearMath"
+  LIBS += -L"$$(BULLET_LIB_PATH)" -lbullet
   } else {
   DEFINES += NO_PHYSIC
   }

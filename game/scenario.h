@@ -16,9 +16,9 @@ struct Scenario {
   virtual void onEndGame()   {}
   virtual void restartGame() {}
 
-  virtual void onItemEvent( GameObject & obj )   {}
+  virtual void onItemEvent( GameObject & obj )   { (void)obj; }
 
-  virtual void serialize( GameSerializer &s ){}
+  virtual void serialize( GameSerializer & ){}
 
   struct MissionTaget{
     bool done;

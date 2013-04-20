@@ -5,23 +5,35 @@
 #include "game/world.h"
 #include "game.h"
 
+#include "threads/time.h"
+
 MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
-  rtime   = clock();
-  rtime2  = clock();
+  rtime   = Time::tickCount();
+  rtime2  = Time::tickCount();
   pressed = false;
   }
 
 void MiniMapView::render( World &wx ) {
+  //return;
+
   int mk = wx.terrain().width()*wx.terrain().height()/(128*128);
 
-  if( terr.width() != w() ||
-      terr.height()!= h() ){
-    rtime = clock() - mk*CLOCKS_PER_SEC*2;
+  if( terr.width() != w() || terr.height()!= h() ){
+    rtime = Time::tickCount() - mk*1000*2;
+
+    hudPx = Tempest::Pixmap(w(), h(), true);
+    Tempest::Pixmap::Pixel px = {0,0,0,0};
+
+    for( int i=0; i<hudPx.width(); ++i )
+      for( int r=0; r<hudPx.height(); ++r ){
+        hudPx.set(i,r, px );
+        }
+
     update();
     }
 
-  if( clock() >= rtime2+mk*CLOCKS_PER_SEC*2 ){
-    rtime2 = clock();
+  if( Time::tickCount() >= rtime2+mk*1000*2 ){
+    rtime2 = Time::tickCount();
 
     Tempest::Pixmap terr = Tempest::Pixmap(w(), h(), true);
     Tempest::Pixmap::Pixel pix;
@@ -68,11 +80,9 @@ void MiniMapView::render( World &wx ) {
         }
 
     this->terr = res.ltexHolder.create(terr, false, false);
-    }
-
-
-  if( clock() >= rtime+mk*CLOCKS_PER_SEC/2 ){
-    rtime = clock();
+    } else
+  if( Time::tickCount() >= rtime+mk*1000/2 ){
+    rtime = Time::tickCount();
     Tempest::Pixmap::Pixel pix;
     pix.r = 0;
     pix.g = 0;
@@ -94,39 +104,40 @@ void MiniMapView::render( World &wx ) {
     fog   = res.ltexHolder.create(fogTex, false, false);
     }
 
-  static Tempest::Pixmap hudPx = Tempest::Pixmap(w(), h(), true);
-  Tempest::Pixmap::Pixel px = {};
+  //static Tempest::Pixmap hudPx = Tempest::Pixmap(w(), h(), true);
+  Tempest::Pixmap::Pixel px[2] = {{0,0,0,0}, {255,255,255,255}};
+
 
   for( int i=0; i<hudPx.width(); ++i )
     for( int r=0; r<hudPx.height(); ++r ){
-      hudPx.set(i,r, px );
+      hudPx.set(i,r, px[0] );
       }
 
-  World::CameraViewBounds b = wx.cameraBounds();
-  int sx = wx.terrain().width()*Terrain::quadSize,
-      sy = wx.terrain().width()*Terrain::quadSize;
+  for( int i=0; i<2; ++i ){
+    World::CameraViewBounds b = camBounds;
+    camBounds = wx.cameraBounds();
+    //World::CameraViewBounds b = wx.cameraBounds();
+    int sx = wx.terrain().width()*Terrain::quadSize,
+        sy = wx.terrain().height()*Terrain::quadSize;
 
-  for( int i=0; i<4; ++i ){
-    b.x[i] = (b.x[i]*hudPx.width()) /sx;
-    b.y[i] = (b.y[i]*hudPx.height())/sy;
+    for( int i=0; i<4; ++i ){
+      b.x[i] = (b.x[i]*hudPx.width()) /sx;
+      b.y[i] = (b.y[i]*hudPx.height())/sy;
+      }
+
+    lineTo( hudPx, b.x[0], b.y[0], b.x[1], b.y[1], px[i] );
+    lineTo( hudPx, b.x[0], b.y[0], b.x[2], b.y[2], px[i] );
+    lineTo( hudPx, b.x[1], b.y[1], b.x[3], b.y[3], px[i] );
+    lineTo( hudPx, b.x[3], b.y[3], b.x[2], b.y[2], px[i] );
     }
 
-  lineTo( hudPx, b.x[0], b.y[0], b.x[1], b.y[1] );
-  lineTo( hudPx, b.x[0], b.y[0], b.x[2], b.y[2] );
-  lineTo( hudPx, b.x[1], b.y[1], b.x[3], b.y[3] );
-  lineTo( hudPx, b.x[3], b.y[3], b.x[2], b.y[2] );
   hud   = res.ltexHolder.create(hudPx, false, false);
   }
 
 void MiniMapView::lineTo( Tempest::Pixmap &renderTo,
                           int x0, int y0,
-                          int x1, int y1) {
-  Tempest::Pixmap::Pixel pix;
-  pix.r = 255;
-  pix.g = 255;
-  pix.b = 255;
-  pix.a = 255;
-
+                          int x1, int y1,
+                          Tempest::Pixmap::Pixel pix ) {
   if( x0==x1 && 0<=x1 && x1<renderTo.width() ){
     if( y0>y1 )
       std::swap(y0,y1);
@@ -330,10 +341,12 @@ void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
         }
       }
 
+  /*
   for( int i=0; i<renderTo.width(); ++i )
     for( int r=0; r<renderTo.height(); ++r )
       if( renderTo.at(i,r).a==0 )
-        ;//renderTo.set( i, r, terr.at(i,r) );
+        {};//renderTo.set( i, r, terr.at(i,r) );
+        */
   }
 
 void MiniMapView::paintEvent(Tempest::PaintEvent &e) {

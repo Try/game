@@ -411,7 +411,7 @@ double GameObjectView::viewHeight() const {
   if( view.size() ){
     const GraphicObject &obj = view[0];
 
-    float dx = 0, dy = 0, dz = 0;
+    float /*dx = 0, dy = 0,*/ dz = 0;
     double modelSize[3] = { obj.bounds().max[0] - obj.bounds().min[0],
                             obj.bounds().max[1] - obj.bounds().min[1],
                             obj.bounds().max[2] - obj.bounds().min[2] };
@@ -419,8 +419,8 @@ double GameObjectView::viewHeight() const {
     const int * align = getClass().view[0].align;
     double alignSize  = getClass().view[0].alignSize;
 
-    dx = modelSize[0]*obj.sizeX()*align[0]*alignSize;
-    dy = modelSize[1]*obj.sizeY()*align[1]*alignSize;
+    //dx = modelSize[0]*obj.sizeX()*align[0]*alignSize;
+    //dy = modelSize[1]*obj.sizeY()*align[1]*alignSize;
     dz = modelSize[2]*obj.sizeZ()*align[2]*alignSize;
 
     return (m.initalModelHeight*view[0].sizeZ()+dz);

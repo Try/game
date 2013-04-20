@@ -82,7 +82,7 @@ private:
 
       Resource * owner;
       std::unordered_map< std::string, T > data;
-      std::unordered_map< std::string, std::string > toLoad;
+      mutable std::unordered_map< std::string, std::string > toLoad;
 
       bool contains( const std::string & s ){
         if( data.find(s)!=data.end() )

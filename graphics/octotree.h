@@ -11,7 +11,34 @@
 template< class T >
 class OcTree {
   public:
-    typedef std::unique_ptr<OcTree> POcTree;
+    class POcTree{
+      OcTree * value;
+      public:
+        POcTree(OcTree * v = 0):value(v){}
+        POcTree( const POcTree& ) = delete;
+        ~POcTree(){ delete value; }
+
+        void reset( OcTree * v = 0 ){
+          delete value;
+          value = v;
+          }
+
+        OcTree& operator * (){
+          return *value;
+          }
+
+        const OcTree& operator * ()const {
+          return *value;
+          }
+
+        operator bool () const { return value!=0; }
+
+        OcTree* operator ->(){ return value; }
+        const OcTree* operator ->() const{ return value; }
+
+        POcTree& operator = ( const POcTree& ) = delete;
+      };
+
     OcTree( int linearSize = leafLinearSize )
         :r(1.5*linearSize*1.45), linearSize(linearSize){
         x = 0;

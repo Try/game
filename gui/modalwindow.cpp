@@ -28,7 +28,7 @@ ModalWindow::~ModalWindow() {
   onClosed();
   }
 
-void ModalWindow::mouseDownEvent(Tempest::MouseEvent &e)
+void ModalWindow::mouseDownEvent(Tempest::MouseEvent &)
 {
 }
 
@@ -36,7 +36,7 @@ void ModalWindow::mouseWheelEvent(Tempest::MouseEvent &)
 {
 }
 
-void ModalWindow::mouseMoveEvent(Tempest::MouseEvent &e)
+void ModalWindow::mouseMoveEvent(Tempest::MouseEvent &)
 {
 }
 

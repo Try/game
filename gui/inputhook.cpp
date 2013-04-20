@@ -21,6 +21,9 @@ void InputHook::mouseMoveEvent( Tempest::MouseEvent &e ) {
 bool InputHook::minimapMouseEvent( float x, float y,
                                    Tempest::Event::MouseButton btn,
                                    MiniMapView::Mode m) {
+  (void)x;
+  (void)y;
+
   Tempest::MouseEvent e(-1, -1, btn);
   e.accept();
 

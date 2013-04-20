@@ -41,7 +41,7 @@ GameObject &WeakWorldPtr::value() {
   }
 
 WeakWorldPtr::operator bool() const {
-  return v;
+  return (bool)v;
   }
 
 size_t WeakWorldPtr::id() const {

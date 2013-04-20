@@ -5,6 +5,7 @@
 #include <vector>
 #include "stlconf.h"
 #include <unordered_map>
+#include <cstdint>
 
 class TnlOptimize {
   public:
@@ -18,7 +19,7 @@ class TnlOptimize {
       ibo.resize( v.size() );
 
       for( size_t i=0; i<ibo.size(); ++i ){
-        typename std::unordered_map<T, uint16_t>::iterator it = m.find( v[i] );
+        typename std::unordered_map<T, uint16_t, MVertex::hash>::iterator it = m.find( v[i] );
         if( it==m.end() ){
           size_t sz = m.size();
           ibo[i]  = sz;
@@ -30,7 +31,7 @@ class TnlOptimize {
 
       v.resize( m.size() );
 
-      typename std::unordered_map<T, uint16_t>::iterator
+      typename std::unordered_map<T, uint16_t, MVertex::hash>::iterator
           i = m.begin(),
           e = m.end();
 

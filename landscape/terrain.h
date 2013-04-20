@@ -83,8 +83,8 @@ class Terrain {
     std::pair<int,int> nearestEnable( int x, int y,
                                       int tgX, int tgY, int sz ) const;
 
-    static const int   quadSize  = 600;
-    static const float quadSizef = quadSize;
+    static const int   quadSize;
+    static const float quadSizef;
 
     void editBuildingsMap( int x, int y, int w, int h, int dv );
 

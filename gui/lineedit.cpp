@@ -80,7 +80,7 @@ void LineEdit::mouseDownEvent(Tempest::MouseEvent &e) {
   update();
   }
 
-void LineEdit::mouseUpEvent(Tempest::MouseEvent &e) {
+void LineEdit::mouseUpEvent(Tempest::MouseEvent &) {
   if( sedit > eedit )
     std::swap( sedit, eedit );
   update();
@@ -207,10 +207,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   if( e.key==KeyEvent::K_Delete && editable ){
     if( sedit < eedit )
       txt.erase( sedit, eedit-sedit ); else
-    if( sedit >= 0 ){
       txt.erase( sedit, 1 );
-      //--sedit;
-      }
 
     eedit = sedit;
 

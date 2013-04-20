@@ -4,7 +4,7 @@
 #include "game/world.h"
 
 WarehouseBehavior::WarehouseBehavior( GameObject & o,
-                                      Behavior::Closure & c ) : obj(o){
+                                      Behavior::Closure & ) : obj(o){
   obj.world().addWarehouse( &obj );
   }
 
@@ -12,5 +12,5 @@ WarehouseBehavior::~WarehouseBehavior() {
   obj.world().delWarehouse( &obj );
   }
 
-void WarehouseBehavior::tick(const Terrain &terrain) {
+void WarehouseBehavior::tick(const Terrain &) {
   }

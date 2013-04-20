@@ -9,13 +9,14 @@ GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
   = GraphicsSettingsWidget::Settings::openGL;
 #else
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
-  = GraphicsSettingsWidget::Settings::openGL;
+  = GraphicsSettingsWidget::Settings::directX;
 #endif
 
 GraphicsSettingsWidget::Settings::Settings() {
   shadowMapRes = 1024;
   bloom        = Hight;
   glow         = true;
+  normalMap    = true;
 
   shadowFilterQ = 2;
   }
@@ -72,6 +73,17 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::glow );
 
   layout().add(b);
+
+  b = new ListBox(res);
+  l.clear();
+  l.push_back(L"normals off");
+  l.push_back(L"normals on");
+
+  b->setItemList(l);
+  b->setCurrentItem(1);
+  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::normalMap );
+
+  layout().add(b);
   }
 
 void GraphicsSettingsWidget::shadowMapRes(int v) {
@@ -94,6 +106,12 @@ void GraphicsSettingsWidget::bloomQ(int v) {
 
 void GraphicsSettingsWidget::glow(int v) {
   s.glow = v;
+
+  onSettingsChanged(s);
+  }
+
+void GraphicsSettingsWidget::normalMap(int v) {
+  s.normalMap = v;
 
   onSettingsChanged(s);
   }

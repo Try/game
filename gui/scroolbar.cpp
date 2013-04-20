@@ -181,7 +181,7 @@ void ScroolBar::CenBtn::moveTo( Tempest::Point p ) {
     setPosition( p );
   }
 
-ScroolBar::CenWidget::CenWidget(Resource &r, ScroolBar *owner) {
+ScroolBar::CenWidget::CenWidget(Resource &, ScroolBar *owner) {
   ow = owner;
   }
 

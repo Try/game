@@ -14,9 +14,9 @@ class Mutex {
     Mutex( const Mutex& ) = delete;
     Mutex& operator = ( const Mutex& ) = delete;
 
-    volatile void lock();
-    volatile void unlock();
-    volatile bool tryLock();
+    void lock();
+    void unlock();
+    bool tryLock();
   private:
     pthread_mutex_t impl;
   };

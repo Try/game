@@ -83,7 +83,7 @@ void RecruterBehavior::tick( const Terrain &terrain ) {
 
 bool RecruterBehavior::message( AbstractBehavior::Message msg,
                                 const std::string& cls,
-                                AbstractBehavior::Modifers md ) {
+                                AbstractBehavior::Modifers  ) {
   if( msg!=Buy )
     return 0;
 

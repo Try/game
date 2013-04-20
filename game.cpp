@@ -142,7 +142,7 @@ Game::Game( ShowMode sm )
 
 #ifndef __ANDROID__
   //load(L"campagin/0.sav");
-  loadMission("campagin/td map.sav");
+  //loadMission("campagin/td map.sav");
 #else
   loadMission("campagin/td map.sav");
 #endif

@@ -61,9 +61,6 @@ void GraphicsSystem::makeRenderAlgo( int w, int h ) {
                           guiSize  ) );
   setupScreenSize(w,h);
 
-  glowData.vs = res.vshader("glow");
-  glowData.fs = res.fshader("glow");
-
   gbuf.vs     = res.vshader("unit_main_material");
   gbuf.fs     = res.fshader("unit_main_material");
 
@@ -111,6 +108,9 @@ void GraphicsSystem::makeRenderAlgo( int w, int h ) {
 
   fogOfWar.vs = res.vshader("fog_of_war");
   fogOfWar.fs = res.fshader("fog_of_war");
+
+  glowData.vs = res.vshader("glow");
+  glowData.fs = res.fshader("glow");
 
   fogOfWar.vsAcept = gaussData.vs;
   fogOfWar.fsAcept = res.fshader("aceptFog");
@@ -891,7 +891,7 @@ int GraphicsSystem::draw( Tempest::Render  & render,
     for( int y=0; y<2; ++y )
       for( int z=0; z<2; ++z )
         if( v.nested[x][y][z] ){
-          Scene::Objects &t = *v.nested[x][y][z];
+          const Scene::Objects &t = *v.nested[x][y][z];
           float dpos = t.linearSize*0.5;
 
           GraphicsSystem::VisibleRet ret = FullVisible;
@@ -1835,7 +1835,8 @@ void GraphicsSystem::setFog(const Tempest::Pixmap &p) {
   }
 
 void GraphicsSystem::setSettings(const GraphicsSettingsWidget::Settings &s) {
-  settings = s;
+  settings           = s;
+  Material::settings = s;
 
   makeRenderAlgo( screenSize.w, screenSize.h );
   }

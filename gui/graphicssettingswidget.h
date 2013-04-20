@@ -20,6 +20,7 @@ class GraphicsSettingsWidget:public Panel {
       int   shadowMapRes;
       int   shadowFilterQ;
       bool  glow;
+      bool  normalMap;
 
       enum API{
         openGL,
@@ -37,6 +38,7 @@ class GraphicsSettingsWidget:public Panel {
     void smFilterQ(int v);
     void bloomQ(int v);
     void glow( int v );
+    void normalMap( int v );
   };
 
 #endif // GRAPHICSSETTINGSWIDGET_H

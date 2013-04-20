@@ -70,7 +70,7 @@ void WayFindAlgo::findWay( std::vector< GameObject* >& objs,
       if( bobj ){
         bobj->setWay( way );
         }
-      ways[i] = std::make_shared<std::vector<Point>>( way );
+      ways[i] = std::make_shared<std::vector<Point> >( way );
       setupWaysGroup( obj, ways[i], objs, ways );
       }
 

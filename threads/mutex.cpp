@@ -9,14 +9,14 @@ Mutex::~Mutex() {
   }
 
 
-volatile void Mutex::lock() {
+void Mutex::lock() {
   pthread_mutex_lock(&impl);
   }
 
-volatile void Mutex::unlock() {
+void Mutex::unlock() {
   pthread_mutex_unlock(&impl);
   }
 
-volatile bool Mutex::tryLock() {
+bool Mutex::tryLock() {
   return 0==pthread_mutex_trylock(&impl);
   }

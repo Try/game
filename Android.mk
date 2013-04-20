@@ -3,7 +3,9 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := main
-LOCAL_CFLAGS := -std=gnu++11
+NDK_TOOLCHAIN_VERSION := 4.7
+APP_ABI := armeabi-v7a
+LOCAL_ARM_MODE := arm
 
 Tempest_PATH := C:/Users/Try/Home/Programming/Tempest/Tempest
 Tinyxml_PATH := C:/Users/Try/Home/Programming/SharedLibs/tinyxml
@@ -11,10 +13,10 @@ Tinyxml_PATH := C:/Users/Try/Home/Programming/SharedLibs/tinyxml
 LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
                     $(Tempest_PATH)/math \
                     $(Tinyxml_PATH)/
-LOCAL_C_INCLUDES += freetype/include
+LOCAL_C_INCLUDES += C:/Users/Try/Home/Programming/android/game_ndk/game/jni/freetype/include
 LOCAL_C_INCLUDES += C:/Users/Try/Home/Programming/SharedLibs/boost_1_52_0/boost_1_52_0
 
-LOCAL_CFLAGS := -std=gnu++11 -DTEMPEST_OPENGL -DNO_PHYSIC -DNO_SOUND
+LOCAL_CFLAGS := -std=c++11 -pthread -frtti -fexceptions -DTEMPEST_OPENGL -DNO_PHYSIC -DNO_SOUND
 LOCAL_CFLAGS += -D_STLP_NO_EXCEPTIONS
 
 LOCAL_SRC_FILES := \

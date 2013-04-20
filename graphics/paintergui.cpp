@@ -14,6 +14,10 @@ PainterGUI::PainterGUI(GUIPass & d, Resource &res, int sx, int sy, int sw, int s
   }
 
 void PainterGUI::line( int x0, int y0, int x1, int y1 ) {
+  (void)x0;
+  (void)y0;
+  (void)x1;
+  (void)y1;
   //painter->setPen( makeColor(c0) );
   //painter->drawLine( x0, y0, x1, y1 );
   }

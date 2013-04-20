@@ -15,6 +15,9 @@
 const int Terrain::chunkSize = 32;
 //const int Terrain::chunkSize = 16;
 
+const int   Terrain::quadSize  = 600;
+const float Terrain::quadSizef = 600;
+
 Terrain::Terrain( int w, int h,
                   Resource & res,
                   Tempest::VertexBufferHolder & vb,

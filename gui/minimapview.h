@@ -6,7 +6,7 @@
 #include <Tempest/Texture2d>
 #include <Tempest/Pixmap>
 
-#include <ctime>
+#include "game/world.h"
 
 class World;
 
@@ -31,11 +31,12 @@ class MiniMapView : public TextureView {
 
     Resource &res;
 
-    clock_t rtime, rtime2;
+    size_t rtime, rtime2;
+    World::CameraViewBounds camBounds;
     bool pressed;
 
-    void lineTo( Tempest::Pixmap &renderTo,
-                 int x0, int y0, int x1, int y1 );
+    void lineTo(Tempest::Pixmap &renderTo,
+                 int x0, int y0, int x1, int y1 , Tempest::Pixmap::Pixel px);
 
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseDragEvent(Tempest::MouseEvent &e);
@@ -44,6 +45,8 @@ class MiniMapView : public TextureView {
     void aceptFog( Tempest::Pixmap &p, const Tempest::Pixmap &f );
 
     void drawUnits(Tempest::Pixmap &renderTo, World &wx);
+
+    Tempest::Pixmap hudPx;
   };
 
 #endif // MINIMAPVIEW_H

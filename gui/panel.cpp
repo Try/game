@@ -50,17 +50,17 @@ void Panel::mouseDragEvent(Tempest::MouseEvent &e) {
     setPosition( oldPos - (mpos - mapToRoot(e.pos() )) );
   }
 
-void Panel::mouseMoveEvent(Tempest::MouseEvent &e) {
+void Panel::mouseMoveEvent(Tempest::MouseEvent &) {
   if( !dragable ){
     //e.ignore();
     }
   }
 
-void Panel::mouseUpEvent(Tempest::MouseEvent &e) {
+void Panel::mouseUpEvent(Tempest::MouseEvent &) {
   mouseTracking = false;
   }
 
-void Panel::mouseWheelEvent(Tempest::MouseEvent &e) {
+void Panel::mouseWheelEvent(Tempest::MouseEvent &) {
 
   }
 
