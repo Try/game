@@ -2,7 +2,7 @@
 
 #include <tinyxml.h>
 #include <iostream>
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 
 struct AbstractXMLReader::XML{
   static int  dump_attribs_to_stdout(TiXmlElement* pElement);
@@ -16,7 +16,7 @@ AbstractXMLReader::AbstractXMLReader() {
   }
 
 void AbstractXMLReader::load(const std::string &s) {
-  std::string fdata = Tempest::AbstractSystemAPI::loadText(s.data());
+  std::string fdata = Tempest::SystemAPI::loadText(s.data());
 
   TiXmlDocument doc;//( s.data() );
   doc.Parse( fdata.data(), 0, TIXML_ENCODING_UTF8 );

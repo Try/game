@@ -55,7 +55,7 @@ struct MemberFunc{
 template< class Val >
 bool negTest( const array2d<Val> &  map,
               Point p,
-              Point src ){
+              Point /*src*/ ){
   return map[p.x][p.y] < 0;
   }
 

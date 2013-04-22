@@ -1,9 +1,9 @@
 #include "ifstream.h"
 
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 
 ifstream::buffer::buffer(const char *fin )
-  :input( Tempest::AbstractSystemAPI::loadBytes(fin) ){
+  :input( Tempest::SystemAPI::loadBytes(fin) ){
   setg(&input[0], &input[0], &input[ input.size() ]);
   }
 

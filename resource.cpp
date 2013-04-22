@@ -4,7 +4,7 @@
 #include <Tempest/LocalVertexBufferHolder>
 #include <Tempest/LocalTexturesHolder>
 
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 
 #include "sound/sound.h"
 
@@ -15,7 +15,7 @@
 
 struct Resource::XML{
   template< class Box, class ... Args >
-  static void loadFile( Box & b, Resource &r, TiXmlElement* pElement ){
+  static void loadFile( Box & b, Resource &, TiXmlElement* pElement ){
     if ( !pElement )
       return;
 
@@ -38,7 +38,7 @@ struct Resource::XML{
     }
 
   template< class Box, class ... Args >
-  static void loadFile( Box & b, Resource &r, TiXmlElement* pElement, bool avg ){
+  static void loadFile( Box & b, Resource &, TiXmlElement* pElement, bool avg ){
     if ( !pElement )
       return;
 
@@ -56,11 +56,7 @@ struct Resource::XML{
         name = pAttrib->Value();
       }
 
-    if( !avg ){
-      b.preload(name, file);
-      } else {
-      r.load(b, name, file, avg );
-      }
+    b.preload(name, file, avg);
     }
 
   template< class Box, class Box1 >
@@ -109,8 +105,8 @@ struct Resource::XML{
     def += "#line 0\n";
 
     //std::cout << def << std::endl;
-    r.load(b,  name, file, def  );
-    r.load(b1, name, file1, def );
+    r.load(b,  name, file,  def, false );
+    r.load(b1, name, file1, def, false );
     }
 
   static void loadFile( PixmapsPool & pm, Resource &r, TiXmlElement* pElement ){
@@ -165,9 +161,15 @@ Resource::Resource( Tempest::TextureHolder       & tx,
   model.loadMX( vboHolder, iboHolder, "data/models/util/cube.mx" );
 
   models  .add("null", model);
-  textures.add("null",      texHolder.load("data/textures/w.png") );
-  textures.add("null/norm", texHolder.load("data/textures/norm.png") );
-  texturesAvg.add( "null", Tempest::Color() );
+  Texture tex;
+  tex.avg  = false;
+
+  tex.data = texHolder.load("data/textures/w.png");
+  textures.add("null",      tex );
+
+  tex.data = texHolder.load("data/textures/norm.png");
+  textures.add("null/norm", tex );
+  //texturesAvg.add( "null", Tempest::Color() );
 
   //load( vs, "null", "data/sh/main_material.vert", "" );
   //load( fs, "null", "data/sh/main_material.frag", "" );
@@ -217,8 +219,8 @@ const Tempest::Texture2d &Resource::texture(const std::string &key) const {
     }
 
   if( norm )
-    return textures.get(key, textures.get("null/norm") ); else
-    return textures.get(key, textures.get("null") );
+    return textures.get(key, textures.get("null/norm") ).data; else
+    return textures.get(key, textures.get("null") ).data;
   }
 
 Tempest::Texture2d &Resource::texture(const std::string &key) {
@@ -233,12 +235,13 @@ Tempest::Texture2d &Resource::texture(const std::string &key) {
     }
 
   if( norm )
-    return textures.get(key, textures.get("null/norm") ); else
-    return textures.get(key, textures.get("null") );
+    return textures.get(key, textures.get("null/norm") ).data; else
+    return textures.get(key, textures.get("null") ).data;
   }
 
 Tempest::Color Resource::textureAVG(const std::string &key) const {
-  return texturesAvg.get(key);
+  return textures.get(key).color;
+  //return texturesAvg.get(key);
   }
 
 bool Resource::findTexture(const std::string &key) {
@@ -315,7 +318,8 @@ void Resource::setupSettings( const GraphicsSettingsWidget::Settings &s ) {
 
 void Resource::load( Box<Model> &m,
                      const std::string &k,
-                     const std::string &f ){
+                     const std::string &f,
+                     bool ){
   auto it = m.loaded.find(f);
 
   if( it!=m.loaded.end() ){
@@ -331,31 +335,36 @@ void Resource::load( Box<Model> &m,
 
 void Resource::load( Box<  std::shared_ptr<Model::Raw>  > &,
                      const std::string &,
-                     const std::string & ){
+                     const std::string &,
+                     bool ){
   assert(0);
   }
 
+/*
 void Resource::load( Box< Tempest::Color  > &,
                      const std::string &,
                      const std::string & ){
   assert(0);
-  }
+  }*/
 
-void Resource::load(Box<VShader> &,
+void Resource::load( Box<VShader> &,
                      const std::string &,
-                     const std::string & ){
+                     const std::string &,
+                     bool ){
   assert(0);
   }
 
-void Resource::load(Box<FShader> &,
+void Resource::load( Box<FShader> &,
                      const std::string &,
-                     const std::string & ){
+                     const std::string &,
+                     bool  ){
   assert(0);
   }
 
 void Resource::load(Box<PixmapsPool::TexturePtr> &,
                     const std::string &,
-                    const std::string & ) {
+                    const std::string &,
+                    bool ) {
   assert(0);
   }
 
@@ -365,7 +374,8 @@ void Resource::load(PixmapsPool::TexturePtr p, const std::string &f) {
 
 void Resource::load( Box< std::shared_ptr<Sound> >& sounds,
                      const std::string &k,
-                     const std::string &f  ){
+                     const std::string &f,
+                     bool ){
   auto it = sounds.loaded.find(f);
 
   if( it!=sounds.loaded.end() ){
@@ -380,7 +390,7 @@ void Resource::load( Box< std::shared_ptr<Sound> >& sounds,
     }
   }
 
-void Resource::load( Box<Tempest::Texture2d>& textures,
+void Resource::load( Box<Texture> &textures,
                      const std::string &k,
                      const std::string &f,
                      bool avg ){
@@ -389,38 +399,45 @@ void Resource::load( Box<Tempest::Texture2d>& textures,
   if( it!=textures.loaded.end() ){
     textures.add(k, textures.get( it->second ) );
     } else {
-    textures.add(k, texHolder.load(f) );
+    Texture tex;
+    tex.avg  = avg;
+
+    if( avg ){
+      Tempest::Pixmap pm(f);
+      int cl[4] = {};
+      for( int i=0; i<pm.width(); ++i )
+        for( int r=0; r<pm.height(); ++r ){
+          Tempest::Pixmap::Pixel px = pm.at(i,r);
+          cl[0] += px.r;
+          cl[1] += px.g;
+          cl[2] += px.b;
+          cl[3] += px.a;
+          }
+
+      if( pm.width()!=0 && pm.height()!=0 ){
+        for( int i=0; i<4; ++i )
+          cl[i] /= (pm.width()*pm.height());
+        }
+
+      tex.color  = Tempest::Color( cl[0]/255.0,
+                                   cl[1]/255.0,
+                                   cl[2]/255.0,
+                                   cl[3]/255.0 );
+      tex.data = texHolder.load(f);
+      } else {
+      tex.data = texHolder.load(f);
+      }
+
+    textures.add(k, tex );
     textures.loaded[f] = k;
     }
 
-  if( avg ){
-    Tempest::Pixmap pm(f);
-    int cl[4] = {};
-    for( int i=0; i<pm.width(); ++i )
-      for( int r=0; r<pm.height(); ++r ){
-        Tempest::Pixmap::Pixel px = pm.at(i,r);
-        cl[0] += px.r;
-        cl[1] += px.g;
-        cl[2] += px.b;
-        cl[3] += px.a;
-        }
-
-    if( pm.width()!=0 && pm.height()!=0 ){
-      for( int i=0; i<4; ++i )
-        cl[i] /= (pm.width()*pm.height());
-      }
-
-    texturesAvg.add(k, Tempest::Color( cl[0]/255.0,
-                                       cl[1]/255.0,
-                                       cl[2]/255.0,
-                                       cl[3]/255.0 ) );
-    }
   }
 
-void Resource::load( Box<VShader> &vs,
+void Resource::load(Box<VShader> &vs,
                      const std::string &k,
                      const std::string &f,
-                     const std::string &def ) {
+                     const std::string &def , bool) {
   VShader sh;
   sh.def = def;
   sh.src = loadSrc(f);
@@ -429,10 +446,11 @@ void Resource::load( Box<VShader> &vs,
   vs.add(k, sh );
   }
 
-void Resource::load(Box<FShader> &fs,
+void Resource::load( Box<FShader> &fs,
                      const std::string &k,
                      const std::string &f,
-                     const std::string &def ) {
+                     const std::string &def,
+                     bool ) {
   FShader sh;
   sh.def = def;
   sh.src = loadSrc(f);
@@ -488,5 +506,5 @@ void Resource::readElement( TiXmlNode *node ) {
 }
 
 std::string Resource::loadSrc(const std::string &f) {
-  return Tempest::AbstractSystemAPI::loadText( f.data() );
+  return Tempest::SystemAPI::loadText( f.data() );
   }

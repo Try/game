@@ -185,6 +185,8 @@ class Game : public Tempest::Window {
 
     void settingsChanged( const GraphicsSettingsWidget::Settings &s );
 
+    void loadData();
+
   friend class World;
   };
 

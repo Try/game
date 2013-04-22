@@ -2,6 +2,7 @@
 
 #include <Tempest/TessObject>
 #include <Tempest/Event>
+#include <Tempest/Application>
 #include <iostream>
 
 #include "threads/time.h"
@@ -51,55 +52,14 @@ Game::Game( ShowMode sm )
   selectionRectTracking = 0;
 
   initFactorys();
+  loadData();
+  }
 
-  /*
-  Tempest::Model<>::Raw m = Tempest::Model<>::loadRawData("./data/models/grass/0.mx");
-
-  float tc[6][2] = {
-    {0, 0},
-    {0, 1},
-    {1, 1},
-
-    {0, 0},
-    {1, 1},
-    {1, 0}
-    };
-
-  m.vertex.resize(150*6);
-  for( size_t i=0; i<m.vertex.size(); i+=6 ){
-    float cx = ((rand()/float(RAND_MAX)) - 0.5)*16;
-    float cy = ((rand()/float(RAND_MAX)) - 0.5)*16;
-
-    float a = (rand()/float(RAND_MAX))*2*M_PI;
-
-    int x = rand()%2, y = rand()%3;
-
-    for( int r=0; r<6; ++r ){
-      m.vertex[i+r].u = (x+tc[r][0])*0.5;
-      m.vertex[i+r].v = 1 - (y+tc[r][1])/3.0;
-
-      m.vertex[i+r].x = cx + cos(a)*(tc[r][0]*2-1)*0.8;
-      m.vertex[i+r].y = cy + sin(a)*(tc[r][0]*2-1)*0.8;
-      m.vertex[i+r].z = tc[r][1]*2.0;
-      }
-    }
-
-  size_t sz = m.vertex.size();
-  for( size_t i=0; i<sz; i+=3 ){
-    m.vertex.push_back( m.vertex[i] );
-    m.vertex.push_back( m.vertex[i+2] );
-    m.vertex.push_back( m.vertex[i+1] );
-    }
-
-  Tempest::Model<>::saveRawData("./data/models/grass/0.mx", m);
-  */
-
+void Game::loadData() {
   resource.load("data/data.xml");
   proto   .load("data/game.xml");
 
   mscenario.reset( new DeatmachScenarion() );
-
-  //Tempest::Model<>::saveRawData( "./sphere.mx", Tempest::TessObject::sphere(3, 1) );
 
   gui.createControls( msg, *this );
   gui.enableHooks( !serializator.isReader() );
@@ -141,7 +101,7 @@ Game::Game( ShowMode sm )
   setPlaylersCount(1);
 
 #ifndef __ANDROID__
-  //load(L"campagin/0.sav");
+  load(L"campagin/0.sav");
   //loadMission("campagin/td map.sav");
 #else
   loadMission("campagin/td map.sav");
@@ -916,6 +876,8 @@ void Game::serialize( GameSerializer &s ) {
   if( s.isReader() ){
     worlds.clear();
     }
+
+  //Tempest::Application::processEvents();
 
   int plCount = players.size()-1;
   s + plCount;

@@ -220,25 +220,25 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
 
 
 void BehaviorMSGQueue::sysMSG( Game &game, World &w ){
-  bool se = false;
+  //bool se = false;
 
   for( size_t r=0; r<data.size(); ++r ){
     const MSG m = data[r];
 
     if( m.msg == UnSelect ){
       unselect( w, m.player );
-      se = 1;
+      //se = 1;
       } else
 
     if( m.msg == SelectAdd ){
       select( w, m.player, m.begin, m.size );
-      se = 1;
+      //se = 1;
       } else
 
     if( m.msg == Select ){
       unselect( w, m.player );
       select( w, m.player, m.begin, m.size );
-      se = 1;
+      //se = 1;
       } else
 
     if( m.msg == EditAdd ){
@@ -265,8 +265,8 @@ void BehaviorMSGQueue::sysMSG( Game &game, World &w ){
   remove_if( data, isSystemMSG );
   }
 
-bool BehaviorMSGQueue::buyMsgRecv( Game &game,
-                                   World &w,
+bool BehaviorMSGQueue::buyMsgRecv( Game &,
+                                   World &,
                                    GameObject& obj,
                                    const BehaviorMSGQueue::MSG &m) {
   std::vector<GameObject*> & v = obj.player().selected();
@@ -311,8 +311,8 @@ void BehaviorMSGQueue::serialize( std::vector<BehaviorMSGQueue::MSG> &data,
     }
 
   if( sz>1 ){
-    int i;
-    i = 0;
+    //int i;
+    //i = 0;
     }
 
   data.resize(sz);

@@ -83,12 +83,8 @@ void MiniMapView::render( World &wx ) {
     } else
   if( Time::tickCount() >= rtime+mk*1000/2 ){
     rtime = Time::tickCount();
-    Tempest::Pixmap::Pixel pix;
-    pix.r = 0;
-    pix.g = 0;
-    pix.b = 0;
-    pix.a = 0;
 
+    Tempest::Pixmap::Pixel pix = {0,0,0,0};
     Tempest::Pixmap renderTo = Tempest::Pixmap(w(), h(), true);
     for( int i=0; i<terr.width(); ++i )
       for( int r=0; r<terr.height(); ++r )

@@ -172,7 +172,7 @@ void WayFindAlgo::findWay(std::vector<GameObject*> &objs,
     }
   }
 
-void WayFindAlgo::findWay(GameObject & obj, int x, int y, int rx, int ry) {
+void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
   auto fix = terrain.nearestEnable( rx, ry, 1 );
   rx = fix.first;
   ry = fix.second;

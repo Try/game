@@ -3,7 +3,7 @@
 #include <limits>
 #include <cstdio>
 
-#include <Tempest/AbstractSystemAPI>
+#include <Tempest/SystemAPI>
 
 #ifdef __WIN32
 #include <winsock2.h>
@@ -23,7 +23,7 @@ FileSerialize::FileSerialize(const std::string &s) {
   mode = Read;
   rpos = 0;
 
-  data = Tempest::AbstractSystemAPI::loadBytes(s.data());
+  data = Tempest::SystemAPI::loadBytes(s.data());
   }
 
 FileSerialize::~FileSerialize() {

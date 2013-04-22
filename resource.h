@@ -11,6 +11,7 @@
 #include <Tempest/Texture2d>
 #include <Tempest/VertexShader>
 #include <Tempest/FragmentShader>
+#include <Tempest/ResourceContext>
 
 #include "xml/abstractxmlreader.h"
 #include "pixmapspool.h"
@@ -35,7 +36,8 @@ namespace Tempest{
 
 class Sound;
 
-class Resource : public AbstractXMLReader {
+class Resource : public AbstractXMLReader,
+                 public Tempest::ResourceContext {
   public:
     Resource(
         Tempest::TextureHolder       &  texHolder,
@@ -82,7 +84,12 @@ private:
 
       Resource * owner;
       std::unordered_map< std::string, T > data;
-      mutable std::unordered_map< std::string, std::string > toLoad;
+
+      struct ToLoadPromision{
+        std::string fname;
+        bool        avg;
+        };
+      mutable std::unordered_map< std::string, ToLoadPromision > toLoad;
 
       bool contains( const std::string & s ){
         if( data.find(s)!=data.end() )
@@ -96,11 +103,11 @@ private:
 
       T& get( const std::string & s ){
         {
-        typename std::unordered_map< std::string, std::string >::const_iterator i;
+        typename std::unordered_map< std::string, ToLoadPromision >::const_iterator i;
         i = toLoad.find(s);
 
         if( i!=toLoad.end() ){
-          owner->load(*this, s, i->second);
+          owner->load( *this, s, i->second.fname, i->second.avg );
           toLoad.erase(i);
           }
         }
@@ -118,11 +125,11 @@ private:
 
       T& get( const std::string & s, T& def ){
         {
-        typename std::unordered_map< std::string, std::string >::const_iterator i;
+        typename std::unordered_map< std::string, ToLoadPromision >::const_iterator i;
         i = toLoad.find(s);
 
         if( i!=toLoad.end() ){
-          owner->load(*this, s, i->second);
+          owner->load(*this, s, i->second.fname, i->second.avg );
           toLoad.erase(i);
           }
         }
@@ -183,7 +190,19 @@ private:
         }
 
       void preload( const std::string & key, const std::string& v ){
-        toLoad.insert( std::make_pair(key, v) );
+        ToLoadPromision p;
+        p.fname = v;
+        p.avg   = false;
+
+        toLoad.insert( std::make_pair(key, p) );
+        }
+
+      void preload( const std::string & key, const std::string& v, bool avg ){
+        ToLoadPromision p;
+        p.fname = v;
+        p.avg   = avg;
+
+        toLoad.insert( std::make_pair(key, p) );
         }
 
       void add( const std::string & key, const T& v ){
@@ -202,44 +221,49 @@ private:
     typedef Shader<Tempest::VertexShader>   VShader;
     typedef Shader<Tempest::FragmentShader> FShader;
 
-    void load( Box<Tempest::Texture2d>& textures,
-               const std::string &k, const std::string & f, bool avg = false );
+    struct Texture{
+      bool avg; Tempest::Color color;
+      Tempest::Texture2d       data;
+      };
 
-    void load( Box< std::shared_ptr<Sound> >& sounds,
-               const std::string &k, const std::string & f );
+    void load( Box<Texture>& textures,
+               const std::string &k, const std::string & f, bool );
+
+    void load(Box< std::shared_ptr<Sound> >& sounds,
+               const std::string &k, const std::string & f , bool);
 
     void load( Box<VShader>& vs,
                const std::string &k, const std::string & f,
-               const std::string &def );
+               const std::string &def, bool );
 
     void load( Box<FShader>& fs,
                const std::string &k, const std::string & f,
-               const std::string &def  );
+               const std::string &def, bool  );
 
     void load( Box<Model >& m,
-               const std::string &k, const std::string & f );
+               const std::string &k, const std::string & f, bool );
 
-    void load( Box< std::shared_ptr<Model::Raw> >& m,
-               const std::string &k, const std::string & f );
+    void load(Box< std::shared_ptr<Model::Raw> >& m,
+               const std::string &k, const std::string & f , bool);
 
-    void load( Box<Tempest::Color>& m,
-               const std::string &k, const std::string & f );
+    //void load( Box<Tempest::Color>& m,
+    //           const std::string &k, const std::string & f );
 
-    void load( Box< VShader >& vs,
-               const std::string &k, const std::string & f );
+    void load(Box< VShader >& vs,
+               const std::string &k, const std::string & f , bool);
 
     void load( Box< FShader >& fs,
-               const std::string &k, const std::string & f );
+               const std::string &k, const std::string & f, bool );
 
-    void load( Box<PixmapsPool::TexturePtr>& fs,
-               const std::string &k, const std::string & f );
+    void load(Box<PixmapsPool::TexturePtr>& fs,
+               const std::string &k, const std::string & f , bool);
 
     void load( PixmapsPool::TexturePtr p, const std::string & f );
 
     mutable Box< Model > models;
     mutable Box< std::shared_ptr<Model::Raw> > rawModels;
-    mutable Box<Tempest::Texture2d> textures;
-    mutable Box<Tempest::Color>     texturesAvg;
+    mutable Box< Texture > textures;
+    //mutable Box<Tempest::Color>     texturesAvg;
     Box< VShader > vs;
     Box< FShader > fs;
     Box<PixmapsPool::TexturePtr> px;

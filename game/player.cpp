@@ -159,7 +159,7 @@ bool Player::compare(const GameObject *a, const GameObject *b) {
   return a->getClass().name < b->getClass().name;
   }
 
-void Player::tick( World &curW ) {
+void Player::tick( World & ) {
 
   }
 
@@ -172,7 +172,7 @@ void Player::fillFog(Tempest::Pixmap &p, World &wx ) {
 #ifdef __ANDROID__
   const bool useFog = 0;
 #else
-  const bool useFog = 0;
+  const bool useFog = 1;
 #endif
 
   if( useFog==0 ){
