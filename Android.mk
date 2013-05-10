@@ -3,21 +3,20 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := main
-NDK_TOOLCHAIN_VERSION := 4.7
-APP_ABI := armeabi-v7a
-LOCAL_ARM_MODE := arm
-
 Tempest_PATH := C:/Users/Try/Home/Programming/Tempest/Tempest
 Tinyxml_PATH := C:/Users/Try/Home/Programming/SharedLibs/tinyxml
+Bullet_PATH  := C:/Users/Try/Home/Programming/SharedLibs/bullet-2.80-rev2531/bullet-2.80-rev2531/src
 
 LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
                     $(Tempest_PATH)/math \
-                    $(Tinyxml_PATH)/
+                    $(Tinyxml_PATH)/ \
+                    $(Bullet_PATH)/
 LOCAL_C_INCLUDES += C:/Users/Try/Home/Programming/android/game_ndk/game/jni/freetype/include
-LOCAL_C_INCLUDES += C:/Users/Try/Home/Programming/SharedLibs/boost_1_52_0/boost_1_52_0
 
-LOCAL_CFLAGS := -std=c++11 -pthread -frtti -fexceptions -DTEMPEST_OPENGL -DNO_PHYSIC -DNO_SOUND
-LOCAL_CFLAGS += -D_STLP_NO_EXCEPTIONS
+LOCAL_CFLAGS    := -std=c++0x
+LOCAL_CPPFLAGS  := -D__STDC_INT64__ -Dsigset_t="unsigned int"
+LOCAL_CPPFLAGS  += -DTEMPEST_OPENGL -DNO_SOUND
+#LOCAL_CPPFLAGS  += -DNO_PHYSIC
 
 LOCAL_SRC_FILES := \
   $(subst $(LOCAL_PATH)/,,\
@@ -38,7 +37,7 @@ LOCAL_SRC_FILES := \
   $(wildcard $(LOCAL_PATH)/xml/*.cpp) \
   $(wildcard $(LOCAL_PATH)/*.cpp) )
 
-LOCAL_STATIC_LIBRARIES := freetype2 tinyxml
+LOCAL_STATIC_LIBRARIES := freetype2 tinyxml bullet
 LOCAL_SHARED_LIBRARIES := Tempest
 
 LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics

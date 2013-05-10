@@ -14,7 +14,8 @@ class MiniMapView : public TextureView {
   public:
     MiniMapView( Resource & res );
 
-    void render( World& w );
+    void setup( World& w );
+    void render();
 
     enum Mode{
       Up,
@@ -47,6 +48,11 @@ class MiniMapView : public TextureView {
     void drawUnits(Tempest::Pixmap &renderTo, World &wx);
 
     Tempest::Pixmap hudPx;
+
+    World * world;
+    bool    needToUpdateTerrain;
+
+    void onTerrainCanged();
   };
 
 #endif // MINIMAPVIEW_H

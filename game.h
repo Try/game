@@ -123,6 +123,8 @@ class Game : public Tempest::Window {
     Tempest::signal<> updateMissionTargets;
 
     Tempest::signal<> exitGame;
+
+    World& curWorld();
   private:
     bool  paused;
     //bool isFullScreen;

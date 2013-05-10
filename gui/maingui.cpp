@@ -291,8 +291,12 @@ void MainGui::enableHooks(bool e) {
   mainwidget->enableHooks(e);
   }
 
-void MainGui::renderMinimap(World &w) {
-  mainwidget->renderMinimap(w);
+void MainGui::setupMinimap(World &w) {
+  mainwidget->setupMinimap(w);
+  }
+
+void MainGui::renderMinimap() {
+  mainwidget->renderMinimap();
   }
 
 void MainGui::updateValues() {

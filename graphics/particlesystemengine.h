@@ -1,8 +1,6 @@
 #ifndef PARTICLESYSTEMENGINE_H
 #define PARTICLESYSTEMENGINE_H
 
-#include "stlconf.h"
-
 #include <Tempest/GraphicObject>
 #include <vector>
 

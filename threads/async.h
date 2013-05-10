@@ -1,7 +1,6 @@
 #ifndef ASYNC_H
 #define ASYNC_H
 
-#include "stlconf.h"
 #include "thread.h"
 #include "mutex.h"
 #include <vector>

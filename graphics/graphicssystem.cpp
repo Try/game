@@ -195,15 +195,15 @@ Tempest::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene ){
   if( scene.lights().direction().size() > 0 )
     light = scene.lights().direction()[0];
 
-  double dir[3] = { light.xDirection(),
-                    light.yDirection(),
-                    light.zDirection() };
+  float dir[3] = { float(light.xDirection()),
+                   float(light.yDirection()),
+                   float(light.zDirection()) };
 
   return makeShadowMatrix(scene,dir);
   }
 
 Tempest::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene,
-                                                     double * dir,
+                                                     float * dir,
                                                      float sv ){
     Tempest::Matrix4x4 mat;
 
@@ -218,12 +218,12 @@ Tempest::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene,
 
     s = smMatSize(scene, sv);
 
-    double l = sqrt( dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] );
+    float l = sqrt( dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] );
 
     for( int i=0; i<3; ++i )
       dir[i] = (dir[i]/l);
 
-    double m[4*4] = {
+    float m[4*4] = {
        s, 0,  0, 0,
        0, s,  0, 0,
        s*dir[0], s*dir[1], cs*dir[2], 0,
@@ -281,28 +281,32 @@ bool GraphicsSystem::render( Scene &scene,
   particles = &par;
 
   Tempest::Texture2d gbuffer[4], rsm[4];
-  Tempest::Texture2d mainDepth = depth( screenSize );
+  Tempest::Texture2d mainDepth;
+
+  if( !useDirectRender ){
+    mainDepth = depth( screenSize );
+
+    gbuffer[0] = colorBuf( screenSize.w, screenSize.h );
+
+  #ifndef __ANDROID__
+    for( int i=1; i<3; ++i ){
+      gbuffer[i] = colorBuf( screenSize.w, screenSize.h );
+      }
+
+    if( GraphicsSettingsWidget::Settings::api
+        == GraphicsSettingsWidget::Settings::openGL){
+      gbuffer[3] = colorBuf( screenSize.w, screenSize.h );
+      } else {
+      if( useHDR )
+        gbuffer[3] = localTex.create( screenSize.w, screenSize.h,
+                                      Tempest::Texture2d::Format::RGBA16 ); else
+        gbuffer[3] = localTex.create( screenSize.w, screenSize.h,
+                                      Tempest::Texture2d::Format::RG16 );
+      }
+  #endif
+    }
 
   scrOffset.set( 1.0f/screenSize.w, 1.0f/screenSize.h );
-
-  gbuffer[0] = colorBuf( screenSize.w, screenSize.h );
-
-#ifndef __ANDROID__
-  for( int i=1; i<3; ++i ){
-    gbuffer[i] = colorBuf( screenSize.w, screenSize.h );
-    }
-
-  if( GraphicsSettingsWidget::Settings::api
-      == GraphicsSettingsWidget::Settings::openGL){
-    gbuffer[3] = colorBuf( screenSize.w, screenSize.h );
-    } else {
-    if( useHDR )
-      gbuffer[3] = localTex.create( screenSize.w, screenSize.h,
-                                    Tempest::Texture2d::Format::RGBA16 ); else
-      gbuffer[3] = localTex.create( screenSize.w, screenSize.h,
-                                    Tempest::Texture2d::Format::RG16 );
-    }
-#endif
   //buildRSM( scene, rsm, 512, 0 );
   scene.setCamera( camera );
   /*
@@ -310,7 +314,6 @@ bool GraphicsSystem::render( Scene &scene,
   device.present();
   return 1;
   */
-
 
   renderScene( scene,
                scene.camera(),
@@ -332,19 +335,22 @@ bool GraphicsSystem::render( Scene &scene,
       gui->exec( *widget, gbuffer, &mainDepth, device );
     }
 
+  Tempest::Texture2d glow, bloomTex;
+
+  drawGlow( glow, mainDepth,
+            gbuffer[0],
+            scene, 512,
+            gbuffer[0].width(),
+            gbuffer[0].height() );
+
+  if( settings.glow ){
+    if( fogView.width()>0 )
+      aceptFog( glow, fog );
+    }
+
   if( useDirectRender ){
     device.present();
     return 1;
-    }
-
-  Tempest::Texture2d glow, bloomTex;
-
-  if( settings.glow ){
-    drawGlow( glow, mainDepth, scene, 512,
-              gbuffer[0].width(),
-              gbuffer[0].height() );
-    if( fogView.width()>0 )
-      aceptFog( glow, fog );
     }
 
   if( settings.bloom )
@@ -389,8 +395,8 @@ bool GraphicsSystem::render( Scene &scene,
 void GraphicsSystem::fillShadowMap( Tempest::Texture2d& shadowMap,
                                     const Scene & scene ) {
   Tempest::Texture2d depthSm = depth( shadowMap.width(), shadowMap.height() );
-  Tempest::Texture2d::Sampler s = shadowMap.sampler();
-  s.anisotropic = false;
+  //Tempest::Texture2d::Sampler s = shadowMap.sampler();
+  //s.anisotropic = false;
   //s.mipFilter   = Tempest::Texture2d::FilterType::Nearest;
   //shadowMap.setSampler( s );
 
@@ -409,9 +415,9 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
   if( scene.lights().direction().size() > 0 )
     light = scene.lights().direction()[0];
 
-  double dir[3] = { light.xDirection(),
-                    light.yDirection(),
-                    light.zDirection() };
+  float dir[3] = { float(light.xDirection()),
+                   float(light.yDirection()),
+                   float(light.zDirection()) };
   Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
 
   Tempest::Render render( device,
@@ -467,9 +473,9 @@ void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
   Tempest::RenderState rstate;
   rstate.setCullFaceMode( Tempest::RenderState::CullMode::front );
 
-  double dir[3] = { light.xDirection(),
-                    light.yDirection(),
-                    light.zDirection() };
+  float dir[3] = { float(light.xDirection()),
+                   float(light.yDirection()),
+                   float(light.zDirection()) };
   Tempest::Render render( device,
                           sm, depthSm,
                           transparentData.vsSh,
@@ -539,15 +545,21 @@ void GraphicsSystem::setupLight( const Scene & scene,
     gbuf.view.set( view );
     device.setUniform( fs, gbuf.view );
 
-    device.setUniform( fs,     sm, "shadowMap"    );
+    if( settings.shadowMapRes>0 )
+      device.setUniform( fs,     sm, "shadowMap"    );
+
     //device.setUniform( fs,   smCl, "shadowMapCl"  );
 
-    device.setUniform( fs,     ao, "oclusionMap"  );
+    if( settings.oclusion ){
+      device.setUniform( fs,     ao, "oclusionMap"  );
 
-    double dir[] = {0,0, -1};
-    Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir, 0.3);
-    device.setUniform( vs, matrix, "oclusionMapMatrix"  );
-    device.setUniform( vs, makeShadowMatrix(scene), "shadowMatrix"  );
+      float dir[] = {0,0, -1};
+      Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir, 0.3);
+      device.setUniform( vs, matrix, "oclusionMapMatrix"  );
+      }
+
+    if( settings.shadowMapRes>0 )
+      device.setUniform( vs, makeShadowMatrix(scene), "shadowMatrix"  );
     }
   }
 
@@ -558,6 +570,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                                const Tempest::Texture2d& ao,
                                const Scene & scene,
                                const Tempest::AbstractCamera & camera ) {
+  //return;
   int gbuffSize = 4;
   if( GraphicsSettingsWidget::Settings::api==GraphicsSettingsWidget::Settings::openGL )
     gbuffSize = 1;
@@ -604,16 +617,20 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                &Material::terrainMinor,
                false );
 
-  drawObjects( gbuf.terrainVs,
-               gbuf.terrainFs,
-               gbuffer,
-               &mainDepth,
-               gbuffSize,
-               scene,
-               camera,
-               scene.terrainObjects(),
-               &Material::terrainMain,
-               false );
+  if(1){
+    int count =
+    drawObjects( gbuf.terrainVs,
+                 gbuf.terrainFs,
+                 gbuffer,
+                 &mainDepth,
+                 gbuffSize,
+                 scene,
+                 camera,
+                 scene.terrainObjects(),
+                 &Material::terrainMain,
+                 false );
+    (void)count;
+    }
 
   setupLight( scene, gbuf.vs, gbuf.fs, sm, smCl, ao );
 
@@ -756,7 +773,7 @@ void GraphicsSystem::drawOmni( Tempest::Texture2d *gbuffer,
                      sm,
                      "shadowMap" );
 
-  double dir[3] = {0,0,-1};
+  float dir[3] = {0,0,-1};
   Tempest::Matrix4x4 shM = makeShadowMatrix(scene,dir);
 
 
@@ -954,16 +971,52 @@ void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
         &Material::water  );
   }
 
-void GraphicsSystem::drawGlow (Tempest::Texture2d &out,
+void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
                                Tempest::Texture2d &depth,
+                               Tempest::Texture2d &mrt0,
                                const Scene &scene,
                                int size,
                                int w, int h ) {
+  int ps = 1;
+
+  int sz = std::max(w,h);
+  while( ps*2< sz ){
+    ps*=2;
+    }
+
+  if( size>ps )
+    size = ps;
+
   if( !settings.glow ){
     out = colorBuf( 16, 16 );
     device.beginPaint(out);
     device.clear( Tempest::Color(0) );
     device.endPaint();
+
+    if( depth.width()>0 )
+      drawObjects( glowData.vs,
+                   glowData.fs,
+                   &mrt0,
+                   &depth,
+                   1,
+                   scene,
+                   scene.camera(),
+                   scene.glowObjects(),
+                   &Material::glowPassAdd,
+                   false,
+                   false );
+    else
+      drawObjects( glowData.vs,
+                   glowData.fs,
+                   0,
+                   0,
+                   0,
+                   scene,
+                   scene.camera(),
+                   scene.glowObjects(),
+                   &Material::glowPassAdd,
+                   false,
+                   false );
     return;
     }
 
@@ -1372,9 +1425,9 @@ void GraphicsSystem::aceptGI(   const Scene & s,
   if( s.lights().direction().size() > 0 )
     light = s.lights().direction()[0];
 
-  double dir[3] = { light.xDirection(),
-                    light.yDirection(),
-                    light.zDirection() };
+  float dir[3] = { float(light.xDirection()),
+                   float(light.yDirection()),
+                   float(light.zDirection()) };
   Tempest::Matrix4x4 shMatrix = makeShadowMatrix(s, dir);
 
   device.setUniform( ssaoData.acceptGI, mat,      "invMatrix" );
@@ -1398,8 +1451,11 @@ void GraphicsSystem::aceptGI(   const Scene & s,
 
 void GraphicsSystem::ssaoGMap( const Scene &scene,
                                Tempest::Texture2d &sm  ) {
+  /*
   sm = localTex.create( 256, 256,
-                        Tempest::AbstractTexture::Format::RGB10_A2 );
+                        Tempest::AbstractTexture::Format::RGB10_A2 );*/
+  sm = localTex.create( 256, 256,
+                        Tempest::AbstractTexture::Format::RGB5 );
 
   Tempest::RenderState rstate;
   rstate.setCullFaceMode( Tempest::RenderState::CullMode::front );
@@ -1414,7 +1470,7 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
 
     const Tempest::AbstractCamera & camera = scene.camera();
 
-    double dir[] = {0,0, -1};
+    float dir[] = {0,0, -1};
     Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir, 0.3);
 
     Frustum frustum;
@@ -1433,7 +1489,7 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
 Tempest::Texture2d GraphicsSystem::shadowMap(int w, int h) {
   if( GraphicsSettingsWidget::Settings::api
       == GraphicsSettingsWidget::Settings::openGL)
-    return localTex.create(w,h, Tempest::AbstractTexture::Format::RGBA );
+    return localTex.create(w,h, Tempest::AbstractTexture::Format::RGBA8 );
 
   return localTex.create(w,h, Tempest::AbstractTexture::Format::Luminance16 );
   }
@@ -1491,9 +1547,9 @@ void GraphicsSystem::buildRSM( Scene &scene,
   if( scene.lights().direction().size() > 0 )
     light = scene.lights().direction()[0];
 
-  double dir[3] = { light.xDirection(),
-                    light.yDirection(),
-                    light.zDirection() };
+  float dir[3] = { float(light.xDirection()),
+                   float(light.yDirection()),
+                   float(light.zDirection()) };
   RSMCamera c;
   c.v = makeShadowMatrix( scene, dir );
   c.p.setData( 1, 0, 0, 0,
@@ -1681,16 +1737,18 @@ void GraphicsSystem::renderScene( const Scene &scene,
   if( scene.lights().direction().size() > 0 )
     light = scene.lights().direction()[0];
 
-  double dir[3] = { light.xDirection(),
-                    light.yDirection(),
-                    light.zDirection() };
+  float dir[3] = { float(light.xDirection()),
+                   float(light.yDirection()),
+                   float(light.zDirection()) };
 
   closure.shadow.matrix = makeShadowMatrix( scene, dir );
 
-  Tempest::Texture2d shadowMap = this->shadowMap( shadowMapSize, shadowMapSize );
-  fillShadowMap( shadowMap, scene );
+  Tempest::Texture2d shadowMap, shadowMapCl;
 
-  Tempest::Texture2d shadowMapCl;
+  if( settings.shadowMapRes>0 ){
+    shadowMap = this->shadowMap( shadowMapSize, shadowMapSize );
+    fillShadowMap( shadowMap, scene );
+    }
 
   if( 0 ){
     shadowMapCl= localTex.create(shadowMapSize, shadowMapSize);
@@ -1699,8 +1757,10 @@ void GraphicsSystem::renderScene( const Scene &scene,
     }
 
   Tempest::Texture2d topSm, aoBlured;
-  ssaoGMap( scene, topSm );
-  blurSm(topSm, aoBlured, scene);
+  if( settings.oclusion ){
+    ssaoGMap( scene, topSm );
+    blurSm(topSm, aoBlured, scene);
+    }
 
   if( gbufferSize==0 ){
     fillGBuf( 0, mainDepth,
@@ -1715,7 +1775,7 @@ void GraphicsSystem::renderScene( const Scene &scene,
     }
 
   if( GraphicsSettingsWidget::Settings::api==GraphicsSettingsWidget::Settings::openGL )
-    return;
+    return;//under construction
 
   drawOmni( gbuffer, mainDepth, topSm, scene );
   aoBlured = Tempest::Texture2d();
@@ -1754,16 +1814,6 @@ void GraphicsSystem::renderScene( const Scene &scene,
                        gbuffer[0],
                        gbuffer[3],
                        shadowMap );
-/*
-  if(1){
-    setupLight( scene, transparentData.fs, shadowMap, shadowMapCl );
-    drawObjects( transparentData.vs, transparentData.fs,
-                 gbuffer, mainDepth,
-                 scene,
-                 camera,
-                 scene.objects<TransparentMaterialNoZW>() );
-    }*/
-
   }
 
 void GraphicsSystem::renderSubScene( const Scene &scene,
@@ -1782,7 +1832,9 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
 
   scrOffset.set( 1.0f/w, 1.0f/h );
 
-  for( int i=0; i<3; ++i ){
+  gbuffer[0] = colorBuf( w, h );
+#ifndef __ANDROID__
+  for( int i=1; i<3; ++i ){
     gbuffer[i] = colorBuf( w, h );
     }
 
@@ -1791,6 +1843,7 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
                                   Tempest::Texture2d::Format::RGBA16 ); else
     gbuffer[3] = localTex.create( w, h,
                                   Tempest::Texture2d::Format::RG16 );
+#endif
 
   renderScene( scene,
                scene.camera(),
@@ -1801,7 +1854,10 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
                256 );
 
   Tempest::Texture2d glow;
-  drawGlow( glow, mainDepth, scene, 128,
+  drawGlow( glow, mainDepth,
+            gbuffer[0],
+            scene,
+            128,
             gbuffer[0].width(),
             gbuffer[0].height() );
 
@@ -1839,4 +1895,7 @@ void GraphicsSystem::setSettings(const GraphicsSettingsWidget::Settings &s) {
   Material::settings = s;
 
   makeRenderAlgo( screenSize.w, screenSize.h );
+
+  useDirectRender = ( s.bloom==0 && s.glow==0 &&
+                      GraphicsSettingsWidget::Settings::api==GraphicsSettingsWidget::Settings::openGL);
   }

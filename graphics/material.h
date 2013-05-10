@@ -77,6 +77,11 @@ class Material {
                    const Tempest::AbstractCamera&,
                    Tempest::UniformTable &) const;
 
+    void glowPassAdd(Tempest::RenderState& /*d*/,
+                     const Tempest::Matrix4x4 & /*object*/,
+                     const Tempest::AbstractCamera&,
+                     Tempest::UniformTable &) const;
+
     void shadow( Tempest::RenderState& /*d*/,
                  const Tempest::Matrix4x4 & /*object*/,
                  const Tempest::AbstractCamera&,
@@ -106,8 +111,8 @@ class Material {
 
     static float wind;
   //private:
-    static Tempest::Matrix4x4 animateObjMatrix( const Tempest::Matrix4x4 &object,
-                                             double power = 1 );
+    static Tempest::Matrix4x4 animateObjMatrix(const Tempest::Matrix4x4 &object,
+                                             float power = 1 );
 
     static GraphicsSettingsWidget::Settings settings;
   };

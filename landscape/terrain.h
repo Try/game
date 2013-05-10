@@ -18,8 +18,8 @@ class GameSerializer;
 class SmallGraphicsObject;
 
 struct WaterVertex: MVertex{
-  float h;
-  float dir[2];
+  //Tempest::Half h;
+  Tempest::Half dir[2];
   };
 
 #include "game/gameobjectview.h"
@@ -95,6 +95,8 @@ class Terrain {
 
     int  depthAt( int x, int y ) const;
     int  heightAtNoDepth( int x, int y ) const;
+
+    Tempest::signal<> onTerrainChanged;
   private:
     Scene                  & scene;
     World                  & world;

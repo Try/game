@@ -307,11 +307,13 @@ void Resource::setupSettings( const GraphicsSettingsWidget::Settings &s ) {
 #endif
     ss << "#define opengl\n";
 
-  ss << "#define settings_shadowmapres "    << s.shadowMapRes     << std::endl
-     << "#define settings_shadowmapfilter " << s.shadowFilterQ    << std::endl
-     << "#define settings_glow "            << (s.glow? 1:0)      << std::endl
-     << "#define settings_bloom "           << (s.bloom?1:0)      << std::endl
-     << "#define settings_normalMap "       << (s.normalMap?1:0)  << std::endl;
+  ss << "#define settings_oclusionenable "  << (s.oclusion>0? 1:0) << std::endl
+     << "#define settings_shadowenable "    << (s.shadowMapRes>0? 1:0) << std::endl
+     << "#define settings_shadowmapres "    <<  s.shadowMapRes         << std::endl
+     << "#define settings_shadowmapfilter " <<  s.shadowFilterQ        << std::endl
+     << "#define settings_glow "            << (s.glow? 1:0)           << std::endl
+     << "#define settings_bloom "           << (s.bloom?1:0)           << std::endl
+     << "#define settings_normalMap "       << (s.normalMap?1:0)       << std::endl;
 
   settingsStr = ss.str();
   }

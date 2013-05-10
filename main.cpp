@@ -46,10 +46,6 @@ void setupTh(){}
 #endif
 
 int main( int, char** ){
-  Tempest::Pixmap p;
-  //p.load("data/textures/land/lena.dds");
-  //p.at(0,0);
-
   Lang::load("lang/ru.lang");
   Tempest::Application app;
   setupTh();

@@ -359,7 +359,7 @@ Physics::Rigid::Rigid() {
   data = 0;
   engine = 0;
 
-  static const double nullf[16] = {};
+  static const float nullf[16] = {};
   matrix = Tempest::Matrix4x4(nullf);
   }
 
@@ -482,10 +482,10 @@ void Physics::Rigid::update() {
 
   btVector3 pos = n.getOrigin();
 
-  matrix =  Tempest::Matrix4x4( v[0][0], v[0][1], v[0][2], 0,
-                                v[1][0], v[1][1], v[1][2], 0,
-                                v[2][0], v[2][1], v[2][2], 0,
-                                pos[0],  pos[1],  pos[2], 1 );
+  matrix =  Tempest::Matrix4x4( v[0][0], v[1][0], v[2][0], pos[0],
+                                v[0][1], v[1][1], v[2][1], pos[1],
+                                v[0][2], v[1][2], v[2][2], pos[2],
+                                0,0,0, 1 );
 #endif
   }
 

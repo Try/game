@@ -5,7 +5,7 @@
 
 extern int main(int, char**);
 extern "C"
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_androidMain(JNIEnv * env, jobject obj){
+JNIEXPORT void JNICALL Java_com_android_game_Tempest_androidMain(JNIEnv * env, jobject obj){
   int ac = 1;
   char* av[2] = {};
 

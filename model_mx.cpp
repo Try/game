@@ -7,12 +7,18 @@
 #include "util/tnloptimize.h"
 
 Tempest::VertexDeclaration::Declarator MVertex::mkDecl() {
+  /*
   Tempest::VertexDeclaration::Declarator d;
   d   .add( Tempest::Decl::float3, Tempest::Usage::Position )
       .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
       .add( Tempest::Decl::float3, Tempest::Usage::Normal   )
       .add( Tempest::Decl::float4, Tempest::Usage::Color    )
-      .add( Tempest::Decl::float4, Tempest::Usage::BiNormal );
+      .add( Tempest::Decl::float4, Tempest::Usage::BiNormal );*/
+  Tempest::VertexDeclaration::Declarator d;
+  d   .add( Tempest::Decl::half4, Tempest::Usage::Position )
+      .add( Tempest::Decl::half4, Tempest::Usage::Normal   )
+      .add( Tempest::Decl::half4, Tempest::Usage::Color    )
+      .add( Tempest::Decl::half4, Tempest::Usage::BiNormal );
 
   return d;
   }
@@ -105,10 +111,18 @@ void Model::loadMX( Tempest::VertexBufferHolder & vboHolder,
   Raw rawN;
   rawN.vertex.resize( raw.vertex.size() );
   for( size_t i=0; i<rawN.vertex.size(); ++i ){
-    MVertex             &v = rawN.vertex[i];
+    MVertex                &v = rawN.vertex[i];
     Tempest::DefaultVertex &d = raw.vertex[i];
 
-    memcpy( &v, &d, sizeof(d) );
+    v.x = d.x;
+    v.y = d.y;
+    v.z = d.z;
+
+    v.u = d.u;
+    v.v = d.v;
+
+    std::copy( d.normal, d.normal+3, v.normal );
+    //memcpy( &v, &d, sizeof(d) );
     std::fill( v.color, v.color+4, 1) ;
     }
 

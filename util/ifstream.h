@@ -1,7 +1,6 @@
 #ifndef IFSTREAM_H
 #define IFSTREAM_H
 
-#include "stlconf.h"
 #include <istream>
 #include <vector>
 

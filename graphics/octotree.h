@@ -1,7 +1,6 @@
 #ifndef OCTOTREE_H
 #define OCTOTREE_H
 
-#include "stlconf.h"
 #include <memory>
 #include <vector>
 #include <unordered_map>

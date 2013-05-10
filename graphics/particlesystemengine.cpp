@@ -169,13 +169,13 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
       v.y = y + sz*dy;
       v.z = z + sz*dz;
 
-      v.normal[0] += 0.25*dx;
-      v.normal[1] += 0.25*dy;
-      v.normal[2] += 0.25*dz;
+      v.normal[0] = v.normal[0]+0.25*dx;
+      v.normal[1] = v.normal[1]+0.25*dy;
+      v.normal[2] = v.normal[2]+0.25*dz;
 
-      v.x += 0.5*sz*v.normal[0];
-      v.y += 0.5*sz*v.normal[1];
-      v.z += 0.5*sz*v.normal[2];
+      v.x = v.x+0.5*sz*v.normal[0];
+      v.y = v.y+0.5*sz*v.normal[1];
+      v.z = v.z+0.5*sz*v.normal[2];
 
       v.u = std::max(0.0, mul[i]);
       v.v = 1.0 - std::max(0.0, mul[r]);

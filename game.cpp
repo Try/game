@@ -23,6 +23,7 @@
 
 #include "game/missions/scenariomission1.h"
 #include "game/missions/deatmachscenarion.h"
+#include "game/missions/desertstrikescenario.h"
 
 #include <cmath>
 
@@ -82,9 +83,11 @@ void Game::loadData() {
   gui.renderScene.bind( graphics, &GraphicsSystem::renderSubScene );
 
   worlds.push_back( std::shared_ptr<World>( new World(*this,
-                                                      256, 256) ) );
+                                                      128, 128) ) );
 
   world = worlds[0].get();
+  gui.setupMinimap(*world);
+
   world->camera.setPerespective( true, w(), h() );
   world->setupMaterial.bind(*this, &Game::setupMaterials );
 
@@ -101,11 +104,13 @@ void Game::loadData() {
   setPlaylersCount(1);
 
 #ifndef __ANDROID__
-  load(L"campagin/0.sav");
-  //loadMission("campagin/td map.sav");
+  //load(L"campagin/0.sav");
+  //loadMission("campagin/td.sav");
 #else
-  loadMission("campagin/td map.sav");
+  loadMission("campagin/td.sav");
 #endif
+  //world->terrain().loadFromPixmap( Tempest::Pixmap("./terrImg/h1.png") );
+  //mscenario.reset( new DesertStrikeScenario(*this, gui) );
   mscenario->onStartGame();
   updateTime = Time::tickCount();
   }
@@ -164,7 +169,7 @@ void Game::onRender( double dt ){
     }
 
   world->setCameraBounds(b);
-  gui.renderMinimap(*world);
+  gui.renderMinimap();
 
   if( gui.isCutsceneMode() ){
     Tempest::Pixmap p(1,1, false);
@@ -609,10 +614,10 @@ Game::F3 Game::unProject( int x, int y, float destZ ) {
   mat.mul( world->camera.view() );
   mat.inverse();
 
-  double px =  2.0*(x-w()/2.0)/double(w()),
-         py = -2.0*(y-h()/2.0)/double(h());
+  float px =  2.0*(x-w()/2.0)/double(w()),
+      py = -2.0*(y-h()/2.0)/double(h());
 
-  double vec1[4], vec2[4];
+  float vec1[4], vec2[4];
   mat.project( px, py, 0, 1,
                vec1[0], vec1[1], vec1[2], vec1[3] );
   mat.project( px, py, 1, 1,
@@ -627,7 +632,7 @@ Game::F3 Game::unProject( int x, int y, float destZ ) {
     vec2[i] -= vec1[i];
     }
 
-  double k = (vec1[2]-destZ)/vec2[2];
+  float k = (vec1[2]-destZ)/vec2[2];
   for( int i=0; i<4; ++i ){
     vec1[i] -= k*vec2[i];
     }
@@ -663,7 +668,7 @@ Game::F3 Game::project(float x, float y, float z) {
   //mat.transpose();
 
   F3 out;
-  double data[4];
+  float data[4];
   mat.project( x,y,z, 1, data[0], data[1], data[2], data[3]);
 
   for( int i=0; i<4; ++i )
@@ -754,6 +759,10 @@ void Game::minimapEvent( float fx, float fy,
 
 Scenario &Game::scenario() {
   return *mscenario;
+  }
+
+World &Game::curWorld() {
+  return *world;
   }
 
 void Game::setupMaterials( AbstractGraphicObject &obj,
@@ -912,6 +921,7 @@ void Game::serialize( GameSerializer &s ) {
     }
 
   world = worlds[curWorld].get();
+  gui.setupMinimap(*world);
 
   gui.toogleEditLandMode = Tempest::signal<const Terrain::EditMode&>();
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );

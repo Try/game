@@ -33,8 +33,6 @@ GameObject::GameObject( Scene & s,
 
   hint = p.mouseHint;
 
-  m.isVisible_perf = true;
-
   bclos.colisionDisp[0] = 0;
   bclos.colisionDisp[1] = 0;
   bclos.isPatrul        = false;
@@ -126,6 +124,15 @@ void GameObject::loadView( const Model &model,
 
 void GameObject::loadView(const Tempest::Model<WaterVertex> &model ){
   view.loadView( model );
+  }
+
+void GameObject::setPosition(int x, int y) {
+  Terrain &t = wrld.terrain();
+
+  float wx = x/Terrain::quadSizef,
+        wy = y/Terrain::quadSizef;
+
+  setPosition(x, y, t.heightAt(wx, wy) );
   }
 
 void GameObject::setViewPosition( GraphicObject& obj,
@@ -456,13 +463,8 @@ void GameObject::higlight(int time, GameObjectView::Selection type) {
   view.higlight(time, type);
   }
 
-void GameObject::setVisible_perf(bool v) {
-  view.setVisible_perf(v);
-  m.isVisible_perf = v;
-  }
-
-bool GameObject::isVisible_perf() const {
-  return m.isVisible_perf;
+bool GameObject::isVisible( const  GraphicsSystem::Frustum & f ) const {
+  return view.isVisible(f);
   }
 
 void GameObject::setCoolDown(size_t spellID, int v) {

@@ -27,7 +27,8 @@ void Thread::cancel() {
 #ifndef __ANDROID__
   pthread_cancel(thread);
 #else
-  pthread_kill(thread, SIGUSR1);
+  pthread_kill(thread, 1);
+  //pthread_kill(thread, SIGUSR1);
 #endif
   valid = false;
   }

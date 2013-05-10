@@ -13,17 +13,17 @@ Material::Material():specular(0), useAlphaTest(1), alphaTrestRef(0.5) {
   }
 
 Tempest::Matrix4x4 Material::animateObjMatrix( const Tempest::Matrix4x4 &object,
-                                            double power ) {
-  double dvec[3] = { power*0.02*wind, power*0.03*wind, 0};
+                                               float power ) {
+  float dvec[3] = { power*0.02f*wind, power*0.03f*wind, 0};
 
-  double mx[4][4] = {
+  float mx[4][4] = {
     {1,0,0,0},
     {0,1,0,0},
     { dvec[0], dvec[1], 1,0},
     {0,0,0,1}
     };
 
-  Tempest::Matrix4x4 mobj( (double*)mx );
+  Tempest::Matrix4x4 mobj( (float*)mx );
   //mobj.mul( object );
   Tempest::Matrix4x4 objR = object;
   objR.set(3,0, 0);
@@ -238,6 +238,16 @@ void Material::glowPass(Tempest::RenderState & rs,
 
   table.add( m,     "mvpMatrix",  Tempest::UniformTable::Vertex   );
   table.add( glow,  "texture",    Tempest::UniformTable::Fragment );
+  }
+
+void Material::glowPassAdd( Tempest::RenderState &rs,
+                            const Tempest::Matrix4x4 &obj,
+                            const Tempest::AbstractCamera &c,
+                            Tempest::UniformTable &t) const {
+  glowPass(rs, obj, c, t);
+  rs.setBlend(1);
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
+                   Tempest::RenderState::AlphaBlendMode::one );
   }
 
 void Material::shadow( Tempest::RenderState &rs,

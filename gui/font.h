@@ -1,7 +1,6 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "stlconf.h"
 #include <string>
 #include "graphics/paintergui.h"
 

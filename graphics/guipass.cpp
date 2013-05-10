@@ -16,9 +16,9 @@ GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
                   Tempest::Size &s  )
   : vs(vsh), fs(fsh), vbHolder(vbo), ibHolder(ibo), size(s) {
   Tempest::VertexDeclaration::Declarator decl;
-  decl.add( Tempest::Decl::float2, Tempest::Usage::Position )
-      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 0 )
-      .add( Tempest::Decl::float4, Tempest::Usage::TexCoord, 1 );
+  decl.add( Tempest::Decl::half2, Tempest::Usage::Position )
+      .add( Tempest::Decl::half2, Tempest::Usage::TexCoord, 0 )
+      .add( Tempest::Decl::half4, Tempest::Usage::TexCoord, 1 );
 
   vdecl = Tempest::VertexDeclaration( vbo.device(), decl );
 
@@ -47,7 +47,7 @@ void GUIPass::exec( MainGui &gui,
       sz = std::max( lay.guiRawData.size(), sz );
 
       if( lay.needToUpdate ){
-        lay.guiGeometry = Tempest::VertexBuffer<Vertex>();
+        lay.guiGeometry = Tempest::VertexBuffer<HVertex>();
         lay.guiGeometry = vbHolder.load( lay.guiRawData );
         lay.needToUpdate = false;
         }
@@ -136,7 +136,7 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
   if( tw<0 || th<0 )
     return;
 
-  Vertex v[4];
+  HVertex v[4];
   v[0].x = x0; v[0].u = texDx;
   v[0].y = y0; v[0].v = texDy;
 
@@ -153,8 +153,8 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
     v[i].x = -1 + 2.0*(v[i].x/size.w);
     v[i].y =  1 - 2.0*(v[i].y/size.h);
 
-    v[i].u /= texSize.w;
-    v[i].v /= texSize.h;
+    v[i].u = v[i].u/texSize.w;
+    v[i].v = v[i].v/texSize.h;
 
     std::copy( state.color, state.color+4, v[i].color );
     }

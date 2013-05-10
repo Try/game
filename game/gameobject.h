@@ -49,6 +49,7 @@ class GameObject {
 
     void loadView( const Tempest::Model<WaterVertex> & model );
 
+    void setPosition( int x, int y );
     void setPosition( int x, int y, int z );
     void setPositionSmooth( int x, int y, int z );
     void syncView(double dt);
@@ -124,8 +125,7 @@ class GameObject {
     void incColisionDisp( int dx, int dy );
 
     void higlight(int time, GameObjectView::Selection type );
-    void setVisible_perf( bool v );
-    bool isVisible_perf() const;
+    bool isVisible( const  GraphicsSystem::Frustum & f ) const;
 
     void setCoolDown( size_t spellID, int v );
     int  coolDown   ( size_t spellID ) const;
@@ -155,7 +155,6 @@ class GameObject {
       int hp;
 
       bool isSelected, isMouseOwer;
-      bool isVisible_perf;
       } m;
 
     Behavior::Closure bclos;

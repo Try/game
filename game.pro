@@ -172,11 +172,11 @@ HEADERS += \
     graphics/material.h \
     graphics/scene.h \
     graphics/octotree.h \
-    stlconf.h \
     threads/time.h \
     util/ifstream.h \
     util/tnloptimize.h \
-    gui/graphicssettingswidget.h
+    gui/graphicssettingswidget.h \
+    game/missions/desertstrikescenario.h
 
 SOURCES += \
     main.cpp \
@@ -281,11 +281,11 @@ SOURCES += \
     graphics/material.cpp \
     graphics/scene.cpp \
     threads/time.cpp \
-    stlconf.cpp \
     jniBind.cpp \
     util/ifstream.cpp \
     util/tnloptimize.cpp \
-    gui/graphicssettingswidget.cpp
+    gui/graphicssettingswidget.cpp \
+    game/missions/desertstrikescenario.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

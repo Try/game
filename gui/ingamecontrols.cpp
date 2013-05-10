@@ -325,8 +325,12 @@ void InGameControls::updateValues() {
                  Lexical::upcast( game.player().limMax() ) );
   }
 
-void InGameControls::renderMinimap(World &w) {
-  minimap->render(w);
+void InGameControls::setupMinimap(World &w) {
+  minimap->setup(w);
+  }
+
+void InGameControls::renderMinimap() {
+  minimap->render();
   }
 
 bool InGameControls::minimapMouseEvent( float x, float y,

@@ -9,7 +9,7 @@ GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
   = GraphicsSettingsWidget::Settings::openGL;
 #else
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
-  = GraphicsSettingsWidget::Settings::directX;
+  = GraphicsSettingsWidget::Settings::openGL;
 #endif
 
 GraphicsSettingsWidget::Settings::Settings() {
@@ -19,6 +19,7 @@ GraphicsSettingsWidget::Settings::Settings() {
   normalMap    = true;
 
   shadowFilterQ = 2;
+  oclusion      = true;
   }
 
 GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
@@ -30,13 +31,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   ListBox *b = new ListBox(res);
   std::vector< std::wstring > l;
+  l.push_back(L"no sm");
   l.push_back(L"sm 512x512");
   l.push_back(L"sm 1024x1024");
   l.push_back(L"sm 2048x2048");
   //l.push_back(L"sm 4096x4096");
 
   b->setItemList(l);
-  b->setCurrentItem(1);
+  b->setCurrentItem(2);
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::shadowMapRes);
   layout().add(b);
 
@@ -82,12 +84,21 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   b->setItemList(l);
   b->setCurrentItem(1);
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::normalMap );
+  layout().add(b);
 
+  b = new ListBox(res);
+  l.clear();
+  l.push_back(L"oclusion off");
+  l.push_back(L"oclusion on");
+
+  b->setItemList(l);
+  b->setCurrentItem(1);
+  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::oclusion );
   layout().add(b);
   }
 
 void GraphicsSettingsWidget::shadowMapRes(int v) {
-  int r[] = {512, 1024, 2048, 4096};
+  int r[] = {0, 512, 1024, 2048, 4096};
   s.shadowMapRes = r[v];
 
   onSettingsChanged(s);
@@ -112,6 +123,12 @@ void GraphicsSettingsWidget::glow(int v) {
 
 void GraphicsSettingsWidget::normalMap(int v) {
   s.normalMap = v;
+
+  onSettingsChanged(s);
+  }
+
+void GraphicsSettingsWidget::oclusion(int v) {
+  s.oclusion = v;
 
   onSettingsChanged(s);
   }

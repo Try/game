@@ -96,7 +96,12 @@ void Terrain::buildGeometry(){
 MVertex Terrain::mkVertex(int x, int y, int plane) {
   const double texCoordScale = 0.1;
 
-  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1}, {-1,0,0,0} };
+  MVertex v;// = {0,0,0,0, {0,0,1,0}, {1,1,1,1}, {-1,0,0}, 0 };
+  std::fill( v.color,   v.color  +4, 1 );
+  std::fill( v.normal,  v.normal +4, 0 );
+  std::fill( v.bnormal, v.bnormal+4, 0 );
+  v. normal[2] =  1;
+  v.bnormal[0] = -1;
 
   v.x = World::coordCast( x*quadSize );
   v.y = World::coordCast( y*quadSize );
@@ -407,24 +412,23 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
   }
 
 void Terrain::computePlanes() {
-  Model::Vertex v = {0,0,0, 0,0, {0,0,1}, {1,1,1,1}, {-1,0,0,0} };
+  //Model::Vertex v = {0,0,0,0, {0,0,1}, {1,1,1,1}, {-1,0,0}, 0 };
 
   for( int i=0; i+1<heightMap.width(); ++i )
     for( int r=0; r+1<heightMap.height(); ++r ){
-      v.normal[0] = heightAt(i-1,r) - heightAt(i+1,r);
-      v.normal[1] = heightAt(i,r-1) - heightAt(i,r+1);
-      v.normal[2] = 1;
+      float normal[3];
+      normal[0] = (heightAt(i-1,r) - heightAt(i+1,r))/quadSize;
+      normal[1] = (heightAt(i,r-1) - heightAt(i,r+1))/quadSize;
+      normal[2] = 1;
 
-      v.normal[0] /= quadSize;
-      v.normal[1] /= quadSize;
-      double l = sqrt(v.normal[0]*v.normal[0] + v.normal[1]*v.normal[1] + 1);
+      double l = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + 1);
 
       for( int t=0; t<3; ++t )
-        v.normal[t] /= l;
+        normal[t] /= l;
 
       float n[3] = {};
 
-      std::copy( v.normal, v.normal+3, n );
+      std::copy( normal, normal+3, n );
       for( int q=0; q<3; ++q )
         n[q] = fabs(n[q]);
 
@@ -438,7 +442,7 @@ void Terrain::computePlanes() {
 
       int id = tileset[i][r].textureID[0];
       tileset[i][r].color = aviableColors[id];
-      std::copy( v.normal, v.normal+3, tileset[i][r].normal );
+      std::copy( normal, normal+3, tileset[i][r].normal );
       }
 
   for( int i=1; i+1<heightMap.width(); ++i )
@@ -494,22 +498,23 @@ Tempest::Model<WaterVertex>
           v.u = x*texCoordScale;
           v.v = y*texCoordScale;
 
-          v.normal[0] =  heightAtNoDepth(i+dx[q]-1,r+dy[q])
-                        -heightAtNoDepth(i+dx[q]+1,r+dy[q]);
-          v.normal[1] =  heightAtNoDepth(i+dx[q],r+dy[q]-1)
-                        -heightAtNoDepth(i+dx[q],r+dy[q]+1);
-          v.normal[2] = 1;
+          float normal[3];
+          normal[0] = ( heightAtNoDepth(i+dx[q]-1,r+dy[q])
+                       -heightAtNoDepth(i+dx[q]+1,r+dy[q]));
+          normal[1] = (heightAtNoDepth(i+dx[q],r+dy[q]-1)
+                       -heightAtNoDepth(i+dx[q],r+dy[q]+1));
+          normal[2] = 1;
 
-          v.normal[0] /= quadSize;
-          v.normal[1] /= quadSize;
-          double l = sqrt(v.normal[0]*v.normal[0] + v.normal[1]*v.normal[1] + 1);
+          normal[0] /= quadSize;
+          normal[1] /= quadSize;
+          double l = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + 1);
 
           for( int t=0; t<3; ++t )
-            v.normal[t] /= l;
+            v.normal[t] = normal[t]/l;
 
           v.h = World::coordCast( depthAt(i+dx[q], r+dy[q]) )-0.2;
           v.h = v.h*3;
-          v.h = std::min( 1.0f, std::max(v.h, 0.0f) );
+          v.h = std::min( 1.0f, std::max( float(v.h), 0.0f) );
 
           v.dir[0] =  heightAt(i+dx[q],r+dy[q]-1)
                      -heightAt(i+dx[q],r+dy[q]+1);
@@ -524,8 +529,8 @@ Tempest::Model<WaterVertex>
           }
 
   Tempest::VertexDeclaration::Declarator decl = MVertex::decl();
-  decl.add( Tempest::Decl::float1, Tempest::Usage::Depth    )
-      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 1 );
+  decl//.add( Tempest::Decl::float1, Tempest::Usage::Depth    )
+      .add( Tempest::Decl::half2, Tempest::Usage::TexCoord, 1 );
 
   std::vector<uint16_t> index;
   TnlOptimize::index( land, index );
@@ -684,6 +689,7 @@ void Terrain::brushHeight( int x, int y,
     }
 
   computeEnableMap();
+  onTerrainChanged();
   }
 
 int Terrain::at(int x, int y) const {
@@ -881,6 +887,8 @@ void Terrain::editBuildingsMap(int x, int y, int w, int h, int dv) {
     for( int r=y; r<y1; ++r )
       if( buildingsMap.validate(i,r) )
         buildingsMap[i][r] += dv;
+
+  onTerrainChanged();
   }
 
 int Terrain::clampX(int x) const {
@@ -1001,6 +1009,9 @@ void Terrain::serialize( GameSerializer &s ) {
     std::fill( buildingsMap.begin(), buildingsMap.end(),  0 );
     }
 
+  if( s.isReader() )
+    onTerrainChanged();
+
   computeEnableMap();
   }
 
@@ -1023,6 +1034,12 @@ void Terrain::loadFromPixmap(const Tempest::Pixmap &p) {
       }
 
   computeEnableMap();
+
+  for( int i=0; i<chunks.width(); ++i )
+    for( int r=0; r<chunks.height(); ++r )
+      chunks[i][r].needToUpdate = 1;
+
+  buildGeometry();
   }
 
 

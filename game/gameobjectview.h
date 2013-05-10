@@ -7,6 +7,7 @@
 #include "game/protoobject.h"
 #include "graphics/particlesystem.h"
 #include "graphics/scene.h"
+#include "graphics/graphicssystem.h"
 
 class SmallGraphicsObject;
 
@@ -69,7 +70,6 @@ class GameObjectView {
     void setSelectionVisible( bool v, Selection s );
     void higlight( int time, Selection s );
     void setVisible( bool v );
-    void setVisible_perf( bool v );
 
     void rotate(int delta);
     void setRotation(int delta);
@@ -94,6 +94,8 @@ class GameObjectView {
     Tempest::Matrix4x4 _transform() const;
 
     void applyForce( float x, float y, float z );
+
+    bool isVisible( const  GraphicsSystem::Frustum & f ) const;
   private:
     void setForm( EnvObject &obj, const Physics::Sphere &f );
     void setForm( EnvObject &obj, const Physics::Box &f    );

@@ -11,28 +11,39 @@ MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
   rtime   = Time::tickCount();
   rtime2  = Time::tickCount();
   pressed = false;
+  world   = 0;
+
+  needToUpdateTerrain = true;
   }
 
-void MiniMapView::render( World &wx ) {
-  //return;
+void MiniMapView::setup(World &w) {
+  world = &w;
+  needToUpdateTerrain = true;
 
-  int mk = wx.terrain().width()*wx.terrain().height()/(128*128);
+  w.terrain().onTerrainChanged.bind(*this, &MiniMapView::onTerrainCanged );
+  }
+
+void MiniMapView::render() {
+  if( world==0 )
+    return;
+
+  World &wx = *world;
+
+  int mk = std::max( 1, wx.terrain().width()*wx.terrain().height()/(128*128) );
 
   if( terr.width() != w() || terr.height()!= h() ){
     rtime = Time::tickCount() - mk*1000*2;
 
     hudPx = Tempest::Pixmap(w(), h(), true);
     Tempest::Pixmap::Pixel px = {0,0,0,0};
-
-    for( int i=0; i<hudPx.width(); ++i )
-      for( int r=0; r<hudPx.height(); ++r ){
-        hudPx.set(i,r, px );
-        }
+    hudPx.fill(px);
 
     update();
     }
 
-  if( Time::tickCount() >= rtime2+mk*1000*2 ){
+  if( //Time::tickCount() >= rtime2+mk*1000*2 &&
+      needToUpdateTerrain ){
+    needToUpdateTerrain = false;
     rtime2 = Time::tickCount();
 
     Tempest::Pixmap terr = Tempest::Pixmap(w(), h(), true);
@@ -80,15 +91,14 @@ void MiniMapView::render( World &wx ) {
         }
 
     this->terr = res.ltexHolder.create(terr, false, false);
-    } else
-  if( Time::tickCount() >= rtime+mk*1000/2 ){
+    }
+
+  if( needToUpdateTerrain || Time::tickCount() >= rtime+mk*1000*2 ){
     rtime = Time::tickCount();
 
     Tempest::Pixmap::Pixel pix = {0,0,0,0};
     Tempest::Pixmap renderTo = Tempest::Pixmap(w(), h(), true);
-    for( int i=0; i<terr.width(); ++i )
-      for( int r=0; r<terr.height(); ++r )
-        renderTo.set(i,r, pix);
+    renderTo.fill(pix);
 
     drawUnits(renderTo, wx);
     //aceptFog(renderTo, wx.game.player().fog() );
@@ -100,14 +110,8 @@ void MiniMapView::render( World &wx ) {
     fog   = res.ltexHolder.create(fogTex, false, false);
     }
 
-  //static Tempest::Pixmap hudPx = Tempest::Pixmap(w(), h(), true);
   Tempest::Pixmap::Pixel px[2] = {{0,0,0,0}, {255,255,255,255}};
-
-
-  for( int i=0; i<hudPx.width(); ++i )
-    for( int r=0; r<hudPx.height(); ++r ){
-      hudPx.set(i,r, px[0] );
-      }
+  //hudPx.fill(px[0]);
 
   for( int i=0; i<2; ++i ){
     World::CameraViewBounds b = camBounds;
@@ -116,9 +120,9 @@ void MiniMapView::render( World &wx ) {
     int sx = wx.terrain().width()*Terrain::quadSize,
         sy = wx.terrain().height()*Terrain::quadSize;
 
-    for( int i=0; i<4; ++i ){
-      b.x[i] = (b.x[i]*hudPx.width()) /sx;
-      b.y[i] = (b.y[i]*hudPx.height())/sy;
+    for( int r=0; r<4; ++r ){
+      b.x[r] = (b.x[r]*hudPx.width()) /sx;
+      b.y[r] = (b.y[r]*hudPx.height())/sy;
       }
 
     lineTo( hudPx, b.x[0], b.y[0], b.x[1], b.y[1], px[i] );
@@ -241,34 +245,6 @@ void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
   int tw = wx.terrain().width(),
       th = wx.terrain().height();
 
-  /*
-  {
-
-    Tempest::Pixmap::Pixel pix, pix2;
-    pix.r = 0;
-    pix.g = 0;
-    pix.b = 0;
-    pix.a = 0;
-    pix.a = 255;
-
-    pix2 = pix;
-    pix2.r = 255;
-
-    for( int i=0; i<tw; ++i )
-      for( int r=0; r<th; ++r ){
-        int pi = i*renderTo.width()/wx.terrain().width(),
-            pr = r*renderTo.height()/wx.terrain().height();
-
-        if( GraphicsSystem::isVisible( World::coordCast(i*Terrain::quadSize),
-                                       World::coordCast(r*Terrain::quadSize),
-                                       0,0, f) )
-          renderTo.set(pi, pr, pix); else
-          renderTo.set(pi, pr, pix2);
-        }
-    return;
-    }*/
-
-
   Tempest::Pixmap::Pixel pix;
   pix.r = 0;
   pix.g = 0;
@@ -343,6 +319,11 @@ void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
       if( renderTo.at(i,r).a==0 )
         {};//renderTo.set( i, r, terr.at(i,r) );
         */
+  }
+
+void MiniMapView::onTerrainCanged() {
+  needToUpdateTerrain = true;
+  hudPx.fill( {0,0,0,0} );
   }
 
 void MiniMapView::paintEvent(Tempest::PaintEvent &e) {

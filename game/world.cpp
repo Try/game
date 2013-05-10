@@ -1,15 +1,12 @@
 #include "world.h"
 
-#ifdef __ANDROID__
-#include <unistd.h>
-#endif
-
 #include "prototypesloader.h"
 
 #include <cmath>
 #include <iostream>
 
 #include "util/math.h"
+#include "threads/time.h"
 
 #include <Tempest/Painter>
 #include "behavior/behaviormsgqueue.h"
@@ -159,16 +156,12 @@ void World::createTestMap() {
   }
 
 void World::computePhysic( void * ) {
-  #ifndef __ANDROID__
+  //#ifndef __ANDROID__
   while( isRunning ){
     physics.tick();
-    #ifndef __ANDROID__
-    Sleep(50);
-    #else
-    sleep(50);
-    #endif
+    Time::sleep(50);
     }
-  #endif
+  //#endif
   }
 
 void World::createResp(int pl, int x, int y, int minX, int minY) {
@@ -366,16 +359,16 @@ void World::updateMouseOverFlag( double x0, double y0,
   if( y0 > y1 )
     std::swap(y0,y1);
 
-  double data[4];
+  float data[4];
 
   bool hostCtrl = 0,
        hostUnit = 0;
 
   for( size_t i=0; i<gameObjects.size(); ++i ){
     GameObject & obj = *gameObjects[i];
-    double x = coordCast( obj.x() ),
-           y = coordCast( obj.y() ),
-           z = coordCast( obj.z() );
+    float x = coordCast( obj.x() ),
+        y = coordCast( obj.y() ),
+        z = coordCast( obj.z() );
 
     mat.project( x, y, z, 1,
                  data[0], data[1], data[2], data[3] );
@@ -445,13 +438,15 @@ void World::updateSelectionClick( BehaviorMSGQueue &msg,
 size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
   Tempest::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
+  GraphicsSystem::Frustum frustum;
+  GraphicsSystem::mkFrustum( camera, frustum );
 
   int dist = -1, mdist = -1;
   size_t ret = -1;
 
   for( size_t i=0; i<objectsCount(); ++i ){
     if( object(i).getClass().data.isBackground ||
-        !object(i).isVisible_perf() )
+        !object(i).isVisible(frustum) )
       continue;
 
     if( isUnitUnderMouse( gmMat, object(i), mx, my, w, h, dist ) ){
@@ -468,7 +463,7 @@ size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
     }
 
   for( size_t i=0; i<resouces.size(); ++i ){
-    if( object(i).isVisible_perf() &&
+    if( object(i).isVisible(frustum) &&
         isUnitUnderMouse( gmMat, *resouces[i], mx, my, w, h, dist ) ){
       for( size_t r=0; r<objectsCount(); ++r )
         if( &object(r)==resouces[i] )
@@ -485,15 +480,15 @@ bool World::isUnitUnderMouse( Tempest::Matrix4x4 & gmMat,
                               const GameObject & obj,
                               int mx, int my, int w, int h,
                               int & dist ) const {
-  double data1[4], data2[4];
+  float data1[4], data2[4];
   Tempest::Matrix4x4 m = gmMat;
 
   m.mul( obj._transform() );
 
   Tempest::Matrix4x4 mat = obj._transform();
 
-  double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
-  double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
+  float left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
+  float  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
 
   for( int r=0; r<3; ++r ){
     left[3] += left[r]*left[r];
@@ -509,11 +504,11 @@ bool World::isUnitUnderMouse( Tempest::Matrix4x4 & gmMat,
     left[r] += top[r];
     }
 
-  double x = 0,
-         y = 0,
-         z = 0;//0.5*obj.rawRadius();
+  float x = 0,
+      y = 0,
+      z = 0;//0.5*obj.rawRadius();
 
-  double r = 0.8*obj.rawRadius();
+  float r = 0.8*obj.rawRadius();
 
   m.project( x+r*left[0], y+r*left[1], z+r*left[2], 1,
              data1[0], data1[1], data1[2], data1[3] );
@@ -554,8 +549,6 @@ bool World::isUnitUnderMouse( Tempest::Matrix4x4 & gmMat,
 
 void World::paintHUD( Tempest::Painter & p,
                       int w, int h ) {
-  //return;
-
   Tempest::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
 
@@ -566,14 +559,18 @@ void World::paintHUD( Tempest::Painter & p,
 
   //double data1[4], data2[4];
 
+  GraphicsSystem::Frustum frustum;
+  GraphicsSystem::mkFrustum( camera, frustum );
+
   p.setBlendMode( Tempest::alphaBlend );
-  for( size_t plN = 1; plN<game.plCount(); ++plN )
+  for( size_t plN = 1; plN<game.plCount(); ++plN ){
+    const Tempest::Pixmap & fog = game.player().fog();
+
     for( size_t i=0; i<game.player(plN).unitsCount(); ++i ){
       GameObject & obj = game.player(plN).unit(i);
 
       int x = obj.x()/Terrain::quadSize,
           y = obj.y()/Terrain::quadSize;
-      const Tempest::Pixmap & fog = game.player().fog();
 
       bool v = true;
       if( x>=0 && x<fog.width() &&
@@ -581,7 +578,8 @@ void World::paintHUD( Tempest::Painter & p,
         v = (fog.at(x,y).a==255);
 
       if( v &&
-          obj.isVisible_perf() && !obj.behavior.find<BonusBehavior>() ) {
+          obj.isVisible(frustum) &&
+          !obj.behavior.find<BonusBehavior>() ) {
         Tempest::Rect rect = projectUnit( game.player(plN).unit(i),
                                            gmMat, w, h );
         int y0 = rect.y;
@@ -607,6 +605,7 @@ void World::paintHUD( Tempest::Painter & p,
                     64,0, 1, 5 );
         }
       }
+    }
 
   GameObject *mobj = mouseObj();
   if( mobj ){
@@ -617,10 +616,9 @@ void World::paintHUD( Tempest::Painter & p,
   }
 
 Tempest::Rect World::projectUnit( GameObject& obj,
-                                   const Tempest::Matrix4x4 & gmMat,
-                                   int w, int h ){
-  double data1[4], data2[4];
-
+                                  const Tempest::Matrix4x4 & gmMat,
+                                  int w, int h ){
+  float data1[4], data2[4];
   Tempest::Matrix4x4 m = gmMat;
 
   m.mul( obj._transform() );
@@ -628,8 +626,8 @@ Tempest::Rect World::projectUnit( GameObject& obj,
 
   Tempest::Matrix4x4 mat = obj._transform();
 
-  double left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
-  double  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
+  float left[4] = { mat.data()[0], mat.data()[4], mat.data()[8], 0 };
+  float  top[4] = { mat.data()[1], mat.data()[5], mat.data()[9], 0 };
 
   for( int r=0; r<3; ++r ){
     left[3] += left[r]*left[r];
@@ -645,11 +643,11 @@ Tempest::Rect World::projectUnit( GameObject& obj,
     left[r] += top[r];
     }
 
-  double x = 0,//obj.x(),
-         y = 0,//obj.y(),
-         z = 0;//0.5*obj.rawRadius();//obj.z();
+  float x = 0,//obj.x(),
+      y = 0,//obj.y(),
+      z = 0;//0.5*obj.rawRadius();//obj.z();
 
-  double r = 0.5*obj.rawRadius();
+  float r = 0.5*obj.rawRadius();
 
   if( obj.getClass().view.size() )
     z = obj.rawRadius()*( obj.getClass().view[0].align[2]*0.5 + 0.5 );

@@ -116,7 +116,7 @@ class GraphicsSystem {
 
     static  float smMatSize(const Scene & s, float sv = 0 );
     static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s );
-    static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s, double *dxyz,
+    static  Tempest::Matrix4x4 makeShadowMatrix(const Scene & s, float *dxyz,
                                                  float sv = 0 );
 
     Tempest::Texture2d::Sampler reflect, bufSampler;
@@ -293,7 +293,7 @@ class GraphicsSystem {
                     const Scene::Objects &v ) ;
 
     void drawGlow(Tempest::Texture2d &out,
-                   Tempest::Texture2d &depth,
+                   Tempest::Texture2d &depth, Tempest::Texture2d &mrt0,
                    const Scene &scene,
                    int size , int w, int h);
 

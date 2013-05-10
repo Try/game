@@ -2,16 +2,17 @@
 #define MODEL_MX_H
 
 #include <Tempest/Model>
+#include <Tempest/Half>
 #include <cstring>
 #include <functional>
 
 struct MVertex {
-  float x,y,z;
-  float u,v;
-  float normal[3];
-  float color[4];
+  Tempest::Half x,y,z,u;
+  //Tempest::Half u,v;
+  Tempest::Half normal[3], v;
+  Tempest::Half color[4];
 
-  float bnormal[4];
+  Tempest::Half bnormal[3], h;
 
   bool operator == ( const MVertex& v ) const {
     return memcmp( this, &v, sizeof(*this) )==0;

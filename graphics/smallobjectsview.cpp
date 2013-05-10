@@ -189,7 +189,7 @@ void SmallGraphicsObject::applyTransform() {
   mat.scale( sx,sy,sz );
 
   Model::Vertex *v = &vx.geometry.vertex[glocation];
-  double x, y, z, w = 1;
+  float x, y, z, w = 1;
 
   for( size_t i=0; i<model->vertex.size(); ++i, ++v ){
     const Model::Vertex & s = model->vertex[i];

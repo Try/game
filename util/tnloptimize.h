@@ -3,7 +3,6 @@
 
 #include "model_mx.h"
 #include <vector>
-#include "stlconf.h"
 #include <unordered_map>
 #include <cstdint>
 

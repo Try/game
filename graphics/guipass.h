@@ -15,6 +15,7 @@
 
 #include <Tempest/IndexBufferHolder>
 #include <Tempest/IndexBuffer>
+#include <Tempest/Half>
 
 #include "pixmapspool.h"
 
@@ -61,6 +62,13 @@ class GUIPass {
       float u,v;
       float color[4];
       };
+
+    struct HVertex{
+      Tempest::Half x,y;
+      Tempest::Half u,v;
+      Tempest::Half color[4];
+      };
+
     Tempest::Rect texRect;
 
     struct GeometryBlock{
@@ -71,9 +79,9 @@ class GUIPass {
 
     struct Layer{
       std::vector<GeometryBlock> geometryBlocks;
-      Tempest::VertexBuffer<Vertex>  guiGeometry;
+      Tempest::VertexBuffer<HVertex>  guiGeometry;
 
-      std::vector<Vertex> guiRawData;
+      std::vector<HVertex> guiRawData;
       bool needToUpdate;
       };
 

@@ -64,7 +64,8 @@ class InGameControls : public Tempest::Widget {
     void enableHooks(bool e);
 
     void updateValues();
-    void renderMinimap( World& w );
+    void setupMinimap( World& w );
+    void renderMinimap();
 
     bool minimapMouseEvent(float x, float y, Tempest::Event::MouseButton btn , MiniMapView::Mode m);
   protected:

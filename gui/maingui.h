@@ -99,7 +99,8 @@ class MainGui {
 
     void enableHooks( bool e );
 
-    void renderMinimap( World& w );
+    void setupMinimap( World& w );
+    void renderMinimap();
     void updateValues();
 
     bool isCutsceneMode();

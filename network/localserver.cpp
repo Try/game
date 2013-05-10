@@ -1,7 +1,7 @@
 #include "localserver.h"
 
 #include <string>
-#include <unistd.h>
+#include "threads/time.h"
 
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET    (~(0))
@@ -103,11 +103,7 @@ int LocalServer::serverListen( void * ){
         }
       }
 
-#ifdef __WIN32
-    Sleep(1000);
-#else
-    sleep(1000);
-#endif
+    Time::sleep(1000);
     }
 
   clientsMut.lock();

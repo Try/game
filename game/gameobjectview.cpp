@@ -537,14 +537,6 @@ void GameObjectView::higlight(int time, GameObjectView::Selection s) {
   selection[int(s)]->setVisible(true);
   }
 
-void GameObjectView::setVisible_perf(bool v) {
-  for( size_t i=0; i<view.size(); ++i )
-    view[i].setVisible(v);
-
-  //for( int i=0; i<selectModelsCount; ++i )
-    //selection[i]->setVisible(v);
-  }
-
 void GameObjectView::setVisible(bool v) {
   for( size_t i=0; i<view.size(); ++i )
     view[i].setVisible(v);
@@ -909,4 +901,19 @@ void GameObjectView::applyForce(float x, float y, float z) {
     if( form.box.isValid() )
       form.box.applyForce(x,y,z);
     }
+  }
+
+bool GameObjectView::isVisible(const GraphicsSystem::Frustum &f) const {
+  if( view.size() )
+    return GraphicsSystem::isVisible( view[0], f);
+
+  float x = World::coordCastD(m.x),
+        y = World::coordCastD(m.y);
+  int z = wrld.terrain().heightAt( x/Terrain::quadSizef,
+                                   y/Terrain::quadSizef );
+
+  return GraphicsSystem::isVisible( x, y,
+                                    World::coordCastD(z),
+                                    0,
+                                    f );
   }

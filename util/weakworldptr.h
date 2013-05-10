@@ -1,7 +1,6 @@
 #ifndef WEAKWORLDPTR_H
 #define WEAKWORLDPTR_H
 
-#include "stlconf.h"
 #include <memory>
 
 class World;
