@@ -43,7 +43,7 @@ void ScroolWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
   sb.setValue(sb.value() - e.delta);//*std::max(1, int(sb.range()*0.05)) );
   }
 
-void ScroolWidget::scrool(int v) {
+void ScroolWidget::scrool(int ) {
   lay->applyLayout();
   }
 

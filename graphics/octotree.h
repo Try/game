@@ -39,10 +39,12 @@ class OcTree {
       };
 
     OcTree( int linearSize = leafLinearSize )
-        :r(1.5*linearSize*1.45), linearSize(linearSize){
+        :r(1.5*linearSize*1.45), linearSize(linearSize), owner(0){
         x = 0;
         y = 0;
         z = 0;
+
+        count = 0;
         }
 
     void reposition( const T &t, float x, float y, float z, float sZ ){
@@ -56,9 +58,20 @@ class OcTree {
           if( tn.objects[id]==t ){
             tn.objects[id] = tn.objects.back();
             tn.objects.pop_back();
+            OcTree* p = &tn;
+            while( p ){
+              --p->count;
+              p = p->owner;
+              }
 
             n.objects.push_back(t);
             nodes[t] = &n;
+
+            p = &n;
+            while( p ){
+              ++p->count;
+              p = p->owner;
+              }
             return;
             }
           }
@@ -70,9 +83,15 @@ class OcTree {
 
       nodes[t] = &n;
       n.objects.push_back(t);
+
+      OcTree* p = &n;
+      while( p ){
+        ++p->count;
+        p = p->owner;
+        }
       }
 
-    void remove( const T &t, float /*tx*/, float /*ty*/, float /*tz*/ ){
+    bool remove( const T &t, float /*tx*/, float /*ty*/, float /*tz*/ ){
       OcTree& n = *nodes[t];
       nodes.erase(t);
 
@@ -82,9 +101,18 @@ class OcTree {
         if( n.objects[id]==t ){
           n.objects[id] = n.objects.back();
           n.objects.pop_back();
-          return;
+
+          OcTree* p = &n;
+          while( p ){
+            --p->count;
+            p = p->owner;
+            }
+
+          return true;
           }
         }
+
+      return false;
       }
 
     OcTree& node( float tx, float ty, float tz,
@@ -112,6 +140,7 @@ class OcTree {
 
       if( !n ){
         n.reset( new OcTree(linearSize/2) );
+        n->owner = this;
 
         n->x = x + px*n->linearSize;
         n->y = y + py*n->linearSize;
@@ -139,6 +168,7 @@ class OcTree {
 
     static const int leafLinearSize = 1;
 
+    size_t count;
   private:
     struct hash{
       template< class Tx >
@@ -147,6 +177,8 @@ class OcTree {
         }
       };
     std::unordered_map<T, OcTree*, hash > nodes;
+    //size_t count;
+    OcTree * owner;
   };
 
 #endif // OCTOTREE_H

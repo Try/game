@@ -119,9 +119,8 @@ class ScenarioMission1::EndScreenWidget:public ModalWindow{
 
   };
 
-ScenarioMission1::ScenarioMission1( Game &game,
-                                    MainGui & ui )
-                 :ui(ui), game(game) {
+ScenarioMission1::ScenarioMission1( Game &g, MainGui & ui, BehaviorMSGQueue &msg )
+                 :Scenario(g,ui,msg) {
   isInGame = true;
 
   intro    = 0;
@@ -133,7 +132,7 @@ ScenarioMission1::ScenarioMission1( Game &game,
   }
 
 ScenarioMission1::~ScenarioMission1() {
-  ui.updateView.ubind( *this, &ScenarioMission1::updateView );
+  gui.updateView.ubind( *this, &ScenarioMission1::updateView );
   delete intro;
   }
 
@@ -181,7 +180,7 @@ void ScenarioMission1::onItemEvent( GameObject &b ) {
           z1 = World::coordCast(b.z());
 
     cutScene.camera.setPosition(x1, y1, z1);
-    ui.setCutsceneMode(1);
+    gui.setCutsceneMode(1);
     }
 
   if( b.getClass().name=="chest_small" ){
@@ -247,7 +246,7 @@ void ScenarioMission1::tick() {
       if( game.player().unitsCount() )
         game.player().unit(0).world().camera = cutScene.camera;
 
-      ui.setCutsceneMode(0);
+      gui.setCutsceneMode(0);
       }
 
     return;
@@ -313,8 +312,8 @@ void ScenarioMission1::start() {
 
   intro = new IntroWidget( game,
                            game.resources(),
-                           ui.centralWidget() );
-  intro->renderScene.bind( ui.renderScene );
+                           gui.centralWidget() );
+  intro->renderScene.bind( gui.renderScene );
 
   intro->onClosed.bind( game,  &Game::unsetPause );
   intro->onClosed.bind( *this, &ScenarioMission1::closeIntro);
@@ -335,7 +334,7 @@ void ScenarioMission1::start() {
 void ScenarioMission1::defeat() {
   new EndScreenWidget( game,
                        game.resources(),
-                       ui.centralWidget(),
+                       gui.centralWidget(),
                        false );
   }
 
@@ -360,7 +359,7 @@ void ScenarioMission1::winGame() {
 
   new EndScreenWidget( game,
                        game.resources(),
-                       ui.centralWidget(),
+                       gui.centralWidget(),
                        true );
   }
 

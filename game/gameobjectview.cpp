@@ -681,24 +681,22 @@ void GameObjectView::updatePosRigid( Physics::Sphere &rigid, size_t i ) {
   m.identity();
 
   m.mul  ( rigid.transform() );
-  //m.scale( rigid.diameter()  );
 
   if( env[i].viewID < getClass().view.size() ){
     int id = env[i].viewID;
     double sphereDiameter = 1;//getClass().view[id].sphereDiameter;
 
-    m.scale( getClass().view[id].size[0]/sphereDiameter,
-             getClass().view[id].size[1]/sphereDiameter,
-             getClass().view[id].size[2]/sphereDiameter );
+    float sx = getClass().view[id].size[0]/sphereDiameter,
+          sy = getClass().view[id].size[1]/sphereDiameter,
+          sz = getClass().view[id].size[2]/sphereDiameter;
 
-    //if( getClass().view[i].align[2] )
-      //m.translate( 0, 0, -getClass().view[i].size[2]/sphereDiameter );
+    m.scale( sx, sy, sz );
     }
-  //m.translate( 0, 0, -0.8 );
 
-  m.translate( -env[i].model().cenX(),
-               -env[i].model().cenY(),
-               -env[i].model().cenZ() );
+  float cx = -env[i].model().cenX(),
+        cy = -env[i].model().cenY(),
+        cz = -env[i].model().cenZ();
+  m.translate( cx, cy, cz );
   env[i].setTransform( m );
   }
 

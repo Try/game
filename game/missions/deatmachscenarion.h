@@ -5,8 +5,9 @@
 
 class DeatmachScenarion  : public Scenario {
   public:
-    DeatmachScenarion();
+    DeatmachScenarion(Game& game, MainGui & ui , BehaviorMSGQueue &msg);
     virtual bool isCampagin();
+
   };
 
 #endif // DEATMACHSCENARION_H

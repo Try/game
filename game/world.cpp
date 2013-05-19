@@ -879,7 +879,23 @@ void World::tick() {
 
       obj.applyForce( -c, -s, 0 );
       physics.endUpdate();
+
+      obj.envLifeTime = 200;
       }
+
+  for( size_t i=0; i<eviObjects.size(); ){
+    GameObject & obj = *eviObjects[i];
+
+    if( obj.envLifeTime>0 ){
+      --obj.envLifeTime;
+      }
+
+    if( obj.envLifeTime==0 ){
+      deleteObject( &obj );
+      } else
+      ++i;
+
+    }
 
   for( size_t i=0; i<nonBackground.size(); ){
     if( nonBackground[i]->hp() <= 0 ) {
@@ -980,6 +996,8 @@ void World::serialize(GameSerializer &s) {
 
     scene.lights().direction()[0] = light;
     }
+
+  moveCamera(0,0);
   }
 
 const SpatialIndex &World::spatial() const {

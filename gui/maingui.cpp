@@ -27,6 +27,7 @@
 #include "gui/richtext.h"
 
 #include "graphics/paintergui.h"
+#include "game.h"
 
 MainGui::MainGui( Tempest::Device &,
                   int w, int h,
@@ -71,9 +72,12 @@ void MainGui::setFocus() {
   mainwidget->setFocus(1);
   }
 
-void MainGui::createControls(BehaviorMSGQueue & msg , Game &game) {  
+void MainGui::createControls(BehaviorMSGQueue & msg, Game &game) {
+  delete mainwidget;
+
   frame.data     = res.pixmap("gui/colors");
   hintFrame.data = res.pixmap("gui/hintFrame");
+  game.updateMissionTargets = Tempest::signal<>();
 
   mainwidget = new InGameControls(res, msg, prototypes, game);
   mainwidget->renderScene. bind( renderScene  );
@@ -372,5 +376,6 @@ void MainGui::loadGame() {
   }
 
 void MainGui::onUnitDied(GameObject &obj) {
-  mainwidget->onUnitDied(obj);
+  if( mainwidget )
+    mainwidget->onUnitDied(obj);
   }

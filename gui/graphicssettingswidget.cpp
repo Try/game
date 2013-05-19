@@ -20,6 +20,15 @@ GraphicsSettingsWidget::Settings::Settings() {
 
   shadowFilterQ = 2;
   oclusion      = true;
+#ifdef __ANDROID__
+  shadowMapRes = 512;
+  bloom        = Hight;
+  glow         = false;
+  normalMap    = true;
+
+  shadowFilterQ = 0;
+  oclusion      = false;
+#endif
   }
 
 GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
@@ -39,6 +48,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   b->setItemList(l);
   b->setCurrentItem(2);
+  if( s.shadowMapRes==512 )
+    b->setCurrentItem(1);
+  if( s.shadowMapRes==1024 )
+    b->setCurrentItem(2);
+  if( s.shadowMapRes==2048 )
+    b->setCurrentItem(3);
+
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::shadowMapRes);
   layout().add(b);
 
@@ -49,7 +65,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   l.push_back(L"8x sm filter");
 
   b->setItemList(l);
-  b->setCurrentItem(2);
+  b->setCurrentItem( s.shadowFilterQ );
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::smFilterQ );
   layout().add(b);
 
@@ -60,7 +76,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   l.push_back(L"bloom hight");
 
   b->setItemList(l);
-  b->setCurrentItem(2);
+  b->setCurrentItem( s.bloom );
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::bloomQ );
 
   layout().add(b);
@@ -71,7 +87,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   l.push_back(L"glow on");
 
   b->setItemList(l);
-  b->setCurrentItem(1);
+  b->setCurrentItem( s.glow?1:0 );
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::glow );
 
   layout().add(b);
@@ -82,7 +98,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   l.push_back(L"normals on");
 
   b->setItemList(l);
-  b->setCurrentItem(1);
+  b->setCurrentItem( s.normalMap?1:0);
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::normalMap );
   layout().add(b);
 
@@ -92,7 +108,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   l.push_back(L"oclusion on");
 
   b->setItemList(l);
-  b->setCurrentItem(1);
+  b->setCurrentItem( s.oclusion? 1:0 );
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::oclusion );
   layout().add(b);
   }

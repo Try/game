@@ -38,6 +38,8 @@ void GUIPass::exec( MainGui &gui,
                     Tempest::Texture2d *depth,
                     Tempest::Device &device ) {
   setColor(1,1,1,1);
+  setBlendMode( Tempest::noBlend );
+
   dev = &device;
 
   if( gui.draw( *this ) ){
@@ -70,7 +72,7 @@ void GUIPass::exec( MainGui &gui,
 
       guiIndex = ibHolder.load( iboTmp );
       }
-    }
+  }
 
   //std::cerr <<"guiIndex = " << guiIndex.size() << std::endl;
 
@@ -94,12 +96,13 @@ void GUIPass::exec( MainGui &gui,
   for( size_t r=0; r<layers.size(); ++r ){
     Layer& lay = layers[r];
 
+    if( r==0 )
     for( size_t i=0; i<lay.geometryBlocks.size(); ++i ){
       const GeometryBlock& b = lay.geometryBlocks[i];
 
       if( b.size && (b.texture.tex || b.texture.nonPool) ){
         if( b.texture.nonPool )
-          device.setUniform( fs, *b.texture.nonPool,  "texture" ); else
+          device.setUniform( fs, *b.texture.nonPool,       "texture" ); else
           device.setUniform( fs, b.texture.pageRawData(),  "texture" );
 
         if( currntRS!=b.state ){
@@ -200,10 +203,11 @@ void GUIPass::setTexture( const PixmapsPool::TexturePtr &t ) {
     }
 
   GeometryBlock b;
-  b.state = makeRS( Tempest::noBlend );
 
   if( lay.geometryBlocks.size() ){
     b = lay.geometryBlocks.back();
+    } else {
+    b.state = makeRS( Tempest::noBlend );
     }
 
   b.texture = t;
@@ -242,9 +246,12 @@ void GUIPass::clearBuffers() {
   lay.geometryBlocks.back().texture.tex = 0;
 
   lay.geometryBlocks.back().state = makeRS( Tempest::noBlend );
+  state.blend = Tempest::noBlend;
   }
 
 void GUIPass::setBlendMode( Tempest::BlendMode m ) {
+  state.blend = m;
+
   Layer& lay = layers[curLay];
 
   GeometryBlock b;
@@ -257,7 +264,7 @@ void GUIPass::setBlendMode( Tempest::BlendMode m ) {
   bool e = false;
   while( lay.geometryBlocks.size() && lay.geometryBlocks.back().size==0 ){
     lay.geometryBlocks.pop_back();
-    e = true;
+    e = lay.geometryBlocks.size()==0;
     }
 
   Tempest::RenderState rs = makeRS( m );
@@ -300,6 +307,7 @@ void GUIPass::popState() {
             state.color[1],
             state.color[2],
             state.color[3] );
+  setBlendMode( state.blend );
   }
 
 Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {

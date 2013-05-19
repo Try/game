@@ -42,8 +42,6 @@ class Game : public Tempest::Window {
     void mouseMoveEvent ( Tempest::MouseEvent &e );
     void mouseWheelEvent ( Tempest::MouseEvent &e );
 
-    void updateMousePos( Tempest::MouseEvent &e );
-
     void shortcutEvent( Tempest::KeyEvent &e );
     void keyDownEvent( Tempest::KeyEvent &e );
     void keyUpEvent  ( Tempest::KeyEvent &e );
@@ -125,11 +123,12 @@ class Game : public Tempest::Window {
     Tempest::signal<> exitGame;
 
     World& curWorld();
+    bool isReplayMode() const;
   private:
     bool  paused;
     //bool isFullScreen;
 
-    bool acceptMouseObj;
+    //bool acceptMouseObj;
 
     GraphicsSystem graphics;
     SoundDevice    soundDev;
@@ -152,20 +151,23 @@ class Game : public Tempest::Window {
     World * world;
 
     //double spinX, spinY;
-    bool mouseTracking;
-    int  selectionRectTracking;
+    //bool mouseTracking;
+    //int  selectionRectTracking;
 
-    Tempest::Point lastMPos,curMPos;
-    Tempest::KeyEvent::KeyType   lastKEvent;
+    //Tempest::Point lastMPos;
+    //Tempest::Point curMPos;
+    //Tempest::KeyEvent::KeyType   lastKEvent;
 
+    /*
     struct F3{
       float data[3];
       };
     F3 unProject( int x, int y, float destZ );
     F3 unProject( int x, int y );
     F3 project( float x, float y, float z );
+    */
 
-    void moveCamera();
+    //void moveCamera();
 
     struct Fps{
       int n, time;
@@ -188,6 +190,8 @@ class Game : public Tempest::Window {
     void settingsChanged( const GraphicsSettingsWidget::Settings &s );
 
     void loadData();
+
+    void setScenario( Scenario * s );
 
   friend class World;
   };

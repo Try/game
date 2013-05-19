@@ -43,14 +43,14 @@ Game::Game( ShowMode sm )
       serializator(L"./serialize_tmp.obj", Serialize::Write ){
   paused = false;
 
+  /*
   acceptMouseObj = true;
-
-  curMPos = Tempest::Point(w()/2, h()/2);
-
-  currentPlayer = 1;
-
   mouseTracking         = 0;
   selectionRectTracking = 0;
+  curMPos = Tempest::Point(w()/2, h()/2);
+  */
+
+  currentPlayer = 1;
 
   initFactorys();
   loadData();
@@ -59,11 +59,10 @@ Game::Game( ShowMode sm )
 void Game::loadData() {
   resource.load("data/data.xml");
   proto   .load("data/game.xml");
+  world = 0;
 
-  mscenario.reset( new DeatmachScenarion() );
+  setScenario( new DesertStrikeScenario(*this, gui, msg) );
 
-  gui.createControls( msg, *this );
-  gui.enableHooks( !serializator.isReader() );
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
   gui.addObject.bind( *this, &Game::createEditorObject );
   gui.onSetPlayer.bind(*this, &Game::setEditorObjectPl );
@@ -86,7 +85,6 @@ void Game::loadData() {
                                                       128, 128) ) );
 
   world = worlds[0].get();
-  gui.setupMinimap(*world);
 
   world->camera.setPerespective( true, w(), h() );
   world->setupMaterial.bind(*this, &Game::setupMaterials );
@@ -105,22 +103,33 @@ void Game::loadData() {
 
 #ifndef __ANDROID__
   //load(L"campagin/0.sav");
-  //loadMission("campagin/td.sav");
+  loadMission("campagin/td.sav");
 #else
   loadMission("campagin/td.sav");
 #endif
   //world->terrain().loadFromPixmap( Tempest::Pixmap("./terrImg/h1.png") );
-  //mscenario.reset( new DesertStrikeScenario(*this, gui) );
+
+  setScenario( new DesertStrikeScenario(*this, gui, msg) );
   mscenario->onStartGame();
   updateTime = Time::tickCount();
+  }
+
+void Game::setScenario(Scenario *s) {
+  mscenario.reset( s );
+
+  gui.createControls( msg, *this );
+  gui.enableHooks( !serializator.isReader() );
+
+  if( world )
+    gui.setupMinimap(*world);
   }
 
 void Game::tick() {
   //return;
 
-  moveCamera();
+  scenario().uiTick();
 
-  size_t time = Time::tickCount();
+  //size_t time = Time::tickCount();
 
   bool isLag = false;
   ++sendDelay;
@@ -152,16 +161,16 @@ void Game::tick() {
     mscenario->tick();
     }
 
-  fps.time += int(Time::tickCount() - time);
+  //fps.time += int(Time::tickCount() - time);
   }
 
 void Game::onRender( double dt ){  
   World::CameraViewBounds b;
   F3 vb[4];
-  vb[0] = unProject(   0, 0   );
-  vb[1] = unProject( w(), 0   );
-  vb[2] = unProject(   0, h() );
-  vb[3] = unProject( w(), h() );
+  vb[0] = scenario().unProject(   0, 0   );
+  vb[1] = scenario().unProject( w(), 0   );
+  vb[2] = scenario().unProject(   0, h() );
+  vb[3] = scenario().unProject( w(), h() );
 
   for( int i=0; i<4; ++i ){
     b.x[i] = World::coordCastD(vb[i].data[0]);
@@ -246,106 +255,22 @@ void Game::resizeEvent( Tempest::SizeEvent &e ){
 void Game::mouseDownEvent( Tempest::MouseEvent &e) {
   if( gui.mouseDownEvent(e) )
     return;
-
   gui.setFocus();
-  mouseTracking         = (e.button==Tempest::MouseEvent::ButtonRight);
-  if(e.button==Tempest::MouseEvent::ButtonLeft)
-    selectionRectTracking = 1;
 
-  gui.selectionRect() = Tempest::Rect(e.x, e.y, 0, 0);
-
-  lastMPos = Tempest::Point( e.x, e.y );
-
-  updateMousePos(e);
+  scenario().mouseDownEvent(e);
   }
 
 void Game::mouseUpEvent( Tempest::MouseEvent &e) {
-  if( !selectionRectTracking && gui.mouseUpEvent(e) )
+  if( !scenario().isSelectionRectTracking() && gui.mouseUpEvent(e) )
     return;
 
   gui.setFocus();
 
-  mouseTracking         = false;
-  gui.selectionRect() = Tempest::Rect(-1, -1, 0, 0);
-  gui.update();
-
-  F3 v = unProject( e.x, e.y );
-
-  if( player().editObj==0 ){
-    if( e.button==Tempest::MouseEvent::ButtonLeft ){
-      if( selectionRectTracking==2 )
-        world->updateSelectionFlag( msg, currentPlayer ); else
-        world->updateSelectionClick( msg, currentPlayer, e.x, e.y,
-                                     w(), h() );
-      }
-
-    if( e.button==Tempest::MouseEvent::ButtonRight ){
-      size_t obj = world->unitUnderMouse( e.x, e.y,
-                                          w(), h() );
-
-      if( obj==size_t(-1) ){
-        msg.message( currentPlayer,
-                     AbstractBehavior::Move,
-                     World::coordCastD(v.data[0]),
-                     World::coordCastD(v.data[1]) );
-        } else {
-        msg.message_st( currentPlayer,
-                        AbstractBehavior::ToUnit,
-                        obj );
-        }
-      }
-    }
-
-  selectionRectTracking = false;
-  updateMousePos(e);  
-
-  if( e.button==Tempest::MouseEvent::ButtonLeft && player().editObj ){
-    msg.message( currentPlayer, Behavior::EditNext );
-    }
-
-  if( e.button==Tempest::MouseEvent::ButtonRight && player().editObj ){
-    msg.message( currentPlayer, Behavior::EditDel );
-    }
-
-  world->clickEvent( World::coordCastD(v.data[0]),
-                     World::coordCastD(v.data[1]),
-                     e );
+  scenario().mouseUpEvent(e);
   }
 
 void Game::mouseMoveEvent( Tempest::MouseEvent &e ) {
-  curMPos = Tempest::Point(e.x, e.y);
-
-  if( !selectionRectTracking && gui.mouseMoveEvent(e) ){
-    acceptMouseObj = false;
-    return;
-    }
-
-  acceptMouseObj = true;
-
-  if( mouseTracking ){
-    //world->camera.setSpinX( world->camera.spinX() - (e.x - lastMPos.x) );
-    //world->camera.setSpinY( world->camera.spinY() - (e.y - lastMPos.y) );
-
-    lastMPos = Tempest::Point(e.x, e.y);
-    }
-
-  if( selectionRectTracking ){
-    selectionRectTracking = 2;
-
-    Tempest::Rect & r = gui.selectionRect();
-    r.w = e.x - gui.selectionRect().x;
-    r.h = e.y - gui.selectionRect().y;
-
-    //gui.update();
-
-    double ww = w()/2.0, hh = h()/2.0;
-    world->updateMouseOverFlag(    r.x/ww - 1.0,
-                                 -(r.y/hh - 1.0),
-                                  (r.x+r.w)/ww - 1.0,
-                                -((r.y+r.h)/hh - 1.0) );
-    }
-
-  updateMousePos(e);
+  scenario().mouseMoveEvent(e);
   }
 
 void Game::mouseWheelEvent( Tempest::MouseEvent &e ) {
@@ -353,53 +278,7 @@ void Game::mouseWheelEvent( Tempest::MouseEvent &e ) {
     return;
     }
   gui.setFocus();
-
-  if( (player().editObj && !serializator.isReader() ) &&
-      lastKEvent!=Tempest::KeyEvent::K_Down ){
-    int dR = 10;
-    if( e.delta<0 )
-      dR = -10;
-
-    msg.message( currentPlayer, Behavior::EditRotate, dR, 0 );
-    } else {
-    if( e.delta<0 )
-      world->camera.setDistance( world->camera.distance() * 1.1 ); else
-      world->camera.setDistance( world->camera.distance() / 1.1 );
-    }
-  }
-
-void Game::updateMousePos(Tempest::MouseEvent &e) {
-  curMPos = Tempest::Point(e.x, e.y);
-
-  F3 v = unProject( curMPos.x, curMPos.y );
-  int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
-      vy = World::coordCastD(v.data[1])/Terrain::quadSize;
-
-  world->setMousePos( vx*Terrain::quadSize,
-                      vy*Terrain::quadSize,
-                      World::coordCastD(v.data[2]) );
-  if( acceptMouseObj ){
-    world->setMouseObject( world->unitUnderMouse( curMPos.x,
-                                                  curMPos.y,
-                                                  w(), h() ) );
-    } else {
-    world->setMouseObject( -1 );
-    }
-
-  if( player().editObj ){
-    int x = World::coordCastD(v.data[0]),
-        y = World::coordCastD(v.data[1]);
-
-    if( player().editObj &&
-        player().editObj->behavior.find<BuildingBehavior>() ){
-      x = (x/Terrain::quadSize)*Terrain::quadSize;
-      y = (y/Terrain::quadSize)*Terrain::quadSize;
-      }
-
-    msg.message( currentPlayer,
-                 Behavior::EditMove,
-                 x, y );
-    }
+  scenario().mouseWheelEvent(e);
   }
 
 void Game::shortcutEvent(Tempest::KeyEvent &e) {
@@ -410,18 +289,17 @@ void Game::keyDownEvent( Tempest::KeyEvent &e ) {
   if( gui.keyDownEvent(e) )
     return;
 
-  lastKEvent = e.key;
+  scenario().keyDownEvent(e);
   }
 
 void Game::keyUpEvent( Tempest::KeyEvent & e ) {
   if( gui.keyUpEvent(e) )
     return;
 
-  lastKEvent = Tempest::KeyEvent::K_NoKey;
+  scenario().keyUpEvent(e);
   }
 
 void Game::toogleFullScr() {
-  //isFullScreen = !isFullScreen;
   toogleFullScreen( isFullScreenMode() );
   }
 
@@ -604,103 +482,9 @@ void Game::onUnitsSelected( std::vector<GameObject *> &u,
   }
 
 void Game::onUnitDied( GameObject& u, Player & pl ) {
-  if( pl.hasHostControl() ){
+  if( pl.hasHostControl() && mscenario ){
     gui.onUnitDied(u);
     }
-  }
-
-Game::F3 Game::unProject( int x, int y, float destZ ) {
-  Tempest::Matrix4x4 mat = world->camera.projective();
-  mat.mul( world->camera.view() );
-  mat.inverse();
-
-  float px =  2.0*(x-w()/2.0)/double(w()),
-      py = -2.0*(y-h()/2.0)/double(h());
-
-  float vec1[4], vec2[4];
-  mat.project( px, py, 0, 1,
-               vec1[0], vec1[1], vec1[2], vec1[3] );
-  mat.project( px, py, 1, 1,
-               vec2[0], vec2[1], vec2[2], vec2[3] );
-
-  for( int i=0; i<4; ++i ){
-    vec1[i] /= vec1[3];
-    vec2[i] /= vec2[3];
-    }
-
-  for( int i=0; i<4; ++i ){
-    vec2[i] -= vec1[i];
-    }
-
-  float k = (vec1[2]-destZ)/vec2[2];
-  for( int i=0; i<4; ++i ){
-    vec1[i] -= k*vec2[i];
-    }
-
-
-  F3 r;
-  std::copy( vec1, vec1+3, r.data );
-  return r;
-  }
-
-Game::F3 Game::unProject(int x, int y) {
-  float min = -2 + world->camera.z(),
-        max =  2 + world->camera.z();
-  F3 ret = unProject( x, y, 0 );
-  float err = fabs( world->zAt(ret.data[0], ret.data[1]) - ret.data[2] );
-
-  for( int i=0; i<20; ++i ){
-    F3 v = unProject( x, y, min+(max-min)*i/20.0 );
-    float err2 = fabs( world->zAt(v.data[0], v.data[1]) - v.data[2] );
-
-    if( err2<err ){
-      err = err2;
-      ret = v;
-      }
-    }
-
-  return ret;
-  }
-
-Game::F3 Game::project(float x, float y, float z) {
-  Tempest::Matrix4x4 mat = world->camera.projective();
-  mat.mul( world->camera.view() );
-  //mat.transpose();
-
-  F3 out;
-  float data[4];
-  mat.project( x,y,z, 1, data[0], data[1], data[2], data[3]);
-
-  for( int i=0; i<4; ++i )
-    data[i] /= data[3];
-
-  std::copy( data, data+3, out.data );
-
-  return out;
-  }
-
-void Game::moveCamera() {
-  if( selectionRectTracking )
-    return;
-
-#ifndef __ANDROID__
-  const double cameraStep = 0.1;
-  const int sensetive = 20;
-
-  if( curMPos.x < sensetive || lastKEvent==Tempest::KeyEvent::K_Left ){
-    world->moveCamera( -cameraStep, 0 );
-    }
-  if( curMPos.x > w() - sensetive || lastKEvent==Tempest::KeyEvent::K_Right ){
-    world->moveCamera( cameraStep, 0 );
-    }
-
-  if( curMPos.y < sensetive || lastKEvent==Tempest::KeyEvent::K_Up ){
-    world->moveCamera( 0, -cameraStep );
-    }
-  if( curMPos.y > h() - sensetive || lastKEvent==Tempest::KeyEvent::K_Down ){
-    world->moveCamera( 0, cameraStep );
-    }
-#endif
   }
 
 void Game::setCameraPos(GameObject &obj) {
@@ -765,6 +549,10 @@ World &Game::curWorld() {
   return *world;
   }
 
+bool Game::isReplayMode() const {
+  return serializator.isReader();
+  }
+
 void Game::setupMaterials( AbstractGraphicObject &obj,
                            const ProtoObject::View &src,
                            const Tempest::Color & teamColor ) {
@@ -797,12 +585,12 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
 
   if( contains( src.materials, "terrain.minor" ) ){
     material.usage.terrainMinor = true;
-    material.usage.shadowCast   = false;
+    material.usage.shadowCast   = true;
     }
 
   if( contains( src.materials, "terrain.main" ) ){
     material.usage.terrainMain = true;
-    material.usage.shadowCast  = false;
+    material.usage.shadowCast  = true;
     }
 
   if( contains( src.materials, "displace" ) ){
@@ -921,7 +709,7 @@ void Game::serialize( GameSerializer &s ) {
     }
 
   world = worlds[curWorld].get();
-  gui.setupMinimap(*world);
+  //gui.setupMinimap(*world);
 
   gui.toogleEditLandMode = Tempest::signal<const Terrain::EditMode&>();
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
@@ -941,14 +729,14 @@ void Game::serialize( GameSerializer &s ) {
 
     if( s.isReader() ){
       if( isScenario ){
-        mscenario.reset( new ScenarioMission1(*this, gui) );
+        setScenario( new ScenarioMission1(*this, gui, msg) );
         } else {
-        mscenario.reset( new DeatmachScenarion() );
+        setScenario( new DeatmachScenarion(*this, gui, msg) );
         }
       }
     mscenario->serialize(s);
     } else {
-    mscenario.reset( new DeatmachScenarion() );
+    setScenario( new DesertStrikeScenario(*this, gui, msg) );
     //mscenario.reset( new ScenarioMission1(*this, gui) );
     mscenario->serialize(s);
     }

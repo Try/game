@@ -12,7 +12,7 @@
 #endif
 #include <time.h>
 
-size_t Time::tickCount() {
+uint64_t Time::tickCount() {
   uint64_t c = clock();
   c = 1000*c/CLOCKS_PER_SEC;
   return c;

@@ -329,7 +329,7 @@ bool GraphicsSystem::render( Scene &scene,
     aceptFog( gbuffer[0], fog );
     }
 
-  if( widget ){
+  if( widget ){ 
     if( useDirectRender )
       gui->exec( *widget, 0, 0, device ); else
       gui->exec( *widget, gbuffer, &mainDepth, device );
@@ -424,7 +424,9 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
                           sm, depthSm,
                           smap.vs, smap.fs );
   {
-    render.clear( Tempest::Color(1.0), 1 );
+    //render.clear( Tempest::Color(1.0), 1 );
+    device.clearZ(1);
+
     if( !(sm.width()==1 && sm.height()==1) ){
       Tempest::Matrix4x4 proj;
       proj.identity();
@@ -909,14 +911,17 @@ int GraphicsSystem::draw( Tempest::Render  & render,
       for( int z=0; z<2; ++z )
         if( v.nested[x][y][z] ){
           const Scene::Objects &t = *v.nested[x][y][z];
-          float dpos = t.linearSize*0.5;
 
-          GraphicsSystem::VisibleRet ret = FullVisible;
-          if( deepVTest )
-            ret = isVisible( t.x+dpos, t.y+dpos, t.z+dpos, t.r, frustum );
+          if( t.count ){
+            float dpos = t.linearSize*0.5;
 
-          if( ret ){
-            c+=draw( render, frustum, ret!=FullVisible, camera, t, func, args... );
+            GraphicsSystem::VisibleRet ret = FullVisible;
+            if( deepVTest )
+              ret = isVisible( t.x+dpos, t.y+dpos, t.z+dpos, t.r, frustum );
+
+            if( ret ){
+              c+=draw( render, frustum, ret!=FullVisible, camera, t, func, args... );
+              }
             }
           }
 
@@ -1465,7 +1470,8 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
     Tempest::Render render( device,
                             sm, depthSm,
                             smap.vs, smap.fs );
-    render.clear( Tempest::Color(1.0), 1 );
+    //render.clear( Tempest::Color(1.0), 1 );
+    device.clearZ(1);
     render.setRenderState( rstate );
 
     const Tempest::AbstractCamera & camera = scene.camera();
@@ -1503,10 +1509,13 @@ Tempest::Texture2d GraphicsSystem::colorBuf(int w, int h) {
 void GraphicsSystem::blurSm( Tempest::Texture2d &sm,
                              Tempest::Texture2d & out,
                              const Scene & scene ) {
-  Tempest::Texture2d tmp = localTex.create( sm.width(), sm.height(),
-                                            Tempest::AbstractTexture::Format::RGB10_A2 );
-  out = localTex.create( sm.width(), sm.height(),
-                         Tempest::AbstractTexture::Format::RGB10_A2 );
+  Tempest::AbstractTexture::Format::Type frm = Tempest::AbstractTexture::Format::RGB10_A2;
+#ifdef __ANDROID__
+  frm = Tempest::AbstractTexture::Format::RGB5;
+#endif
+
+  Tempest::Texture2d tmp = localTex.create( sm.width(), sm.height(), frm );
+  out = localTex.create( sm.width(), sm.height(), frm );
 
   float s = 6*smMatSize(scene);
 
@@ -1733,6 +1742,8 @@ void GraphicsSystem::renderScene( const Scene &scene,
 
                                   Tempest::Texture2d* rsm,
                                   int shadowMapSize ) {
+  //return;
+
   Tempest::DirectionLight light;
   if( scene.lights().direction().size() > 0 )
     light = scene.lights().direction()[0];

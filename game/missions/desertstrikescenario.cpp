@@ -2,9 +2,38 @@
 
 #include "game.h"
 
-DesertStrikeScenario::DesertStrikeScenario(Game &game, MainGui &ui):game(game), ui(ui) {
+DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueue &msg)
+  :Scenario(g,ui, msg){
   tNum     = 0;
   interval = 1000;
+  isMouseTracking = false;
+  }
+
+void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
+  mpos3d          = unProject( e.x, e.y );
+  isMouseTracking = true;
+  }
+
+void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & ) {
+  isMouseTracking = false;
+  }
+
+void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
+  if( !isMouseTracking && gui.mouseMoveEvent(e) ){
+    acceptMouseObj = false;
+    return;
+    }
+
+  if( isMouseTracking ){
+    F3 m = unProject( e.x, e.y );
+    game.curWorld().moveCamera( mpos3d.data[0]-m.data[0],
+                                mpos3d.data[1]-m.data[1]);
+    mpos3d = unProject( e.x, e.y );
+    }
+  }
+
+void DesertStrikeScenario::setupUI(InGameControls *mainWidget, Resource &res) {
+
   }
 
 void DesertStrikeScenario::tick() {

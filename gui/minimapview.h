@@ -13,6 +13,7 @@ class World;
 class MiniMapView : public TextureView {
   public:
     MiniMapView( Resource & res );
+    ~MiniMapView();
 
     void setup( World& w );
     void render();

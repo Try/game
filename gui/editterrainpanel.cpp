@@ -21,7 +21,8 @@ struct EditTerrainPanel::TileBtn: public Button{
   std::string tile;
   };
 
-EditTerrainPanel::EditTerrainPanel(Resource &res , PrototypesLoader &prototypes) {
+EditTerrainPanel::EditTerrainPanel( Resource &res,
+                                    const PrototypesLoader &prototypes ) {
   layout().setMargin( 6 );
   setLayout( Tempest::Vertical );
 

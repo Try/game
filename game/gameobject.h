@@ -37,6 +37,7 @@ class GameObject {
     std::vector<GameObject*> colisions;
 
     std::wstring hint;
+    int envLifeTime;
 
     int distanceSQ( const GameObject& other ) const;
     int distanceSQ( int x, int y ) const;

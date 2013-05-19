@@ -67,7 +67,10 @@ class InGameControls : public Tempest::Widget {
     void setupMinimap( World& w );
     void renderMinimap();
 
-    bool minimapMouseEvent(float x, float y, Tempest::Event::MouseButton btn , MiniMapView::Mode m);
+    bool minimapMouseEvent( float x, float y,
+                            Tempest::Event::MouseButton btn,
+                            MiniMapView::Mode m );
+    void removeAllHooks();
   protected:
     void paintEvent(Tempest::PaintEvent &p);
 
@@ -81,40 +84,40 @@ class InGameControls : public Tempest::Widget {
     void keyUpEvent(Tempest::KeyEvent &e);
 
   private:
-    Widget* createConsole( BehaviorMSGQueue & q );
-    Widget* createEditPanel();
-    Widget* createSettingsPanel();
+    //Widget* createConsole( BehaviorMSGQueue & q );
+    //Widget* createEditPanel();
+    //Widget* createSettingsPanel();
 
-    EditTerrainPanel* createLandEdit();
+    //EditTerrainPanel* createLandEdit();
 
     Resource & res;
     Game &game;
     PrototypesLoader & prototypes;
 
-    void toogleEditPanel();
-    void toogleSettingsPanel();
+    //void toogleEditPanel();
+    //void toogleSettingsPanel();
 
-    Tempest::Shortcut showEditPanel, showSettings;
-    Widget        *editPanel, *settingsPanel;
+    //Widget        *editPanel, *settingsPanel;
+    /*
     CommandsPanel *commands;
     UnitList      *units;
     Button *gold, *lim;
     MiniMapView * minimap;
+    */
 
     //Tempest::Bind::UserTexture frame;
-    int currPl;
+    //int currPl;
 
-    void setCurrPl( size_t i );
+    //void setCurrPl( size_t i );
 
     std::vector< InputHookBase* > hooks;
     struct AddUnitButton;
 
     void showMenu();
     void showFormBuilder();
-    void addEditorObject( const ProtoObject& );
+    //void addEditorObject( const ProtoObject& );
 
     bool isHooksEnabled;
-    void removeAllHooks();
 
     template< class E >
     bool hookCall( void (InputHookBase::*f)(E &), E & e ){

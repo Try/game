@@ -11,7 +11,7 @@ class MainGui;
 
 class ScenarioMission1 : public Scenario {
   public:
-    ScenarioMission1( Game& game, MainGui & ui );
+    ScenarioMission1(Game& game, MainGui & ui , BehaviorMSGQueue &msg);
     ~ScenarioMission1();
 
   protected:
@@ -23,9 +23,8 @@ class ScenarioMission1 : public Scenario {
     const std::vector<MissionTaget>& tagets();
 
     void serialize( GameSerializer &s );
+
   private:
-    MainGui & ui;
-    Game& game;
     bool  isInGame;
 
     struct CutScene{

@@ -8,8 +8,8 @@ class Resource;
 
 class EditTerrainPanel : public Tempest::Widget {
   public:
-    EditTerrainPanel( Resource & res,
-                      PrototypesLoader & prototypes );
+    EditTerrainPanel(Resource & res,
+                      const PrototypesLoader &prototypes );
 
     Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
 

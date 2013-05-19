@@ -114,6 +114,8 @@ class MainGui {
 
     void setCutsceneMode( bool cs );
     void setFPS( float f );
+
+    Resource & res;
   private:
     typedef Tempest::PainterDevice Painter;
     typedef Tempest::Widget  Widget;
@@ -125,7 +127,6 @@ class MainGui {
     std::wstring fpsStr;
 
     CentralWidget central;
-    Resource & res;
     PrototypesLoader & prototypes;
 
     void saveGame();

@@ -106,6 +106,7 @@ class GUIPass {
     struct State{
       Tempest::Texture2d tex;
       float color[4];
+      Tempest::BlendMode blend;
       } state;
 
     std::vector<State> stateStk;

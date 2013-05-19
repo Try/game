@@ -31,6 +31,8 @@ GameObject::GameObject( Scene & s,
   m.y = 0;
   m.z = 0;
 
+  envLifeTime = -1;
+
   hint = p.mouseHint;
 
   bclos.colisionDisp[0] = 0;

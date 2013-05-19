@@ -6,7 +6,7 @@
 
 class Time {
   public:
-    static size_t tickCount();
+    static uint64_t tickCount();
     static void sleep(uint64_t msec);
   };
 

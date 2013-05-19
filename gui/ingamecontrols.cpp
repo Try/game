@@ -56,18 +56,20 @@ struct InGameControls::AddUnitButton: public Button{
   ProtoObject& prototype;
   };
 
-InGameControls::InGameControls(Resource &res,
+InGameControls::InGameControls( Resource &res,
                                 BehaviorMSGQueue &msg,
                                 PrototypesLoader &prototypes, Game &game)
                : res(res),
                  game(game),
-                 prototypes(prototypes),
-                 showEditPanel(this, Tempest::KeyEvent::K_F9),
-                 showSettings (this, Tempest::KeyEvent::K_F8) {
+                 prototypes(prototypes)
+                 //showEditPanel(this, Tempest::KeyEvent::K_F9),
+                 //showSettings (this, Tempest::KeyEvent::K_F8)
+  {
   isHooksEnabled = true;
-  currPl         = 1;
   setFocusPolicy( Tempest::ClickFocus );
 
+  game.scenario().setupUI(this, res);
+  /*
   setLayout( Tempest::Vertical );
   layout().setMargin( Tempest::Margin(4) );
   useScissor( false );
@@ -133,11 +135,12 @@ InGameControls::InGameControls(Resource &res,
 
   showEditPanel.activated.bind( *this, &InGameControls::toogleEditPanel );
   showSettings. activated.bind( *this, &InGameControls::toogleSettingsPanel );
+  */
   }
 
 InGameControls::~InGameControls() {
   }
-
+/*
 Widget *InGameControls::createConsole( BehaviorMSGQueue & q ) {
   Widget* console = new Widget();
   console->setMaximumSize( SizePolicy::maxWidgetSize().w, 220 );
@@ -298,6 +301,7 @@ void InGameControls::setCurrPl(size_t i) {
   onSetPlayer(i);
   //addObject( p, currPl );
   }
+*/
 
 void InGameControls::showFormBuilder() {
   new FormBuilder(res, this);
@@ -313,24 +317,26 @@ void InGameControls::showMenu() {
   m->onClosed.bind( game, &Game::unsetPause );
   m->quit.bind( game.exitGame );
   }
-
+/*
 void InGameControls::addEditorObject( const ProtoObject &p ) {
   addObject( p, currPl );
-  }
+  }*/
 
 void InGameControls::updateValues() {
+  /*
   gold->setText( Lexical::upcast( game.player().gold() ) );
   int freeLim = game.player().limMax()-game.player().lim();
   lim-> setText( Lexical::upcast( freeLim ) +"/" +
                  Lexical::upcast( game.player().limMax() ) );
+                 */
   }
 
 void InGameControls::setupMinimap(World &w) {
-  minimap->setup(w);
+  game.scenario().setupMinimap(w);
   }
 
 void InGameControls::renderMinimap() {
-  minimap->render();
+  game.scenario().renderMinimap();
   }
 
 bool InGameControls::minimapMouseEvent( float x, float y,
@@ -405,11 +411,13 @@ void InGameControls::enableHooks(bool e) {
 
 void InGameControls::updateSelectUnits( const std::vector<GameObject *> &u ){
   removeAllHooks();
-  units->setup( u );
+  game.scenario().updateSelectUnits(u);
+  //units->setup( u );
   }
 
 void InGameControls::onUnitDied(GameObject &obj) {
-  units->onUnitDied( obj );
+  //units->onUnitDied( obj );
+  game.scenario().onUnitDied(obj);
   }
 
 void InGameControls::removeAllHooks() {

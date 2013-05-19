@@ -16,7 +16,17 @@ MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
   needToUpdateTerrain = true;
   }
 
+MiniMapView::~MiniMapView() {
+  if( world )
+    world->terrain().onTerrainChanged.ubind(*this, &MiniMapView::onTerrainCanged );
+  }
+
 void MiniMapView::setup(World &w) {
+  rtime   = Time::tickCount();
+  rtime2  = Time::tickCount();
+
+  if( world )
+    world->terrain().onTerrainChanged.ubind(*this, &MiniMapView::onTerrainCanged );
   world = &w;
   needToUpdateTerrain = true;
 

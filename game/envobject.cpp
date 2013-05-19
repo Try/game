@@ -9,7 +9,7 @@ EnvObject::EnvObject( Scene &s ): AbstractGraphicObject(s){
   }
 
 EnvObject::EnvObject(const EnvObject &x): AbstractGraphicObject(x) {
-  viewID = -1;
+  viewID  = x.viewID;
   form    = x.form;
   m       = x.m;
   m_model = x.m_model;
@@ -30,6 +30,7 @@ EnvObject &EnvObject::operator =(const EnvObject &x) {
   m       = x.m;
   m_model = x.m_model;
   mat     = x.mat;
+  viewID  = x.viewID;
 
 
   this->sceneAddObject();
