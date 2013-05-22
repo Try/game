@@ -187,6 +187,15 @@ void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
   rPointX = rx;
   rPointY = ry;
 
+  if( abs(x-rx)<5 &&
+      abs(y-ry)<5 &&
+      optimizeWay( Point{x,y}, Point{rx,ry} ) ){
+    way.clear();
+    way.push_back(Point{rx,ry});
+    way.push_back(Point{ x, y});
+    return;
+    }
+
   std::fill( wayMap.begin(), wayMap.end(), -1 );
 
   MemberFunc< WayFindAlgo, bool,

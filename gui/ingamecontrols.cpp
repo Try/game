@@ -57,7 +57,7 @@ struct InGameControls::AddUnitButton: public Button{
   };
 
 InGameControls::InGameControls( Resource &res,
-                                BehaviorMSGQueue &msg,
+                                BehaviorMSGQueue &,
                                 PrototypesLoader &prototypes, Game &game)
                : res(res),
                  game(game),
@@ -331,7 +331,7 @@ void InGameControls::updateValues() {
                  */
   }
 
-void InGameControls::setupMinimap(World &w) {
+void InGameControls::setupMinimap(World *w) {
   game.scenario().setupMinimap(w);
   }
 
@@ -417,7 +417,6 @@ void InGameControls::updateSelectUnits( const std::vector<GameObject *> &u ){
 
 void InGameControls::onUnitDied(GameObject &obj) {
   //units->onUnitDied( obj );
-  game.scenario().onUnitDied(obj);
   }
 
 void InGameControls::removeAllHooks() {

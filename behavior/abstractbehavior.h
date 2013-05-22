@@ -94,6 +94,9 @@ class AbstractBehavior {
       SpellCast,
       SpellCastU,
 
+      /* custom */
+      UserEvent,
+
       /* signals */
       onPositionChange,
 

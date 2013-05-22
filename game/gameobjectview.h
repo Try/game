@@ -94,6 +94,7 @@ class GameObjectView {
     Tempest::Matrix4x4 _transform() const;
 
     void applyForce( float x, float y, float z );
+    void applyBulletForce( float x, float y, float z );
 
     bool isVisible( const  GraphicsSystem::Frustum & f ) const;
   private:

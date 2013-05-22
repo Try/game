@@ -46,6 +46,23 @@ class BehaviorMSGQueue : public AbstractBehavior {
                   size_t size,
                   Modifers md = BehaviorEvent::NoModifer );
 
+    void message( const std::vector<char> & t ){
+      MSG m;
+      m.msg   = UserEvent;
+      m.udata = t;
+      data.push_back(m);
+      }
+
+    template< class T >
+    void message( const T & t ){
+      MSG m;
+      m.msg = UserEvent;
+      m.udata.resize( sizeof(t) );
+      memcpy( &m.udata[0], &t, sizeof(t) );
+
+      data.push_back(m);
+      }
+
     void tick( Game & game, World & w );
     void tick( const Terrain& );
 
@@ -69,6 +86,7 @@ class BehaviorMSGQueue : public AbstractBehavior {
 
       size_t begin, size;
       std::string str;
+      std::vector<char> udata;
       };
 
     std::vector<MSG> data;

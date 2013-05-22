@@ -467,6 +467,12 @@ void Physics::Rigid::applyForce(float x, float y, float z) {
 #endif
   }
 
+void Physics::Rigid::applyBulletForce(float x, float y, float z) {
+#ifndef NO_PHYSIC
+  data->body.applyForce( btVector3(x,y,z), btVector3(0,0,0) );
+#endif
+  }
+
 void Physics::Rigid::update() {
 #ifndef NO_PHYSIC
   btTransform n;

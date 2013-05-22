@@ -51,9 +51,15 @@ class PainterGUI: public Tempest::PainterDevice {
       void setFont( const Tempest::Bind::UserFont &f );
       void drawText( int x, int y, int w, int h, const std::wstring &,
                      int align = Tempest::NoAlign );
+      void drawText( int x, int y, int w, int h, const std::string &,
+                     int align = Tempest::NoAlign );
       PainterGUI & p;
       Resource   & res;
       const Tempest::Bind::UserFont * font;
+
+      template< class T >
+      void dText( int x, int y, int w, int h, const T &,
+                  int align );
       } te;
   };
 

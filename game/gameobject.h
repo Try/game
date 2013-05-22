@@ -132,6 +132,7 @@ class GameObject {
     int  coolDown   ( size_t spellID ) const;
 
     void applyForce( float x, float y, float z );
+    void applyBulletForce(const GameObject &src);
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;
@@ -156,6 +157,7 @@ class GameObject {
       int hp;
 
       bool isSelected, isMouseOwer;
+      float dieVec[3];
       } m;
 
     Behavior::Closure bclos;

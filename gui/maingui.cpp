@@ -295,7 +295,7 @@ void MainGui::enableHooks(bool e) {
   mainwidget->enableHooks(e);
   }
 
-void MainGui::setupMinimap(World &w) {
+void MainGui::setupMinimap(World *w) {
   mainwidget->setupMinimap(w);
   }
 

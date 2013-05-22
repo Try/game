@@ -127,12 +127,11 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
                 0, 0, icon.data.rect.w, icon.data.rect.h );
     }
 
-  Font f = font;
   p.setScissor(r);
 
   drawFrame( p );
 
-  p.setFont(f);
+  p.setFont(font);
   p.drawText( 0,0,w(),h(), txt,
               Tempest::AlignHCenter | Tempest::AlignVCenter );
 

@@ -356,11 +356,13 @@ void Scenario::moveCamera() {
 
 void Scenario::setCurrPl(size_t i) {
   currPl = i;
-  mainWidget->onSetPlayer(i);
+  if( mainWidget )
+    mainWidget->onSetPlayer(i);
   }
 
 void Scenario::addEditorObject( const ProtoObject &p ) {
-  mainWidget->addObject( p, currPl );
+  if( mainWidget )
+    mainWidget->addObject( p, currPl );
   }
 
 void Scenario::setupUI( InGameControls *mw,
@@ -440,7 +442,7 @@ void Scenario::setupUI( InGameControls *mw,
   showSettings. activated.bind( *this, &Scenario::toogleSettingsPanel );
   }
 
-void Scenario::setupMinimap(World &w) {
+void Scenario::setupMinimap(World * w) {
   if( minimap )
     minimap->setup(w);
   }

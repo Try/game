@@ -901,6 +901,18 @@ void GameObjectView::applyForce(float x, float y, float z) {
     }
   }
 
+void GameObjectView::applyBulletForce(float x, float y, float z) {
+  for( size_t i=0; i<env.size(); ++i ){
+    EnvObject::Form & form = env[i].form;
+
+    if( form.sphere.isValid() )
+      form.sphere.applyBulletForce(x,y,z);
+
+    if( form.box.isValid() )
+      form.box.applyBulletForce(x,y,z);
+    }
+  }
+
 bool GameObjectView::isVisible(const GraphicsSystem::Frustum &f) const {
   if( view.size() )
     return GraphicsSystem::isVisible( view[0], f);

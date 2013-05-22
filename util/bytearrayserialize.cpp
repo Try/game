@@ -80,6 +80,22 @@ void ByteArraySerialize::read(std::string &val) {
     }
   }
 
+void ByteArraySerialize::write(const std::vector<char> &val) {
+  write( val.size() );
+  fwrite( val.data(), 1, val.size(), f );
+  }
+
+void ByteArraySerialize::read(std::vector<char> &val) {
+  size_t s;
+  read( s );
+
+  if( s<100000 ){
+    val.resize(s);
+
+    fread ( &val[0], 1, val.size(), cf );
+    }
+  }
+
 void ByteArraySerialize::write(char val) {
   fwrite( &val, 1, 1, f );
   }

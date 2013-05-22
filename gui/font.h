@@ -27,6 +27,7 @@ namespace Bind{
       const Leter& leter( Resource &res, wchar_t ch ) const;
 
       void fetch( Resource &res, const std::wstring& str ) const;
+      void fetch( Resource &res, const std::string& str ) const;
       Size textSize( Resource &res,
                      const std::wstring& );
 

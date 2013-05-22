@@ -25,6 +25,8 @@ Bullet::Bullet( Scene & s,
   absDmg     = 0;
 
   speed = 600;
+
+  std::fill(mvec, mvec+3, 0);
   }
 
 void Bullet::tick() {
@@ -40,6 +42,7 @@ void Bullet::tick() {
     view.setRotation( atan2( (double)vecY, (double)vecX)*180.0/M_PI );
     }
 
+  mvec[2] = 0;
   view.setViewPosition( World::coordCast(x),
                         World::coordCast(y),
                         tgZ + (z-tgZ)*l/l0 );
@@ -58,6 +61,8 @@ void Bullet::tick() {
   x += vecX;
   y += vecY;
 
+  mvec[0] = 0.015*vecX;
+  mvec[1] = 0.015*vecY;
   view.setViewDirection( vecX, vecY );
   view.tick();
   }

@@ -64,9 +64,10 @@ void PainterGUI::TextEngine::setFont(const Tempest::Bind::UserFont &f) {
   font = &f;
   }
 
-void PainterGUI::TextEngine::drawText( int x, int y, int w, int h,
-                                       const std::wstring &str,
-                                       int flg ) {
+template< class T >
+void PainterGUI::TextEngine::dText( int x, int y, int w, int h,
+                                    const T &str,
+                                    int flg ) {
   if( font==0 )
     return;
 
@@ -110,4 +111,14 @@ void PainterGUI::TextEngine::drawText( int x, int y, int w, int h,
     }
 
   p.setScissor(oldScissor);
+  }
+
+void PainterGUI::TextEngine::drawText( int x, int y, int w, int h,
+                                       const std::wstring &s, int align) {
+  dText(x, y, w, h, s, align);
+  }
+
+void PainterGUI::TextEngine::drawText( int x, int y, int w, int h,
+                                       const std::string &s, int align) {
+  dText(x, y, w, h, s, align);
   }

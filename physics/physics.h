@@ -48,6 +48,7 @@ class Physics {
         void setPosition( float x, float y, float z );
         void setAngle( float rx, float ry );
         void applyForce( float x, float y, float z );
+        void applyBulletForce( float x, float y, float z );
 
         void update();
       private:

@@ -82,6 +82,22 @@ void FileSerialize::read(std::string &val) {
     }
   }
 
+void FileSerialize::write(const std::vector<char> &val) {
+  write( val.size() );
+  fwrite( val.data(), 1, val.size(), f );
+  }
+
+void FileSerialize::read(std::vector<char> &val) {
+  size_t s;
+  read( s );
+
+  if( s<100000 ){
+    val.resize(s);
+
+    fread ( &val[0], 1, val.size(), f );
+    }
+  }
+
 void FileSerialize::write(const std::wstring &val) {
   write( val.size() );
   fwrite( val.data(), sizeof(wchar_t), val.size(), f );

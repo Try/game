@@ -99,7 +99,7 @@ class MainGui {
 
     void enableHooks( bool e );
 
-    void setupMinimap( World& w );
+    void setupMinimap(World *w );
     void renderMinimap();
     void updateValues();
 

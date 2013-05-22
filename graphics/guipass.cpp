@@ -96,7 +96,6 @@ void GUIPass::exec( MainGui &gui,
   for( size_t r=0; r<layers.size(); ++r ){
     Layer& lay = layers[r];
 
-    if( r==0 )
     for( size_t i=0; i<lay.geometryBlocks.size(); ++i ){
       const GeometryBlock& b = lay.geometryBlocks[i];
 

@@ -15,7 +15,7 @@ class MiniMapView : public TextureView {
     MiniMapView( Resource & res );
     ~MiniMapView();
 
-    void setup( World& w );
+    void setup(World *w );
     void render();
 
     enum Mode{

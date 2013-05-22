@@ -21,16 +21,17 @@ MiniMapView::~MiniMapView() {
     world->terrain().onTerrainChanged.ubind(*this, &MiniMapView::onTerrainCanged );
   }
 
-void MiniMapView::setup(World &w) {
+void MiniMapView::setup(World * w) {
   rtime   = Time::tickCount();
   rtime2  = Time::tickCount();
 
   if( world )
     world->terrain().onTerrainChanged.ubind(*this, &MiniMapView::onTerrainCanged );
-  world = &w;
+  world = w;
   needToUpdateTerrain = true;
 
-  w.terrain().onTerrainChanged.bind(*this, &MiniMapView::onTerrainCanged );
+  if(w)
+    w->terrain().onTerrainChanged.bind(*this, &MiniMapView::onTerrainCanged );
   }
 
 void MiniMapView::render() {
@@ -103,7 +104,9 @@ void MiniMapView::render() {
     this->terr = res.ltexHolder.create(terr, false, false);
     }
 
-  if( needToUpdateTerrain || Time::tickCount() >= rtime+mk*1000*2 ){
+  if( needToUpdateTerrain ||
+      Time::tickCount() >= rtime+mk*1000*2||
+      Time::tickCount() < rtime ){
     rtime = Time::tickCount();
 
     Tempest::Pixmap::Pixel pix = {0,0,0,0};

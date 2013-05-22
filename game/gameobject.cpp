@@ -31,6 +31,8 @@ GameObject::GameObject( Scene & s,
   m.y = 0;
   m.z = 0;
 
+  std::fill( m.dieVec, m.dieVec+3, 0 );
+
   envLifeTime = -1;
 
   hint = p.mouseHint;
@@ -383,6 +385,7 @@ void GameObject::tick( const Terrain &terrain ) {
                    0.3 );
                    */
 
+  std::fill( m.dieVec, m.dieVec+3, 0 );
   view.tick();
   behavior.tick( terrain );
 
@@ -392,6 +395,10 @@ void GameObject::tick( const Terrain &terrain ) {
   for( size_t i=0; i<bullets.size(); )
     if( bullets[i]->isFinished ){
       setHP( hp() - bullets[i]->absDmg );
+
+      for( int r=0; r<3; ++r )
+        m.dieVec[r] += bullets[i]->mvec[r];
+
       std::swap( bullets[i], bullets.back() );
       bullets.pop_back();
       } else {
@@ -483,4 +490,10 @@ int GameObject::coolDown(size_t spellID) const {
 
 void GameObject::applyForce(float x, float y, float z) {
   view.applyForce(x,y,z);
+  }
+
+void GameObject::applyBulletForce( const GameObject & src ) {
+  view.applyBulletForce( src.m.dieVec[0],
+                         src.m.dieVec[1],
+                         src.m.dieVec[2] );
   }

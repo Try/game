@@ -27,6 +27,9 @@ class ByteArraySerialize : public Serialize {
     void write( const std::string& val );
     void read ( std::string& val );
 
+    void write( const std::vector<char>& val );
+    void read ( std::vector<char>& val );
+
     void write( char  val );
     void read ( char& val );
 

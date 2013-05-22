@@ -31,6 +31,7 @@ class Scenario;
 class Game : public Tempest::Window {
   public:
     Game( Tempest::Window::ShowMode s );
+    ~Game();
 
     void tick();
     //void render(size_t dt);
@@ -84,6 +85,11 @@ class Game : public Tempest::Window {
                   size_t id,
                   const std::string & spell,
                   AbstractBehavior::Modifers md = BehaviorEvent::NoModifer );
+
+    template< class T >
+    void message( const T & t ){
+      msg.message(t);
+      }
 
     bool instalHook( InputHookBase* b );
     void removeHook( InputHookBase* b );

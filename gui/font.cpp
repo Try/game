@@ -167,6 +167,12 @@ void Tempest::Bind::UserFont::fetch( Resource &res,
     fetchLeter( res, str[i] );
   }
 
+void Tempest::Bind::UserFont::fetch( Resource &res,
+                                     const std::string &str ) const {
+  for( size_t i=0; i<str.size(); ++i )
+    fetchLeter( res, str[i] );
+  }
+
 Tempest::Size Tempest::Bind::UserFont::textSize( Resource &res,
                                                  const std::wstring & str ) {
   int tx = 0, ty = 0, tw = 0, th = 0;

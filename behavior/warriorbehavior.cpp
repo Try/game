@@ -47,12 +47,6 @@ void WarriorBehavior::tick( const Terrain & ) {
   if( obj.isOnMove() && !( isAtk || isAClick ) )
     return;
 
-  if( !obj.isOnMove() && isAClick && !taget ){
-    if( intentToHold==0 )
-      obj.behavior.message( AtackMoveContinue, acX, acY );
-    //isAClick = obj.isOnMove();
-    }
-
   if( isAClick &&
       !mvTaget &&
       MoveBehavior::isCloseEnough( obj.x(), obj.y(),
@@ -87,7 +81,8 @@ void WarriorBehavior::tick( const Terrain & ) {
     takeTaget( tg, rawTg,      dTg    );
     }
 
-  taget = mvTaget;
+  if( !obj.isOnMove() )
+    taget = mvTaget;
 
   if( !obj.isOnMove() || ( isAtk || isAClick )  ){
     if( mvTaget )
@@ -98,6 +93,11 @@ void WarriorBehavior::tick( const Terrain & ) {
     tickAtack( mvTaget==taget );
     } else {    
     unlockGround();
+    }
+
+  if( !obj.isOnMove() && isAClick && !taget ){
+    if( intentToHold==0 )
+      obj.behavior.message( AtackMoveContinue, acX, acY );
     }
   }
 

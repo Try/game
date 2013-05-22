@@ -2,6 +2,7 @@
 #define SERIALIZE_H
 
 #include <string>
+#include <vector>
 
 class Serialize {
   public:
@@ -22,6 +23,9 @@ class Serialize {
 
     virtual void write( const std::string& val ) = 0;
     virtual void read ( std::string& val ) = 0;
+
+    virtual void write( const std::vector<char>& val ) = 0;
+    virtual void read ( std::vector<char>& val ) = 0;
 
     virtual void write( char  val ) = 0;
     virtual void read ( char& val ) = 0;

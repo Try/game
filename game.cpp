@@ -56,6 +56,10 @@ Game::Game( ShowMode sm )
   loadData();
   }
 
+Game::~Game() {
+  gui.setupMinimap(0);
+  }
+
 void Game::loadData() {
   resource.load("data/data.xml");
   proto   .load("data/game.xml");
@@ -120,8 +124,7 @@ void Game::setScenario(Scenario *s) {
   gui.createControls( msg, *this );
   gui.enableHooks( !serializator.isReader() );
 
-  if( world )
-    gui.setupMinimap(*world);
+  gui.setupMinimap(world);
   }
 
 void Game::tick() {
@@ -228,12 +231,9 @@ void Game::render() {
 
   if( fps.n>100 || ( fps.n>0 && fps.time>1000 ) ){
     double f = 1000.0*double(fps.n)/std::max(1, fps.time);
-#ifdef __WIN32
-    SetWindowTextA( HWND( handle() ),
-                    Lexical::upcast( f ).data() );
-#else
+
     gui.setFPS( f );
-#endif
+
     fps.n    = 0;
     fps.time = 0;
     }
@@ -709,6 +709,7 @@ void Game::serialize( GameSerializer &s ) {
     }
 
   world = worlds[curWorld].get();
+  gui.setupMinimap(0);
   //gui.setupMinimap(*world);
 
   gui.toogleEditLandMode = Tempest::signal<const Terrain::EditMode&>();
@@ -736,7 +737,7 @@ void Game::serialize( GameSerializer &s ) {
       }
     mscenario->serialize(s);
     } else {
-    setScenario( new DesertStrikeScenario(*this, gui, msg) );
+    setScenario( new DeatmachScenarion(*this, gui, msg) );
     //mscenario.reset( new ScenarioMission1(*this, gui) );
     mscenario->serialize(s);
     }

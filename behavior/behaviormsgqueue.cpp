@@ -129,7 +129,7 @@ bool BehaviorMSGQueue::isMoveMSG(const BehaviorMSGQueue::MSG &m) {
   }
 
 bool BehaviorMSGQueue::isSystemMSG(const BehaviorMSGQueue::MSG &m) {
-  return SystemNullMessage <= m.msg && m.msg <= SystemLast;
+  return (SystemNullMessage <= m.msg && m.msg <= SystemLast) || m.msg==UserEvent;
   }
 
 void BehaviorMSGQueue::unselect( World &w, int pl ) {
@@ -160,36 +160,38 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
     bool acepted = 0;
 
     Player &pl = w.game.player( m.player );
-    for( size_t i=0; i<pl.selected().size(); ++i ){
-      GameObject & obj = *pl.selected()[i];
+    if( m.msg!=UserEvent ){
+      for( size_t i=0; i<pl.selected().size(); ++i ){
+        GameObject & obj = *pl.selected()[i];
 
-      if( obj.isSelected() && obj.playerNum() ){
-        bool a = 0;
+        if( obj.isSelected() && obj.playerNum() ){
+          bool a = 0;
 
-        if( m.msg==Buy ){
-          a = buyMsgRecv( game, w, obj, m );
+          if( m.msg==Buy ){
+            a = buyMsgRecv( game, w, obj, m );
+            }
+            else
+          if( m.msg==SpellCast ){
+            a = spellMsgRecv( game, w, obj, m );
+            }
+            else
+          if( m.msg==ToUnit || m.msg==AtackToUnit ){
+            GameObject& tg = w.object( m.begin );
+
+            if( m.msg==AtackToUnit )
+              tg.higlight( 25, GameObjectView::selAtk    ); else
+              tg.higlight( 25, GameObjectView::selMoveTo );
+
+            a = obj.behavior.message( m.msg, m.begin, m.modifers );
+            } else {
+            a = obj.behavior.message( m.msg, m.x, m.y, m.modifers );
+            }
+
+          acepted |= a;
+
+          if( (m.msg==Buy || m.msg==BuildAt || m.msg==SpellCast) && a )
+            break;
           }
-          else
-        if( m.msg==SpellCast ){
-          a = spellMsgRecv( game, w, obj, m );
-          }
-          else
-        if( m.msg==ToUnit || m.msg==AtackToUnit ){
-          GameObject& tg = w.object( m.begin );
-
-          if( m.msg==AtackToUnit )
-            tg.higlight( 25, GameObjectView::selAtk    ); else
-            tg.higlight( 25, GameObjectView::selMoveTo );
-
-          a = obj.behavior.message( m.msg, m.begin, m.modifers );
-          } else {
-          a = obj.behavior.message( m.msg, m.x, m.y, m.modifers );
-          }
-
-        acepted |= a;
-
-        if( (m.msg==Buy || m.msg==BuildAt || m.msg==SpellCast) && a )
-          break;
         }
       }
 
@@ -259,8 +261,9 @@ void BehaviorMSGQueue::sysMSG( Game &game, World &w ){
 
     if( m.msg == EditDel ){
       game.delEditorObject( m.player );
-      }
-
+      } else
+    if( m.msg == UserEvent )
+      game.scenario().customEvent( m.udata );
     }
   remove_if( data, isSystemMSG );
   }
@@ -324,7 +327,10 @@ void BehaviorMSGQueue::serialize( std::vector<BehaviorMSGQueue::MSG> &data,
     s + b + msgCode + m.x + m.y + m.player + m.begin + m.size;
 
     s + m.str;
-    s+e;
+    s + e;
+
+    if( m.msg==UserEvent )
+      s + m.udata;
 
     m.msg = AbstractBehavior::Message(msgCode);
     }

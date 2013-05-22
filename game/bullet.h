@@ -21,6 +21,7 @@ class Bullet {
 
     void tick();
 
+    float mvec[3];
   private:
     double l0;
   };

@@ -46,6 +46,7 @@ struct Scenario {
     virtual void onItemEvent( GameObject & obj )   { (void)obj; }
 
     virtual void serialize( GameSerializer & ){}
+    virtual void customEvent( const std::vector<char> & ){}
 
     struct MissionTaget{
       bool done;
@@ -71,7 +72,7 @@ struct Scenario {
 
     virtual void setupUI(InGameControls *mainWidget, Resource &res);
 
-    virtual void setupMinimap(World& w);
+    virtual void setupMinimap(World *w);
     virtual void renderMinimap();
 
     virtual void onUnitDied( GameObject &obj );
@@ -92,24 +93,6 @@ struct Scenario {
     void moveCamera();
 
     Resource    & res;
-  private:
-    Tempest::Shortcut showEditPanel, showSettings;
-
-    Tempest::Widget *editPanel, *settingsPanel;
-    Button *gold, *lim;
-
-    MiniMapView    * minimap;
-    InGameControls * mainWidget;
-    CommandsPanel  * commands;
-    UnitList       * units;
-
-    int currPl;
-
-    void setCurrPl( size_t i );
-    void addEditorObject( const ProtoObject &p );
-
-    void toogleEditPanel();
-    void toogleSettingsPanel();
 
     Tempest::Widget  *createSettingsPanel(InGameControls *mainWidget, Resource &res);
     EditTerrainPanel *createLandEdit( InGameControls *mainWidget,
@@ -117,8 +100,28 @@ struct Scenario {
     Tempest::Widget* createEditPanel(InGameControls *mainWidget, Resource &res);
     Tempest::Widget* createConsole( InGameControls *mainWidget,
                                    BehaviorMSGQueue & q );
+
+    void toogleEditPanel();
+    void toogleSettingsPanel();
+
     void showFormBuilder();
     void showMenu();
+
+    Tempest::Shortcut showEditPanel, showSettings;
+
+    Tempest::Widget *editPanel, *settingsPanel;
+    Button *gold, *lim;
+
+    InGameControls * mainWidget;
+    MiniMapView    * minimap;
+  private:
+    CommandsPanel  * commands;
+    UnitList       * units;
+
+    int currPl;
+
+    void setCurrPl( size_t i );
+    void addEditorObject( const ProtoObject &p );
 
     struct AddUnitButton;
   };

@@ -28,6 +28,9 @@ class FileSerialize : public Serialize {
     void write( const std::string& val );
     void read ( std::string& val );
 
+    void write( const std::vector<char>& val );
+    void read ( std::vector<char>& val );
+
     void write( const std::wstring& val );
     void read ( std::wstring& val );
 

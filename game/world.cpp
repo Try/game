@@ -271,6 +271,8 @@ GameObject &World::addObject( const ProtoObject &p,
   }
 
 void World::deleteObject(GameObject *obj) {
+  game.scenario().onUnitDied(*obj);
+
   for( size_t i=0; i<game.plCount(); ++i )
     if( game.player(i).editObj==obj )
       game.player(i).editObj = 0;
@@ -463,8 +465,7 @@ size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
     }
 
   for( size_t i=0; i<resouces.size(); ++i ){
-    if( object(i).isVisible(frustum) &&
-        isUnitUnderMouse( gmMat, *resouces[i], mx, my, w, h, dist ) ){
+    if( isUnitUnderMouse( gmMat, *resouces[i], mx, my, w, h, dist ) ){
       for( size_t r=0; r<objectsCount(); ++r )
         if( &object(r)==resouces[i] )
           return r;
@@ -878,6 +879,8 @@ void World::tick() {
             c = f*cos( src.rAngle() );
 
       obj.applyForce( -c, -s, 0 );
+      obj.applyBulletForce(src);
+      obj.updatePos();
       physics.endUpdate();
 
       obj.envLifeTime = 200;
