@@ -22,7 +22,7 @@ Bullet::Bullet( Scene & s,
   l0 = 0;
 
   isFinished = 0;
-  absDmg     = 0;
+  plOwner    = 0;
 
   speed = 600;
 

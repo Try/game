@@ -22,8 +22,8 @@ class ListBox : public AbstractListBox {
   protected:
     void mouseWheelEvent(Tempest::MouseEvent &e);
 
-  private:
     Resource &res;
+  private:
     size_t selected;
 
     Tempest::Widget *createDropList();

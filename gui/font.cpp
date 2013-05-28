@@ -189,6 +189,25 @@ Tempest::Size Tempest::Bind::UserFont::textSize( Resource &res,
   return Tempest::Size(tw,th);
   }
 
+Tempest::Size Tempest::Bind::UserFont::textSize( Resource &res,
+                                                 const std::string & str ) {
+  int tx = 0, ty = 0, tw = 0, th = 0;
+  for( size_t i=0; i<str.size(); ++i ){
+    const Font::Leter& l = leter( res, str[i] );
+
+    tw = std::max( tx+l.dpos.x+l.size.w, tw );
+    th = std::max( ty+l.dpos.y+l.size.h, th );
+
+    tw = std::max( tx+l.advance.x, tw );
+    th = std::max( ty+l.advance.y, th );
+
+    tx+= l.advance.x;
+    ty+= l.advance.y;
+    }
+
+  return Tempest::Size(tw,th);
+  }
+
 int Tempest::Bind::UserFont::size() const {
   return key.size;
   }

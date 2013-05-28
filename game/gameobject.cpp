@@ -17,6 +17,7 @@
 
 #include "util/gameserializer.h"
 #include "behavior/movebehavior.h"
+#include "behavior/warriorbehavior.h"
 
 GameObject::GameObject( Scene & s,
                         World & w,
@@ -41,6 +42,7 @@ GameObject::GameObject( Scene & s,
   bclos.colisionDisp[1] = 0;
   bclos.isPatrul        = false;
   bclos.isMVLock        = false;
+  bclos.intentToHold    = 0;
 
   m.hp = p.data.maxHp;
 
@@ -62,6 +64,8 @@ GameObject::GameObject( Scene & s,
 
   for( auto i=p.ability.begin(); i!=p.ability.end(); ++i )
     setCoolDown( pl.spell(*i).id, 0 );
+
+  colisions.reserve(16);
   }
 
 GameObject::~GameObject() {
@@ -394,7 +398,10 @@ void GameObject::tick( const Terrain &terrain ) {
 
   for( size_t i=0; i<bullets.size(); )
     if( bullets[i]->isFinished ){
-      setHP( hp() - bullets[i]->absDmg );
+      //setHP( hp() - bullets[i]->absDmg );
+      WarriorBehavior::mkDamage( *this, bullets[i]->plOwner,
+                                 x(), y(),
+                                 bullets[i]->atack );
 
       for( int r=0; r<3; ++r )
         m.dieVec[r] += bullets[i]->mvec[r];
@@ -496,4 +503,10 @@ void GameObject::applyBulletForce( const GameObject & src ) {
   view.applyBulletForce( src.m.dieVec[0],
                          src.m.dieVec[1],
                          src.m.dieVec[2] );
+  }
+
+void GameObject::incDieVec(float x, float y, float z) {
+  m.dieVec[0] += x;
+  m.dieVec[1] += y;
+  m.dieVec[2] += z;
   }

@@ -133,6 +133,8 @@ class GameObject {
 
     void applyForce( float x, float y, float z );
     void applyBulletForce(const GameObject &src);
+
+    void incDieVec( float x, float y, float z );
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;

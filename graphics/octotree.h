@@ -45,6 +45,7 @@ class OcTree {
         z = 0;
 
         count = 0;
+        objects.reserve(64);
         }
 
     void reposition( const T &t, float x, float y, float z, float sZ ){

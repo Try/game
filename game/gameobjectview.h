@@ -124,6 +124,8 @@ class GameObjectView {
       double modelSize[3], rndSize[3], initalModelHeight;
 
       int intentDirX, intentDirY;
+
+      float vpos[3];
       } m;
 
     struct {

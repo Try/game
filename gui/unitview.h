@@ -28,6 +28,7 @@ class UnitView : public TextureView {
     void updateView();
 
     Tempest::signal<GameObject&> setCameraPos;
+    Tempest::signal<> onClick;
   protected:
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);

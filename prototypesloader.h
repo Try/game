@@ -22,6 +22,9 @@ class PrototypesLoader : public AbstractXMLReader {
 
     const Spell& spell( const std::string & obj ) const;
     const ParticleSystemDeclaration& particle( const std::string & obj ) const;
+
+    void load(const std::string &s);
+    void unload();
   protected:
     void readElement(TiXmlNode *node);
     void readClassMember(ProtoObject &obj, TiXmlNode *node);
@@ -36,10 +39,14 @@ class PrototypesLoader : public AbstractXMLReader {
     void readParticleMember(ParticleSystemDeclaration &obj, TiXmlNode *node);
     void readParticleMember(ParticleSystemDeclaration::D &obj, TiXmlNode *node);
 
-    std::unordered_map<std::string, PProtoObject> data;
-    std::unordered_map<std::string, PSpell>       dataSpells;
-    std::unordered_map<std::string, PParticle>    dataParticles;
-    std::vector<PSpell> spells;
+    struct Defs{
+      std::unordered_map<std::string, PProtoObject> data;
+      std::unordered_map<std::string, PSpell>       dataSpells;
+      std::unordered_map<std::string, PParticle>    dataParticles;
+      std::vector<PSpell> spells;
+      };
+
+    std::vector<Defs> defs;
 
     static bool cmp( const std::shared_ptr<ProtoObject>& a,
                      const std::shared_ptr<ProtoObject>& b );

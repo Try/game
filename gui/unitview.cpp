@@ -88,6 +88,7 @@ void UnitView::mouseDownEvent(Tempest::MouseEvent &) {
 
 void UnitView::mouseUpEvent(Tempest::MouseEvent &) {
   folowMode = (0);
+  onClick();
   }
 
 void UnitView::paintEvent(Tempest::PaintEvent &e) {

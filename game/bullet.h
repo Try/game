@@ -17,7 +17,8 @@ class Bullet {
     int speed;
 
     bool isFinished;
-    int  absDmg;
+    ProtoObject::GameSpecific::Atack atack;
+    int plOwner;
 
     void tick();
 

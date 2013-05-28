@@ -48,6 +48,8 @@ void GameObjectView::init() {
   m.y = 0;
   m.z = 0;
 
+  std::fill( m.vpos, m.vpos+3, 0 );
+
   for( int i=0; i<3; ++i ){
     m.selectionSize[i] = 0;
     m.modelSize[i] = 0;
@@ -309,7 +311,19 @@ void GameObjectView::setViewPosition( float x, float y, float z ) {
 
 void GameObjectView::setViewPosition( float x, float y, float z,
                                       float interp ) {
+  float nx[3] = {};
+  nx[0] = m.vpos[0] + (x - m.vpos[0])*interp;
+  nx[1] = m.vpos[1] + (y - m.vpos[1])*interp;
+  nx[2] = m.vpos[2] + (z - m.vpos[2])*interp;
+
+  if( m.vpos[0] == nx[0] &&
+      m.vpos[1] == nx[1] &&
+      m.vpos[2] == nx[2] )
+    return;
+
   wrld.updateIntent(this);
+
+  std::copy( nx, nx+3, m.vpos );
 
   for( size_t i=0; i<env.size(); ++i ){
     //setViewPosition( env[i], getClass().view[i], x, y, z );
@@ -358,7 +372,8 @@ void GameObjectView::setViewPosition( float x, float y, float z,
     float x1 = selection[i]->x() + (x-selection[i]->x())*interp;
     float y1 = selection[i]->y() + (y-selection[i]->y())*interp;
 
-    selection[i]->setPosition( x1, y1, zland+0.01 );
+    if( selection[i]->isVisible() )
+      selection[i]->setPosition( x1, y1, zland+0.01 );
     }
     //selection[i]->setPosition( x, y, zland+0.01, interp );
 
@@ -530,11 +545,14 @@ void GameObjectView::updatePos() {
 
 void GameObjectView::setSelectionVisible( bool v, Selection s ) {
   selection[int(s)]->setVisible(v);
+  if( selection[int(s)]->isVisible() )
+    selection[int(s)]->setPosition( m.vpos[0], m.vpos[1], m.vpos[2]+0.01 );
   }
 
 void GameObjectView::higlight(int time, GameObjectView::Selection s) {
   htime[int(s)] = time;
   selection[int(s)]->setVisible(true);
+  selection[int(s)]->setPosition( m.vpos[0], m.vpos[1], m.vpos[2]+0.01 );
   }
 
 void GameObjectView::setVisible(bool v) {

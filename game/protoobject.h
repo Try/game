@@ -20,9 +20,14 @@ struct ProtoObject {
       int gold, lim, limInc, buildTime;
       bool isBackground, invincible;
 
+      int armor;
+
       struct Atack{
+        Atack():range(0), damage(0), delay(0), splashSize(0), splashDamage(0){}
+
         int range;
         int damage, delay;
+        int splashSize, splashDamage;
 
         std::string bullet;
         };

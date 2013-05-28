@@ -3,7 +3,9 @@
 #include "resource.h"
 
 Panel::Panel( Resource &res ) {
-  back .data = res.pixmap("gui/background");
+  back[0].data = res.pixmap("gui/background512");
+  back[1].data = res.pixmap("gui/background");
+
   frame.data = res.pixmap("gui/frame2");
 
   resize(200, 400);
@@ -21,14 +23,7 @@ bool Panel::isDragable() {
   return dragable;
   }
 
-void Panel::mouseDownEvent(Tempest::MouseEvent &e) {/*
-  e.ignore();
-  Widget::mousePressEvent(e);
-  if( e.isAccepted() )
-    return;
-
-  e.accept();*/
-
+void Panel::mouseDownEvent(Tempest::MouseEvent &e) {
   if( !dragable ){
     return;
     }
@@ -101,7 +96,10 @@ void Panel::paintEvent( Tempest::PaintEvent &e ) {
     }
 
   int sz = 8;
-  p.setTexture( back );
+  if( w()<=512 && h()<=512 )
+    p.setTexture( back[0] ); else
+    p.setTexture( back[1] );
+
   p.drawRect( sz,sz-1, w()-2*sz, h()-2*sz+2 );
 
   paintNested(e);

@@ -4,13 +4,14 @@
 #include <map>
 #include <vector>
 //#include <tuple>
+#include "wayfindalgo.h"
 
 class GameObject;
 class Terrain;
 
 class WayFindRequest {
   public:
-    WayFindRequest();
+    WayFindRequest( const Terrain &terr );
 
     void findWay( int x, int y, GameObject* );
 
@@ -25,14 +26,17 @@ class WayFindRequest {
         return y<t.y;
         }
       };
-    void tick( const Terrain& t );
+    void tick();
 
   private:
     std::map<Tg, std::vector<GameObject*> > rq;
     void findWay(int x, int y, std::vector<GameObject*>& , const Terrain &t);
 
     std::vector<bool> visited;
-    std::vector<GameObject*> group;
+    std::vector<GameObject*> group;    
+
+    const Terrain &terr;
+    WayFindAlgo algo;
 
     void makeGroup(GameObject * obj,
                     std::vector<GameObject *> &objs,

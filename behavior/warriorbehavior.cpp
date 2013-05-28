@@ -5,6 +5,8 @@
 #include "game/bullet.h"
 #include "movebehavior.h"
 
+#include <cmath>
+
 WarriorBehavior::WarriorBehavior( GameObject &obj,
                                   Behavior::Closure &c )
   : obj(obj), intentToHold(c.intentToHold),
@@ -38,6 +40,10 @@ void WarriorBehavior::tick( const Terrain & ) {
   if( obj.getClass().data.atk.size() == 0 )
     return;
 
+  if( !isAClick ){
+    std::cout << "";
+    }
+
   if( dAtkTime>0 )
     --dAtkTime;
 
@@ -65,20 +71,24 @@ void WarriorBehavior::tick( const Terrain & ) {
     acX = mvTaget.value().x();
     acY = mvTaget.value().y();
     } else {
-    obj.world().spatial().visit( obj.x(),
-                                 obj.y(),
-                                 obj.getClass().data.visionRange,
-                                 &lookOn,
-                                 obj,
-                                 this,
-                                 rawTg,
-                                 rawTgBuild,
-                                 dTg,
-                                 dBuild );
+    if( !taget || !canShoot( taget.value() ) ){
+      obj.world().spatial().visit( obj.x(),
+                                   obj.y(),
+                                   obj.getClass().data.visionRange,
+                                   &lookOn,
+                                   obj,
+                                   this,
+                                   rawTg,
+                                   rawTgBuild,
+                                   dTg,
+                                   dBuild );
 
-    tg = rawTgBuild;
-    takeTaget( tg, rawTgBuild, dBuild );
-    takeTaget( tg, rawTg,      dTg    );
+      tg = rawTgBuild;
+      takeTaget( tg, rawTgBuild, dBuild );
+      takeTaget( tg, rawTg,      dTg    );
+      } else {
+      tg = &taget.value();
+      }
     }
 
   if( !obj.isOnMove() )
@@ -231,7 +241,6 @@ void WarriorBehavior::move( int x, int y ) {
 
 void WarriorBehavior::damageTo(GameObject &dobj) {
   dAtkTime = obj.getClass().data.atk[0].delay;
-  int absDmg = obj.getClass().data.atk[0].damage;
 
   obj.setViewDirection( dobj.x() - obj.x(),
                         dobj.y() - obj.y() );
@@ -248,12 +257,28 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     b.z   = obj.viewHeight()/2  + World::coordCast(obj.z() );
     b.tgZ = dobj.viewHeight()/2 + World::coordCast(dobj.z());
 
-    b.absDmg = absDmg;
+    b.plOwner      = obj.player().number();
+    b.atack        = obj.getClass().data.atk[0];
+
     b.tick();
     obj.world().game.resources().sound("fire_ball").play();
     } else {
-    obj.world().game.resources().sound("attack-sword-001").play();
+    //obj.world().game.resources().sound("attack-sword-001").play();
+    mkDamage( dobj, obj.playerNum(),
+              dobj.x(), dobj.y(),
+              obj.getClass().data.atk[0] );
+    /*
     dobj.setHP( dobj.hp() - absDmg );
+
+    if( obj.getClass().data.atk[0].splashSize ){
+      obj.world().spatial().visit( dobj.x(),
+                                   dobj.y(),
+                                   obj.getClass().data.atk[0].splashSize,
+                                   &damageSplash,
+                                   obj,
+                                   dobj,
+                                   obj.getClass().data.atk[0] );
+      }*/
     }
 
   if( intentToHold==0 ){
@@ -263,29 +288,99 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     }
   }
 
+void WarriorBehavior::mkDamage( GameObject &dobj,
+                                int plOwner,
+                                int x, int y,
+                                const ProtoObject::GameSpecific::Atack &atk) {
+  int absDmg = std::max( atk.damage - dobj.getClass().data.armor, 0 );
+  dobj.setHP( dobj.hp() - absDmg );
+
+  if( atk.splashSize ){
+    dobj.world().spatial().visit( dobj.x(),
+                                  dobj.y(),
+                                  atk.splashSize,
+                                  &damageSplash,
+                                  plOwner,
+                                  x, y,
+                                  dobj,
+                                  atk );
+    }
+  }
+
+void WarriorBehavior::damageSplash( GameObject & tg ,
+                                    int plOwner,
+                                    int x, int y,
+                                    GameObject & nobj,
+                                    const ProtoObject::GameSpecific::Atack &a ){
+  if( tg.getClass().data.invincible )
+    return;
+
+  if( tg.playerNum()==0 )
+    return;
+
+  if( tg.team()==tg.game().player(plOwner).team() )
+    return;
+
+  if( &tg==&nobj )
+    return;
+
+  int ss = a.splashSize*Terrain::quadSize;
+
+  int d  = tg.distanceSQ( x, y );
+  if( d < ss*ss ){
+    int absDmg = std::max(a.splashDamage - tg.getClass().data.armor, 0);
+    tg.setHP( tg.hp()-absDmg );
+
+    float mv[2] = { float(x - tg.x()), float(y - tg.y()) };
+    float l = sqrt(mv[0]*mv[0] + mv[1]*mv[1])/15;
+    mv[0]/=l;
+    mv[1]/=l;
+
+    tg.incDieVec( mv[0], mv[1], 10 );
+    }
+  }
+
 void WarriorBehavior::positionChangeEvent(PositionChangeEvent &) {
   unlockGround();
   }
 
+bool WarriorBehavior::canShoot( GameObject &taget ) {
+  int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
+  int arange = (  obj.getClass().data.atk[0].range +
+                 (obj.getClass().data.size + 2 +
+                  taget.getClass().data.size)/2 )*Terrain::quadSize;
+
+  vrange = vrange*vrange;
+  arange = arange*arange;
+  int d = taget.distanceSQ(obj.x(), obj.y());
+
+  return ( d <= arange );
+  }
+
 void WarriorBehavior::tickAtack( bool ignoreVrange ) {
   if( taget ){
-    int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
-    int arange = (  obj.getClass().data.atk[0].range +
-                   (obj.getClass().data.size + 2 +
-                    taget.value().getClass().data.size)/2 )*Terrain::quadSize;
-
-    vrange = vrange*vrange;
-    arange = arange*arange;
-    int d = taget.value().distanceSQ(obj.x(), obj.y());
-
-    if( d <= arange ){
+    if( canShoot( taget.value() ) ){
       damageTo( taget.value() );
       lockGround();
-      } else
-    if( d <= vrange || ignoreVrange )
-      if( obj.distanceQL(lastX, lastY)>0 || !obj.isOnMove() ){
-        move( taget.value().x(), taget.value().y() );
+      } else{
+      int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
+      int arange = (  obj.getClass().data.atk[0].range +
+                     (obj.getClass().data.size + 2 +
+                      taget.value().getClass().data.size)/2 )*Terrain::quadSize;
+
+      vrange = vrange*vrange;
+      arange = arange*arange;
+      int d = taget.value().distanceSQ(obj.x(), obj.y());
+
+      if( d <= vrange || ignoreVrange ){
+        if( obj.distanceQL(lastX, lastY)>0 || !obj.isOnMove() ){
+          unlockGround();
+          move( taget.value().x(), taget.value().y() );
+          }
+        } else {
+        taget = WeakWorldPtr();
         }
+      }
     } else {
     unlockGround();
     }

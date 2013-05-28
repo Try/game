@@ -6,7 +6,7 @@
 #ifdef __ANDROID__
 const int PixmapsPool::pageSize = 2048;
 #else
-const int PixmapsPool::pageSize = 2048;
+const int PixmapsPool::pageSize = 1024;
 #endif
 
 PixmapsPool::PixmapsPool(Tempest::TextureHolder &h):holder(h) {

@@ -11,7 +11,7 @@ class Panel : public Tempest::Widget {
     typedef Tempest::Bind::UserTexture Texture;
     Panel(Resource &res );
 
-    Texture frame, back;
+    Texture frame, back[2];
 
     void setDragable( bool d );
     bool isDragable();

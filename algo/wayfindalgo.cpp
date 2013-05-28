@@ -9,14 +9,18 @@
 
 #include <fstream>
 
-array2d<int> WayFindAlgo::clasterMap, WayFindAlgo::wayMap;
+//array2d<int> WayFindAlgo::clasterMap, WayFindAlgo::wayMap;
 
 WayFindAlgo::WayFindAlgo( const Terrain &t ) : terrain(t){
   clasterMap.resize( t.width() -1,
                      t.height()-1 );
   wayMap.resize( t.width()-1, t.height()-1 );
 
+  std::fill( wayMap.begin(), wayMap.end(), -1 );
   std::fill( clasterMap.begin(), clasterMap.end(), 0 );
+
+  waveBuf.reserve(128);
+  rwPoint.reserve(128);
   }
 
 void WayFindAlgo::fillClasrerMap( const std::vector< GameObject* > &objects ) {
@@ -187,8 +191,7 @@ void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
   rPointX = rx;
   rPointY = ry;
 
-  if( abs(x-rx)<5 &&
-      abs(y-ry)<5 &&
+  if( abs(x-rx) + abs(y-ry) < 20 &&
       optimizeWay( Point{x,y}, Point{rx,ry} ) ){
     way.clear();
     way.push_back(Point{rx,ry});
@@ -196,21 +199,30 @@ void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
     return;
     }
 
-  std::fill( wayMap.begin(), wayMap.end(), -1 );
+  //std::fill( wayMap.begin(), wayMap.end(), -1 );
 
   MemberFunc< WayFindAlgo, bool,
               const array2d<int> &, Point, Point>
       func(*this, &WayFindAlgo::isQuadEnable);
 
-  MemberFunc< WayFindAlgo, bool >
-      isEnd(*this, &WayFindAlgo::isRPoint );
-
   int dimCount = 8;
-  wave( wayMap, x, y, 1, func, incMapPointR<int>, isEnd, dimCount );
-  // dump();
+  waveAstar( wayMap,
+             x, y,
+             func, incMapPointR<int>,
+             rx, ry,
+             rwPoint,
+             waveBuf,
+             dimCount );
 
-  if( wayMap.at(rx,ry)==-1 )
+  //dump();
+
+  if( wayMap.at(rx,ry)==-1 ){
+    for( size_t i=0; i<rwPoint.size(); ++i ){
+      Point p = rwPoint[i];
+      wayMap[p.x][p.y] = -1;
+      }
     return;
+    }
 
   Point re = {rx, ry};
   Point* dxy = dXY();
@@ -260,6 +272,11 @@ void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
   way.push_back(re);
   //dump();
   optimizeWay();
+
+  for( size_t i=0; i<rwPoint.size(); ++i ){
+    Point p = rwPoint[i];
+    wayMap[p.x][p.y] = -1;
+    }
   //dump();
   }
 
@@ -313,8 +330,8 @@ bool WayFindAlgo::optimizeWay(Point a, Point b) {
   Point p = a;
 
   while( p.x!=b.x || p.y!=b.y ){
-    //if( !terrain.isEnableQuad(p.x, p.y, 2) )
-      //return false;
+    if( !terrain.isEnableQuad(p.x, p.y) )
+      return false;
 
     if( abs(p.x-b.x) > abs(p.y-b.y) ){
       if( p.x>b.x )

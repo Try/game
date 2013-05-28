@@ -543,7 +543,7 @@ bool MoveBehavior::isCloseEnough( int x1, int y1,
 
   return abs(x1)<=lc &&
          abs(y1)<=lc &&
-      2*2*realL <= lc*lc;
+         2*2*realL <= lc*lc;
   }
 
 void MoveBehavior::updatePos(const Terrain &t ) {  

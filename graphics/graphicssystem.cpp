@@ -13,6 +13,7 @@
 #include "graphics/particlesystemengine.h"
 
 #include <resource.h>
+#include <cstdint>
 
 GraphicsSystem::GraphicsSystem( void *hwnd,
                                 bool isFullScreen )
@@ -38,6 +39,8 @@ GraphicsSystem::GraphicsSystem( void *hwnd,
 
   useFog    = false;
   useHDR    = false;
+
+  toDraw.reserve(2048);
 
 #ifdef __ANDROID__
   lvboHolder.setReserveSize( 8092 );
@@ -321,7 +324,8 @@ bool GraphicsSystem::render( Scene &scene,
                mainDepth,
                useDirectRender?0:4,
                rsm,
-               settings.shadowMapRes );
+               settings.shadowMapRes,
+               false );
 
   Tempest::Texture2d fog;
   if( fogView.width()>0 ){
@@ -393,7 +397,8 @@ bool GraphicsSystem::render( Scene &scene,
 
 
 void GraphicsSystem::fillShadowMap( Tempest::Texture2d& shadowMap,
-                                    const Scene & scene ) {
+                                    const Scene & scene,
+                                    bool clr ) {
   Tempest::Texture2d depthSm = depth( shadowMap.width(), shadowMap.height() );
   //Tempest::Texture2d::Sampler s = shadowMap.sampler();
   //s.anisotropic = false;
@@ -401,13 +406,15 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& shadowMap,
   //shadowMap.setSampler( s );
 
   fillShadowMap( shadowMap, depthSm, scene,
-                 scene.shadowCasters() );
+                 scene.shadowCasters(),
+                 clr );
   }
 
 void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
                                     Tempest::Texture2d& depthSm,
                                     const Scene & scene,
-                                    const Scene::Objects &v ) {
+                                    const Scene::Objects &v,
+                                    bool clr ) {
   Tempest::RenderState rstate;
   rstate.setCullFaceMode( Tempest::RenderState::CullMode::front );
 
@@ -424,8 +431,10 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
                           sm, depthSm,
                           smap.vs, smap.fs );
   {
-    //render.clear( Tempest::Color(1.0), 1 );
-    device.clearZ(1);
+
+    if(clr)
+      render.clear( Tempest::Color(1.0), 1 ); else
+      device.clearZ(1);
 
     if( !(sm.width()==1 && sm.height()==1) ){
       Tempest::Matrix4x4 proj;
@@ -453,11 +462,16 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
         v,
         &Material::shadow,
         ref(matrix) );
+  completeDraw( render,
+                camera,
+                &Material::shadow,
+                ref(matrix));
   }
 
 void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
                                          Tempest::Texture2d &depthSm,
-                                         const Scene &scene) {
+                                         const Scene &scene,
+                                         bool /*clr*/ ) {
 
   Tempest::DirectionLight light;
   if( scene.lights().direction().size() > 0 )
@@ -795,6 +809,10 @@ void GraphicsSystem::drawOmni( Tempest::Texture2d *gbuffer,
         v,
         &Material::omni,
         shM );
+  completeDraw( render,
+                camera,
+                &Material::omni,
+                shM );
   }
 
 int GraphicsSystem::drawObjects( Tempest::Texture2d* gbuffer,
@@ -840,7 +858,9 @@ int GraphicsSystem::drawObjects( Tempest::VertexShader   & vs,
 
     Frustum frustum;
     mkFrustum( camera, frustum );
-    return draw( render, frustum, true, camera, v, func );
+    int r = draw( render, frustum, true, camera, v, func );
+    completeDraw( render, camera, func );
+    return r;
     } else {
     Tempest::Render render( device, vs, fs );
     if( clr ){
@@ -851,7 +871,9 @@ int GraphicsSystem::drawObjects( Tempest::VertexShader   & vs,
 
     Frustum frustum;
     mkFrustum( camera, frustum );
-    return draw( render, frustum, true, camera, v, func );
+    int r = draw( render, frustum, true, camera, v, func );
+    completeDraw( render, camera, func );
+    return r;
     }
   }
 
@@ -877,10 +899,11 @@ void GraphicsSystem::drawTranscurent( Tempest::Texture2d& screen,
   Frustum frustum;
   mkFrustum( camera, frustum );
   draw( render, frustum, true, camera, v, &Material::displace );
+  completeDraw( render, camera, &Material::displace );
   }
 
 template< class ... Args, class ... FArgs >
-int GraphicsSystem::draw( Tempest::Render  & render,
+int GraphicsSystem::draw(  Tempest::Render  & render,
                            const Frustum &frustum,
                            bool deepVTest,
                            const Tempest::AbstractCamera & camera,
@@ -896,12 +919,15 @@ int GraphicsSystem::draw( Tempest::Render  & render,
     const AbstractGraphicObject& ptr = *v.objects[i];
 
     if( !deepVTest || isVisible(ptr,frustum) ){
+      /*
       Tempest::UniformTable table( render );
       Tempest::RenderState rs;
 
       (ptr.material().*func)( rs, ptr.transform(), camera, table, args... );
       render.setRenderState(rs);
       render.draw( ptr );
+      */
+      toDraw.push_back( &ptr );
       ++c;
       }
     }
@@ -926,6 +952,47 @@ int GraphicsSystem::draw( Tempest::Render  & render,
           }
 
   return c;
+  }
+
+template< class ... Args, class ... FArgs >
+void GraphicsSystem::completeDraw( Tempest::Render  & render,
+                                   const Tempest::AbstractCamera & camera,
+                                   void (Material::*func)( Tempest::RenderState& /*d*/,
+                                                          const Tempest::Matrix4x4 & /*object*/,
+                                                          const Tempest::AbstractCamera&,
+                                                          Tempest::UniformTable &,
+                                                          FArgs ... args ) const,
+                                   Args... args ) {
+  struct Cmp{
+    static bool less( const AbstractGraphicObject* aa,
+                      const AbstractGraphicObject* ab ){
+      const AbstractGraphicObject& a = *aa;
+      const AbstractGraphicObject& b = *ab;
+
+      uint64_t idA = (uint64_t(a.vboHandle())<<32) + a.material().diffuse.handle();
+      uint64_t idB = (uint64_t(b.vboHandle())<<32) + b.material().diffuse.handle();
+
+      return idA < idB;
+      /*
+      return a.material().diffuse.handle() <
+             b.material().diffuse.handle();
+             */
+      }
+    };
+  std::sort( toDraw.begin(), toDraw.end(), &Cmp::less );
+
+  for( size_t i=0; i<toDraw.size(); ++i ){
+    const AbstractGraphicObject& ptr = *toDraw[i];
+
+    Tempest::UniformTable table( render );
+    Tempest::RenderState rs;
+
+    (ptr.material().*func)( rs, ptr.transform(), camera, table, args... );
+    render.setRenderState(rs);
+    render.draw( ptr );
+    }
+
+  toDraw.clear();
   }
 
 void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
@@ -974,6 +1041,9 @@ void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
         camera,
         v,
         &Material::water  );
+  completeDraw( render,
+                camera,
+                &Material::water  );
   }
 
 void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
@@ -998,7 +1068,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
     device.clear( Tempest::Color(0) );
     device.endPaint();
 
-    if( depth.width()>0 )
+    if( depth.width()>0 ){
       drawObjects( glowData.vs,
                    glowData.fs,
                    &mrt0,
@@ -1010,7 +1080,8 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
                    &Material::glowPassAdd,
                    false,
                    false );
-    else
+      }
+    else {
       drawObjects( glowData.vs,
                    glowData.fs,
                    0,
@@ -1022,6 +1093,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
                    &Material::glowPassAdd,
                    false,
                    false );
+      }
     return;
     }
 
@@ -1327,7 +1399,9 @@ void GraphicsSystem::drawFogOfWar( Tempest::Texture2d &out,
     Frustum frustum;
     mkFrustum( camera, frustum );
     draw( render, frustum, true, camera, v, &Material::fogOfWar, true );
+    completeDraw( render, camera, &Material::fogOfWar, true );
     draw( render, frustum, true, camera, v, &Material::fogOfWar, false );
+    completeDraw( render, camera, &Material::fogOfWar, false );
     }
 
   Tempest::Texture2d tmp;
@@ -1455,7 +1529,8 @@ void GraphicsSystem::aceptGI(   const Scene & s,
   }
 
 void GraphicsSystem::ssaoGMap( const Scene &scene,
-                               Tempest::Texture2d &sm  ) {
+                               Tempest::Texture2d &sm,
+                               bool clr ) {
   /*
   sm = localTex.create( 256, 256,
                         Tempest::AbstractTexture::Format::RGB10_A2 );*/
@@ -1470,8 +1545,9 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
     Tempest::Render render( device,
                             sm, depthSm,
                             smap.vs, smap.fs );
-    //render.clear( Tempest::Color(1.0), 1 );
-    device.clearZ(1);
+    if( clr )
+      render.clear( Tempest::Color(1.0), 1 ); else
+      device.clearZ(1);
     render.setRenderState( rstate );
 
     const Tempest::AbstractCamera & camera = scene.camera();
@@ -1489,6 +1565,10 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
           v,
           &Material::shadow,
           ref(matrix) );
+    completeDraw( render,
+                  camera,
+                  &Material::shadow,
+                  ref(matrix) );
     }
   }
 
@@ -1574,7 +1654,8 @@ void GraphicsSystem::buildRSM( Scene &scene,
                mainDepth,
                4,
                0,
-               1 );
+               1,
+               true );
   }
 
 Tempest::AbstractAPI *GraphicsSystem::createAPI() {
@@ -1741,7 +1822,8 @@ void GraphicsSystem::renderScene( const Scene &scene,
                                   int gbufferSize,
 
                                   Tempest::Texture2d* rsm,
-                                  int shadowMapSize ) {
+                                  int shadowMapSize,
+                                  bool clrSm ) {
   //return;
 
   Tempest::DirectionLight light;
@@ -1758,18 +1840,18 @@ void GraphicsSystem::renderScene( const Scene &scene,
 
   if( settings.shadowMapRes>0 ){
     shadowMap = this->shadowMap( shadowMapSize, shadowMapSize );
-    fillShadowMap( shadowMap, scene );
+    fillShadowMap( shadowMap, scene, clrSm );
     }
 
   if( 0 ){
     shadowMapCl= localTex.create(shadowMapSize, shadowMapSize);
     Tempest::Texture2d depth = this->depth(shadowMapSize, shadowMapSize);
-    fillTranscurentMap(shadowMapCl, depth, scene);
+    fillTranscurentMap(shadowMapCl, depth, scene, clrSm);
     }
 
   Tempest::Texture2d topSm, aoBlured;
   if( settings.oclusion ){
-    ssaoGMap( scene, topSm );
+    ssaoGMap( scene, topSm, clrSm );
     blurSm(topSm, aoBlured, scene);
     }
 
@@ -1830,9 +1912,6 @@ void GraphicsSystem::renderScene( const Scene &scene,
 void GraphicsSystem::renderSubScene( const Scene &scene,
                                      ParticleSystemEngine &e,
                                      Tempest::Texture2d &out  ) {
-#ifdef __ANDROID__
-  //return;
-#endif
   particles = &e;
 
   int w = out.width(),
@@ -1862,7 +1941,8 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
                mainDepth,
                4,
                0,
-               256 );
+               256,
+               true );
 
   Tempest::Texture2d glow;
   drawGlow( glow, mainDepth,

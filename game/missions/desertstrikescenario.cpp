@@ -11,43 +11,112 @@
 #include "util/bytearrayserialize.h"
 #include <sstream>
 #include "gui/lineedit.h"
+#include "gui/unitview.h"
+#include "gui/richtext.h"
+#include "gui/listbox.h"
 
-struct DesertStrikeScenario::BuyButton: public Button {
-  BuyButton( Resource & r,
-             const ProtoObject& obj,
-             PlInfo & pl ):Button(r), p(obj), pl(pl){
+#include "lang/lang.h"
+
+#include "util/math.h"
+
+struct DesertStrikeScenario::NumButton: public Button {
+  NumButton( Resource & r ):Button(r) {
     setMinimumSize( 50, 50 );
     setMaximumSize( 50, 50 );
 
-    Texture t;
-    t.data = res.pixmap("gui/icon/"+obj.name);
-    //setText( obj.name );
-
-    icon = t;
-    font = Font(15);
-
-    clicked.bind(*this, &BuyButton::emitClick);
+    numFrame.data = res.pixmap("gui/hintFrame");
+    num = 0;
     }
 
   void paintEvent(Tempest::PaintEvent &e){
+    using namespace Tempest;
+
     Button::paintEvent(e);
 
-    Tempest::Painter p(e);
+    Painter p(e);
     p.setFont(font);
 
     std::stringstream s;
-    s << pl.units[this->p.name];
-    p.drawText(3,3, s.str());
+    s << num;
+
+    p.setTexture(numFrame);
+    Size tsz = font.textSize(res, s.str());
+    int nw = numFrame.data.rect.w,
+        th  = tsz.h+10,
+        th2 = tsz.h+6;
+
+    if( tsz.w+11-nw/2 > 0 )
+      p.drawRect( Rect( 4, h()-th, tsz.w+11-nw/2, th2 ),
+                  Rect( nw/2, 0, 1, th2) );
+
+    p.drawRect( Rect( 4+std::max( tsz.w+11-nw/2, 0 ), h()-th,
+                      nw/2, th2 ),
+                Rect( nw-nw/2, 0, nw/2, th2) );
+
+    p.setFont( font );
+    p.drawText(4, h()-tsz.h-7, s.str());
+    }
+
+  int  num;
+  Font font;
+  Texture numFrame;
+  };
+
+
+struct DesertStrikeScenario::BuyButton: public NumButton {
+  BuyButton( Resource & r,
+             const ProtoObject& obj,
+             PlInfo & pl ):NumButton(r), p(obj), pl(pl){
+    icon.data        = res.pixmap("gui/icon/"+obj.name);
+    //setText( obj.name );
+
+    font = Font(15);
+
+    clicked.bind(*this, &BuyButton::emitClick);
     }
 
   void emitClick(){
     onClick(p);
     }
 
+  void paintEvent(Tempest::PaintEvent &e){
+    num = pl.units[this->p.name];
+    NumButton::paintEvent(e);
+    }
+
   Tempest::signal<const ProtoObject&> onClick;
+
   const ProtoObject& p;
   PlInfo & pl;
-  Font font;
+  };
+
+struct DesertStrikeScenario::GradeButton: public ListBox {
+  GradeButton( Resource & r,
+               PlInfo & p,
+               const std::string& obj,
+               const std::string& t ):ListBox(r), type(t), pl(p){
+    icon.data        = res.pixmap(obj);
+    //setText( obj.name );
+
+    setMinimumSize( 50, 50 );
+    setMaximumSize( 50, 50 );
+    font = Font(15);
+
+    clicked.bind(*this, &GradeButton::emitClick);
+    }
+
+  void emitClick(){
+    //onClick(p);
+    }
+
+  void paintEvent(Tempest::PaintEvent &e){
+    //num = pl.getParam(type);
+    ListBox::paintEvent(e);
+    }
+
+  //Tempest::signal<const ProtoObject&> onClick;
+  std::string type;
+  PlInfo & pl;
   };
 
 struct DesertStrikeScenario::Minimap: MiniMapView{
@@ -64,38 +133,67 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
       }
     };
 
-  Minimap( Resource &res, Game & game ):MiniMapView(res), game(game){
+  Minimap( Resource &res,
+           Game & game,
+           PlInfo & pl ):MiniMapView(res), game(game), pl(pl){
     using namespace Tempest;
 
-    base = new Widget();
+    base = new UnitView(res);
     base->setLayout( Vertical );
 
     Widget* w = new Widget();
     w->setLayout( Horizontal );
+
     BuyButton *btn = new BuyButton(res);
+    btn->clicked.bind(*this, &Minimap::sell );
+    w->layout().add( btn );
+
+    ledit = new RichText(res);
+    w->layout().add( ledit );
+
+    btn = new BuyButton(res);
     btn->clicked.bind(*this, &Minimap::buy );
     btn->icon.data = res.pixmap("gui/icon/atack");
     w->layout().add( btn );
 
-    ledit = new LineEdit(res);
-    w->layout().add( ledit );
-
-    btn = new BuyButton(res);
-    btn->clicked.bind(*this, &Minimap::sell );
-    w->layout().add( btn );
-
     w->setMaximumSize( w->sizePolicy().maxSize.w, 50 );
+    w->setSizePolicy( Preferred, FixedMax );
 
     base->layout().add(w);
     w = new Widget();
     //w->setSizePolicy( Expanding );
     base->layout().add( w );
 
+    const char* icon[] = {
+      "gui/icon/atack",
+      "gui/item/shield",
+      "gui/icon/atack"
+    };
+
+    for( int i=0; i<2; ++i ){
+      w = new Widget();
+      w->setMaximumSize( w->sizePolicy().maxSize.w, 25 );
+      w->setSizePolicy( Preferred, FixedMax );
+
+      w->setLayout( Horizontal );
+      RichText * cost = new RichText(res);
+      cost->setText(L"<s>123</s>");
+
+      BuyButton * btn = new BuyButton(res);
+      btn->setMaximumSize(25);
+      btn->icon.data = res.pixmap(icon[i]);
+
+      w->layout().add( btn );
+      w->layout().add( cost );
+      base->layout().add( w );
+
+      info[i] = cost;
+      }
+
     setLayout( Vertical );
     layout().add(base);
 
-    ledit->setText(L"128");
-    ledit->setEditable(0);
+    //ledit->setEditable(0);
 
     //setFocusPolicy();
     base->setVisible(0);
@@ -115,10 +213,32 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
 
     base->setVisible(1);
     base->setFocus(1);
+    base->setupUnit(game, unit);
+
+    updateValues();
     }
 
-  void hideInfo( bool f ){
-    base->setVisible( base->hasChildFocus() || f );
+  void updateValues(){
+    { std::wstringstream s;
+      std::string name = "$(" +unitToBuy+")";
+      s << Lang::tr(name) << std::endl << L" - " << game.prototype(unitToBuy).data.gold;
+      ledit->setText( s.str() );
+      }
+
+    { std::wstringstream s;
+      s << game.prototype(unitToBuy).data.atk[0].damage <<" / "
+        << game.prototype(unitToBuy).data.atk[0].range;
+      info[0]->setText( s.str() );
+      }
+
+    { std::wstringstream s;
+      s << game.prototype(unitToBuy).data.armor;
+      info[1]->setText( s.str() );
+      }
+    }
+
+  void hideInfo(){
+    base->setVisible( 0 );//base->hasChildFocus() );
     }
 
   void buy(){
@@ -141,28 +261,94 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
     game.message( data );
     }
 
-  Widget* base;
-  LineEdit * ledit;
+  UnitView* base;
+  RichText * ledit, *info[2];
   std::string unitToBuy;
 
   Game &game;
+  PlInfo & pl;
   };
 
-struct DesertStrikeScenario::BuyUnitPanel: public Tempest::Widget {
+struct DesertStrikeScenario::TranscurentPanel: public Tempest::Widget {
+  TranscurentPanel( Resource & res ):res(res){
+    frame.data = res.pixmap("gui/hintFrame");
+    }
+
+  void paintEvent(Tempest::PaintEvent &e){
+    Tempest::Painter p(e);
+
+    MainGui::drawFrame(p, frame, Tempest::Point(), size() );
+
+    paintNested(e);
+    }
+
+  Resource  & res;
+  Tempest::Bind::UserTexture frame;
+  };
+
+struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
+  UpgradePanel( Resource & res,
+                Game & /*game*/,
+                PlInfo & pl ):TranscurentPanel(res){
+    using namespace Tempest;
+
+    setMinimumSize(75, 200);
+    setMaximumSize(75, 200);
+    layout().setMargin(15);
+
+    setSizePolicy( FixedMin );
+    setLayout( Vertical );
+
+    DesertStrikeScenario::GradeButton * u = 0;
+    u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/castle", "castle" );
+    layout().add( u );
+
+    u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/atack", "atack" );
+    layout().add( u );
+
+    u = new DesertStrikeScenario::GradeButton(res, pl, "gui/item/shield", "armor" );
+    layout().add( u );
+    }
+
+  };
+
+struct DesertStrikeScenario::SpellPanel: public TranscurentPanel {
+  SpellPanel( Resource & res,
+              Game & /*game*/,
+              PlInfo & pl ):TranscurentPanel(res){
+    using namespace Tempest;
+
+    setMinimumSize(75, 200);
+    setMaximumSize(75, 200);
+    layout().setMargin(15);
+
+    setSizePolicy( FixedMin );
+    setLayout( Vertical );
+
+    DesertStrikeScenario::GradeButton * u = 0;
+    u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/fire_strike", "fire_strike" );
+    layout().add( u );
+
+    u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/blink", "blink" );
+    layout().add( u );
+    }
+
+  };
+
+struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
   BuyUnitPanel( Resource & res,
                 Game & game,
                 PlInfo & pl,
-                Minimap * mmap): res(res), game(game), mmap(mmap) {
+                Minimap * mmap): TranscurentPanel(res), game(game), mmap(mmap) {
     using namespace Tempest;
     setMinimumSize(250, 200);
     setMaximumSize(250, 200);
 
-    frame.data = res.pixmap("gui/hintFrame");
     setLayout( Vertical );
     layout().setMargin(15);
 
     const char * pr[3][4] = {
-      {"gelion", "pikeman", "hummer", "fire_mage"},
+      {"gelion", "pikeman", "incvisitor", "water_mage"},
       {"fire_mage", "balista"},
       {"fire_element", "golem"}
       };
@@ -183,14 +369,6 @@ struct DesertStrikeScenario::BuyUnitPanel: public Tempest::Widget {
       }
     }
 
-  void paintEvent(Tempest::PaintEvent &e){
-    Tempest::Painter p(e);
-
-    MainGui::drawFrame(p, frame, Tempest::Point(), size() );
-
-    paintNested(e);
-    }
-
   void onUnit( const ProtoObject & p ){
     setupBuyPanel(p.name);
     }
@@ -199,10 +377,7 @@ struct DesertStrikeScenario::BuyUnitPanel: public Tempest::Widget {
     mmap->setupUnit(s);
     }
 
-  Resource  & res;
-  Tempest::Bind::UserTexture frame;
   Game &game;
-
   Minimap * mmap;
   };
 
@@ -216,6 +391,11 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
   plC[1].units["pikeman"] = 3;
 
   gui.update();
+  g.prototypes().load("campagin/td.xml");
+  }
+
+DesertStrikeScenario::~DesertStrikeScenario() {
+  game.prototypes().unload();
   }
 
 void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
@@ -253,10 +433,14 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
   s.read(ch);
 
   if( ch=='b' ){
-    ++plC[ pl ].units[name];
+    int g = game.prototype(name).data.gold;
+    if( game.player(pl+1).gold() >= g ){
+      ++plC[ pl ].units[name];
+      game.player(pl+1).setGold( game.player(pl+1).gold() - game.prototype(name).data.gold );
 
-    //debug
-    ++plC[ 1 ].units[name];
+      //debug
+      ++plC[ 1 ].units[name];
+      }
     } else
   if( ch=='s' && plC[ pl ].units[name]>0 ){
     --plC[ pl ].units[name];
@@ -264,6 +448,8 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
     //debug
     --plC[ 1 ].units[name];
     }
+
+  mmap->updateValues();
   }
 
 void DesertStrikeScenario::onUnitDied(GameObject &obj) {
@@ -275,22 +461,27 @@ void DesertStrikeScenario::tick() {
   int w = game.curWorld().terrain().width() *Terrain::quadSize;
   int h = game.curWorld().terrain().height()*Terrain::quadSize;
 
+  int p1 = 10,
+      p2 = 80-p1;
   if( tNum%interval==0 ){
     mkUnits( 1,
-             10*Terrain::quadSize, 10*Terrain::quadSize,
-             w-10*Terrain::quadSize, h-10*Terrain::quadSize);
+             p1*w/80, p1*h/80,
+             p2*w/80, p2*h/80 );
     }
 
   if( tNum%interval==0 ){
     mkUnits( 2,
-             w-10*Terrain::quadSize, h-10*Terrain::quadSize,
-             10*Terrain::quadSize, 10*Terrain::quadSize );
+             p2*w/80, p2*h/80,
+             p1*w/80, p1*h/80);
     }
 
   ++tNum;
   if( tNum/interval>=2 ){
     tNum = 0;
     }
+
+  for( size_t i=1; i<game.plCount(); ++i )
+    ;//game.player(i).addGold(1);
   }
 
 void DesertStrikeScenario::mkUnits( int pl,
@@ -299,15 +490,23 @@ void DesertStrikeScenario::mkUnits( int pl,
   --pl;
 
   std::map<std::string, int>::iterator u, e = plC[pl].units.end();
+  int count = 0;
 
+  for( u = plC[pl].units.begin(); u!=e; ++u )
+    count += u->second;
+
+  int qc = Math::sqrt(count)+1;
+
+  int id = 0;
   for( u = plC[pl].units.begin(); u!=e; ++u ){
     int& c = plC[pl].realCount[u->first];
     for( int i=0; i<u->second; ++i ){
-      if( c < u->second ){
+      if( c < 2*u->second ){
         GameObject& obj = game.curWorld().addObject(u->first, pl+1);
         ++c;
+        ++id;
 
-        obj.setPosition( x, y );
+        obj.setPosition( x+id%qc, y+id/qc );
         obj.behavior.message( Behavior::MoveSingle, tgX, tgY );
         obj.behavior.message( Behavior::AtackMove,  tgX, tgY );
         }
@@ -316,21 +515,31 @@ void DesertStrikeScenario::mkUnits( int pl,
   }
 
 void DesertStrikeScenario::onStartGame() {
+  int w = game.curWorld().terrain().width() *Terrain::quadSize;
+  int h = game.curWorld().terrain().height()*Terrain::quadSize;
+
   {
     GameObject& obj = game.curWorld().addObject("tower", 1);
-    int w = game.curWorld().terrain().width() *Terrain::quadSize;
-    int h = game.curWorld().terrain().height()*Terrain::quadSize;
-
     int p = 40-9;
     obj.setPosition( p*w/80, p*h/80 );
     }
 
   {
     GameObject& obj = game.curWorld().addObject("tower", 2);
-    int w = game.curWorld().terrain().width() *Terrain::quadSize;
-    int h = game.curWorld().terrain().height()*Terrain::quadSize;
 
     int p = 40+8;
+    obj.setPosition( p*w/80, p*h/80 );
+    }
+
+  {
+    GameObject& obj = game.curWorld().addObject("castle", 1);
+    int p = 10;
+    obj.setPosition( p*w/80, p*h/80 );
+    }
+
+  {
+    GameObject& obj = game.curWorld().addObject("castle", 2);
+    int p = 80-10;
     obj.setPosition( p*w/80, p*h/80 );
     }
   }
@@ -395,11 +604,13 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
 
   cen->setLayout( Tempest::Horizontal );
   cen->layout().add( new MissionTargets(game, res) );
+  cen->layout().add( new UpgradePanel(res, game, plC[0]) );
 
   Tempest::Widget * box = new Tempest::Widget();
   box->layout().add( editPanel );
   box->layout().add( settingsPanel );
   cen->layout().add( box );
+  cen->layout().add( new SpellPanel(res, game, plC[0]) );
 
   cen->useScissor( false );
   box->useScissor( false );
@@ -429,7 +640,11 @@ Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget
   Panel * img = new Panel( res );
   img->setSizePolicy(p);
 
-  mmap = new Minimap(res,game);
+  mmap = new Minimap(res,game, plC[0]);
+  mmap->base->renderScene.bind( mainWidget->renderScene );
+  mainWidget->updateView.bind( *mmap->base, &UnitView::updateView );
+  mmap->base->onClick.bind(*mmap, &Minimap::hideInfo);
+
   minimap = mmap;
   minimap->setTexture( res.texture("grass/diff") );
   minimap->mouseEvent.bind( mainWidget->minimapEvent );
@@ -448,4 +663,14 @@ Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget
   console->useScissor(false);
 
   return console;
+  }
+
+int DesertStrikeScenario::PlInfo::getParam(const std::string &p) const {
+  if( p=="atack" )
+    return atkGrade;
+
+  if( p=="armor" )
+    return armorGrade;
+
+  return 0;
   }

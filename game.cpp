@@ -27,6 +27,8 @@
 
 #include <cmath>
 
+const int Game::ticksPerSecond = 35;
+
 Game::Game( ShowMode sm )
      :Window(sm),
       graphics( handle(), isFullScreenMode() ),
@@ -54,10 +56,17 @@ Game::Game( ShowMode sm )
 
   initFactorys();
   loadData();
+
+  isRunning     = true;
+  physicStarted = false;
+  physicCompute = async( this, &Game::computePhysic, 0 );
   }
 
 Game::~Game() {
   gui.setupMinimap(0);
+  isRunning = false;
+  physicCompute.join();
+  worlds.clear();
   }
 
 void Game::loadData() {
@@ -127,9 +136,18 @@ void Game::setScenario(Scenario *s) {
   gui.setupMinimap(world);
   }
 
-void Game::tick() {
-  //return;
+void Game::computePhysic(void *) {
+  while( isRunning ){
+    if( world ){
+      world->physics.tick(1);
+      physicStarted = true;
+      }
 
+    Time::sleep(60);
+    }
+  }
+
+void Game::tick() {
   scenario().uiTick();
 
   //size_t time = Time::tickCount();
@@ -200,8 +218,8 @@ void Game::onRender( double dt ){
   world->onRender(dt);
   }
 
-void Game::render() {
-  static const size_t updateDT = 1000/35;
+void Game::update(){
+  static const size_t updateDT = 1000/ticksPerSecond;
   size_t tnow = Time::tickCount();
   if( (tnow-updateTime)/updateDT>0 ){
     int c = (tnow-updateTime)/updateDT;
@@ -212,19 +230,30 @@ void Game::render() {
       tick();
       }
 
-    if( c>3 )
+    if( c>3 ){
       updateTime = tnow;
+      }
+    {
+      if( !physicStarted ){
+        //Time::sleep(60);
+        world->physics.tick(c);
+        //return;
+        }
+      }
     }
 
-  size_t time = Time::tickCount();
-  size_t dt   = time;
+  //size_t dt   = time;
+  }
 
+void Game::render() {
+  size_t time = Time::tickCount();
   if( graphics.render( world->getScene(),
                        world->getParticles(),
                        world->camera,
-                       dt )){
+                       Time::tickCount() )){
 
     }
+  update();
 
   ++fps.n;
   fps.time += int(Time::tickCount() - time);
@@ -417,6 +446,10 @@ Resource &Game::resources() {
   }
 
 const PrototypesLoader &Game::prototypes() const {
+  return proto;
+  }
+
+PrototypesLoader &Game::prototypes() {
   return proto;
   }
 
@@ -671,6 +704,8 @@ void Game::serialize( GameSerializer &s ) {
     return;
 
   if( s.isReader() ){
+    world = 0;
+    gui.setupMinimap(0);
     worlds.clear();
     }
 
@@ -681,7 +716,6 @@ void Game::serialize( GameSerializer &s ) {
   s + currentPlayer;
 
   if( s.isReader() ){
-    world = 0;
     setPlaylersCount( plCount );
     }
 
@@ -709,7 +743,6 @@ void Game::serialize( GameSerializer &s ) {
     }
 
   world = worlds[curWorld].get();
-  gui.setupMinimap(0);
   //gui.setupMinimap(*world);
 
   gui.toogleEditLandMode = Tempest::signal<const Terrain::EditMode&>();

@@ -330,7 +330,7 @@ Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
 
   if( m==Tempest::addBlend ){
     rs.setBlend(1);
-    rs.setZWriting(0);
+    rs.setZWriting(trasparentZW);
     rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
                      Tempest::RenderState::AlphaBlendMode::one );
     }

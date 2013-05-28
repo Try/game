@@ -60,7 +60,7 @@ class Physics {
       friend class Physics;
       };
 
-    void tick();
+    void tick(int c);
     void setTerrain( const Terrain & t );
 
     struct Sphere : public Rigid {

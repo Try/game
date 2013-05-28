@@ -425,6 +425,7 @@ void Resource::load( Box<Texture> &textures,
                                    cl[1]/255.0,
                                    cl[2]/255.0,
                                    cl[3]/255.0 );
+
       tex.data = texHolder.load(f);
       } else {
       tex.data = texHolder.load(f);

@@ -239,17 +239,17 @@ class GraphicsSystem {
                      const Tempest::Texture2d &sm,
                      const Tempest::Texture2d &smCl, const Tempest::Texture2d &ao);
 
-    void fillShadowMap( Tempest::Texture2d &sm,
-                        const Scene &scene );
+    void fillShadowMap(Tempest::Texture2d &sm,
+                        const Scene &scene , bool clr);
 
-    void fillTranscurentMap( Tempest::Texture2d &sm,
+    void fillTranscurentMap(Tempest::Texture2d &sm,
                              Tempest::Texture2d &depthSm,
-                             const Scene &scene );
+                             const Scene &scene , bool clr);
 
-    void fillShadowMap( Tempest::Texture2d &sm,
+    void fillShadowMap(Tempest::Texture2d &sm,
                         Tempest::Texture2d &depth,
                         const Scene &scene,
-                        const Scene::Objects &v );
+                        const Scene::Objects &v , bool clr);
 
     int drawObjects( Tempest::Texture2d* gbuffer,
                       Tempest::Texture2d* mainDepth,
@@ -336,8 +336,8 @@ class GraphicsSystem {
                   const Tempest::Texture2d &depth,
                   const Tempest::Texture2d gi[4] );
 
-    void ssaoGMap( const Scene &s,
-                   Tempest::Texture2d &out );
+    void ssaoGMap(const Scene &s,
+                   Tempest::Texture2d &out , bool clr);
 
     Tempest::Texture2d shadowMap( int w, int h );
     Tempest::Texture2d colorBuf( int w, int h );
@@ -349,7 +349,7 @@ class GraphicsSystem {
                       Tempest::Texture2d *gbuffer,
                       Tempest::Texture2d & depthBuffer, int gbufferSize,
                       Tempest::Texture2d *rsm,
-                      int shadowMapSize);
+                      int shadowMapSize, bool clrSm);
     void buildRSM( Scene &scene,
                    Tempest::Texture2d gbuffer[4],
                    int shadowMapSize);
@@ -402,7 +402,7 @@ class GraphicsSystem {
     void setupScreenSize( int w, int h );
 
     template< class ... Args, class ... FArgs >
-    int draw( Tempest::Render & render,
+    int draw(  Tempest::Render & render,
                const Frustum &frustum,
                bool  deepVTest,
                const Tempest::AbstractCamera & camera,
@@ -413,6 +413,17 @@ class GraphicsSystem {
                                        Tempest::UniformTable &,
                                        FArgs ... args ) const,
                Args... args );
+    std::vector<const AbstractGraphicObject*> toDraw;
+
+    template< class ... Args, class ... FArgs >
+    void completeDraw( Tempest::Render & render,
+                       const Tempest::AbstractCamera & camera,
+                       void (Material::*func)( Tempest::RenderState& /*d*/,
+                                               const Tempest::Matrix4x4 & /*object*/,
+                                               const Tempest::AbstractCamera&,
+                                               Tempest::UniformTable &,
+                                               FArgs ... args ) const,
+                       Args... args  );
   };
 
 

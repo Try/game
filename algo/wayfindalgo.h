@@ -2,6 +2,7 @@
 #define WAYFINDALGO_H
 
 #include "util/array2d.h"
+#include "algo/algo.h"
 #include <memory>
 
 class Terrain;
@@ -22,8 +23,12 @@ class WayFindAlgo {
     std::vector<Point> way;
   private:
     const Terrain & terrain;
-    static array2d<int> clasterMap, wayMap;
+
+    array2d<int> clasterMap, wayMap;
     int clasterNum;
+
+    std::vector<Point> rwPoint;
+    std::vector<Pt>    waveBuf;
 
     void dump();
     void fill( int x, int y, int v );

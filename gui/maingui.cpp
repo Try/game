@@ -317,8 +317,8 @@ void MainGui::drawFrame( Tempest::Painter & p,
                          const Tempest::Point &pos,
                          const Tempest::Size &dpos ) {
   Tempest::Rect tex = Tempest::Rect( 0, 0,
-                                       frame.data.rect.w,
-                                       frame.data.rect.h);
+                                     frame.data.rect.w,
+                                     frame.data.rect.h );
   p.setBlendMode( Tempest::alphaBlend );
   p.setTexture( frame );
   int b = 10;

@@ -2,8 +2,9 @@
 
 #include <iostream>
 
-Thread::Thread():valid(1) {
-  pthread_create( &thread, 0, &Thread::runImpl, this );
+Thread::Thread():thread(0), valid(1) {
+  int th = pthread_create( &thread, 0, &Thread::runImpl, this );
+  valid = th==0;
 
   //std::clog << "Thread::Thread()" << std::endl;
   }
@@ -17,20 +18,20 @@ void Thread::join() {
   if( !valid )
     return;
 
-  pthread_join(thread,0);
   valid = false;
+  pthread_join(thread,0);
   }
 
 void Thread::cancel() {
   if( !valid )
     return;
+  valid = false;
 #ifndef __ANDROID__
   pthread_cancel(thread);
 #else
   pthread_kill(thread, 1);
   //pthread_kill(thread, SIGUSR1);
 #endif
-  valid = false;
   }
 
 void Thread::run() {

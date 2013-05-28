@@ -11,7 +11,7 @@ class AbstractXMLReader {
   public:
     AbstractXMLReader();
 
-    void load( const std::string & s );
+    virtual void load( const std::string & s );
 
   protected:
     virtual void readElement( TiXmlNode *node ) = 0;

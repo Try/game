@@ -11,6 +11,7 @@ class DesertStrikeScenario  : public Scenario {
   public:
     DesertStrikeScenario(Game &game,
                           MainGui & ui  , BehaviorMSGQueue &msg);
+    ~DesertStrikeScenario();
 
   protected:
     void mouseDownEvent(Tempest::MouseEvent &e);
@@ -39,14 +40,28 @@ class DesertStrikeScenario  : public Scenario {
     using Scenario::toogleEditPanel;
     using Scenario::toogleSettingsPanel;
 
+    struct NumButton;
     struct BuyButton;
+    struct GradeButton;
     struct BuyUnitPanel;
+    struct TranscurentPanel;
+    struct UpgradePanel;
+    struct SpellPanel;
 
     struct Minimap;
     Minimap        *mmap;
 
     struct PlInfo{
+      PlInfo():atkGrade(0),
+               armorGrade(0),
+               castleGrade(0),
+               economyGrade(0){}
+
       std::map<std::string, int> units, realCount;
+      int atkGrade,    armorGrade;
+      int castleGrade, economyGrade;
+
+      int getParam( const std::string& p ) const;
       };
 
     PlInfo plC[2];

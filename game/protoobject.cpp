@@ -11,6 +11,7 @@ ProtoObject::ProtoObject()
   data.speed = 60;
   data.visionRange = 16;
   data.maxHp       = 100;
+  data.armor = 0;
 
   data.gold      = 0;
   data.lim       = 0;

@@ -4,15 +4,29 @@
 #include "landscape/terrain.h"
 
 #include "algo.h"
-#include "wayfindalgo.h"
 #include "behavior/movebehavior.h"
 
-WayFindRequest::WayFindRequest() {
+WayFindRequest::WayFindRequest( const Terrain &t ):terr(t), algo(t) {
   visited.reserve(400);
   group  .reserve(400);
   }
 
 void WayFindRequest::findWay( int x, int y, GameObject *obj ) {
+  if( abs(obj->x()-x)/Terrain::quadSize + abs(obj->y()-y)/Terrain::quadSize < 9 ){
+    int qs = Terrain::quadSize/2;
+
+    algo.findWay( *obj,
+                  (obj->x()+qs)/Terrain::quadSize,
+                  (obj->y()+qs)/Terrain::quadSize,
+                  x/Terrain::quadSize,
+                  y/Terrain::quadSize );
+    MoveBehavior *b = obj->behavior.find<MoveBehavior>();
+    if( b )
+      b->setWay( algo.way );
+
+    return;
+    }
+
   Tg tg;
   tg.x = x/Terrain::quadSize;
   tg.y = y/Terrain::quadSize;
@@ -20,9 +34,9 @@ void WayFindRequest::findWay( int x, int y, GameObject *obj ) {
   rq[tg].push_back(obj);
   }
 
-void WayFindRequest::tick( const Terrain &t ) {
+void WayFindRequest::tick() {
   for( auto i=rq.begin(); i!=rq.end(); ++i ){
-    findWay( i->first.x, i->first.y, i->second, t );
+    findWay( i->first.x, i->first.y, i->second, terr );
     }
 
   rq.clear();
@@ -77,7 +91,7 @@ void WayFindRequest::makeGroup( GameObject * obj,
 
 void WayFindRequest::findWayGr( int x, int y,
                                 std::vector<GameObject *> &objs,
-                                const Terrain &t) {
+                                const Terrain & ) {
   int qx = x*Terrain::quadSize,
       qy = y*Terrain::quadSize;
 
@@ -93,7 +107,6 @@ void WayFindRequest::findWayGr( int x, int y,
       }
     }
 
-  WayFindAlgo algo(t);
   algo.findWay( *obj,
                 obj->x()/Terrain::quadSize,
                 obj->y()/Terrain::quadSize,

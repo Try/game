@@ -34,6 +34,10 @@ World::World( Game & gm,
   tx = ty = 0;
   mouseObject = 0;
 
+  green.data = resource.pixmap("gui/hp");
+  bar.data   = resource.pixmap("gui/bar");
+  gray.data  = resource.pixmap("gui/gray");
+
   isRunning = true;
 
   memset(&lcamBds, 0, sizeof(lcamBds) );
@@ -46,6 +50,7 @@ World::World( Game & gm,
                            scene,
                            *this,
                            prototypes) );
+  wayFindRq.reset( new WayFindRequest( *terr ) );
 
   particles.setupMaterial.bind( setupMaterial );
 
@@ -75,7 +80,7 @@ World::World( Game & gm,
   camera.setSpinX(0);
   camera.setSpinY(-150);
 
-  physicCompute = async( this, &World::computePhysic, 0 );
+  //physicCompute = async( this, &World::computePhysic, 0 );
   }
 
 World::~World() {
@@ -114,7 +119,7 @@ void World::setCameraBounds( const CameraViewBounds &c ) {
   }
 
 void World::wayFind(int x, int y, GameObject *obj) {
-  wayFindRq.findWay(x,y,obj);
+  wayFindRq->findWay(x,y,obj);
   }
 
 void World::updateIntent(GameObjectView *v) {
@@ -158,9 +163,10 @@ void World::createTestMap() {
 void World::computePhysic( void * ) {
   //#ifndef __ANDROID__
   while( isRunning ){
-    physics.tick();
+    physics.tick(1);
     Time::sleep(50);
     }
+  isRunning = false;
   //#endif
   }
 
@@ -190,19 +196,19 @@ void World::createResp(int pl, int x, int y, int minX, int minY) {
   }
 
 double World::coordCast(int icoord) {
-  return icoord/4000.f;
+  return icoord/4048.f;
   }
 
 double World::coordCastP(double icoord) {
-  return icoord/4000.f;
+  return icoord/4048.f;
   }
 
 int World::coordCastD(double dcoord) {
-  return int(dcoord*4000.0);
+  return int(dcoord*4048.0);
   }
 
 int World::coordCastD(int dcoord) {
-  return dcoord*4000;
+  return dcoord*4048;
   }
 
 void World::moveCamera(double x, double y) {
@@ -550,13 +556,10 @@ bool World::isUnitUnderMouse( Tempest::Matrix4x4 & gmMat,
 
 void World::paintHUD( Tempest::Painter & p,
                       int w, int h ) {
+  //return;
+
   Tempest::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
-
-  Tempest::Bind::UserTexture green, bar, gray;
-  green.data = resource.pixmap("gui/hp");
-  bar.data   = resource.pixmap("gui/bar");
-  gray.data  = resource.pixmap("gui/gray");
 
   //double data1[4], data2[4];
 
@@ -582,7 +585,7 @@ void World::paintHUD( Tempest::Painter & p,
           obj.isVisible(frustum) &&
           !obj.behavior.find<BonusBehavior>() ) {
         Tempest::Rect rect = projectUnit( game.player(plN).unit(i),
-                                           gmMat, w, h );
+                                          gmMat, w, h );
         int y0 = rect.y;
         int x0 = rect.x;
         int x1 = rect.x+rect.w;
@@ -821,7 +824,7 @@ void World::tick() {
     if( obj.getClass().data.isBackground )
       obj.tick( terrain() );
     }
-  wayFindRq.tick( terrain() );
+  wayFindRq->tick();
 
   physics.beginUpdate();
 

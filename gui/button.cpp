@@ -18,9 +18,14 @@ Button::Button(Resource &res)
 
   setFocusPolicy( Tempest::ClickFocus );
 
+  int h = 27;
+#ifdef __ANDROID__
+  h = 35;
+#endif
+
   Tempest::SizePolicy p;
-  p.maxSize = Tempest::Size(128, 27);
-  p.minSize = Tempest::Size(27, 27);
+  p.maxSize = Tempest::Size(128, h);
+  p.minSize = Tempest::Size(27, h);
   p.typeV   = Tempest::FixedMax;
   p.typeH   = Tempest::FixedMax;
 

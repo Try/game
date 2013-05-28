@@ -110,7 +110,6 @@ class World {
 
     void toogleEditLandMode( const Terrain::EditMode & m );
     Physics physics;
-    bool    isRunning;
 
     void serialize( GameSerializer &s);
 
@@ -133,6 +132,8 @@ class World {
     void updateIntent( GameObjectView* v );
     void clrUpdateIntents();
   private:
+    bool    isRunning;
+
     Scene scene;
     std::unique_ptr<Terrain> terr;
 
@@ -169,13 +170,15 @@ class World {
 
     ParticleSystemEngine particles;
 
-    WayFindRequest wayFindRq;
+    std::unique_ptr<WayFindRequest> wayFindRq;
 
     void initTerrain();
     void createTestMap();
 
     void computePhysic(void *);
     Future physicCompute;
+
+    Tempest::Bind::UserTexture green, bar, gray;
 
     void createResp( int pl, int x, int y, int minX, int minY );
 

@@ -125,9 +125,56 @@ bool Ability::fireStrike( Game &g,
       b.z   = u.viewHeight()/2  + World::coordCast(u.z());
       b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
 
-      b.absDmg = 150;
+      b.speed  = 250;
+      b.atack.damage = 150;
+      b.tick();
+      return 1;
+      }
+    }
+
+  return 1;
+  }
+
+bool Ability::heal( Game &g,
+                    World &w,
+                    GameObject &obj,
+                    const BehaviorMSGQueue::MSG &m) {
+  if( m.size == size_t(-1) )
+    return 0;
+
+  GameObject & tg = w.object( m.size );
+
+  const Spell & s = g.prototypes().spell(m.str);
+
+  std::vector<GameObject*> & objs = obj.player().selected();
+
+  for( size_t i=0; i<objs.size(); ++i ){
+    GameObject & u = *objs[i];
+
+    int cd = u.coolDown( s.id );
+    if( cd==0 ){
+      u.setCoolDown( s.id, s.coolDown );
+
+      w.emitHudAnim( "hud/blink",
+                     World::coordCast( u.x() ),
+                     World::coordCast( u.y() ),
+                     0.01 );
+
+      auto bul = tg.reciveBulldet( "bullets/fire_large" );
+      Bullet& b = *bul;
+
+      b.x = u.x();
+      b.y = u.y();
+      b.view.teamColor = u.teamColor();
+
+      b.z   = u.viewHeight()/2  + World::coordCast(u.z());
+      b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
+
+      b.atack.damage = 150;
       b.speed  = 250;
       b.tick();
+
+      u.setHP( std::min(u.getClass().data.maxHp, u.hp()+10) );
       return 1;
       }
     }

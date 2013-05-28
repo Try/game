@@ -11,20 +11,22 @@ PrototypesLoader::PrototypesLoader() {
   }
 
 const ProtoObject &PrototypesLoader::get(const std::string &obj) const {
-  auto i = data.find(obj);
+  auto i = defs.back().data.find(obj);
 
-  if( i!=data.end() ){
+  if( i!=defs.back().data.end() ){
     return *i->second.get();
     } else {
     assert(0);
     }
+
+  return *defs.back().data.begin()->second.get();
   }
 
 std::vector< PrototypesLoader::PProtoObject>
     PrototypesLoader::allClasses() const {
   std::vector< PrototypesLoader::PProtoObject > obj;
 
-  for( auto i = data.begin(); i!=data.end(); ++i )
+  for( auto i = defs.back().data.begin(); i!=defs.back().data.end(); ++i )
     obj.push_back( i->second );
 
   std::sort( obj.begin(), obj.end(), cmp );
@@ -33,23 +35,39 @@ std::vector< PrototypesLoader::PProtoObject>
   }
 
 const Spell &PrototypesLoader::spell(const std::string &obj) const {
-  auto i = dataSpells.find(obj);
+  auto i = defs.back().dataSpells.find(obj);
 
-  if( i!=dataSpells.end() ){
+  if( i!=defs.back().dataSpells.end() ){
     return *i->second.get();
     } else {
     assert(0);
     }
+
+  return *defs.back().dataSpells.begin()->second.get();
   }
 
 const ParticleSystemDeclaration &PrototypesLoader::particle(const std::string &obj) const {
-  auto i = dataParticles.find(obj);
+  auto i = defs.back().dataParticles.find(obj);
 
-  if( i!=dataParticles.end() ){
+  if( i!=defs.back().dataParticles.end() ){
     return *i->second.get();
     } else {
     assert(0);
     }
+
+  return *defs.back().dataParticles.begin()->second.get();
+  }
+
+void PrototypesLoader::load(const std::string &s) {
+  if( defs.size() )
+    defs.push_back( defs.back() ); else
+    defs.push_back( Defs() );
+
+  AbstractXMLReader::load(s);
+  }
+
+void PrototypesLoader::unload() {
+  defs.pop_back();
   }
 
 void PrototypesLoader::readElement(TiXmlNode *node) {
@@ -78,7 +96,7 @@ void PrototypesLoader::readElement(TiXmlNode *node) {
       if( find(node->ToElement(), "name", name) ){
         PProtoObject p = PProtoObject( new ProtoObject() );
         p->name = name;
-        data[ name ] = p;
+        defs.back().data[ name ] = p;
 
         for ( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
           readClassMember( *p.get(), n );
@@ -95,9 +113,9 @@ void PrototypesLoader::readElement(TiXmlNode *node) {
       if( find(node->ToElement(), "name", name) ){
         PSpell p = PSpell( new Spell() );
         p->name = name;
-        dataSpells[ name ] = p;
-        p->id = spells.size();
-        spells.push_back( p );
+        defs.back().dataSpells[ name ] = p;
+        p->id = defs.back().spells.size();
+        defs.back().spells.push_back( p );
 
         for ( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
           readSpellMember( *p.get(), n );
@@ -111,7 +129,7 @@ void PrototypesLoader::readElement(TiXmlNode *node) {
       if( find(node->ToElement(), "name", name) ){
         PParticle p = PParticle( new ParticleSystemDeclaration() );
         //p->name = name;
-        dataParticles[ name ] = p;
+        defs.back().dataParticles[ name ] = p;
 
         for ( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
           readParticleMember( *p.get(), n );
@@ -293,6 +311,7 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       readIf( e, "lim",       obj.data.lim       );
       readIf( e, "limInc",    obj.data.limInc    );
       readIf( e, "buildTime", obj.data.buildTime );
+      readIf( e, "armor",     obj.data.armor     );
 
       readIf( e, "isBackground", obj.data.isBackground );
       readIf( e, "invincible",   obj.data.invincible   );
@@ -338,6 +357,8 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       a.damage = 0;
       a.delay  = 0;
       a.range  = 0;
+      a.splashSize   = 0;
+      a.splashDamage = 0;
 
       readAtack(a, e);
       obj.data.atk.push_back( a );
@@ -434,12 +455,19 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &b,
 
   if( find(e, "damage", str ) ){
     b.damage = Lexical::cast<int>(str);
+    b.splashDamage = b.splashDamage;
     }
   if( find(e, "range",  str ) ){
     b.range  = Lexical::cast<int>(str);
     }
   if( find(e, "delay", str ) ){
     b.delay  = Lexical::cast<int>(str);
+    }
+  if( find(e, "splash", str ) ){
+    b.splashSize  = Lexical::cast<int>(str);
+    }
+  if( find(e, "slpashDamage", str ) ){
+    b.splashDamage  = Lexical::cast<int>(str);
     }
 
   if( find(e, "bullet", str ) ){

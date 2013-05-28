@@ -20,6 +20,8 @@ class WarriorBehavior : public AbstractBehavior  {
     bool message(Message msg, size_t id, Modifers md);
 
     void aClick();
+    static void mkDamage(GameObject& tg, int plOwner, int x, int y,
+                          const ProtoObject::GameSpecific::Atack& v );
   private:
     GameObject & obj;
     WeakWorldPtr taget, mvTaget;
@@ -32,6 +34,10 @@ class WarriorBehavior : public AbstractBehavior  {
     void move(int, int);
 
     void damageTo( GameObject & obj );
+    static void damageSplash(GameObject& tg ,
+                              int team, int x, int y,
+                              GameObject &nobj,
+                              const ProtoObject::GameSpecific::Atack& v );
 
     bool isAtk; int lastX, lastY;
     int  dAtkTime;
@@ -60,6 +66,8 @@ class WarriorBehavior : public AbstractBehavior  {
 
     void lockGround();
     void unlockGround();
+
+    bool canShoot( GameObject & obj );
   };
 
 #endif // WARRIORBEHAVIOR_H

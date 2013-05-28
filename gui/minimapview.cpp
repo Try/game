@@ -38,6 +38,9 @@ void MiniMapView::render() {
   if( world==0 )
     return;
 
+  if( world->game.isPaused() )
+    return;
+
   World &wx = *world;
 
   int mk = std::max( 1, wx.terrain().width()*wx.terrain().height()/(128*128) );

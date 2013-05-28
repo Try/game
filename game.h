@@ -97,6 +97,7 @@ class Game : public Tempest::Window {
     const ProtoObject& prototype( const std::string& s ) const;
     Resource &resources();
     const PrototypesLoader & prototypes() const;
+    PrototypesLoader & prototypes();
 
     void setupMaterials( AbstractGraphicObject &obj,
                          const ProtoObject::View &src,
@@ -130,6 +131,8 @@ class Game : public Tempest::Window {
 
     World& curWorld();
     bool isReplayMode() const;
+
+    static const int ticksPerSecond;
   private:
     bool  paused;
     //bool isFullScreen;
@@ -156,25 +159,6 @@ class Game : public Tempest::Window {
     std::vector< std::shared_ptr<World> >  worlds;
     World * world;
 
-    //double spinX, spinY;
-    //bool mouseTracking;
-    //int  selectionRectTracking;
-
-    //Tempest::Point lastMPos;
-    //Tempest::Point curMPos;
-    //Tempest::KeyEvent::KeyType   lastKEvent;
-
-    /*
-    struct F3{
-      float data[3];
-      };
-    F3 unProject( int x, int y, float destZ );
-    F3 unProject( int x, int y );
-    F3 project( float x, float y, float z );
-    */
-
-    //void moveCamera();
-
     struct Fps{
       int n, time;
       } fps;
@@ -199,6 +183,11 @@ class Game : public Tempest::Window {
 
     void setScenario( Scenario * s );
 
+    void computePhysic(void *);
+    Future physicCompute;
+    bool   isRunning, physicStarted;
+
+    void update();
   friend class World;
   };
 

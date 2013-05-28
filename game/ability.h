@@ -21,6 +21,9 @@ class Ability {
     static bool fireStrike( Game &game, World &w,
                             GameObject &obj,
                             const BehaviorMSGQueue::MSG &m );
+    static bool heal( Game &game, World &w,
+                      GameObject &obj,
+                      const BehaviorMSGQueue::MSG &m );
   };
 
 #endif // ABILITY_H

@@ -12,6 +12,27 @@
 #include <memory>
 #include <unordered_set>
 
+#ifdef __ANDROID__
+#include <android/log.h>
+template< class ... Args >
+static void LOGI( const Args& ... args ){
+  __android_log_print( ANDROID_LOG_INFO, "physics", args... );
+  }
+
+template< class ... Args >
+static void LOGE( const Args& ... args ){
+  __android_log_print( ANDROID_LOG_ERROR, "game", args... );
+  }
+#else
+template< class ... Args >
+static void LOGI( const Args& ... args ){
+  }
+
+template< class ... Args >
+static void LOGE( const Args& ... args ){
+  }
+#endif
+
 struct Physics::Data{
 #ifndef NO_PHYSIC
   std::unique_ptr<btBroadphaseInterface>               broadphase;
@@ -198,12 +219,20 @@ Physics::~Physics() {
   delete data;
   }
 
-void Physics::tick() {
+void Physics::tick( int c ) {
 #ifndef NO_PHYSIC
+  //LOGI("physics lock");
   Lock lock(data->physicMutex);
   (void)lock;
 
-  data->dynamicsWorld->stepSimulation( 1/60.f, 5 );
+  //LOGI("physics step {");
+#ifdef __ANDROID__
+  data->dynamicsWorld->stepSimulation( c/60.f, 1 );
+#else
+  data->dynamicsWorld->stepSimulation( c/60.f, 5 );
+#endif
+  //LOGI("physics step}");
+  //LOGI("physics unlock");
 #endif
   }
 

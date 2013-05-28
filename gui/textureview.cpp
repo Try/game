@@ -24,4 +24,6 @@ void TextureView::paintEvent(Tempest::PaintEvent &e) {
   p.setTexture( u );
   p.drawRect( 0, 0, w(), h(),
               0, 0, texture.width(), texture.height() );
+
+  Widget::paintEvent(e);
   }
