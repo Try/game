@@ -403,8 +403,27 @@ void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
   isMouseTracking = true;
   }
 
-void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & ) {
+void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
   isMouseTracking = false;
+
+  World  &world  = game.curWorld();
+  Player &player = game.player();
+
+  F3 v = unProject( e.x, e.y );
+
+  updateMousePos(e);
+
+  if( e.button==Tempest::MouseEvent::ButtonLeft && player.editObj ){
+    msg.message( player.number(), Behavior::EditNext );
+    }
+
+  if( e.button==Tempest::MouseEvent::ButtonRight && player.editObj ){
+    msg.message( player.number(), Behavior::EditDel );
+    }
+
+  world.clickEvent( World::coordCastD(v.data[0]),
+                    World::coordCastD(v.data[1]),
+                    e );
   }
 
 void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
@@ -419,6 +438,8 @@ void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
                                 mpos3d.data[1]-m.data[1]);
     mpos3d = unProject( e.x, e.y );
     }
+
+  updateMousePos(e);
   }
 
 void DesertStrikeScenario::customEvent(const std::vector<char> &m) {

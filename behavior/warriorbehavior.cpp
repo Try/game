@@ -332,11 +332,11 @@ void WarriorBehavior::damageSplash( GameObject & tg ,
     tg.setHP( tg.hp()-absDmg );
 
     float mv[2] = { float(x - tg.x()), float(y - tg.y()) };
-    float l = sqrt(mv[0]*mv[0] + mv[1]*mv[1])/15;
+    float l = -sqrt(mv[0]*mv[0] + mv[1]*mv[1])/11;
     mv[0]/=l;
     mv[1]/=l;
 
-    tg.incDieVec( mv[0], mv[1], 10 );
+    tg.incDieVec( mv[0], mv[1], 11 );
     }
   }
 

@@ -34,7 +34,7 @@ class World {
   public:
     typedef std::shared_ptr<GameObject> PGameObject;
 
-    World(Game & game,
+    World( Game & game,
            int w, int h );
     ~World();
 
@@ -131,6 +131,11 @@ class World {
 
     void updateIntent( GameObjectView* v );
     void clrUpdateIntents();
+
+    void onObjectMoved( GameObject* obj,
+                        int x, int y,
+                        int nx, int ny );
+    void onObjectDelete( GameObject* obj );
   private:
     bool    isRunning;
 
@@ -148,7 +153,7 @@ class World {
     std::vector< PGameObject > nonBackground;
     std::unordered_set<GameObjectView*, std::hash<void*> > updatePosIntents;
 
-    SpatialIndex spatialId;
+    std::shared_ptr<SpatialIndex> spatialId;
     // std::vector< PGameObject > selected;
     std::vector< WeakWorldPtr* > wptrs;
     GameObject* mouseObject;

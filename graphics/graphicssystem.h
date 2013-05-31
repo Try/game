@@ -103,6 +103,7 @@ class GraphicsSystem {
     static VisibleRet isVisible( float x, float y, float z, float r, const Frustum& f );
 
     static int dipOptimizeRef();
+    Tempest::signal<> drawCallFinished, drawOpWindow;
   private:
     GraphicsSettingsWidget::Settings settings;
     std::unique_ptr<GUIPass> gui;
@@ -217,12 +218,13 @@ class GraphicsSystem {
 
     Tempest::Uniform<float[2]> scrOffset, cpyOffset;
 
-    void fillGBuf(Tempest::Texture2d *gbuffer,
+    void fillGBuf( Tempest::Texture2d *gbuffer,
                    Tempest::Texture2d &mainDepth,
                    const Tempest::Texture2d &sm,
                    const Tempest::Texture2d &smCl, const Tempest::Texture2d &ao,
                    const Scene &scene,
-                   const Tempest::AbstractCamera &camera);
+                   const Tempest::AbstractCamera &camera,
+                   bool gcall = false );
 
     void renderVolumeLight( const Scene &scene,
                             Tempest::Texture2d &gbuffer,
@@ -344,12 +346,13 @@ class GraphicsSystem {
     Tempest::Texture2d depth( int w, int h );
     Tempest::Texture2d depth( const Tempest::Size& sz );
 
-    void renderScene(const Scene &scene,
+    void renderScene( const Scene &scene,
                       const Tempest::AbstractCamera &camera,
                       Tempest::Texture2d *gbuffer,
                       Tempest::Texture2d & depthBuffer, int gbufferSize,
                       Tempest::Texture2d *rsm,
-                      int shadowMapSize, bool clrSm);
+                      int shadowMapSize,
+                      bool clrSm );
     void buildRSM( Scene &scene,
                    Tempest::Texture2d gbuffer[4],
                    int shadowMapSize);

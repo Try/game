@@ -13,7 +13,7 @@ LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
                     $(Bullet_PATH)/
 LOCAL_C_INCLUDES += C:/Users/Try/Home/Programming/android/game_ndk/game/jni/freetype/include
 
-LOCAL_CFLAGS    := -std=c++0x
+LOCAL_CFLAGS    := -std=c++0x -march=armv7-a
 LOCAL_CPPFLAGS  := -D__STDC_INT64__ -Dsigset_t="unsigned int"
 LOCAL_CPPFLAGS  += -DTEMPEST_OPENGL -DNO_SOUND
 #LOCAL_CPPFLAGS  += -DNO_PHYSIC

@@ -26,7 +26,7 @@ World::World( Game & gm,
   : game(gm),
     physics(w,h),
     scene( World::coordCast(std::max(w,h)*Terrain::quadSizef) ),
-    spatialId(w,h),
+    spatialId( new SpatialIndex(w,h) ),
     graphics( gm.graphics ),
     resource( gm.resources() ),
     prototypes( gm.prototypes() ),
@@ -84,6 +84,14 @@ World::World( Game & gm,
   }
 
 World::~World() {
+  updatePosIntents.clear();
+  gameObjects.clear();
+  nonBackground.clear();
+  eviObjects.clear();
+  warehouses.clear();
+  resouces.clear();
+  wptrs.clear();
+
   isRunning = false;
   physicCompute.join();
   }
@@ -270,6 +278,7 @@ GameObject &World::addObject( const ProtoObject &p,
       } else {
       obj->setPlayer( pl );
       nonBackground.push_back( pobj );
+      spatialId->add( pobj.get() );
       }
     }
 
@@ -306,6 +315,16 @@ void World::deleteObject(GameObject *obj) {
       return;
       }
     }
+  }
+
+void World::onObjectMoved( GameObject* obj,
+                           int x, int y,
+                           int nx, int ny ){
+  spatialId->move(obj, x, y, nx, ny);
+  }
+
+void World::onObjectDelete(GameObject *obj) {
+  spatialId->del(obj);
   }
 
 const std::vector<World::PGameObject> &World::activeObjects() {
@@ -806,8 +825,8 @@ void World::onRender( double dt ) {
 void World::tick() {
   //return;
 
-  spatialId.fill( nonBackground );
-  spatialId.solveColisions();
+  spatialId->fill( nonBackground );
+  spatialId->solveColisions( nonBackground );
 
   for( size_t i=0; i<nonBackground.size(); ++i ){
     GameObject & obj = *nonBackground[i];
@@ -924,8 +943,6 @@ ParticleSystemEngine &World::getParticles() {
 
 void World::serialize(GameSerializer &s) {
   terr->serialize(s);
-  spatialId = SpatialIndex( terr->width(),
-                            terr->height() );
 
   if( s.isReader() ){
     terr->buildGeometry();
@@ -938,10 +955,14 @@ void World::serialize(GameSerializer &s) {
   if( s.isReader() ){
     updatePosIntents.clear();
     gameObjects.clear();
+    nonBackground.clear();
     eviObjects.clear();
     warehouses.clear();
     resouces.clear();
     wptrs.clear();
+
+    spatialId.reset( new SpatialIndex( terr->width(),
+                                       terr->height() ) );
     }
 
   for( size_t i=0; i<sz; ++i ){
@@ -1007,5 +1028,5 @@ void World::serialize(GameSerializer &s) {
   }
 
 const SpatialIndex &World::spatial() const {
-  return spatialId;
+  return *spatialId;
   }

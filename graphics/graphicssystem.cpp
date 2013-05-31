@@ -47,6 +47,7 @@ GraphicsSystem::GraphicsSystem( void *hwnd,
   lvboHolder.setMaxReservedCount( 1 );
   liboHolder.setReserveSize( 8092 );
   liboHolder.setMaxReservedCount( 1 );
+  localTex.setMaxCollectIterations(-1);
 #else
   lvboHolder.setReserveSize( 64*8092 );
   lvboHolder.setMaxReservedCount( -1 );
@@ -346,6 +347,7 @@ bool GraphicsSystem::render( Scene &scene,
             scene, 512,
             gbuffer[0].width(),
             gbuffer[0].height() );
+  drawOpWindow();
 
   if( settings.glow ){
     if( fogView.width()>0 )
@@ -466,6 +468,7 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
                 camera,
                 &Material::shadow,
                 ref(matrix));
+  drawOpWindow();
   }
 
 void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
@@ -585,7 +588,8 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                                const Tempest::Texture2d& smCl,
                                const Tempest::Texture2d& ao,
                                const Scene & scene,
-                               const Tempest::AbstractCamera & camera ) {
+                               const Tempest::AbstractCamera & camera,
+                               bool gcall ) {
   //return;
   int gbuffSize = 4;
   if( GraphicsSettingsWidget::Settings::api==GraphicsSettingsWidget::Settings::openGL )
@@ -700,6 +704,9 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                scene.transparentObjects(),
                &Material::transparent,
                false );
+
+  if( gcall )
+    ;//drawOpWindow();
   }
 
 void GraphicsSystem::renderVolumeLight( const Scene &scene,
@@ -993,6 +1000,7 @@ void GraphicsSystem::completeDraw( Tempest::Render  & render,
     }
 
   toDraw.clear();
+  drawCallFinished();
   }
 
 void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
@@ -1054,6 +1062,8 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
                                int w, int h ) {
   int ps = 1;
 
+  Tempest::Texture2d buffer = localTex.create( w,h, Tempest::Texture2d::Format::RGB5 );//colorBuf( w,h );
+
   int sz = std::max(w,h);
   while( ps*2< sz ){
     ps*=2;
@@ -1063,7 +1073,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
     size = ps;
 
   if( !settings.glow ){
-    out = colorBuf( 16, 16 );
+    out = localTex.create( 1,1, Tempest::Texture2d::Format::RGB5 );//colorBuf( 16, 16 );
     device.beginPaint(out);
     device.clear( Tempest::Color(0) );
     device.endPaint();
@@ -1097,8 +1107,6 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
     return;
     }
 
-  Tempest::Texture2d buffer = colorBuf( w,h );
-
   const Tempest::AbstractCamera & camera = scene.camera();
 
   int c =
@@ -1120,7 +1128,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
     gauss( buffer, tmp,  size, size, 1.0, 0.0 );
     gauss( out,  buffer, size, size, 0.0, 1.0 );
     } else {
-    out = colorBuf( 16, 16 );
+    out = localTex.create( 1,1, Tempest::Texture2d::Format::RGB5 );//colorBuf( 16, 16 );
     device.beginPaint(out);
     device.clear( Tempest::Color(0) );
     device.endPaint();
@@ -1149,7 +1157,7 @@ void GraphicsSystem::copy( Tempest::Texture2d &out,
 void GraphicsSystem::copy( Tempest::Texture2d &out,
                            const Tempest::Texture2d& in,
                            int w, int h ) {
-  out = colorBuf( w,h );
+  out = localTex.create( w,h, in.format() );//colorBuf( w,h );
   out.setSampler( reflect );
 
   Tempest::Render render( device,
@@ -1581,6 +1589,9 @@ Tempest::Texture2d GraphicsSystem::shadowMap(int w, int h) {
   }
 
 Tempest::Texture2d GraphicsSystem::colorBuf(int w, int h) {
+#ifdef __ANDROID__
+  return localTex.create( w,h, Tempest::Texture2d::Format::RGB5 );
+#endif
   if( useHDR )
     return localTex.create( w,h, Tempest::Texture2d::Format::RGBA16 ); else
     return localTex.create( w,h, Tempest::Texture2d::Format::RGBA8 );
@@ -1597,13 +1608,14 @@ void GraphicsSystem::blurSm( Tempest::Texture2d &sm,
   Tempest::Texture2d tmp = localTex.create( sm.width(), sm.height(), frm );
   out = localTex.create( sm.width(), sm.height(), frm );
 
-  float s = 6*smMatSize(scene);
+  float sb = smMatSize(scene);
+  float s = 3*sb;
 
   gauss_ao( tmp,  sm, sm.width(), sm.height(), s, 0 );
   gauss_ao( out, tmp, sm.width(), sm.height(), 0, s );
 
-  gauss_gb( tmp, out, sm.width(), sm.height(), s*3, 0 );
-  gauss_gb( out, tmp, sm.width(), sm.height(), 0, s*3 );
+  gauss_gb( tmp, out, sm.width(), sm.height(), s*2, 0 );
+  gauss_gb( out, tmp, sm.width(), sm.height(), 0, s*2 );
 
   for( int i=0; i<1; ++i ){
     gauss_b( tmp, out, sm.width(), sm.height(),  s*3, 0 );
@@ -1859,12 +1871,14 @@ void GraphicsSystem::renderScene( const Scene &scene,
     fillGBuf( 0, mainDepth,
               shadowMap, shadowMapCl,
               aoBlured,
-              scene, camera );
+              scene, camera,
+              true );
     } else {
     fillGBuf( gbuffer, mainDepth,
               shadowMap, shadowMapCl,
               aoBlured,
-              scene, camera );
+              scene, camera,
+              true );
     }
 
   if( GraphicsSettingsWidget::Settings::api==GraphicsSettingsWidget::Settings::openGL )

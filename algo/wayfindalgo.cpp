@@ -330,7 +330,7 @@ bool WayFindAlgo::optimizeWay(Point a, Point b) {
   Point p = a;
 
   while( p.x!=b.x || p.y!=b.y ){
-    if( !terrain.isEnableQuad(p.x, p.y) )
+    if( !terrain.isEnableQuad(p.x, p.y, 2) )
       return false;
 
     if( abs(p.x-b.x) > abs(p.y-b.y) ){

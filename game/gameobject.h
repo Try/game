@@ -157,6 +157,7 @@ class GameObject {
       int x, y, z;
       int pl;
       int hp;
+      bool isEnv;
 
       bool isSelected, isMouseOwer;
       float dieVec[3];

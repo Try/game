@@ -10,10 +10,12 @@
 #include "world.h"
 #include "util/math.h"
 
+const int SpatialIndex::TerrQSize = Terrain::quadSize;
 const int SpatialIndex::detail = 16;
 const int SpatialIndex::qsize  = 16*Terrain::quadSize;
 
-SpatialIndex::SpatialIndex(int iw, int ih):w(iw/detail), h(ih/detail) {
+SpatialIndex::SpatialIndex(int iw, int ih):
+  tree(iw,ih), w(iw/detail), h(ih/detail) {
   psum.resize( w*h );
   obj.reserve( w*h );
 
@@ -23,6 +25,8 @@ SpatialIndex::SpatialIndex(int iw, int ih):w(iw/detail), h(ih/detail) {
   }
 
 void SpatialIndex::fill(std::vector<PGameObject> &xobj ) {
+  return;
+
   rndVec  = 0;
   sizeMax = 0;
 
@@ -74,13 +78,28 @@ void SpatialIndex::clear() {
 
   }
 
-void SpatialIndex::solveColisions() {
+void SpatialIndex::solveColisions( std::vector<PGameObject> &obj ) {
   for( size_t i=0; i<obj.size(); ++i ){
     if( obj[i] && obj[i]->isMoviable() && !obj[i]->isMineralMove() ){
       obj[i]->colisions.clear();
-      solveColisions( obj[i], i );
+      solveColisions( obj[i].get(), i );
       }
     }
+  }
+
+void SpatialIndex::add( GameObject *obj ) {
+  int sz = Terrain::quadSize;
+  tree.add(obj, obj->x()/sz, obj->y()/sz );
+  }
+
+void SpatialIndex::del( GameObject * obj ) {
+  int sz = Terrain::quadSize;
+  tree.del(obj, obj->x()/sz, obj->y()/sz );
+  }
+
+void SpatialIndex::move(GameObject *obj, int x, int y, int nx, int ny) {
+  int sz = Terrain::quadSize;
+  tree.move(obj, x/sz, y/sz, nx/sz, ny/sz);
   }
 
 void SpatialIndex::solveColisions(GameObject * m, size_t /*id*/ ) {

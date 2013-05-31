@@ -60,6 +60,8 @@ Scenario::Scenario( Game &game, MainGui &ui, BehaviorMSGQueue & msg )
 
   gold = 0;
   lim  = 0;
+
+  currPl = 0;
   }
 
 void Scenario::tick() {

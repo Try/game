@@ -9,6 +9,8 @@
 WayFindRequest::WayFindRequest( const Terrain &t ):terr(t), algo(t) {
   visited.reserve(400);
   group  .reserve(400);
+
+  rq.reserve(256);
   }
 
 void WayFindRequest::findWay( int x, int y, GameObject *obj ) {
@@ -31,12 +33,36 @@ void WayFindRequest::findWay( int x, int y, GameObject *obj ) {
   tg.x = x/Terrain::quadSize;
   tg.y = y/Terrain::quadSize;
 
-  rq[tg].push_back(obj);
+  std::vector<TgGroup>::iterator i = std::lower_bound( rq.begin(), rq.end(), tg );
+
+  if( i==rq.end() ){
+    TgGroup g;
+    g.x = tg.x;
+    g.y = tg.y;
+    g.obj.reserve(16);
+    g.obj.push_back(obj);
+
+    rq.push_back( g );
+    } else {
+    if( i->x==tg.x && i->y==tg.y ){
+      i->obj.push_back(obj);
+      } else {
+      TgGroup g;
+      g.x = tg.x;
+      g.y = tg.y;
+      g.obj.reserve(16);
+      g.obj.push_back(obj);
+
+      rq.insert( i, g );
+      }
+    }
+  //rq[tg].push_back(obj);
   }
 
 void WayFindRequest::tick() {
   for( auto i=rq.begin(); i!=rq.end(); ++i ){
-    findWay( i->first.x, i->first.y, i->second, terr );
+    //findWay( i->first.x, i->first.y, i->second, terr );
+    findWay( i->x, i->y, i->obj, terr );
     }
 
   rq.clear();

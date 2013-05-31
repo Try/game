@@ -204,7 +204,7 @@ void waveAstar( array2d<Val> &  map,
           edit( map, p, px );
           p.mkF(rx, ry, map[p.x][p.y] );
 
-          size_t l = std::upper_bound( stk.begin(), stk.end(), p ) - stk.begin();
+          size_t l = std::lower_bound( stk.begin(), stk.end(), p ) - stk.begin();
           stk.insert( stk.begin()+l, p );
           rwPoint.push_back(p);
           }

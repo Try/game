@@ -31,6 +31,7 @@ GameObject::GameObject( Scene & s,
   m.x = 0;
   m.y = 0;
   m.z = 0;
+  m.isEnv = true;
 
   std::fill( m.dieVec, m.dieVec+3, 0 );
 
@@ -72,6 +73,9 @@ GameObject::~GameObject() {
   //if( behavior.size() )
   onDied( *this );
   wrld.player( m.pl ).delUnit(this);
+
+  if( !getClass().data.isBackground && !m.isEnv )
+    wrld.onObjectDelete( this);
   }
 
 int GameObject::distanceSQ(const GameObject &other) const {
@@ -107,6 +111,7 @@ void GameObject::setupMaterials( AbstractGraphicObject &obj,
   }
 
 void GameObject::loadView( const Resource &r, Physics & p, bool env ) {
+  m.isEnv = env;
   view.loadView(r, p, env );
 
   if( env ){
@@ -122,6 +127,7 @@ void GameObject::loadView( const Resource &r, Physics & p, bool env ) {
 void GameObject::loadView( Resource & r,
                            const ProtoObject::View &src,
                            bool isEnv ) {
+  m.isEnv = isEnv;
   view.loadView( r, src, isEnv );
   }
 
@@ -131,6 +137,7 @@ void GameObject::loadView( const Model &model,
   }
 
 void GameObject::loadView(const Tempest::Model<WaterVertex> &model ){
+  m.isEnv = true;
   view.loadView( model );
   }
 
@@ -191,6 +198,10 @@ void GameObject::setPosition(int x, int y, int z) {
                    World::coordCast(y),
                    World::coordCast(z),
                    1 );
+
+  if( !getClass().data.isBackground && !m.isEnv )
+    wrld.onObjectMoved( this, m.x, m.y, x, y );
+
   m.x = x;
   m.y = y;
   m.z = z;//world.terrain().heightAt(x, y);
@@ -206,6 +217,9 @@ void GameObject::setPositionSmooth(int x, int y, int z) {
                      World::coordCast(m.z),
                      1 );
     }
+
+  if( !getClass().data.isBackground && !m.isEnv )
+    wrld.onObjectMoved( this, m.x, m.y, x, y );
 
   m.x = x;
   m.y = y;

@@ -29,7 +29,13 @@ class WayFindRequest {
     void tick();
 
   private:
-    std::map<Tg, std::vector<GameObject*> > rq;
+    struct TgGroup:Tg {
+      std::vector<GameObject*> obj;
+      using Tg::operator <;
+      };
+
+    std::vector<TgGroup> rq;
+    //std::map<Tg, std::vector<GameObject*> > rq;
     void findWay(int x, int y, std::vector<GameObject*>& , const Terrain &t);
 
     std::vector<bool> visited;
@@ -38,10 +44,10 @@ class WayFindRequest {
     const Terrain &terr;
     WayFindAlgo algo;
 
-    void makeGroup(GameObject * obj,
+    void makeGroup( GameObject * obj,
                     std::vector<GameObject *> &objs,
                     std::vector<bool> & visited,
-                   std::vector<GameObject *> &gr);
+                    std::vector<GameObject *> &gr);
 
     void findWayGr(int x, int y, std::vector<GameObject*>& , const Terrain &t);
   };

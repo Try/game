@@ -23,7 +23,7 @@ GraphicsSettingsWidget::Settings::Settings() {
 #ifdef __ANDROID__
   shadowMapRes = 512;
   bloom        = Hight;
-  glow         = false;
+  glow         = true;
   normalMap    = true;
 
   shadowFilterQ = 0;
@@ -34,7 +34,11 @@ GraphicsSettingsWidget::Settings::Settings() {
 GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   layout().setMargin(8);
 
+#ifndef __ANDROID__
   resize( 200, 200 );
+#else
+  resize( 200, 300 );
+#endif
   setLayout( Tempest::Vertical );
   setDragable(1);
 

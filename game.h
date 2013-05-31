@@ -134,7 +134,7 @@ class Game : public Tempest::Window {
 
     static const int ticksPerSecond;
   private:
-    bool  paused;
+    bool  paused, needToUpdate;
     //bool isFullScreen;
 
     //bool acceptMouseObj;

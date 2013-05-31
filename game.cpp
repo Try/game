@@ -43,7 +43,8 @@ Game::Game( ShowMode sm )
       gui( graphics.device, w(), h(), resource, proto ),
       msg(*this),
       serializator(L"./serialize_tmp.obj", Serialize::Write ){
-  paused = false;
+  paused       = false;
+  needToUpdate = false;
 
   /*
   acceptMouseObj = true;
@@ -56,6 +57,8 @@ Game::Game( ShowMode sm )
 
   initFactorys();
   loadData();
+
+  //graphics.drawOpWindow.bind(*this, &Game::update);
 
   isRunning     = true;
   physicStarted = false;
@@ -219,6 +222,10 @@ void Game::onRender( double dt ){
   }
 
 void Game::update(){
+  if( !needToUpdate )
+    return;
+  needToUpdate = false;
+
   static const size_t updateDT = 1000/ticksPerSecond;
   size_t tnow = Time::tickCount();
   if( (tnow-updateTime)/updateDT>0 ){
@@ -246,6 +253,8 @@ void Game::update(){
   }
 
 void Game::render() {
+  needToUpdate = true;
+
   size_t time = Time::tickCount();
   if( graphics.render( world->getScene(),
                        world->getParticles(),
@@ -707,6 +716,7 @@ void Game::serialize( GameSerializer &s ) {
     world = 0;
     gui.setupMinimap(0);
     worlds.clear();
+    setScenario( new DeatmachScenarion(*this, gui, msg) );
     }
 
   //Tempest::Application::processEvents();
