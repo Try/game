@@ -41,6 +41,9 @@ GameObjectView::GameObjectView( Scene & s,
   }
 
 void GameObjectView::init() {
+  view.reserve(4);
+  env.reserve(4);
+
   m.radius = 0;
   m.initalModelHeight = 0;
 
@@ -218,7 +221,8 @@ void GameObjectView::loadView( const Resource & r,
     } else {
     if( src.isParticle.size()==0 ){
       if( model.size() > GraphicsSystem::dipOptimizeRef() ||
-          !getClass().data.isBackground ){
+          !getClass().data.isBackground ||
+           getClass().data.isDynamic ){
         GraphicObject object( scene );
         object.setModel( model );
 

@@ -289,20 +289,29 @@ F3 Scenario::unProject( int x, int y, float destZ ) {
   }
 
 F3 Scenario::unProject(int x, int y) {
+  float dummy;
+  return unProjectRz(x,y, dummy);
+  }
+
+F3 Scenario::unProjectRz(int x, int y, float &rz) {
   World  &world  = game.curWorld();
 
   float min = -2 + world.camera.z(),
         max =  2 + world.camera.z();
   F3 ret = unProject( x, y, 0 );
+  rz = 0;
+
   float err = fabs( world.zAt(ret.data[0], ret.data[1]) - ret.data[2] );
 
   for( int i=0; i<20; ++i ){
-    F3 v = unProject( x, y, min+(max-min)*i/20.0 );
+    float z = min+(max-min)*i/20.0;
+    F3 v = unProject( x, y, z );
     float err2 = fabs( world.zAt(v.data[0], v.data[1]) - v.data[2] );
 
     if( err2<err ){
       err = err2;
       ret = v;
+      rz = z;
       }
     }
 

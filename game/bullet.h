@@ -12,6 +12,9 @@ class Bullet {
 
     GameObjectView view;
 
+    void loadView( Resource & res, Physics &p );
+    void setTeamColor( const Tempest::Color &cl );
+
     int x,y, tgX, tgY;
     double z, tgZ;
     int speed;

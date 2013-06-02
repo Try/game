@@ -67,6 +67,7 @@ GameObject::GameObject( Scene & s,
     setCoolDown( pl.spell(*i).id, 0 );
 
   colisions.reserve(16);
+  bullets.reserve(16);
   }
 
 GameObject::~GameObject() {
@@ -443,7 +444,7 @@ std::shared_ptr<Bullet> GameObject::reciveBulldet( const std::string &v ){
                           prototypes.get(v),
                           prototypes );
 
-  b->view.loadView( game().resources(), wrld.physics, 0 );
+  b->loadView( game().resources(), wrld.physics );
   b->tgX = x();
   b->tgY = y();
 

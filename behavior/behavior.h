@@ -12,6 +12,7 @@ class Behavior : public AbstractBehavior {
   public:
     struct Closure;
     Behavior();
+    ~Behavior();
 
     bool message( Message msg, int x,
                   int y, Modifers md = BehaviorEvent::NoModifer );
@@ -44,7 +45,7 @@ class Behavior : public AbstractBehavior {
     template< class T >
     T * find(){
       for( auto  i = behaviors.begin(); i!=behaviors.end(); ++i ){
-        AbstractBehavior * b = (*i).get();
+        AbstractBehavior * b = *i;
 
         if( dynamic_cast<T*>( b ) )
           return reinterpret_cast<T*>(b);
@@ -59,7 +60,7 @@ class Behavior : public AbstractBehavior {
     Closure    * clos;
 
     typedef std::shared_ptr<AbstractBehavior> PAbstractBehavior;
-    std::vector<PAbstractBehavior> behaviors;
+    std::vector<AbstractBehavior*> behaviors;
   };
 
 #endif // BEHAVIOR_H

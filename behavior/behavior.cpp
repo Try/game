@@ -12,6 +12,10 @@ Behavior::Behavior(){
   clos   = 0;
   }
 
+Behavior::~Behavior() {
+  clear();
+  }
+
 void Behavior::bind( GameObject &gameObj,
                      Closure & c ) {
   object = &gameObj;
@@ -24,27 +28,30 @@ void Behavior::bind( GameObject &gameObj,
   }
 
 void Behavior::add(const std::string &n) {
-  PAbstractBehavior b = PAbstractBehavior( BehaviorsFactory::create( n, *object, *clos ) );
+  AbstractBehavior* b = ( BehaviorsFactory::create( n, *object, *clos ) );
   if( b )
     behaviors.push_back( b );
   }
 
 void Behavior::del(AbstractBehavior *ptr) {
-  PAbstractBehavior b;
+  AbstractBehavior* b = 0;
 
   size_t r=0;
   for( size_t i=0; i<behaviors.size(); ++i ){
     behaviors[r] = behaviors[i];
 
-    if( behaviors[i].get()==ptr )
+    if( behaviors[i]==ptr )
       b = behaviors[i]; else
       ++r;
     }
 
+  delete b;
   behaviors.resize(r);
   }
 
 void Behavior::clear() {
+  for( size_t i=0; i<behaviors.size(); ++i )
+    delete behaviors[i];
   behaviors.clear();
   }
 

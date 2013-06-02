@@ -18,8 +18,8 @@ void WayFindRequest::findWay( int x, int y, GameObject *obj ) {
     int qs = Terrain::quadSize/2;
 
     algo.findWay( *obj,
-                  (obj->x()+qs)/Terrain::quadSize,
-                  (obj->y()+qs)/Terrain::quadSize,
+                  (obj->x())/Terrain::quadSize,
+                  (obj->y())/Terrain::quadSize,
                   x/Terrain::quadSize,
                   y/Terrain::quadSize );
     MoveBehavior *b = obj->behavior.find<MoveBehavior>();

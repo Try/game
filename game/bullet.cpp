@@ -10,7 +10,7 @@ Bullet::Bullet( Scene & s,
                 World & wrld,
                 const ProtoObject &p,
                 const PrototypesLoader & pl )
-       :view(s, wrld, p, pl) {
+  :view( s, wrld, p, pl ) {
   x = 0;
   y = 0;
   z = 0;
@@ -29,6 +29,14 @@ Bullet::Bullet( Scene & s,
   std::fill(mvec, mvec+3, 0);
   }
 
+void Bullet::loadView(Resource &res, Physics &p) {
+  view.loadView( res, p, 0 );
+  }
+
+void Bullet::setTeamColor(const Tempest::Color &cl) {
+  view.teamColor = cl;
+  }
+
 void Bullet::tick() {
   view.setPosition(x,y);
 
@@ -43,9 +51,10 @@ void Bullet::tick() {
     }
 
   mvec[2] = 0;
+
   view.setViewPosition( World::coordCast(x),
-                        World::coordCast(y),
-                        tgZ + (z-tgZ)*l/l0 );
+                         World::coordCast(y),
+                         tgZ + (z-tgZ)*l/l0 );
 
   if( l <= speed ){
     isFinished = 1;
@@ -63,6 +72,7 @@ void Bullet::tick() {
 
   mvec[0] = 0.015*vecX;
   mvec[1] = 0.015*vecY;
+
   view.setViewDirection( vecX, vecY );
   view.tick();
   }

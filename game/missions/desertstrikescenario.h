@@ -55,18 +55,25 @@ class DesertStrikeScenario  : public Scenario {
       PlInfo():atkGrade(0),
                armorGrade(0),
                castleGrade(0),
-               economyGrade(0){}
+               economyGrade(0),
+               btime(0),
+               maxBTime(0){}
 
       std::map<std::string, int> units, realCount;
       int atkGrade,    armorGrade;
       int castleGrade, economyGrade;
 
       int getParam( const std::string& p ) const;
+
+      std::vector<std::string> queue;
+      int btime, maxBTime;
       };
 
     PlInfo plC[2];
+    float moveZ;
 
-    void mkUnits(int pl, int x, int y, int tgX, int tgY);
+    void mkUnits(int pl, int x, int y, int tgX, int tgY, bool rev);
+    void aiTick(int pl);
   };
 
 #endif // DESERTSTRIKESCENARIO_H

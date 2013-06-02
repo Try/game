@@ -120,7 +120,7 @@ bool Ability::fireStrike( Game &g,
 
       b.x = u.x();
       b.y = u.y();
-      b.view.teamColor = u.teamColor();
+      b.setTeamColor( u.teamColor() );
 
       b.z   = u.viewHeight()/2  + World::coordCast(u.z());
       b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
@@ -165,7 +165,7 @@ bool Ability::heal( Game &g,
 
       b.x = u.x();
       b.y = u.y();
-      b.view.teamColor = u.teamColor();
+      b.setTeamColor( u.teamColor() );
 
       b.z   = u.viewHeight()/2  + World::coordCast(u.z());
       b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());

@@ -66,7 +66,8 @@ struct DesertStrikeScenario::NumButton: public Button {
 struct DesertStrikeScenario::BuyButton: public NumButton {
   BuyButton( Resource & r,
              const ProtoObject& obj,
-             PlInfo & pl ):NumButton(r), p(obj), pl(pl){
+             PlInfo & pl,
+             int tier ):NumButton(r), p(obj), pl(pl), tier(tier){
     icon.data        = res.pixmap("gui/icon/"+obj.name);
     //setText( obj.name );
 
@@ -81,6 +82,7 @@ struct DesertStrikeScenario::BuyButton: public NumButton {
 
   void paintEvent(Tempest::PaintEvent &e){
     num = pl.units[this->p.name];
+    //castleGrade;
     NumButton::paintEvent(e);
     }
 
@@ -88,6 +90,7 @@ struct DesertStrikeScenario::BuyButton: public NumButton {
 
   const ProtoObject& p;
   PlInfo & pl;
+  int tier;
   };
 
 struct DesertStrikeScenario::GradeButton: public ListBox {
@@ -95,7 +98,8 @@ struct DesertStrikeScenario::GradeButton: public ListBox {
                PlInfo & p,
                const std::string& obj,
                const std::string& t ):ListBox(r), type(t), pl(p){
-    icon.data        = res.pixmap(obj);
+    icon.data = res.pixmap(obj);
+    texture.data = r.pixmap("gui/colors");
     //setText( obj.name );
 
     setMinimumSize( 50, 50 );
@@ -106,17 +110,29 @@ struct DesertStrikeScenario::GradeButton: public ListBox {
     }
 
   void emitClick(){
-    //onClick(p);
+    onClick(type);
     }
 
   void paintEvent(Tempest::PaintEvent &e){
     //num = pl.getParam(type);
     ListBox::paintEvent(e);
+
+    if( pl.maxBTime && type=="castle" ){
+      int coolDown = h()*pl.btime/pl.maxBTime;
+
+      Tempest::Painter p(e);
+      p.setTexture( texture );
+      p.setBlendMode( Tempest::alphaBlend );
+
+      p.drawRect( 0, h()-coolDown, w(), coolDown,
+                  2,        4, 1, 1 );
+      }
     }
 
-  //Tempest::signal<const ProtoObject&> onClick;
+  Tempest::signal<const std::string&> onClick;
   std::string type;
   PlInfo & pl;
+  Texture texture;
   };
 
 struct DesertStrikeScenario::Minimap: MiniMapView{
@@ -219,6 +235,9 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
     }
 
   void updateValues(){
+    if( unitToBuy.size()==0 )
+      return;
+
     { std::wstringstream s;
       std::string name = "$(" +unitToBuy+")";
       s << Lang::tr(name) << std::endl << L" - " << game.prototype(unitToBuy).data.gold;
@@ -288,8 +307,8 @@ struct DesertStrikeScenario::TranscurentPanel: public Tempest::Widget {
 
 struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
   UpgradePanel( Resource & res,
-                Game & /*game*/,
-                PlInfo & pl ):TranscurentPanel(res){
+                Game & game,
+                PlInfo & pl ):TranscurentPanel(res), game(game){
     using namespace Tempest;
 
     setMinimumSize(75, 200);
@@ -299,17 +318,32 @@ struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
     setSizePolicy( FixedMin );
     setLayout( Vertical );
 
+    const char* gr[3][2] = {
+      {"gui/icon/castle", "castle"},
+      {"gui/icon/atack",  "atack"},
+      {"gui/item/shield", "armor"}
+      };
+
     DesertStrikeScenario::GradeButton * u = 0;
-    u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/castle", "castle" );
-    layout().add( u );
+    for( int i=0; i<3; ++i ){
+      u = new DesertStrikeScenario::GradeButton(res, pl, gr[i][0], gr[i][1] );
+      layout().add( u );
+      u->onClick.bind( *this, &UpgradePanel::buy );
+      }
 
-    u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/atack", "atack" );
-    layout().add( u );
-
-    u = new DesertStrikeScenario::GradeButton(res, pl, "gui/item/shield", "armor" );
-    layout().add( u );
     }
 
+  void buy( const std::string & grade ){
+    std::vector<char> data;
+    ByteArraySerialize s(data, ByteArraySerialize::Write);
+
+    s.write(game.player().number()-1);
+    s.write( grade );
+    s.write( 'g' );
+    game.message( data );
+    }
+
+  Game & game;
   };
 
 struct DesertStrikeScenario::SpellPanel: public TranscurentPanel {
@@ -342,7 +376,7 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
                 Minimap * mmap): TranscurentPanel(res), game(game), mmap(mmap) {
     using namespace Tempest;
     setMinimumSize(250, 200);
-    setMaximumSize(250, 200);
+    //setMaximumSize(250, 200);
 
     setLayout( Vertical );
     layout().setMargin(15);
@@ -360,7 +394,8 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
         if( pr[i][r] ){
           const ProtoObject & obj = game.prototype(pr[i][r]);
 
-          DesertStrikeScenario::BuyButton * u = new DesertStrikeScenario::BuyButton(res, obj, pl);
+          DesertStrikeScenario::BuyButton * u =
+              new DesertStrikeScenario::BuyButton(res, obj, pl, i);
           u->onClick.bind( *this, &BuyUnitPanel::onUnit );
           l->layout().add( u );
           }
@@ -390,6 +425,9 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
   plC[0].units["pikeman"] = 3;
   plC[1].units["pikeman"] = 3;
 
+  //game.player(1).setGold(350);
+  //game.player(2).setGold(350);
+
   gui.update();
   g.prototypes().load("campagin/td.xml");
   }
@@ -399,7 +437,7 @@ DesertStrikeScenario::~DesertStrikeScenario() {
   }
 
 void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
-  mpos3d          = unProject( e.x, e.y );
+  mpos3d          = unProjectRz( e.x, e.y, moveZ );
   isMouseTracking = true;
   }
 
@@ -433,10 +471,10 @@ void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
     }
 
   if( isMouseTracking ){
-    F3 m = unProject( e.x, e.y );
+    F3 m = unProject( e.x, e.y, moveZ );
     game.curWorld().moveCamera( mpos3d.data[0]-m.data[0],
                                 mpos3d.data[1]-m.data[1]);
-    mpos3d = unProject( e.x, e.y );
+    mpos3d = unProject( e.x, e.y, moveZ );
     }
 
   updateMousePos(e);
@@ -468,6 +506,11 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
 
     //debug
     --plC[ 1 ].units[name];
+    } else
+  if( ch=='g' && name=="castle" ){
+    plC[pl].queue.push_back(name);
+    plC[pl].maxBTime = 500;
+    plC[pl].btime    = plC[pl].maxBTime;
     }
 
   mmap->updateValues();
@@ -487,27 +530,38 @@ void DesertStrikeScenario::tick() {
   if( tNum%interval==0 ){
     mkUnits( 1,
              p1*w/80, p1*h/80,
-             p2*w/80, p2*h/80 );
+             p2*w/80, p2*h/80,
+             0 );
     }
 
   if( tNum%interval==0 ){
     mkUnits( 2,
              p2*w/80, p2*h/80,
-             p1*w/80, p1*h/80);
+             p1*w/80, p1*h/80,
+             1 );
     }
 
   ++tNum;
   if( tNum/interval>=2 ){
     tNum = 0;
+    //aiTick(1);
     }
 
-  for( size_t i=1; i<game.plCount(); ++i )
-    ;//game.player(i).addGold(1);
+  for( int i=0; i<2; ++i )
+    if( plC[i].btime>0 ){
+      mmap->update();
+      --plC[i].btime;
+      }
+
+  if( tNum%10==0 )
+    for( size_t i=1; i<game.plCount(); ++i )
+      game.player(i).addGold(1);
   }
 
 void DesertStrikeScenario::mkUnits( int pl,
                                     int   x, int   y,
-                                    int tgX, int tgY ){
+                                    int tgX, int tgY,
+                                    bool rev ){
   --pl;
 
   std::map<std::string, int>::iterator u, e = plC[pl].units.end();
@@ -516,7 +570,10 @@ void DesertStrikeScenario::mkUnits( int pl,
   for( u = plC[pl].units.begin(); u!=e; ++u )
     count += u->second;
 
-  int qc = Math::sqrt(count)+1;
+  int qc = 1;
+  //std::max(Math::sqrt(count)-1,1);
+  while( qc*qc<count )
+    ++qc;
 
   int id = 0;
   for( u = plC[pl].units.begin(); u!=e; ++u ){
@@ -527,7 +584,14 @@ void DesertStrikeScenario::mkUnits( int pl,
         ++c;
         ++id;
 
-        obj.setPosition( x+id%qc, y+id/qc );
+        if( rev ){
+          obj.setPosition( x+(qc/2 - id%qc)*Terrain::quadSize,
+                           y+(qc/2 - id/qc)*Terrain::quadSize );
+          } else {
+          obj.setPosition( x+(id%qc - qc/2)*Terrain::quadSize,
+                           y+(id/qc - qc/2)*Terrain::quadSize );
+          }
+
         obj.behavior.message( Behavior::MoveSingle, tgX, tgY );
         obj.behavior.message( Behavior::AtackMove,  tgX, tgY );
         }
@@ -649,11 +713,11 @@ Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget
 
   Tempest::Widget* console = new Widget();
   console->setMaximumSize( SizePolicy::maxWidgetSize().w, 220 );
-  console->setMinimumSize( 0, 220);
+  console->setMinimumSize( 0, 200);
 
   SizePolicy p;
-  p.minSize = Tempest::Size(220, 220);
-  p.maxSize = Tempest::Size(220, 220);
+  p.minSize = Tempest::Size(200, 200);
+  p.maxSize = Tempest::Size(200, 200);
 
   console->setLayout( Tempest::Horizontal );
   console->layout().setSpacing(6);
@@ -694,4 +758,43 @@ int DesertStrikeScenario::PlInfo::getParam(const std::string &p) const {
     return armorGrade;
 
   return 0;
+  }
+
+void DesertStrikeScenario::aiTick( int pl ) {
+  struct BuildElement{
+    std::string src;
+    int scount;
+    std::string dst;
+    int dcount;
+    };
+
+  BuildElement b[] = {
+    {"pikeman",    3, "incvisitor", 1 },
+    {"pikeman",    5, "gelion",      1 },
+    {"incvisitor", 1, "pikeman",    3 },
+
+    {"incvisitor", 3, "fire_mage",  3 },
+    {"", 0, "", 0}
+  };
+
+  for( int i=0; i<2; ++i )
+    if( pl!=i ){
+      for( int r=0; ; ++r ){
+        const BuildElement& e = b[r];
+        if( e.src.size()==0 )
+          return;
+
+        int c = plC[i].units[e.src];
+        c*=e.dcount;
+        c/=e.scount;
+
+        for( int q=plC[ pl ].units[e.dst]; q<c; ++q ){
+          int gold = game.prototype(e.dst).data.gold;
+          if( game.player(pl+1).gold() >= gold ){
+            ++plC[ pl ].units[e.dst];
+            game.player(pl+1).setGold( game.player(pl+1).gold() - gold );
+            }
+          }
+        }
+      }
   }

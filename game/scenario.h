@@ -67,6 +67,7 @@ struct Scenario {
     virtual bool isSelectionRectTracking() const;
 
     F3 unProject(int x, int y, float destZ);
+    F3 unProjectRz(int x, int y, float& destZ);
     F3 unProject(int x, int y);
     F3 project(float x, float y, float z);
 

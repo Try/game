@@ -19,8 +19,9 @@ WayFindAlgo::WayFindAlgo( const Terrain &t ) : terrain(t){
   std::fill( wayMap.begin(), wayMap.end(), -1 );
   std::fill( clasterMap.begin(), clasterMap.end(), 0 );
 
-  waveBuf.reserve(128);
-  rwPoint.reserve(128);
+  waveBuf.reserve(1024);
+  rwPoint.reserve(1024);
+  way.reserve(1024);
   }
 
 void WayFindAlgo::fillClasrerMap( const std::vector< GameObject* > &objects ) {
@@ -157,6 +158,10 @@ void WayFindAlgo::findWay(std::vector<GameObject*> &objs,
                           int rx,
                           int ry,
                           int cls) {
+  auto fix = terrain.nearestEnable( rx, ry, 1 );
+  rx = fix.first;
+  ry = fix.second;
+
   if( !wayMap.validate(rx,ry) )
     return;
 
@@ -165,7 +170,6 @@ void WayFindAlgo::findWay(std::vector<GameObject*> &objs,
   for( size_t i=0; i<objs.size(); ++i ){
     GameObject & obj = *objs[i];
     MoveBehavior * b = obj.behavior.find<MoveBehavior>();
-
 
     int x = obj.x()/Terrain::quadSize,
         y = obj.y()/Terrain::quadSize;
@@ -177,6 +181,8 @@ void WayFindAlgo::findWay(std::vector<GameObject*> &objs,
   }
 
 void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
+  way.clear();
+
   auto fix = terrain.nearestEnable( rx, ry, 1 );
   rx = fix.first;
   ry = fix.second;
@@ -191,9 +197,8 @@ void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
   rPointX = rx;
   rPointY = ry;
 
-  if( abs(x-rx) + abs(y-ry) < 20 &&
+  if( abs(x-rx) + abs(y-ry) < 5 &&
       optimizeWay( Point{x,y}, Point{rx,ry} ) ){
-    way.clear();
     way.push_back(Point{rx,ry});
     way.push_back(Point{ x, y});
     return;
@@ -240,7 +245,7 @@ void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
         pVal = wayMap[ p.x][ p.y];
 
       if( wayMap.validate(p.x, p.y) &&
-          isQuadEnable( p, re) &&
+          terrain.isEnable( p.x, p.y ) &&//isQuadEnable( p, re) &&
           pVal > 0 &&
           pVal < wayMap[re.x][re.y] ){
         maxR = std::max( maxR, wayMap[re.x][re.y]-pVal );
@@ -256,7 +261,7 @@ void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
         pVal  = wayMap[ p.x][ p.y];
 
       if( wayMap.validate(p.x, p.y) &&
-          isQuadEnable( p, re) &&
+          terrain.isEnable( p.x, p.y ) &&//isQuadEnable( p, re) &&
           pVal > 0 &&
           wayMap[re.x][re.y]-pVal==maxR ){
         way.push_back(re);
@@ -307,45 +312,81 @@ void WayFindAlgo::optimizeWay() {
   if( way.size()==0 )
     return;
 
-  int a = 1, b = 2, wr = 1;
-
-  for( ; b < int(way.size());  ){
-    if( !optimizeWay( way[a], way[b] ) || b-a>20 ){
-      way[wr] = way[b];
+  int s = 0;
+  int e = 2, wr = 1;
+  while( e < int(way.size()) ){
+    if( !optimizeWay( way[s], way[e] ) || e-s>20 ){
+      way[wr] = way[e-1];
       ++wr;
-      //++a;
-      a = b;
-      ++b;
+      s  = e-1;
+      e  = s+2;
       } else {
-      ++b;
+      ++e;
       }
     }
 
-  Point l = way.back();
-  way.resize(wr+1);
-  way[wr] = l;
+  if( wr+1 <= int(way.size()) ){
+    Point l = way.back();
+    way.resize(wr+1);
+    way[wr] = l;
+
+    if( way.size()>=2 &&
+        way[way.size()-1].x==way[way.size()-2].x &&
+        way[way.size()-1].y==way[way.size()-2].y )
+      way.pop_back();
+    }
   }
 
-bool WayFindAlgo::optimizeWay(Point a, Point b) {
-  Point p = a;
+bool WayFindAlgo::optimizeWay( const Point& a, const Point& b) {
+  //return 0;
 
-  while( p.x!=b.x || p.y!=b.y ){
-    if( !terrain.isEnableQuad(p.x, p.y, 2) )
-      return false;
+  if( a.x==b.x ){
+    int y0 = std::min(a.y, b.y),
+        y1 = std::max(a.y, b.y);
+    for( int i=y0; i<y1; ++i )
+      if( !terrain.isEnableQuad(a.x, i, 1) )
+        return false;
 
-    if( abs(p.x-b.x) > abs(p.y-b.y) ){
-      if( p.x>b.x )
-        --p.x; else
-        ++p.x;
-      } else {
-      if( p.y>b.y )
-        --p.y; else
-        ++p.y;
-      }
+    return true;
+    }
+  if( a.y==b.y ){
+    int x0 = std::min(a.x, b.x),
+        x1 = std::max(a.x, b.x);
+    for( int i=x0; i<x1; ++i )
+      if( !terrain.isEnableQuad(i, a.y, 1) )
+        return false;
 
+    return true;
     }
 
-  return terrain.isEnableQuad(b.x, b.y, 3);
+  if( !(terrain.isEnableQuad(a.x, a.y, 3) && terrain.isEnableQuad(b.x, b.y, 3)) )
+    return false;
+
+  int x1 = a.x, y1 = a.y, x2 = b.x, y2 = b.y;
+  const int deltaX = abs(x2 - x1);
+  const int deltaY = abs(y2 - y1);
+  const int signX = x1 < x2 ? 1 : -1;
+  const int signY = y1 < y2 ? 1 : -1;
+
+  int error = deltaX - deltaY;
+
+  while(x1 != x2 || y1 != y2) {
+    if( !terrain.isEnableQuad(x1, y1, 3) )
+      return false;
+
+    const int error2 = error * 2;
+    //
+    if(error2 > -deltaY) {
+      error -= deltaY;
+      x1 += signX;
+    }
+    if(error2 < deltaX) {
+      error += deltaX;
+      y1 += signY;
+      }
+    }
+
+  return true;
   }
 
 bool WayFindAlgo::isRPoint() {

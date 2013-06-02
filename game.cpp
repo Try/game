@@ -126,6 +126,7 @@ void Game::loadData() {
   //world->terrain().loadFromPixmap( Tempest::Pixmap("./terrImg/h1.png") );
 
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
+  //setScenario( new DeatmachScenarion(*this, gui, msg) );
   mscenario->onStartGame();
   updateTime = Time::tickCount();
   }

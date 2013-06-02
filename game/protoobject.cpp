@@ -5,6 +5,7 @@ ProtoObject::ProtoObject()
   rotateSpeed = 5;
 
   data.isBackground = 0;
+  data.isDynamic    = 0;
   data.invincible   = 0;
 
   data.size  = 1;

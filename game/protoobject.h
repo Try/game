@@ -18,7 +18,7 @@ struct ProtoObject {
       int maxHp;
 
       int gold, lim, limInc, buildTime;
-      bool isBackground, invincible;
+      bool isBackground, invincible, isDynamic;
 
       int armor;
 

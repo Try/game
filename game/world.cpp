@@ -131,7 +131,8 @@ void World::wayFind(int x, int y, GameObject *obj) {
   }
 
 void World::updateIntent(GameObjectView *v) {
-  if( v->getClass().data.isBackground )
+  if( v->getClass().data.isBackground &&
+      !v->getClass().data.isDynamic )
     updatePosIntents.insert(v);
   }
 

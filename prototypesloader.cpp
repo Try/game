@@ -314,6 +314,7 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       readIf( e, "armor",     obj.data.armor     );
 
       readIf( e, "isBackground", obj.data.isBackground );
+      readIf( e, "isDynamic",    obj.data.isDynamic );
       readIf( e, "invincible",   obj.data.invincible   );
 
       std::string str;

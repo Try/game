@@ -77,6 +77,8 @@ class MoveBehavior : public AbstractBehavior {
     void onRemoveHook();
 
     void unHold();
+
+    void setPositon(int x, int y);
   };
 
 #endif // MOVEBEHAVIOR_H

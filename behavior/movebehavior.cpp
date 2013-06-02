@@ -32,6 +32,8 @@ MoveBehavior::MoveBehavior( GameObject &object,
   clos.isMoviable = true;
   inputMode = inMove;
 
+  way.reserve(256);
+
   instaled = 0;
   hook.mouseDown.bind( *this, &MoveBehavior::mouseDown    );
   hook.mouseUp  .bind( *this, &MoveBehavior::mouseUp      );
@@ -54,14 +56,31 @@ void MoveBehavior::atackMoveEvent( MoveSingleEvent &m ) {
   clos.isReposMove = 0;
   clos.isOnMove    = true;
 
+  way.clear();
   isWayAcept = 1;
   isMWalk    = 0;
+
+  tx = m.x;
+  ty = m.y;
+
   obj.world().game.message( obj.playerNum(),
                             AtackMoveGroup, m.x, m.y, m.modif );
   }
 
 void MoveBehavior::atackContinueEvent(MoveSingleEvent &m) {
   moveEvent(m);
+  }
+
+void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
+  clos.isPatrul = false;
+
+  taget = WeakWorldPtr();
+
+  clos.isOnMove    = true;
+  clos.isReposMove = 0;
+  isMWalk    = 0;
+
+  calcWayAndMove( m.x, m.y, obj.world().terrain() );
   }
 
 void MoveBehavior::moveEvent( MoveEvent &m ) {
@@ -91,18 +110,6 @@ void MoveBehavior::moveEvent(MoveToUnitEvent &m) {
                             MoveToUnitGroup,
                             m.id,
                             m.modif );
-  }
-
-void MoveBehavior::moveEvent( MoveSingleEvent &m ) {
-  clos.isPatrul = false;
-
-  taget = WeakWorldPtr();
-
-  clos.isOnMove    = true;
-  clos.isReposMove = 0;
-  isMWalk    = 0;
-
-  calcWayAndMove( m.x, m.y, obj.world().terrain() );
   }
 
 void MoveBehavior::moveEvent( MineralMoveEvent &m ) {
@@ -368,8 +375,11 @@ void MoveBehavior::step(const Terrain &terrain ) {
           way.size()>0 ) ||
         clos.isReposMove) &&
       l > 0 ){
-    int x = obj.x()+(tx-obj.x())*curentSpeed/realL,
-        y = obj.y()+(ty-obj.y())*curentSpeed/realL;
+    int dx = tx-obj.x(),
+        dy = ty-obj.y();
+
+    int x = obj.x()+dx*curentSpeed/realL,
+        y = obj.y()+dy*curentSpeed/realL;
 
     if( l==1 ){
       x = tx;
@@ -391,7 +401,6 @@ void MoveBehavior::step(const Terrain &terrain ) {
     if( ienable || !penable ){
       int ltx = this->tx, lty = this->ty;
 
-      //obj.setPositionSmooth( x, y, terrain.heightAt(wx,wy) );
       intentPos[0] = x;
       intentPos[1] = y;
 
@@ -407,12 +416,24 @@ void MoveBehavior::step(const Terrain &terrain ) {
         }
 
       if( !clos.isReposMove/* && !isMWalk*/ ){
+        const int qs = Terrain::quadSize;
+        intentPos[0] = (obj.x()/qs)*qs + qs/2;
+        intentPos[1] = (obj.y()/qs)*qs + qs/2;
+
+        setPositon(intentPos[0], intentPos[1]);
         calcWayAndMove( this->tx, this->ty, terrain );
         return;
         }
       }
 
     } else {
+    //int qs = Terrain::quadSize;
+    //intentPos[0] = (obj.x()/qs)*qs + qs/2;
+    //intentPos[1] = (obj.y()/qs)*qs + qs/2;
+
+    intentPos[0] = tx;
+    intentPos[1] = ty;
+
     if( !nextPoint() ){
       clos.isOnMove     = false;
       clos.isReposMove  = false;
@@ -477,7 +498,30 @@ void MoveBehavior::setWay( const std::vector<Point> &v ) {
   int dx = v.back().x*qs + hqs - obj.x(),
       dy = v.back().y*qs + hqs - obj.y();
 
+  /*
   if( !obj.world().terrain().isEnableQuad( obj.x()/qs, obj.y()/qs, 2) ){
+    dx = 0;
+    dy = 0;
+    }*/
+
+  int x0 = (obj.x()   )/qs,
+      y0 = (obj.y()   )/qs,
+      x1 = x0,
+      y1 = y0;
+  if( dx>0 )
+    ++x1;
+  if( dx<0 )
+    --x1;
+
+  if( dy>0 )
+    ++y1;
+  if( dy<0 )
+    --y1;
+
+  if( !( obj.world().terrain().isEnable( x0, y0 ) &&
+         obj.world().terrain().isEnable( x1, y0 ) &&
+         obj.world().terrain().isEnable( x0, y0 ) &&
+         obj.world().terrain().isEnable( x1, y1 ) ) ){
     dx = 0;
     dy = 0;
     }
@@ -546,7 +590,7 @@ bool MoveBehavior::isCloseEnough( int x1, int y1,
          2*2*realL <= lc*lc;
   }
 
-void MoveBehavior::updatePos(const Terrain &t ) {  
+void MoveBehavior::updatePos( const Terrain &t ) {
   if( intentToHold==1 ){
     int x = obj.x()/Terrain::quadSize,
         y = obj.y()/Terrain::quadSize;
@@ -573,7 +617,8 @@ void MoveBehavior::updatePos(const Terrain &t ) {
       ty = y + clos.colisionDisp[1];
 
   if( t.isEnableQuad( tx/Terrain::quadSize,
-                      ty/Terrain::quadSize, 1 ) ){
+                      ty/Terrain::quadSize, 1 ) &&
+      abs(x/Terrain::quadSize - tx/Terrain::quadSize)+abs(y/Terrain::quadSize - ty/Terrain::quadSize)<=1 ){
     x = tx;
     y = ty;
     }
@@ -582,6 +627,14 @@ void MoveBehavior::updatePos(const Terrain &t ) {
         wy = y/Terrain::quadSizef;
 
   obj.setPositionSmooth( x, y, t.heightAt(wx,wy) );
+  }
+
+void MoveBehavior::setPositon(int x, int y) {
+  float wx = x/Terrain::quadSizef,
+        wy = y/Terrain::quadSizef;
+
+  if( obj.world().terrain().isEnableQuad( x/Terrain::quadSize, y/Terrain::quadSize, 1 ) )
+    obj.setPositionSmooth( x, y, obj.world().terrain().heightAt(wx,wy) );
   }
 
 void MoveBehavior::setupPatrul() {

@@ -40,7 +40,8 @@ class WarriorBehavior : public AbstractBehavior  {
                               const ProtoObject::GameSpecific::Atack& v );
 
     bool isAtk; int lastX, lastY;
-    int  dAtkTime;
+    int  dAtkTime, dRqTime;
+    bool hasAtkTaget;
 
     bool isAClick; int acX, acY;
 

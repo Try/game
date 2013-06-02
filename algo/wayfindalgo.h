@@ -39,7 +39,7 @@ class WayFindAlgo {
     bool isQuadEnable( Point p, Point src );
 
     void optimizeWay();
-    bool optimizeWay( Point a, Point b );
+    inline bool optimizeWay(const Point &a, const Point &b );
 
     int rPointX, rPointY;
     bool isRPoint();

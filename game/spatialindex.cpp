@@ -148,6 +148,8 @@ bool SpatialIndex::hasEffect(GameObject &tg, GameObject &obj) {
 
 void SpatialIndex::collision(GameObject &obj, GameObject &m,
                               int &id ) {
+//  return;
+
   int d = m.distanceSQ(obj);
 
   int maxD = (( m.getClass().data.size +
