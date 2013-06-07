@@ -145,10 +145,13 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
   v.normal[1] = -norm[1];
   v.normal[2] = -norm[2];
 
+  //TODO: color
+  /*
   v.color[0] = color.r();
   v.color[1] = color.g();
   v.color[2] = color.b();
   v.color[3] = color.a();
+  */
 
   v.bnormal[0] = -left[0];
   v.bnormal[1] = -left[1];

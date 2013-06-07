@@ -126,6 +126,9 @@ class GameObjectView {
       int intentDirX, intentDirY;
 
       float vpos[3];
+
+      int  selectionVCount;
+      bool rotateRecalc;
       } m;
 
     struct {

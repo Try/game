@@ -45,10 +45,21 @@ class World {
     void clickEvent( int x, int y, const Tempest::MouseEvent &e );
     void onRender(double dt);
 
-    static double coordCast( int icoord );
-    static double coordCastP( double icoord );
-    static int    coordCastD( double dcoord );
-    static int    coordCastD( int dcoord );
+    static inline double coordCast(int icoord) {
+      return icoord/4048.f;
+      }
+
+    static inline double coordCastP(double icoord) {
+      return icoord/4048.f;
+      }
+
+    static inline int coordCastD(double dcoord) {
+      return int(dcoord*4048.0);
+      }
+
+    static inline int coordCastD(int dcoord) {
+      return dcoord*4048;
+      }
 
     void moveCamera( double x, double y );
     void tick();

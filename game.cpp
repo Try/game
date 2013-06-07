@@ -244,7 +244,8 @@ void Game::update(){
     {
       if( !physicStarted ){
         //Time::sleep(60);
-        world->physics.tick(c);
+        if( !isPaused() )
+          world->physics.tick(c);
         //return;
         }
       }

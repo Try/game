@@ -97,6 +97,8 @@ class Terrain {
     int  heightAtNoDepth( int x, int y ) const;
 
     Tempest::signal<> onTerrainChanged;
+
+    const array2d<int>& wayCorrMap() const;
   private:
     Scene                  & scene;
     World                  & world;
@@ -127,6 +129,8 @@ class Terrain {
     array2d<int>  heightMap;
     array2d<int>  waterMap;
     array2d<int>  buildingsMap;
+    mutable array2d<int>  wcorrMap;
+    mutable bool needToUpdateWCMap;
     array2d<unsigned char>  enableMap;
 
     int clampX( int x ) const;
@@ -146,6 +150,7 @@ class Terrain {
                         int cX, int cy );
 
     void computePlanes();
+    void updateWCMap() const;
     Resource & res;
 
     friend class SmallGraphicsObject;

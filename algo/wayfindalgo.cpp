@@ -158,7 +158,7 @@ void WayFindAlgo::findWay(std::vector<GameObject*> &objs,
                           int rx,
                           int ry,
                           int cls) {
-  auto fix = terrain.nearestEnable( rx, ry, 1 );
+  auto fix = terrain.nearestEnable( rx, ry, obj.x(), obj.y(), 1 );
   rx = fix.first;
   ry = fix.second;
 
@@ -180,10 +180,18 @@ void WayFindAlgo::findWay(std::vector<GameObject*> &objs,
     }
   }
 
-void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
+void WayFindAlgo::findWay( GameObject & obj, int x, int y, int rx, int ry ) {
+  findWay(obj,x,y,rx,ry, 0);
+  }
+
+void WayFindAlgo::findWay( GameObject & obj, int x, int y, int rx, int ry,
+                           int ref ) {
+  vMapRef = std::min(9, ref);
   way.clear();
 
-  auto fix = terrain.nearestEnable( rx, ry, 1 );
+  auto fix = terrain.nearestEnable( rx, ry,
+                                    obj.x(), obj.y(),
+                                    1 );
   rx = fix.first;
   ry = fix.second;
 
@@ -212,6 +220,7 @@ void WayFindAlgo::findWay(GameObject & , int x, int y, int rx, int ry) {
 
   int dimCount = 8;
   waveAstar( wayMap,
+             terrain.wayCorrMap(),
              x, y,
              func, incMapPointR<int>,
              rx, ry,
@@ -300,10 +309,11 @@ bool WayFindAlgo::isQuadEnable( const array2d<int> &  map,
   int v0 = map[p.x][p.y];
   //int v1 = map[s.x][s.y];
 
-  return terrain.isEnable( p.x, p.y ) &&
+  return ( v0<0 ) &&
+         //terrain.wayCorrMap(p.x, p.y) >= vMapRef &&
+         terrain.isEnable( p.x, p.y ) &&
          terrain.isEnable( s.x, p.y ) &&
-         terrain.isEnable( p.x, s.y ) &&
-         ( v0 < 0 );
+         terrain.isEnable( p.x, s.y );
   }
 
 void WayFindAlgo::optimizeWay() {
@@ -371,7 +381,7 @@ bool WayFindAlgo::optimizeWay( const Point& a, const Point& b) {
   int error = deltaX - deltaY;
 
   while(x1 != x2 || y1 != y2) {
-    if( !terrain.isEnableQuad(x1, y1, 3) )
+    if( !terrain.isEnableQuad(x1, y1, 2) )
       return false;
 
     const int error2 = error * 2;

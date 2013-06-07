@@ -22,29 +22,8 @@ class SpatialIndex {
     template< class F, class ... Args >
     void visit( int x, int y, int R, F func, Args & ... args ) const {
       const int sz = TerrQSize;
-      tree.visit(x/sz,y/sz, R, func, args...);
-      /*
-      int lx = x/qsize - (sizeMax + R)/detail - 1,
-          rx = x/qsize + (sizeMax + R)/detail + 1;
-
-      int ly = y/qsize - (sizeMax + R)/detail - 1,
-          ry = y/qsize + (sizeMax + R)/detail + 1;
-
-      lx = std::max(0, lx);
-      rx = std::min(w, rx);
-
-      ly = std::max(0, ly);
-      ry = std::min(h, ry);
-
-      for( int y=ly; y<ry; ++y ){
-        int l = psum[ lx+y*w ],
-            r = psum[ rx+y*w ];
-
-        for( int i=l; i<r; ++i ){
-          if( obj[i] )
-            func( *obj[i], args... );
-          }
-        }*/
+      vstk.clear();
+      tree.visit( x/sz, y/sz, R, vstk, func, args...);
       }
 
     void add( GameObject* );
@@ -56,11 +35,32 @@ class SpatialIndex {
     std::vector<size_t>      psum;
     std::vector<GameObject*> obj;
 
+    struct ObjTree;
+
+    struct VPoint{
+      int x, y;
+      const ObjTree * t;
+      };
+
+    mutable std::vector<VPoint> vstk;
+
     struct ObjTree{
       ObjTree( int w, int h ):w(w), h(h), hw(w/2), hh(h/2){
         if( w<=nodeSZ || h<=nodeSZ )
           obj.reserve(16);
         count = 0;
+
+        nested[0][0] = 0;
+        nested[0][1] = 0;
+        nested[1][0] = 0;
+        nested[1][1] = 0;
+        }
+
+      ~ObjTree(){
+        delete nested[0][0];
+        delete nested[0][1];
+        delete nested[1][0];
+        delete nested[1][1];
         }
 
       void add( GameObject* ob, int x, int y ){
@@ -90,34 +90,71 @@ class SpatialIndex {
 
 
       template< class F, class ... Args >
-      void visit( int x, int y, int R, F f, Args & ... args ) const {
-        if( count==0 )
-          return;
+      void visit( int x, int y, int R,
+                  std::vector<VPoint>& vstk,
+                  F f, Args & ... args ) const {
+        VPoint pt;
+        pt.x = x;
+        pt.y = y;
+        pt.t = this;
 
-        if( w<=nodeSZ || h<=nodeSZ ){
-          for( size_t i=0; i<obj.size(); ++i )
-            f( *obj[i], args... );
-          }
+        vstk.push_back(pt);
 
-        if( x-R <= hw ){
-          if( y-R <= hh ){
-            if( nested[0][0] )
-              nested[0][0]->visit( x, y, R, f, args... );
-            }
-          if( y+R >= hh ) {
-            if( nested[0][1] )
-              nested[0][1]->visit( x, y-hh, R, f, args... );
-            }
-          }
+        while( vstk.size() ){
+          const VPoint p = vstk.back();
+          vstk.pop_back();
 
-        if( x+R >= hw ) {
-          if( y-R <= hh ){
-            if( nested[1][0] )
-              nested[1][0]->visit( x-hw, y, R, f, args... );
+          const ObjTree * curr = p.t;
+          for( size_t i=0; i<curr->obj.size(); ++i )
+            f( *curr->obj[i], args... );
+
+          int hw = curr->hw,
+              hh = curr->hh;
+
+          if( p.x-R <= hw ){
+            if( p.y-R <= hh ){
+              if( curr->nested[0][0] &&
+                  curr->nested[0][0]->count ){
+                pt.x = p.x;
+                pt.y = p.y;
+                pt.t = curr->nested[0][0];
+                vstk.push_back(pt);
+                //nested[0][0]->visit( x, y, R, f, args... );
+                }
+              }
+            if( p.y+R >= hh ) {
+              if( curr->nested[0][1] &&
+                  curr->nested[0][1]->count ){
+                pt.x = p.x;
+                pt.y = p.y-hh;
+                pt.t = curr->nested[0][1];
+                vstk.push_back(pt);
+                //nested[0][1]->visit( x, y-hh, R, f, args... );
+                }
+              }
             }
-          if( y+R >= hh ){
-            if( nested[1][1] )
-              nested[1][1]->visit( x-hw, y-hh, R, f, args... );
+
+          if( p.x+R >= hw ) {
+            if( p.y-R <= hh ){
+              if( curr->nested[1][0] &&
+                  curr->nested[1][0]->count  ){
+                pt.x = p.x-hw;
+                pt.y = p.y;
+                pt.t = curr->nested[1][0];
+                vstk.push_back(pt);
+                //nested[1][0]->visit( x-hw, y, R, f, args... );
+                }
+              }
+            if( p.y+R >= hh ){
+              if( curr->nested[1][1] &&
+                  curr->nested[1][1]->count ){
+                pt.x = p.x-hw;
+                pt.y = p.y-hh;
+                pt.t = curr->nested[1][1];
+                vstk.push_back(pt);
+                //nested[1][1]->visit( x-hw, y-hh, R, f, args... );
+                }
+              }
             }
           }
         }
@@ -144,14 +181,14 @@ class SpatialIndex {
           }
 
         if( !nested[i][r] )
-          nested[i][r].reset( new ObjTree(nw, nh) );
+          nested[i][r] = new ObjTree(nw, nh);
 
         return nested[i][r]->node( x-dx, y-dy, d );
         }
 
       int w,h, hw, hh;
       int count;
-      std::unique_ptr<ObjTree> nested[2][2];
+      ObjTree* nested[2][2];
       std::vector<GameObject*> obj;
 
       static const int nodeSZ = 4;

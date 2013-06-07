@@ -14,8 +14,8 @@ WayFindRequest::WayFindRequest( const Terrain &t ):terr(t), algo(t) {
   }
 
 void WayFindRequest::findWay( int x, int y, GameObject *obj ) {
-  if( abs(obj->x()-x)/Terrain::quadSize + abs(obj->y()-y)/Terrain::quadSize < 9 ){
-    int qs = Terrain::quadSize/2;
+  if( abs(obj->x()-x)/Terrain::quadSize + abs(obj->y()-y)/Terrain::quadSize < 5 ){
+    //int qs = Terrain::quadSize/2;
 
     algo.findWay( *obj,
                   (obj->x())/Terrain::quadSize,
@@ -118,9 +118,10 @@ void WayFindRequest::makeGroup( GameObject * obj,
 void WayFindRequest::findWayGr( int x, int y,
                                 std::vector<GameObject *> &objs,
                                 const Terrain & ) {
-  int qx = x*Terrain::quadSize,
-      qy = y*Terrain::quadSize;
+  //int qx = x*Terrain::quadSize,
+  //    qy = y*Terrain::quadSize;
 
+  /*
   int d = objs[0]->distanceSQ(qx,qy);
   GameObject *obj = objs[0];
 
@@ -131,13 +132,35 @@ void WayFindRequest::findWayGr( int x, int y,
       d = d2;
       obj = objs[i];
       }
+    }*/
+  int cx = 0, cy = 0;
+  for( size_t i=0; i<objs.size(); ++i ){
+    cx += objs[i]->x()/objs.size();
+    cy += objs[i]->y()/objs.size();
+    }
+
+  int d = objs[0]->distanceSQ(cx,cy);
+  GameObject *obj = objs[0];
+
+  int vMapRef = 0;
+  for( size_t i=0; i<objs.size(); ++i ){
+    int d2 = objs[i]->distanceSQ(cx,cy);
+
+    if( d2<d ){
+      d = d2;
+      obj = objs[i];
+      }
+
+    if( i*i<=objs.size() )
+      vMapRef = i;
     }
 
   algo.findWay( *obj,
                 obj->x()/Terrain::quadSize,
                 obj->y()/Terrain::quadSize,
                 x,
-                y );
+                y,
+                vMapRef );
 
   for( size_t i=0; i<objs.size(); ++i ){
     MoveBehavior *b = objs[i]->behavior.find<MoveBehavior>();

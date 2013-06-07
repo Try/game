@@ -10,7 +10,7 @@ struct MVertex {
   Tempest::Half x,y,z,u;
   //Tempest::Half u,v;
   Tempest::Half normal[3], v;
-  Tempest::Half color[4];
+  //Tempest::Half color[4];
 
   Tempest::Half bnormal[3], h;
 

@@ -5,11 +5,9 @@
 #include "game/world.h"
 #include "game.h"
 
-#include "threads/time.h"
-
 MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
-  rtime   = Time::tickCount();
-  rtime2  = Time::tickCount();
+  rtime   = 0;
+  rtime2  = 0;
   pressed = false;
   world   = 0;
 
@@ -22,8 +20,9 @@ MiniMapView::~MiniMapView() {
   }
 
 void MiniMapView::setup(World * w) {
-  rtime   = Time::tickCount();
-  rtime2  = Time::tickCount();
+  tcount  = -1;
+  rtime   = 0;
+  rtime2  = 0;
 
   if( world )
     world->terrain().onTerrainChanged.ubind(*this, &MiniMapView::onTerrainCanged );
@@ -41,12 +40,14 @@ void MiniMapView::render() {
   if( world->game.isPaused() )
     return;
 
+  ++tcount;
+
   World &wx = *world;
 
   int mk = std::max( 1, wx.terrain().width()*wx.terrain().height()/(128*128) );
 
   if( terr.width() != w() || terr.height()!= h() ){
-    rtime = Time::tickCount() - mk*1000*2;
+   rtime = tcount - mk*40;
 
     hudPx = Tempest::Pixmap(w(), h(), true);
     Tempest::Pixmap::Pixel px = {0,0,0,0};
@@ -55,10 +56,8 @@ void MiniMapView::render() {
     update();
     }
 
-  if( //Time::tickCount() >= rtime2+mk*1000*2 &&
-      needToUpdateTerrain ){
-    needToUpdateTerrain = false;
-    rtime2 = Time::tickCount();
+  if( needToUpdateTerrain ){
+    rtime2 = tcount;
 
     Tempest::Pixmap terr = Tempest::Pixmap(w(), h(), true);
     Tempest::Pixmap::Pixel pix;
@@ -108,9 +107,9 @@ void MiniMapView::render() {
     }
 
   if( needToUpdateTerrain ||
-      Time::tickCount() >= rtime+mk*1000*2||
-      Time::tickCount() < rtime ){
-    rtime = Time::tickCount();
+      tcount >= rtime+mk*40 ||
+      tcount < rtime ){
+    rtime = tcount;
 
     Tempest::Pixmap::Pixel pix = {0,0,0,0};
     Tempest::Pixmap renderTo = Tempest::Pixmap(w(), h(), true);
@@ -148,6 +147,7 @@ void MiniMapView::render() {
     }
 
   hud   = res.ltexHolder.create(hudPx, false, false);
+  needToUpdateTerrain = false;
   }
 
 void MiniMapView::lineTo( Tempest::Pixmap &renderTo,
@@ -254,10 +254,6 @@ void MiniMapView::aceptFog(Tempest::Pixmap &p, const Tempest::Pixmap &f) {
   }
 
 void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
-  GraphicsSystem::Frustum f;
-  GraphicsSystem::mkFrustum( wx.camera, f );
-
-
   int tw = wx.terrain().width(),
       th = wx.terrain().height();
 
@@ -270,43 +266,46 @@ void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
   const std::vector<World::PGameObject> & objects = wx.activeObjects();
   for( size_t i=0; i<objects.size(); ++i ){
     GameObject &obj = *objects[i];
-    int terrX = (obj.x()+Terrain::quadSize)/Terrain::quadSize;
-    int terrY = (obj.y()+Terrain::quadSize)/Terrain::quadSize;
+    if( !obj.getClass().data.isBackground ){
+      int ox = obj.x()/Terrain::quadSize,
+          oy = obj.y()/Terrain::quadSize;
 
-    terrX = (terrX*units.width()) /tw;
-    terrY = (terrY*units.height())/th;
+      int terrX = ox+1,
+          terrY = oy+1;
 
-    pix.r = obj.teamColor().r()*255;
-    pix.g = obj.teamColor().g()*255;
-    pix.b = obj.teamColor().b()*255;
+      terrX = (terrX*units.width()) /tw;
+      terrY = (terrY*units.height())/th;
 
-    if( terrX >=0 && terrX<renderTo.width() &&
-        terrY >=0 && terrY<renderTo.height() )
+      pix.r = obj.teamColor().r()*255;
+      pix.g = obj.teamColor().g()*255;
+      pix.b = obj.teamColor().b()*255;
 
-      if( !obj.getClass().data.isBackground ){
-        int sz = obj.getClass().data.size;
+      if( terrX >=0 && terrX<renderTo.width() &&
+          terrY >=0 && terrY<renderTo.height() ){
+          int sz = obj.getClass().data.size;
 
-        int terrX0 = (obj.x())/Terrain::quadSize - sz/2;
-        int terrY0 = (obj.y())/Terrain::quadSize - sz/2;
-        terrX0 = (terrX0*renderTo.width()) /tw;
-        terrY0 = (terrY0*renderTo.height())/th;
+          int terrX0 = ox - sz/2;
+          int terrY0 = oy - sz/2;
+          terrX0 = (terrX0*renderTo.width()) /tw;
+          terrY0 = (terrY0*renderTo.height())/th;
 
-        int terrX1 = (obj.x())/Terrain::quadSize + sz-sz/2;
-        int terrY1 = (obj.y())/Terrain::quadSize + sz-sz/2;
-        terrX1 = (terrX1*renderTo.width()) /tw;
-        terrY1 = (terrY1*renderTo.height())/th;
+          int terrX1 = ox + sz-sz/2;
+          int terrY1 = oy + sz-sz/2;
+          terrX1 = (terrX1*renderTo.width()) /tw;
+          terrY1 = (terrY1*renderTo.height())/th;
 
-        terrX0 = std::max(terrX0,0);
-        terrY0 = std::max(terrY0,0);
-        terrX1 = std::min(terrX1,renderTo.width()-1);
-        terrY1 = std::min(terrY1,renderTo.height()-1);
+          terrX0 = std::max(terrX0,0);
+          terrY0 = std::max(terrY0,0);
+          terrX1 = std::min(terrX1,renderTo.width()-1);
+          terrY1 = std::min(terrY1,renderTo.height()-1);
 
-        for( int x=terrX0; x<terrX1; ++x )
-          for( int y=terrY0; y<terrY1; ++y ){
-            renderTo.set(x, y, pix);
+          for( int x=terrX0; x<terrX1; ++x )
+            for( int y=terrY0; y<terrY1; ++y ){
+              renderTo.set(x, y, pix);
+              }
             }
-          }
-      }
+        }
+    }
 
   int dx[] = {1, -1, 0,  0, 1,  1, -1, -1 };
   int dy[] = {0,  0, 1, -1, 1, -1,  1, -1 };
@@ -328,13 +327,6 @@ void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
           renderTo.set(i,r, pix);
         }
       }
-
-  /*
-  for( int i=0; i<renderTo.width(); ++i )
-    for( int r=0; r<renderTo.height(); ++r )
-      if( renderTo.at(i,r).a==0 )
-        {};//renderTo.set( i, r, terr.at(i,r) );
-        */
   }
 
 void MiniMapView::onTerrainCanged() {

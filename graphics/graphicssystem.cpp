@@ -4,6 +4,7 @@
 #include <Tempest/Texture2d>
 #include <Tempest/VertexShader>
 #include <Tempest/FragmentShader>
+#include <Tempest/Color>
 
 #include <iostream>
 #include <cmath>
@@ -71,8 +72,11 @@ void GraphicsSystem::makeRenderAlgo( int w, int h ) {
   gbuf.grassVs   = res.vshader("grass_material");
   gbuf.grassFs   = res.fshader("grass_material");
 
-  gbuf.terrainVs = res.vshader("terrain_minor_main_material");
-  gbuf.terrainFs = res.fshader("terrain_minor_main_material");
+  gbuf.terrainVs      = res.vshader("terrain_main_material");
+  gbuf.terrainFs      = res.fshader("terrain_main_material");
+
+  gbuf.terrainMinorVs = res.vshader("terrain_minor_main_material");
+  gbuf.terrainMinorFs = res.fshader("terrain_minor_main_material");
 
   gbuf.lightDirection.setName("lightDirection");
   gbuf.lightColor    .setName("lightColor");
@@ -271,6 +275,8 @@ bool GraphicsSystem::render( Scene &scene,
                              ParticleSystemEngine & par,
                              Tempest::Camera   camera,
                              size_t dt) {
+  toDraw.clear();
+
   if( !device.startRender() )
     return false;
   ++nFrame;
@@ -591,6 +597,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                                const Tempest::AbstractCamera & camera,
                                bool gcall ) {
   //return;
+
   int gbuffSize = 4;
   if( GraphicsSettingsWidget::Settings::api==GraphicsSettingsWidget::Settings::openGL )
     gbuffSize = 1;
@@ -605,6 +612,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
 
   setupLight( scene, gbuf.vs, gbuf.fs, sm, smCl, ao );
 
+  //if(0)
   drawObjects( gbuf.terrainVs,
                gbuf.terrainFs,
                gbuffer,
@@ -626,8 +634,9 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
     r.clear( Tempest::Color(0) );
     }
 
-  drawObjects( gbuf.terrainVs,
-               gbuf.terrainFs,
+  setupLight( scene, gbuf.terrainMinorVs, gbuf.terrainMinorFs, sm, smCl, ao );
+  drawObjects( gbuf.terrainMinorVs,
+               gbuf.terrainMinorFs,
                gbuffer,
                &mainDepth,
                gbuffSize,
@@ -979,7 +988,20 @@ void GraphicsSystem::completeDraw( Tempest::Render  & render,
       uint64_t idA = (uint64_t(a.vboHandle())<<32) + a.material().diffuse.handle();
       uint64_t idB = (uint64_t(b.vboHandle())<<32) + b.material().diffuse.handle();
 
-      return idA < idB;
+      //return idA < idB;
+
+      if( idA<idB )
+        return 1;
+
+      if( idA>idB )
+        return 0;
+
+      if( a.material().teamColor &&
+          b.material().teamColor ){
+        const Tempest::Color& ca = *a.material().teamColor,
+                            & cb = *b.material().teamColor;
+        return ca!=cb;
+        }
       /*
       return a.material().diffuse.handle() <
              b.material().diffuse.handle();
@@ -1124,6 +1146,8 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
   //int size = 512;
   if( c>0 ){
     Tempest::Texture2d tmp;
+    //copy ( out, buffer,  size, size );
+
     copy ( tmp, buffer,  size, size );
     gauss( buffer, tmp,  size, size, 1.0, 0.0 );
     gauss( out,  buffer, size, size, 0.0, 1.0 );
@@ -1157,7 +1181,14 @@ void GraphicsSystem::copy( Tempest::Texture2d &out,
 void GraphicsSystem::copy( Tempest::Texture2d &out,
                            const Tempest::Texture2d& in,
                            int w, int h ) {
-  out = localTex.create( w,h, in.format() );//colorBuf( w,h );
+  copy( out, out.format(), in, w, h);
+  }
+
+void GraphicsSystem::copy( Tempest::Texture2d &out,
+                           Tempest::Texture2d::Format::Type outFrm,
+                           const Tempest::Texture2d& in,
+                           int w, int h ) {
+  out = localTex.create( w,h, outFrm );//colorBuf( w,h );
   out.setSampler( reflect );
 
   Tempest::Render render( device,

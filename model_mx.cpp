@@ -17,7 +17,7 @@ Tempest::VertexDeclaration::Declarator MVertex::mkDecl() {
   Tempest::VertexDeclaration::Declarator d;
   d   .add( Tempest::Decl::half4, Tempest::Usage::Position )
       .add( Tempest::Decl::half4, Tempest::Usage::Normal   )
-      .add( Tempest::Decl::half4, Tempest::Usage::Color    )
+      //.add( Tempest::Decl::half4, Tempest::Usage::Color    )
       .add( Tempest::Decl::half4, Tempest::Usage::BiNormal );
 
   return d;
@@ -123,7 +123,7 @@ void Model::loadMX( Tempest::VertexBufferHolder & vboHolder,
 
     std::copy( d.normal, d.normal+3, v.normal );
     //memcpy( &v, &d, sizeof(d) );
-    std::fill( v.color, v.color+4, 1) ;
+    //std::fill( v.color, v.color+4, 1) ;
     }
 
   if( rawN.vertex.size()%3==0 ){

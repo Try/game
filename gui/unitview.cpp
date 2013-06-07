@@ -60,7 +60,7 @@ void UnitView::setupUnit( Game &game,
   view->loadView( res, world->physics, 0 );
   view->teamColor = Tempest::Color(1, 1, 0, 1);
 
-  view->setViewPosition(0,0,0);
+  view->setViewPosition(0,0, -view->viewHeight()*0.5 );
 
   setupCamera();
   }
@@ -107,8 +107,6 @@ void UnitView::setupCamera() {
     for( size_t i=0; i<view->getClass().behaviors.size(); ++i )
       if( view->getClass().behaviors[i]=="move" )
         mv = 1;
-
-    camera.setPosition( 0, 0, 2*view->radius() );
     }
 
   if( rotateMode ){
@@ -122,7 +120,8 @@ void UnitView::setupCamera() {
   camera.setSpinY(-130);
 
   if( view )
-    camera.setZoom( 0.7/view->radius() );
+    camera.setZoom( std::max( 0.7/view->viewHeight(),
+                              0.7/view->radius() ) );
 
   scene.setCamera( camera );
   }

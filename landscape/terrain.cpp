@@ -12,8 +12,8 @@
 
 #include "util/tnloptimize.h"
 
-const int Terrain::chunkSize = 32;
-//const int Terrain::chunkSize = 16;
+//const int Terrain::chunkSize = 32;
+const int Terrain::chunkSize = 16;
 
 const int   Terrain::quadSize  = 600;
 const float Terrain::quadSizef = 600;
@@ -51,13 +51,16 @@ Terrain::Terrain( int w, int h,
 
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
+  wcorrMap.resize(w+1, h+1);
   buildingsMap.resize(w+1, h+1);
   chunks.resize( w/chunkSize+1, h/chunkSize+1 );
 
   std::fill( heightMap.begin(),    heightMap.end(),     0 );
   std::fill( waterMap.begin(),     waterMap.end(),      0 );
   std::fill( buildingsMap.begin(), buildingsMap.end(),  0 );
+  std::fill( wcorrMap.begin(),     wcorrMap.end(),      0 );
 
+  needToUpdateWCMap = false;
   computeEnableMap();
   }
 
@@ -97,7 +100,7 @@ MVertex Terrain::mkVertex(int x, int y, int plane) {
   const double texCoordScale = 0.1;
 
   MVertex v;// = {0,0,0,0, {0,0,1,0}, {1,1,1,1}, {-1,0,0}, 0 };
-  std::fill( v.color,   v.color  +4, 1 );
+  //std::fill( v.color,   v.color  +4, 1 );
   std::fill( v.normal,  v.normal +4, 0 );
   std::fill( v.bnormal, v.bnormal+4, 0 );
   v. normal[2] =  1;
@@ -327,9 +330,13 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
       if( inf.minor ){
         for( int q=0; q<dcount; ++q ){
           MVertex v = mkVertex(i+dx[q], r+dy[q], plane);
+          v.h = inf.black[q]?0:1;
+          //TODO: color
+          /*
           if( inf.black[q] )
             std::fill(v.color+0, v.color+4, 0); else
             std::fill(v.color+0, v.color+4, 1);
+            */
           minor.push_back( v );
           }
         }
@@ -457,6 +464,66 @@ void Terrain::computePlanes() {
       }
   }
 
+void Terrain::updateWCMap() const {
+  needToUpdateWCMap = false;
+
+  for( int i=0; i<wcorrMap.width(); ++i )
+    for( int r=0; r<wcorrMap.height(); ++r ){
+      wcorrMap[i][r] = isEnable(i,r)?9:-1;
+      }
+
+  for( int r=0; r<9; ++r )
+    for( int i=1; i+1<wcorrMap.width(); ++i )
+      for( int r=1; r+1<wcorrMap.height(); ++r ){
+        int m1 = std::min( wcorrMap[i-1][r], wcorrMap[i+1][r] );
+        int m2 = std::min( wcorrMap[i][r-1], wcorrMap[i][r+1] );
+
+        wcorrMap[i][r] = std::min( wcorrMap[i][r], std::min(m1, m2)+1 );
+        }
+  for( int i=0; i<wcorrMap.width(); ++i )
+    for( int r=0; r<wcorrMap.height(); ++r ){
+      wcorrMap[i][r] = 9-wcorrMap[i][r];
+      }
+
+  return;
+  std::vector<Point> pt;
+  for( int i=1; i+1<wcorrMap.width(); ++i )
+    for( int r=1; r+1<wcorrMap.height(); ++r ){
+      int c = 0, v = wcorrMap[i][r];
+
+      if( v>-1 ){
+        if( v>=wcorrMap[i+1][r] )
+          ++c;
+        if( v>=wcorrMap[i-1][r] )
+          ++c;
+        if( v>=wcorrMap[i][r+1] )
+          ++c;
+        if( v>=wcorrMap[i][r-1] )
+          ++c;
+
+        if( (v>=wcorrMap[i+1][r] && v>=wcorrMap[i-1][r])||
+            (v>=wcorrMap[i][r+1] && v>=wcorrMap[i][r-1]) ){
+          pt.push_back( Point{i,r} );
+          //wcorrMap[i][r] = 10;
+          }
+        }
+      }
+
+  for( size_t i=0; i<pt.size(); ++i )
+    wcorrMap[ pt[i].x ][pt[i].y ] = 10;
+
+  return;
+  for( int i=1; i<wcorrMap.width(); ++i )
+    for( int r=1; r<wcorrMap.height(); ++r ){
+      if( wcorrMap[i][r]==-2 ){
+        wcorrMap[i  ][r  ] = 10;
+        wcorrMap[i-1][r  ] = 10;
+        wcorrMap[i-1][r-1] = 10;
+        wcorrMap[i  ][r-1] = 10;
+        }
+      }
+  }
+
 Tempest::Model<WaterVertex>
       Terrain::waterGeometry(int cX, int cY ) const {
   Tempest::Model<WaterVertex> model;
@@ -465,7 +532,7 @@ Tempest::Model<WaterVertex>
   v.dir[0] = 1;
   v.dir[1] = 1;
 
-  std::fill( v.color, v.color+4, 1 );
+  //std::fill( v.color, v.color+4, 1 );
 
   std::vector< WaterVertex > land;
   const int dx[] = {0, 1, 1, 0, 1, 0},
@@ -543,7 +610,7 @@ Model Terrain::fogGeometry(int cX, int cY ) const {
   Model model;
   MVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
 
-  std::fill( v.color, v.color+4, 1 );
+  //std::fill( v.color, v.color+4, 1 );
 
   std::vector< MVertex > land;
   const int dx[] = {0, 1, 1, 0, 1, 0},
@@ -889,6 +956,7 @@ void Terrain::editBuildingsMap(int x, int y, int w, int h, int dv) {
         buildingsMap[i][r] += dv;
 
   onTerrainChanged();
+  needToUpdateWCMap = true;
   }
 
 int Terrain::clampX(int x) const {
@@ -925,6 +993,8 @@ void Terrain::computeEnableMap() {
 
       enableMap[i][r] = (det<4*75);
       }
+
+  needToUpdateWCMap = true;
   }
 
 int Terrain::heightAtNoDepth(int x, int y) const {
@@ -932,6 +1002,12 @@ int Terrain::heightAtNoDepth(int x, int y) const {
   y = std::max(0, std::min(y, height()-1) );
 
   return heightMap[x][y];
+  }
+
+const array2d<int> &Terrain::wayCorrMap() const {
+  if( needToUpdateWCMap )
+    updateWCMap();
+  return wcorrMap;
   }
 
 int Terrain::depthAt(int x, int y) const {

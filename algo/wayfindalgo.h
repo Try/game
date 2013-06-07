@@ -19,6 +19,8 @@ class WayFindAlgo {
 
     void findWay( GameObject &obj,
                   int x, int y, int rx, int ry );
+    void findWay( GameObject &obj,
+                  int x, int y, int rx, int ry , int vMapRef);
 
     std::vector<Point> way;
   private:
@@ -42,6 +44,7 @@ class WayFindAlgo {
     inline bool optimizeWay(const Point &a, const Point &b );
 
     int rPointX, rPointY;
+    int vMapRef;
     bool isRPoint();
 
     void setupWaysGroup( GameObject& robj,

@@ -33,7 +33,7 @@ class MiniMapView : public TextureView {
 
     Resource &res;
 
-    size_t rtime, rtime2;
+    size_t rtime, rtime2, tcount;
     World::CameraViewBounds camBounds;
     bool pressed;
 

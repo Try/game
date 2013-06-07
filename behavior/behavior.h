@@ -6,6 +6,8 @@
 #include <string>
 #include <memory>
 
+#include "util/factory.h"
+
 class GameObject;
 
 class Behavior : public AbstractBehavior {
@@ -44,6 +46,10 @@ class Behavior : public AbstractBehavior {
 
     template< class T >
     T * find(){
+      typedef Factory<AbstractBehavior, GameObject&, Behavior::Closure&> PId;
+      return (T*)findex[ PId::ProductID::id<T>() ];
+
+      /*
       for( auto  i = behaviors.begin(); i!=behaviors.end(); ++i ){
         AbstractBehavior * b = *i;
 
@@ -51,7 +57,7 @@ class Behavior : public AbstractBehavior {
           return reinterpret_cast<T*>(b);
         }
 
-      return 0;
+      return 0;*/
       }
 
     size_t size() const{ return behaviors.size(); }
@@ -60,7 +66,7 @@ class Behavior : public AbstractBehavior {
     Closure    * clos;
 
     typedef std::shared_ptr<AbstractBehavior> PAbstractBehavior;
-    std::vector<AbstractBehavior*> behaviors;
+    std::vector<AbstractBehavior*> behaviors, findex;
   };
 
 #endif // BEHAVIOR_H

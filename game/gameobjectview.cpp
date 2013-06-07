@@ -46,10 +46,13 @@ void GameObjectView::init() {
 
   m.radius = 0;
   m.initalModelHeight = 0;
+  m.selectionVCount   = 0;
 
   m.x = 0;
   m.y = 0;
   m.z = 0;
+
+  m.rotateRecalc = true;
 
   std::fill( m.vpos, m.vpos+3, 0 );
 
@@ -256,19 +259,26 @@ void GameObjectView::loadView( const Resource & r,
     setupMaterials(*obj, src );
     }
 
-  m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
+  bool pcrt = false;
+#ifdef __ANDROID__
+   pcrt = this->getClass().data.isBackground;
+#endif
 
-  if( src.physModel==ProtoObject::View::Sphere ){
-    if( !isEnv ){
-      setForm( p.createAnimatedSphere
-               ( x(), y(), 0, src.sphereDiameter ));
+   m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
+
+  if( pcrt ){
+    if( src.physModel==ProtoObject::View::Sphere ){
+      if( !isEnv ){
+        setForm( p.createAnimatedSphere
+                 ( x(), y(), 0, src.sphereDiameter ));
+        }
       }
-    }
 
-  if( src.physModel==ProtoObject::View::Box ){
-    if( !isEnv ){
-      const double *bs = src.boxSize;
-      setForm( p.createAnimatedBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
+    if( src.physModel==ProtoObject::View::Box ){
+      if( !isEnv ){
+        const double *bs = src.boxSize;
+        setForm( p.createAnimatedBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
+        }
       }
     }
   }
@@ -548,15 +558,30 @@ void GameObjectView::updatePos() {
   }
 
 void GameObjectView::setSelectionVisible( bool v, Selection s ) {
-  selection[int(s)]->setVisible(v);
-  if( selection[int(s)]->isVisible() )
-    selection[int(s)]->setPosition( m.vpos[0], m.vpos[1], m.vpos[2]+0.01 );
+  GraphicObject & vv = *selection[int(s)];
+
+  if( vv.isVisible()!=v ){
+    vv.setVisible(v);
+    if( v )
+      ++m.selectionVCount; else
+      --m.selectionVCount;
+    }
+
+  if( v ){
+    vv.setPosition( m.vpos[0], m.vpos[1], m.vpos[2]+0.01 );
+    }
   }
 
 void GameObjectView::higlight(int time, GameObjectView::Selection s) {
+  GraphicObject & vv = *selection[int(s)];
+
   htime[int(s)] = time;
-  selection[int(s)]->setVisible(true);
-  selection[int(s)]->setPosition( m.vpos[0], m.vpos[1], m.vpos[2]+0.01 );
+  if( !vv.isVisible() ){
+    ++m.selectionVCount;
+    }
+
+  vv.setVisible(true);
+  vv.setPosition( m.vpos[0], m.vpos[1], m.vpos[2]+0.01 );
   }
 
 void GameObjectView::setVisible(bool v) {
@@ -592,11 +617,13 @@ void GameObjectView::rotate( int delta ) {
 
   m.intentDirX = 10000*cos( M_PI*a/180.0 );
   m.intentDirY = 10000*sin( M_PI*a/180.0 );
+  m.rotateRecalc = true;
   }
 
 void GameObjectView::setRotation( int a ) {
   m.intentDirX = 10000*cos( M_PI*a/180.0 );
   m.intentDirY = 10000*sin( M_PI*a/180.0 );
+  m.rotateRecalc = true;
 
   for( size_t i=0; i<view.size(); ++i ){
     view[i].setRotation( 0, a );
@@ -619,11 +646,20 @@ void GameObjectView::setRotation( int a ) {
   }
 
 void GameObjectView::setViewDirection(int lx, int ly) {
+  int sLx = lx>0?1:-1,
+      sIx = m.intentDirX>0?1:-1;
+
   if( lx==0 && ly==0 )
+    return;
+
+  int m0 = lx*m.intentDirY,
+      m1 = ly*m.intentDirX;
+  if( m0 == m1 && sLx==sIx )
     return;
 
   m.intentDirX = lx;
   m.intentDirY = ly;
+  m.rotateRecalc = true;
   }
 
 void GameObjectView::viewDirection(int &x, int &y) const {
@@ -638,54 +674,63 @@ double GameObjectView::rAngle() const {
   }
 
 void GameObjectView::tick() {
-  for( int i=1; i<selectModelsCount; ++i ){
-    if( selection[i]->isVisible() )
-      selection[i]->setRotation( selection[i]->angleX(),
-                                 selection[i]->angleZ()+1 );
-    }
+  if( m.selectionVCount ){
+    for( int i=1; i<selectModelsCount; ++i ){
+      if( selection[i]->isVisible() )
+        selection[i]->setRotation( selection[i]->angleX(),
+                                   selection[i]->angleZ()+1 );
+      }
 
-  for( int i=2; i<selectModelsCount; ++i ){
-    if( htime[i] ){
-      htime[i]--;
-      if( htime[i]==0 )
-        selection[i]->setVisible(false);
+    for( int i=2; i<selectModelsCount; ++i ){
+      if( htime[i] ){
+        htime[i]--;
+        if( htime[i]==0 && !selection[i]->isVisible() ){
+          --m.selectionVCount;
+          selection[i]->setVisible(false);
+          }
+        }
       }
     }
 
-  double a  = 180.0*atan2( (double)m.intentDirY, (double)m.intentDirX )/M_PI;
-  double at = cls->rotateSpeed;
+  if( m.rotateRecalc ){
+    m.rotateRecalc = false;
 
-  for( size_t i=0; i<view.size(); ++i ){
-    double az = view[i].angleZ();
-    double da = a - az;
+    double a  = 180.0*atan2( (double)m.intentDirY, (double)m.intentDirX )/M_PI;
+    double at = cls->rotateSpeed;
 
-    if( fabs(da) > at && !getClass().view[i].randRotate ){
-      if( cos( M_PI*da/180.0 ) > cos(M_PI*2*at/180.0 ) )
-        view[i].setRotation(0, a); else
-      if( sin( M_PI*da/180.0 ) > 0 )
-        view[i].setRotation(0, az+at); else
-        view[i].setRotation(0, az-at);
-      } else {
-      view[i].setRotation(0, a);
+    for( size_t i=0; i<view.size(); ++i ){
+      double az = view[i].angleZ();
+      double da = a - az;
+
+      if( fabs(da) > at && !getClass().view[i].randRotate ){
+        if( cos( M_PI*da/180.0 ) > cos(M_PI*2*at/180.0 ) )
+          view[i].setRotation(0, a); else
+        if( sin( M_PI*da/180.0 ) > 0 )
+          view[i].setRotation(0, az+at); else
+          view[i].setRotation(0, az-at);
+        m.rotateRecalc = true;
+        } else {
+        view[i].setRotation(0, a);
+        }
+      }
+
+    for( size_t i=0; i<smallViews.size(); ++i ){
+      smallViews[i]->setRotation( 0, a );
+      double az = smallViews[i]->angleZ();
+      double da = a - az;
+
+      if( fabs(da) > at && !smallViews[i]->view.randRotate ){
+        if( cos( M_PI*da/180.0 ) > cos(M_PI*2*at/180.0 ) )
+          smallViews[i]->setRotation(0, a); else
+        if( sin( M_PI*da/180.0 ) > 0 )
+          smallViews[i]->setRotation(0, az+at); else
+          smallViews[i]->setRotation(0, az-at);
+        m.rotateRecalc = true;
+        } else {
+        smallViews[i]->setRotation(0, a);
+        }
       }
     }
-
-  for( size_t i=0; i<smallViews.size(); ++i ){
-    smallViews[i]->setRotation( 0, a );
-    double az = smallViews[i]->angleZ();
-    double da = a - az;
-
-    if( fabs(da) > at && !smallViews[i]->view.randRotate ){
-      if( cos( M_PI*da/180.0 ) > cos(M_PI*2*at/180.0 ) )
-        smallViews[i]->setRotation(0, a); else
-      if( sin( M_PI*da/180.0 ) > 0 )
-        smallViews[i]->setRotation(0, az+at); else
-        smallViews[i]->setRotation(0, az-at);
-      } else {
-      smallViews[i]->setRotation(0, a);
-      }
-    }
-
   }
 
 template< class Rigid >

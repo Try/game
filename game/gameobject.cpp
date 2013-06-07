@@ -195,6 +195,9 @@ void GameObject::setTeamColor(const Tempest::Color &cl) {
   }
 
 void GameObject::setPosition(int x, int y, int z) {
+  if( m.x==x && m.y==y && m.z==z )
+    return;
+
   setViewPosition( World::coordCast(x),
                    World::coordCast(y),
                    World::coordCast(z),
@@ -212,6 +215,9 @@ void GameObject::setPosition(int x, int y, int z) {
   }
 
 void GameObject::setPositionSmooth(int x, int y, int z) {
+  if( m.x==x && m.y==y && m.z==z )
+    return;
+
   if( getClass().data.isBackground ){
     setViewPosition( World::coordCast(m.x),
                      World::coordCast(m.y),
@@ -397,13 +403,6 @@ bool GameObject::isMineralMove() const {
   }
 
 void GameObject::tick( const Terrain &terrain ) {
-  /*
-  setViewPosition( World::coordCast(m.x),
-                   World::coordCast(m.y),
-                   World::coordCast(m.z),
-                   0.3 );
-                   */
-
   std::fill( m.dieVec, m.dieVec+3, 0 );
   view.tick();
   behavior.tick( terrain );

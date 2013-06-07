@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 
-#include "behavior/behavior.h"
+//#include "behavior/behavior.h"
 
 class GameObject;
 class AbstractBehavior;
@@ -14,23 +14,33 @@ template< class Base, class ... ConstructArgs >
 class Factory{
   public:
     struct AbstractProduct{
-      AbstractProduct( const std::string & n ):name(n){}
+      AbstractProduct( const std::string & n ):name(n){
+        }
 
-      virtual Base* create( ConstructArgs... a ) = 0;
+      virtual Base* create( ConstructArgs&&... a ) = 0;
       std::string name;
+      size_t id;
       };
 
     template< class T >
     struct Product : public AbstractProduct {
       Product( const std::string & n ):AbstractProduct(n){}
-      virtual Base* create( ConstructArgs... a ) { return new T( a... ); }
+      virtual Base* create( ConstructArgs&&... a ) { return new T( a... ); }
       };
 
-    static Base* create( const std::string & name, ConstructArgs ... a ){
-      for( size_t i=0; i<products.size(); ++i )
-        if( products[i]->name == name )
-          return products[i]->create( a... );
+    static Base* create( const std::string & name, ConstructArgs&& ... a ){
+      size_t dummy;
+      return create(name, dummy, a...);
+      }
 
+    static Base* create( const std::string & name, size_t& id, ConstructArgs&& ... a ){
+      for( size_t i=0; i<products.size(); ++i )
+        if( products[i]->name == name ){
+          id = products[i]->id;
+          return products[i]->create( a... );
+          }
+
+      id = -1;
       return 0;
       }
 
@@ -38,8 +48,27 @@ class Factory{
     static void addProduct( const std::string & name ){
       std::shared_ptr<AbstractProduct> p;
       p.reset( new Product<T>(name) );
+      p->id = ProductID::template id<T>();
 
       products.push_back(p);
+      }
+
+    struct ProductID{
+      template< class P >
+      static size_t id(){
+        static size_t id = nextid();
+        return id;
+        }
+
+      private: static size_t nextid(){
+        static size_t nid = -1;
+        ++nid;
+        return nid;
+        }
+      };
+
+    static size_t productsCount() {
+      return products.size();
       }
   private:
     static std::vector< std::shared_ptr<AbstractProduct> > products;
@@ -50,7 +79,5 @@ std::vector< std::shared_ptr< typename Factory<Base, ConstructArgs...>::Abstract
   Factory<Base, ConstructArgs...>::products;
 
 void initFactorys();
-
-typedef Factory<AbstractBehavior, GameObject&, Behavior::Closure&> BehaviorsFactory;
 
 #endif // FACTORY_H

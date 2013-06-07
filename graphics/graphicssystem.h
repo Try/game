@@ -139,6 +139,9 @@ class GraphicsSystem {
       Tempest::VertexShader   terrainVs;
       Tempest::FragmentShader terrainFs;
 
+      Tempest::VertexShader   terrainMinorVs;
+      Tempest::FragmentShader terrainMinorFs;
+
       Tempest::Uniform<float[3]> lightDirection, lightColor, lightAblimient,
                               view;
       } gbuf;
@@ -306,6 +309,9 @@ class GraphicsSystem {
     void copyDepth(Tempest::Texture2d &out,
                     const Tempest::Texture2d& in , int w, int h);
     void copy( Tempest::Texture2d &out,
+               const Tempest::Texture2d& in, int w, int h );
+    void copy( Tempest::Texture2d &out,
+               Tempest::Texture2d::Format::Type outFrm,
                const Tempest::Texture2d& in, int w, int h );
     void gauss( Tempest::Texture2d &out,
                 const Tempest::Texture2d& in,

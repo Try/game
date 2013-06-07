@@ -50,6 +50,7 @@ class DesertStrikeScenario  : public Scenario {
 
     struct Minimap;
     Minimap        *mmap;
+    BuyUnitPanel   *buyUnitPanel;
 
     struct PlInfo{
       PlInfo():atkGrade(0),

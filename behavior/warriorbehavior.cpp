@@ -53,15 +53,16 @@ void WarriorBehavior::tick( const Terrain & ) {
   if( dRqTime>0 )
     --dRqTime;
 
-  if( hasAtkTaget && !taget )
+  if( hasAtkTaget && !taget ){
     dRqTime = 0;
+    hasAtkTaget = false;
+    }
 
-  if( isAClick && !obj.isOnMove() )
+  if( isAClick && !obj.isOnMove() && !hasAtkTaget )
     dRqTime = 0;
 
   if( taget && obj.isOnMove() && dAtkTime>0 ){
-    std::vector<GameObject*>::iterator i = find( obj.colisions, &taget.value() );
-    if( i!=obj.colisions.end() ){
+    if( canShoot(taget.value()) ){
       tickAtack( true );
       return;
       }
@@ -80,7 +81,7 @@ void WarriorBehavior::tick( const Terrain & ) {
     isAClick = false;
     }
 
-  dRqTime = 10;
+  dRqTime = std::max( dRqTime, 10 );
 
   GameObject * rawTg      = 0;
   GameObject * rawTgBuild = 0;
@@ -111,13 +112,13 @@ void WarriorBehavior::tick( const Terrain & ) {
       }
     }
 
-  if( !obj.isOnMove() )
+  if( !obj.isOnMove() && mvTaget )
     taget = mvTaget;
 
   if( !obj.isOnMove() || ( isAtk || isAClick )  ){
     if( mvTaget )
       taget = mvTaget; else
-    if( tg )
+    if( tg && tg!=&taget.value() )
       taget = obj.world().objectWPtr( tg );
 
     tickAtack( mvTaget==taget );
@@ -251,11 +252,13 @@ void WarriorBehavior::move( int x, int y ) {
 
   isAtk = true;
 
-  dRqTime = 80;
+  dRqTime = 30+(obj.distanceQ(x,y)*4);
+  /*
   for( size_t i=0; i<obj.getClass().data.atk.size(); ++i ){
-    if( obj.getClass().data.atk[i].range>0 )
+    if( obj.getClass().data.atk[i].range>0 ){
       dRqTime = 40;
-    }
+      }
+    }*/
 
   lastX = obj.x();
   lastY = obj.y();
@@ -351,6 +354,7 @@ void WarriorBehavior::damageSplash( GameObject & tg ,
   }
 
 void WarriorBehavior::positionChangeEvent(PositionChangeEvent &) {
+  dRqTime = 0;
   unlockGround();
   }
 
@@ -368,6 +372,8 @@ bool WarriorBehavior::canShoot( GameObject &taget ) {
   }
 
 void WarriorBehavior::tickAtack( bool ignoreVrange ) {
+  int d = 0;
+
   if( taget ){
     if( canShoot( taget.value() ) ){
       if( dAtkTime==0 ){
@@ -382,7 +388,7 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
 
       vrange = vrange*vrange;
       arange = arange*arange;
-      int d = taget.value().distanceSQ(obj.x(), obj.y());
+      d = taget.value().distanceSQ(obj.x(), obj.y());
 
       if( d <= vrange || ignoreVrange ){
         if( obj.distanceQL(lastX, lastY)>0 || !obj.isOnMove() ){
@@ -393,6 +399,7 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
           move( x, y );
           }
         } else {
+        //std::cout << d << std::endl;
         taget = WeakWorldPtr();
         }
       }
@@ -434,14 +441,14 @@ void WarriorBehavior::lockGround() {
     lkX = obj.x()/Terrain::quadSize;
     lkY = obj.y()/Terrain::quadSize;
 
-    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, +1 );
+    //obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, +1 );
     mvLock = 1;
     }
   }
 
 void WarriorBehavior::unlockGround() {
   if( mvLock && intentToHold!=2 ){
-    obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
+    //obj.world().terrain().editBuildingsMap( lkX, lkY, 1, 1, -1 );
     mvLock = 0;
     }
   }

@@ -18,6 +18,7 @@ SpatialIndex::SpatialIndex(int iw, int ih):
   tree(iw,ih), w(iw/detail), h(ih/detail) {
   psum.resize( w*h );
   obj.reserve( w*h );
+  vstk.reserve(w*h);
 
   rndVec = 0;
 
@@ -160,7 +161,6 @@ void SpatialIndex::collision(GameObject &obj, GameObject &m,
     obj.colisions.push_back(&m);
     m  .colisions.push_back(&obj);
     }
-
 
   if( (&m!=&obj) && hasEffect(m,obj) ){
     if( d <= maxD ){

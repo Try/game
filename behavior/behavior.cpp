@@ -4,10 +4,11 @@
 #include "util/math.h"
 #include "util/factory.h"
 
+#include "util/behaviorsfactory.h"
 #include "behavior/movebehavior.h"
 #include "algo/algo.h"
 
-Behavior::Behavior(){
+Behavior::Behavior():findex( BehaviorsFactory::productsCount() ){
   object = 0;
   clos   = 0;
   }
@@ -28,9 +29,12 @@ void Behavior::bind( GameObject &gameObj,
   }
 
 void Behavior::add(const std::string &n) {
-  AbstractBehavior* b = ( BehaviorsFactory::create( n, *object, *clos ) );
-  if( b )
+  size_t id;
+  AbstractBehavior* b = BehaviorsFactory::create( n, id, *object, *clos );
+  if( b ){
     behaviors.push_back( b );
+    findex[id] = b;
+    }
   }
 
 void Behavior::del(AbstractBehavior *ptr) {
@@ -45,6 +49,11 @@ void Behavior::del(AbstractBehavior *ptr) {
       ++r;
     }
 
+  for( size_t i=0; i<findex.size(); ++i ){
+    if( findex[i]==b )
+      findex[i] = 0;
+    }
+
   delete b;
   behaviors.resize(r);
   }
@@ -53,6 +62,7 @@ void Behavior::clear() {
   for( size_t i=0; i<behaviors.size(); ++i )
     delete behaviors[i];
   behaviors.clear();
+  std::fill( findex.begin(), findex.end(), (AbstractBehavior*)0 );
   }
 
 bool Behavior::message( Message msg, int x, int y, Modifers md ) {

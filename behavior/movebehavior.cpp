@@ -616,8 +616,7 @@ void MoveBehavior::updatePos( const Terrain &t ) {
       tx = x + clos.colisionDisp[0],
       ty = y + clos.colisionDisp[1];
 
-  if( t.isEnableQuad( tx/Terrain::quadSize,
-                      ty/Terrain::quadSize, 1 ) &&
+  if( t.isEnable( tx/Terrain::quadSize, ty/Terrain::quadSize ) &&
       abs(x/Terrain::quadSize - tx/Terrain::quadSize)+abs(y/Terrain::quadSize - ty/Terrain::quadSize)<=1 ){
     x = tx;
     y = ty;

@@ -176,7 +176,8 @@ HEADERS += \
     util/ifstream.h \
     util/tnloptimize.h \
     gui/graphicssettingswidget.h \
-    game/missions/desertstrikescenario.h
+    game/missions/desertstrikescenario.h \
+    util/behaviorsfactory.h
 
 SOURCES += \
     main.cpp \

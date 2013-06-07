@@ -204,22 +204,6 @@ void World::createResp(int pl, int x, int y, int minX, int minY) {
     }
   }
 
-double World::coordCast(int icoord) {
-  return icoord/4048.f;
-  }
-
-double World::coordCastP(double icoord) {
-  return icoord/4048.f;
-  }
-
-int World::coordCastD(double dcoord) {
-  return int(dcoord*4048.0);
-  }
-
-int World::coordCastD(int dcoord) {
-  return dcoord*4048;
-  }
-
 void World::moveCamera(double x, double y) {
   double a = -M_PI*camera.spinX()/180.0;
 

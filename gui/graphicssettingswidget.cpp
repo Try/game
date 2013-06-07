@@ -9,25 +9,27 @@ GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
   = GraphicsSettingsWidget::Settings::openGL;
 #else
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
-  = GraphicsSettingsWidget::Settings::openGL;
+  = GraphicsSettingsWidget::Settings::directX;
 #endif
 
 GraphicsSettingsWidget::Settings::Settings() {
-  shadowMapRes = 1024;
-  bloom        = Hight;
-  glow         = true;
-  normalMap    = true;
+  shadowMapRes  = 1024;
+  bloom         = Hight;
+  glow          = true;
+  normalMap     = true;
 
-  shadowFilterQ = 2;
-  oclusion      = true;
+  shadowFilterQ  = 2;
+  oclusion       = true;
+  shadowTextures = true;
 #ifdef __ANDROID__
-  shadowMapRes = 512;
-  bloom        = Hight;
-  glow         = true;
-  normalMap    = true;
+  shadowMapRes  = 512;
+  bloom         = Hight;
+  glow          = true;
+  normalMap     = true;
 
-  shadowFilterQ = 0;
-  oclusion      = false;
+  shadowFilterQ  = 0;
+  oclusion       = false;
+  shadowTextures = false;
 #endif
   }
 
@@ -35,9 +37,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   layout().setMargin(8);
 
 #ifndef __ANDROID__
-  resize( 200, 200 );
+  resize( 200, 250 );
 #else
-  resize( 200, 300 );
+  resize( 200, 320 );
 #endif
   setLayout( Tempest::Vertical );
   setDragable(1);
@@ -115,6 +117,16 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   b->setCurrentItem( s.oclusion? 1:0 );
   b->onItemSelected.bind(*this, &GraphicsSettingsWidget::oclusion );
   layout().add(b);
+
+  b = new ListBox(res);
+  l.clear();
+  l.push_back(L"shTexture off");
+  l.push_back(L"shTexture on");
+
+  b->setItemList(l);
+  b->setCurrentItem( s.shadowTextures? 1:0 );
+  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::shTexture );
+  layout().add(b);
   }
 
 void GraphicsSettingsWidget::shadowMapRes(int v) {
@@ -149,6 +161,12 @@ void GraphicsSettingsWidget::normalMap(int v) {
 
 void GraphicsSettingsWidget::oclusion(int v) {
   s.oclusion = v;
+
+  onSettingsChanged(s);
+  }
+
+void GraphicsSettingsWidget::shTexture(int v) {
+  s.shadowTextures = v;
 
   onSettingsChanged(s);
   }

@@ -415,7 +415,7 @@ void InGameControls::updateSelectUnits( const std::vector<GameObject *> &u ){
   //units->setup( u );
   }
 
-void InGameControls::onUnitDied(GameObject &obj) {
+void InGameControls::onUnitDied(GameObject &) {
   //units->onUnitDied( obj );
   }
 

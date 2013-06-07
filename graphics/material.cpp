@@ -262,7 +262,9 @@ void Material::shadow( Tempest::RenderState &rs,
     m.mul( Material::animateObjMatrix( object ) );
 
   table.add( m,     "mvpMatrix", Tempest::UniformTable::Vertex );
-  table.add( diffuse, "texture", Tempest::UniformTable::Fragment );
+
+  if( settings.shadowTextures )
+    table.add( diffuse, "texture", Tempest::UniformTable::Fragment );
 
   rs.setCullFaceMode( Tempest::RenderState::CullMode::front );
 

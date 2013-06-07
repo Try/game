@@ -22,6 +22,7 @@ class GraphicsSettingsWidget:public Panel {
       bool  glow;
       bool  normalMap;
       bool  oclusion;
+      bool  shadowTextures;
 
       enum API{
         openGL,
@@ -41,6 +42,7 @@ class GraphicsSettingsWidget:public Panel {
     void glow( int v );
     void normalMap( int v );
     void oclusion( int v );
+    void shTexture( int v );
   };
 
 #endif // GRAPHICSSETTINGSWIDGET_H

@@ -1,4 +1,4 @@
-#include "factory.h"
+#include "behaviorsfactory.h"
 
 #include "behavior/abstractbehavior.h"
 #include "behavior/movebehavior.h"
