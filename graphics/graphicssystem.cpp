@@ -15,6 +15,7 @@
 
 #include <resource.h>
 #include <cstdint>
+#include <tuple>
 
 GraphicsSystem::GraphicsSystem( void *hwnd,
                                 bool isFullScreen )
@@ -860,6 +861,7 @@ int GraphicsSystem::drawObjects( Tempest::VertexShader   & vs,
                                                           Tempest::UniformTable & ) const,
                                   bool clr,
                                   bool clrDepth ) {
+  toDraw.clear();
   if( bufC>0 && gbuffer ){
     Tempest::Render render( device,
                             gbuffer,
@@ -935,15 +937,7 @@ int GraphicsSystem::draw(  Tempest::Render  & render,
     const AbstractGraphicObject& ptr = *v.objects[i];
 
     if( !deepVTest || isVisible(ptr,frustum) ){
-      /*
-      Tempest::UniformTable table( render );
-      Tempest::RenderState rs;
-
-      (ptr.material().*func)( rs, ptr.transform(), camera, table, args... );
-      render.setRenderState(rs);
-      render.draw( ptr );
-      */
-      toDraw.push_back( &ptr );
+      toDraw.push_back( v.objects[i] );
       ++c;
       }
     }
@@ -988,8 +982,9 @@ void GraphicsSystem::completeDraw( Tempest::Render  & render,
       uint64_t idA = (uint64_t(a.vboHandle())<<32) + a.material().diffuse.handle();
       uint64_t idB = (uint64_t(b.vboHandle())<<32) + b.material().diffuse.handle();
 
-      //return idA < idB;
+      return idA < idB;
 
+      /*
       if( idA<idB )
         return 1;
 
@@ -1002,10 +997,9 @@ void GraphicsSystem::completeDraw( Tempest::Render  & render,
                             & cb = *b.material().teamColor;
         return ca!=cb;
         }
-      /*
-      return a.material().diffuse.handle() <
-             b.material().diffuse.handle();
-             */
+
+      return 0;
+      */
       }
     };
   std::sort( toDraw.begin(), toDraw.end(), &Cmp::less );
