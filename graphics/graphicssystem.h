@@ -262,6 +262,8 @@ class GraphicsSystem {
                       const Scene &scene,
                       const Tempest::AbstractCamera &camera,
                       const Scene::Objects &v,
+                      bool (*cmp)( const AbstractGraphicObject*,
+                                   const AbstractGraphicObject* ),
                       void (Material::*func)( Tempest::RenderState& /*d*/,
                                               const Tempest::Matrix4x4 & /*object*/,
                                               const Tempest::AbstractCamera&,
@@ -276,6 +278,8 @@ class GraphicsSystem {
                       const Scene &scene,
                       const Tempest::AbstractCamera &camera,
                       const Scene::Objects &v,
+                      bool (*cmp)( const AbstractGraphicObject*,
+                                   const AbstractGraphicObject* ),
                       void (Material::*func)(Tempest::RenderState &,
                                              const Tempest::Matrix4x4 &,
                                              const Tempest::AbstractCamera &,
@@ -410,6 +414,8 @@ class GraphicsSystem {
     static Tempest::AbstractAPI* createAPI();
     void setupScreenSize( int w, int h );
 
+    struct MaterialSort;
+
     template< class ... Args, class ... FArgs >
     int draw(  Tempest::Render & render,
                const Frustum &frustum,
@@ -427,6 +433,8 @@ class GraphicsSystem {
     template< class ... Args, class ... FArgs >
     void completeDraw( Tempest::Render & render,
                        const Tempest::AbstractCamera & camera,
+                       bool (*cmp)( const AbstractGraphicObject*,
+                                    const AbstractGraphicObject* ),
                        void (Material::*func)( Tempest::RenderState& /*d*/,
                                                const Tempest::Matrix4x4 & /*object*/,
                                                const Tempest::AbstractCamera&,

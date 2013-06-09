@@ -23,6 +23,7 @@ class Material {
     float alphaTrestRef;
 
     const Tempest::Color *teamColor;
+    static Tempest::Color nullColor;
 
     struct Usage{
       bool mainPass, shadowCast, terrainMinor, terrainMain,

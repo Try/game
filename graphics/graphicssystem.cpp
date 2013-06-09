@@ -17,6 +17,84 @@
 #include <cstdint>
 #include <tuple>
 
+struct GraphicsSystem::MaterialSort{
+  static bool sm( const AbstractGraphicObject* xa,
+                    const AbstractGraphicObject* xb ){
+    const AbstractGraphicObject& a = *xa;
+    const AbstractGraphicObject& b = *xb;
+
+    size_t avbo = a.vboHandle();
+    size_t bvbo = b.vboHandle();
+
+    return avbo < bvbo;
+    }
+
+  static bool glow( const AbstractGraphicObject* xa,
+                    const AbstractGraphicObject* xb ){
+    const AbstractGraphicObject& a = *xa;
+    const AbstractGraphicObject& b = *xb;
+
+    size_t avbo = a.vboHandle(),
+           atex = a.material().glow.handle();
+
+    size_t bvbo = b.vboHandle(),
+           btex = b.material().glow.handle();
+
+    uint64_t idA = (uint64_t(avbo)<<32) + atex;
+    uint64_t idB = (uint64_t(bvbo)<<32) + btex;
+
+
+    return idA < idB;
+    }
+
+  static bool terrain( const AbstractGraphicObject* xa,
+                       const AbstractGraphicObject* xb ){
+    const AbstractGraphicObject& a = *xa;
+    const AbstractGraphicObject& b = *xb;
+
+    size_t avbo = a.vboHandle(),
+           atex = a.material().diffuse.handle();
+
+    size_t bvbo = b.vboHandle(),
+           btex = b.material().diffuse.handle();
+
+    uint64_t idA = (uint64_t(avbo)<<32) + atex;
+    uint64_t idB = (uint64_t(bvbo)<<32) + btex;
+
+
+    return idA < idB;
+    }
+
+  static bool less( const AbstractGraphicObject* xa,
+                    const AbstractGraphicObject* xb ){
+    const AbstractGraphicObject& a = *xa;
+    const AbstractGraphicObject& b = *xb;
+
+    size_t avbo = a.vboHandle(),
+           atex = a.material().diffuse.handle();
+
+    float ar = a.material().teamColor->r(),
+          ag = a.material().teamColor->g(),
+          ab = a.material().teamColor->b();
+
+    size_t bvbo = b.vboHandle(),
+           btex = b.material().diffuse.handle();
+
+    float br = a.material().teamColor->r(),
+          bg = a.material().teamColor->g(),
+          bb = a.material().teamColor->b();
+
+    return std::tie(avbo, atex, ar, ag, ab) <
+           std::tie(bvbo, btex, br, bg, bb);
+
+    uint64_t idA = (uint64_t(avbo)<<32) + atex;
+    uint64_t idB = (uint64_t(bvbo)<<32) + btex;
+
+
+    return idA < idB;
+    }
+  };
+
 GraphicsSystem::GraphicsSystem( void *hwnd,
                                 bool isFullScreen )
   : api( createAPI() ),
@@ -473,6 +551,7 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
         ref(matrix) );
   completeDraw( render,
                 camera,
+                MaterialSort::sm,
                 &Material::shadow,
                 ref(matrix));
   drawOpWindow();
@@ -611,9 +690,6 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                    scene.camera().projective(),
                    1 );
 
-  setupLight( scene, gbuf.vs, gbuf.fs, sm, smCl, ao );
-
-  //if(0)
   drawObjects( gbuf.terrainVs,
                gbuf.terrainFs,
                gbuffer,
@@ -622,6 +698,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                scene,
                camera,
                scene.terrainMinorObjects(),
+               MaterialSort::sm,
                &Material::terrainMinorZ,
                true,
                true );
@@ -635,6 +712,17 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
     r.clear( Tempest::Color(0) );
     }
 
+  setupLight( scene, gbuf.vs, gbuf.fs, sm, smCl, ao );
+  drawObjects( gbuffer,
+               &mainDepth,
+               gbuffSize,
+               scene,
+               camera,
+               scene.mainObjects(),
+               MaterialSort::less,
+               &Material::gbuffer,
+               false );
+
   setupLight( scene, gbuf.terrainMinorVs, gbuf.terrainMinorFs, sm, smCl, ao );
   drawObjects( gbuf.terrainMinorVs,
                gbuf.terrainMinorFs,
@@ -644,6 +732,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                scene,
                camera,
                scene.terrainMinorObjects(),
+               MaterialSort::terrain,
                &Material::terrainMinor,
                false );
 
@@ -657,21 +746,11 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                  scene,
                  camera,
                  scene.terrainObjects(),
+                 MaterialSort::terrain,
                  &Material::terrainMain,
                  false );
     (void)count;
     }
-
-  setupLight( scene, gbuf.vs, gbuf.fs, sm, smCl, ao );
-
-  drawObjects( gbuffer,
-               &mainDepth,
-               gbuffSize,
-               scene,
-               camera,
-               scene.mainObjects(),
-               &Material::gbuffer,
-               false );
 
   setupLight( scene, gbuf.grassVs, gbuf.grassFs, sm, smCl, ao );
   drawObjects( gbuf.grassVs,
@@ -682,6 +761,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                scene,
                camera,
                scene.grassObjects(),
+               MaterialSort::less,
                &Material::grass );
 
   drawObjects( transparentData.vsAdd,
@@ -692,6 +772,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                scene,
                camera,
                scene.additiveObjects(),
+               MaterialSort::less,
                &Material::additive );
 
   setupLight( scene, transparentData.vs, transparentData.fs, sm, smCl, ao );
@@ -702,6 +783,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                scene,
                camera,
                scene.transparentObjects(),
+               MaterialSort::less,
                &Material::transparentZ,
                false );
 
@@ -712,6 +794,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                scene,
                camera,
                scene.transparentObjects(),
+               MaterialSort::less,
                &Material::transparent,
                false );
 
@@ -828,6 +911,7 @@ void GraphicsSystem::drawOmni( Tempest::Texture2d *gbuffer,
         shM );
   completeDraw( render,
                 camera,
+                MaterialSort::less,
                 &Material::omni,
                 shM );
   }
@@ -838,29 +922,33 @@ int GraphicsSystem::drawObjects( Tempest::Texture2d* gbuffer,
                                   const Scene &scene,
                                   const Tempest::AbstractCamera & camera,
                                   const Scene::Objects &v,
+                                  bool (*cmp)( const AbstractGraphicObject*,
+                                               const AbstractGraphicObject* ),
                                   void (Material::*func)( Tempest::RenderState& /*d*/,
                                                           const Tempest::Matrix4x4 & /*object*/,
                                                           const Tempest::AbstractCamera&,
                                                           Tempest::UniformTable & ) const,
                                   bool clr ) {
   return drawObjects( gbuf.vs, gbuf.fs, gbuffer, mainDepth,
-                      bufC, scene, camera, v, func, clr );
+                      bufC, scene, camera, v, cmp, func, clr );
   }
 
 int GraphicsSystem::drawObjects( Tempest::VertexShader   & vs,
-                                  Tempest::FragmentShader & fs,
-                                  Tempest::Texture2d* gbuffer,
-                                  Tempest::Texture2d* mainDepth,
-                                  int bufC,
-                                  const Scene &scene,
-                                  const Tempest::AbstractCamera& camera,
-                                  const Scene::Objects &v,
-                                  void (Material::*func)( Tempest::RenderState& /*d*/,
-                                                          const Tempest::Matrix4x4 & /*object*/,
-                                                          const Tempest::AbstractCamera&,
-                                                          Tempest::UniformTable & ) const,
-                                  bool clr,
-                                  bool clrDepth ) {
+                                 Tempest::FragmentShader & fs,
+                                 Tempest::Texture2d* gbuffer,
+                                 Tempest::Texture2d* mainDepth,
+                                 int bufC,
+                                 const Scene &,
+                                 const Tempest::AbstractCamera& camera,
+                                 const Scene::Objects &v,
+                                 bool (*cmp)( const AbstractGraphicObject*,
+                                              const AbstractGraphicObject* ),
+                                 void (Material::*func)( Tempest::RenderState& /*d*/,
+                                                         const Tempest::Matrix4x4 & /*object*/,
+                                                         const Tempest::AbstractCamera&,
+                                                         Tempest::UniformTable & ) const,
+                                 bool clr,
+                                 bool clrDepth ) {
   toDraw.clear();
   if( bufC>0 && gbuffer ){
     Tempest::Render render( device,
@@ -877,7 +965,7 @@ int GraphicsSystem::drawObjects( Tempest::VertexShader   & vs,
     Frustum frustum;
     mkFrustum( camera, frustum );
     int r = draw( render, frustum, true, camera, v, func );
-    completeDraw( render, camera, func );
+    completeDraw( render, camera, cmp, func );
     return r;
     } else {
     Tempest::Render render( device, vs, fs );
@@ -890,7 +978,7 @@ int GraphicsSystem::drawObjects( Tempest::VertexShader   & vs,
     Frustum frustum;
     mkFrustum( camera, frustum );
     int r = draw( render, frustum, true, camera, v, func );
-    completeDraw( render, camera, func );
+    completeDraw( render, camera, cmp, func );
     return r;
     }
   }
@@ -901,10 +989,10 @@ void GraphicsSystem::drawTranscurent( Tempest::Texture2d& screen,
                                       const Scene &scene,
                                       const Scene::Objects &v ) {
   Tempest::Render render( device,
-                       screen,
-                       mainDepth,
-                       displaceData.vs,
-                       displaceData.fs );
+                          screen,
+                          mainDepth,
+                          displaceData.vs,
+                          displaceData.fs );
 
   device.setUniform( displaceData.fs,
                      sceneCopy,
@@ -917,7 +1005,10 @@ void GraphicsSystem::drawTranscurent( Tempest::Texture2d& screen,
   Frustum frustum;
   mkFrustum( camera, frustum );
   draw( render, frustum, true, camera, v, &Material::displace );
-  completeDraw( render, camera, &Material::displace );
+  completeDraw( render,
+                camera,
+                MaterialSort::less,
+                &Material::displace );
   }
 
 template< class ... Args, class ... FArgs >
@@ -967,42 +1058,15 @@ int GraphicsSystem::draw(  Tempest::Render  & render,
 template< class ... Args, class ... FArgs >
 void GraphicsSystem::completeDraw( Tempest::Render  & render,
                                    const Tempest::AbstractCamera & camera,
+                                   bool (*cmp)( const AbstractGraphicObject*,
+                                                const AbstractGraphicObject* ),
                                    void (Material::*func)( Tempest::RenderState& /*d*/,
                                                           const Tempest::Matrix4x4 & /*object*/,
                                                           const Tempest::AbstractCamera&,
                                                           Tempest::UniformTable &,
                                                           FArgs ... args ) const,
                                    Args... args ) {
-  struct Cmp{
-    static bool less( const AbstractGraphicObject* aa,
-                      const AbstractGraphicObject* ab ){
-      const AbstractGraphicObject& a = *aa;
-      const AbstractGraphicObject& b = *ab;
-
-      uint64_t idA = (uint64_t(a.vboHandle())<<32) + a.material().diffuse.handle();
-      uint64_t idB = (uint64_t(b.vboHandle())<<32) + b.material().diffuse.handle();
-
-      return idA < idB;
-
-      /*
-      if( idA<idB )
-        return 1;
-
-      if( idA>idB )
-        return 0;
-
-      if( a.material().teamColor &&
-          b.material().teamColor ){
-        const Tempest::Color& ca = *a.material().teamColor,
-                            & cb = *b.material().teamColor;
-        return ca!=cb;
-        }
-
-      return 0;
-      */
-      }
-    };
-  std::sort( toDraw.begin(), toDraw.end(), &Cmp::less );
+  std::sort( toDraw.begin(), toDraw.end(), cmp );
 
   for( size_t i=0; i<toDraw.size(); ++i ){
     const AbstractGraphicObject& ptr = *toDraw[i];
@@ -1067,6 +1131,7 @@ void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
         &Material::water  );
   completeDraw( render,
                 camera,
+                MaterialSort::less,
                 &Material::water  );
   }
 
@@ -1103,6 +1168,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
                    scene,
                    scene.camera(),
                    scene.glowObjects(),
+                   MaterialSort::glow,
                    &Material::glowPassAdd,
                    false,
                    false );
@@ -1116,6 +1182,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
                    scene,
                    scene.camera(),
                    scene.glowObjects(),
+                   MaterialSort::glow,
                    &Material::glowPassAdd,
                    false,
                    false );
@@ -1133,6 +1200,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
                    scene,
                    camera,
                    scene.glowObjects(),
+                   MaterialSort::less,
                    &Material::glowPass,
                    true,
                    false );
@@ -1432,9 +1500,13 @@ void GraphicsSystem::drawFogOfWar( Tempest::Texture2d &out,
     Frustum frustum;
     mkFrustum( camera, frustum );
     draw( render, frustum, true, camera, v, &Material::fogOfWar, true );
-    completeDraw( render, camera, &Material::fogOfWar, true );
+    completeDraw( render, camera,
+                  MaterialSort::less,
+                  &Material::fogOfWar, true );
     draw( render, frustum, true, camera, v, &Material::fogOfWar, false );
-    completeDraw( render, camera, &Material::fogOfWar, false );
+    completeDraw( render, camera,
+                  MaterialSort::less,
+                  &Material::fogOfWar, false );
     }
 
   Tempest::Texture2d tmp;
@@ -1600,6 +1672,7 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
           ref(matrix) );
     completeDraw( render,
                   camera,
+                  MaterialSort::less,
                   &Material::shadow,
                   ref(matrix) );
     }
