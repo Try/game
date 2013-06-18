@@ -82,7 +82,7 @@ struct DesertStrikeScenario::BuyButton: public NumButton {
     }
 
   void paintEvent(Tempest::PaintEvent &e){
-    num = pl.units[this->p.name];
+    num = pl.getParam(p.name);//.units[this->p.name];
     //castleGrade;
     NumButton::paintEvent(e);
     }
@@ -117,18 +117,6 @@ struct DesertStrikeScenario::GradeButton: public Button {
   void paintEvent(Tempest::PaintEvent &e){
     //num = pl.getParam(type);
     Button::paintEvent(e);
-
-    /*
-    if( pl.maxBTime && type=="castle" ){
-      int coolDown = h()*pl.btime/pl.maxBTime;
-
-      Tempest::Painter p(e);
-      p.setTexture( texture );
-      p.setBlendMode( Tempest::alphaBlend );
-
-      p.drawRect( 0, h()-coolDown, w(), coolDown,
-                  2,        4, 1, 1 );
-      }*/
     }
 
   Tempest::signal<int> onClick;
@@ -468,8 +456,8 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
 
 struct DesertStrikeScenario::SpellPanel: public TranscurentPanel {
   SpellPanel( Resource & res,
-              Game & /*game*/,
-              PlInfo & pl ):TranscurentPanel(res){
+              Game & game,
+              PlInfo & pl ):TranscurentPanel(res), game(game){
     using namespace Tempest;
 
     setMinimumSize(75, 200);
@@ -481,12 +469,25 @@ struct DesertStrikeScenario::SpellPanel: public TranscurentPanel {
 
     DesertStrikeScenario::GradeButton * u = 0;
     u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/fire_strike", 0 );
+    u->onClick.bind(*this, &SpellPanel::spell );
     layout().add( u );
 
     u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/blink", 1 );
+    u->onClick.bind(*this, &SpellPanel::spell );
     layout().add( u );
     }
 
+  void spell( int i ){
+    std::vector<char> data;
+    ByteArraySerialize s(data, ByteArraySerialize::Write);
+
+    s.write( game.player().number()-1 );
+    s.write( i );
+    s.write( 'm' );
+    game.message( data );
+    }
+
+  Game & game;
   };
 
 struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
@@ -511,8 +512,8 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
 
     const char * cas[3][4] = {
       {"castle"},
-      {"house"},
-      {"tower"}
+      {"house" },
+      {"tower" }
       };
 
     layers[0] = mkPanel<3,4>(pl, cas);
@@ -601,15 +602,6 @@ struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
     }
 
   void buy( const int grade ){
-    /*
-    std::vector<char> data;
-    ByteArraySerialize s(data, ByteArraySerialize::Write);
-
-    s.write(game.player().number()-1);
-    s.write( grade );
-    s.write( 'g' );
-    game.message( data );*/
-
     mmap->setTab(grade);
     }
 
@@ -619,15 +611,19 @@ struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
 
 DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueue &msg)
   :Scenario(g,ui, msg){
-  tNum     = 0;
-  interval = 1000;
+  tNum      = 0;
+  interval  = 750;
+  isTestRun = 0;
+
   isMouseTracking = false;
 
   plC[0].units["pikeman"] = 3;
   plC[1].units["pikeman"] = 3;
 
-  game.player(1).setGold(350);
-  game.player(2).setGold(350);
+  if( !isTestRun ){
+    game.player(1).setGold(350);
+    game.player(2).setGold(350);
+    }
 
   gui.update();
   g.prototypes().load("campagin/td.xml");
@@ -643,12 +639,21 @@ void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
   }
 
 void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
+  F3 v = unProject( e.x, e.y );
   isMouseTracking = false;
+
+  if( spellToCast.size() ){
+    World  &w  = game.curWorld();
+    w.emitHudAnim( "hud/blink",
+                   (v.data[0]),
+                   (v.data[1]),
+                   0.01 );
+    spellToCast.clear();
+    return;
+    }
 
   World  &world  = game.curWorld();
   Player &player = game.player();
-
-  F3 v = unProject( e.x, e.y );
 
   updateMousePos(e);
 
@@ -666,6 +671,9 @@ void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
   }
 
 void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
+  if( spellToCast.size() )
+    return;
+
   if( !isMouseTracking && gui.mouseMoveEvent(e) ){
     acceptMouseObj = false;
     return;
@@ -696,25 +704,38 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
     int g = game.prototype(name).data.gold;
     if( game.player(pl+1).gold() >= g ){
       ++plC[ pl ].units[name];
-      game.player(pl+1).setGold( game.player(pl+1).gold() - game.prototype(name).data.gold );
+      game.player(pl+1).setGold( game.player(pl+1).gold() -
+                                 game.prototype(name).data.gold );
 
       //debug
-      //++plC[ 1 ].units[name];
+      if( isTestRun )
+        ++plC[ 1 ].units[name];
       }
     } else
   if( ch=='s' && plC[ pl ].units[name]>0 ){
     --plC[ pl ].units[name];
+    game.player(pl+1).setGold( game.player(pl+1).gold() +
+                               (75*game.prototype(name).data.gold)/100 );
 
-    //debug
-    --plC[ 1 ].units[name];
+    //debug    
+    if( isTestRun )
+      --plC[ 1 ].units[name];
     } else
   if( ch=='g' && plC[pl].queue.size()==0 ){
     plC[pl].queue.push_back(name);
-    plC[pl].maxBTime = 500;
-    plC[pl].btime    = plC[pl].maxBTime;
+    grade( plC[pl], name );
+    }else
+  if( ch=='m' ){
+    spellToCast = "spellToCast";
+    //game.curWorld().emitHudAnim();
     }
 
   mmap->updateValues();
+  }
+
+void DesertStrikeScenario::grade( PlInfo &pl, const std::string &/*grade*/ ){
+  pl.maxBTime = 500;
+  pl.btime    = pl.maxBTime;
   }
 
 void DesertStrikeScenario::onUnitDied(GameObject &obj) {
@@ -742,10 +763,15 @@ void DesertStrikeScenario::tick() {
              1 );
     }
 
+  if( tNum%interval==0 ){
+    if( !isTestRun )
+      aiTick(1);
+    }
+
   ++tNum;
-  if( tNum/interval>=2 ){
-    tNum = 0;
-    aiTick(1);
+  if( tNum/interval>=1 ){
+    tNum -= interval;
+    //aiTick(1);
     }
 
   for( int i=0; i<2; ++i ){
@@ -757,7 +783,7 @@ void DesertStrikeScenario::tick() {
       mmap->update();
 
       if( plC[i].queue.size() ){
-        plC[i].btime = 500;
+        grade( plC[i], plC[i].queue.front() );
 
         if( plC[i].queue.front()=="house" ){
           ++plC[i].economyGrade;
@@ -798,7 +824,7 @@ void DesertStrikeScenario::mkUnits( int pl,
   for( u = plC[pl].units.begin(); u!=e; ++u ){
     int& c = plC[pl].realCount[u->first];
     for( int i=0; i<u->second; ++i ){
-      if( c < 2*u->second ){
+      if( 1 || c < 3*u->second ){
         GameObject& obj = game.curWorld().addObject(u->first, pl+1);
         ++c;
         ++id;
@@ -896,6 +922,7 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
 
     gold->setHint(L"$(gold)");
     lim ->setHint(L"$(units_limit)");
+    lim->setVisible(0);
 
     p.frmEdit->setVisible(0);
     p.fullScr->setVisible(0);
@@ -909,13 +936,13 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
 
   cen->setLayout( Tempest::Horizontal );
   cen->layout().add( new MissionTargets(game, res) );
-  cen->layout().add( new UpgradePanel(res, game, plC[0], buyUnitPanel) );
+  cen->layout().add( new SpellPanel(res, game, plC[0]) );
 
   Tempest::Widget * box = new Tempest::Widget();
   box->layout().add( editPanel );
   box->layout().add( settingsPanel );
   cen->layout().add( box );
-  cen->layout().add( new SpellPanel(res, game, plC[0]) );
+  cen->layout().add( new UpgradePanel(res, game, plC[0], buyUnitPanel) );
 
   cen->useScissor( false );
   box->useScissor( false );
@@ -977,10 +1004,28 @@ int DesertStrikeScenario::PlInfo::getParam(const std::string &p) const {
   if( p=="armor" )
     return armorGrade;
 
-  return 0;
+  if( p=="house" )
+    return economyGrade;
+
+  std::map<std::string, int>::const_iterator i = units.find(p);
+  if( i==units.end() )
+    return 0;
+
+  return units.at(p);
   }
 
 void DesertStrikeScenario::aiTick( int pl ) {
+  int c = 0;
+  for( auto i=plC[pl].units.begin(); i!=plC[pl].units.end(); ++i )
+    c += (i->second);
+
+  if( std::min(4, c/5) > plC[pl].economyGrade ){
+    if( plC[pl].queue.size()==0 ){
+      plC[pl].queue.push_back("house");
+      grade( plC[pl], "house" );
+      }
+    }
+
   struct BuildElement{
     std::string src;
     int scount;
@@ -989,32 +1034,50 @@ void DesertStrikeScenario::aiTick( int pl ) {
     };
 
   BuildElement b[] = {
-    {"pikeman",    3, "incvisitor", 1 },
-    {"pikeman",    5, "gelion",      1 },
-    {"incvisitor", 1, "pikeman",    3 },
+    {"pikeman",      3, "incvisitor",   1 },
+    {"pikeman",      5, "gelion",       1 },
+    {"gelion",       2, "fire_mage",    1 },
+    {"incvisitor",   1, "pikeman",      3 },
+    {"incvisitor",   6, "fire_element", 1 },
 
-    {"incvisitor", 3, "fire_mage",  3 },
+    {"incvisitor",   3, "fire_mage",  3 },
+    {"fire_mage",    5, "golem",      2 },
+    {"balista",      1, "incvisitor", 1 },
+
+    {"fire_element", 1, "golem",      1 },
+    {"golem",        1, "balista",    2 },
+    {"golem",        4, "golem",      3 },
+    {"golem",        1, "incvisitor", 1 },
     {"", 0, "", 0}
   };
 
-  for( int i=0; i<2; ++i )
-    if( pl!=i ){
-      for( int r=0; ; ++r ){
-        const BuildElement& e = b[r];
-        if( e.src.size()==0 )
-          return;
+  int count = 0;
+  for( ; b[count].src.size(); ++count )
+    ;
 
-        int c = plC[i].units[e.src];
-        c*=e.dcount;
-        c/=e.scount;
+  bool repass = true;
+  for( int pass=1; repass || pass<2; ++pass ){
+    repass = false;
 
-        for( int q=plC[ pl ].units[e.dst]; q<c; ++q ){
-          int gold = game.prototype(e.dst).data.gold;
-          if( game.player(pl+1).gold() >= gold ){
-            ++plC[ pl ].units[e.dst];
-            game.player(pl+1).setGold( game.player(pl+1).gold() - gold );
+    for( int i=0; i<2; ++i )
+      if( pl!=i ){
+        for( int r=count-1; r>=0; --r ){
+          const BuildElement& e = b[r];
+
+          int c = plC[i].units[e.src];
+          c*=e.dcount;
+          c*=pass;
+          c/=e.scount;
+
+          for( int q=plC[ pl ].units[e.dst]; q<c; ++q ){
+            int gold = game.prototype(e.dst).data.gold;
+            if( game.player(pl+1).gold() >= gold ){
+              ++plC[ pl ].units[e.dst];
+              repass = true;
+              game.player(pl+1).setGold( game.player(pl+1).gold() - gold );
+              }
             }
           }
         }
-      }
+    }
   }

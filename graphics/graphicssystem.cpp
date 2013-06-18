@@ -148,6 +148,12 @@ void GraphicsSystem::makeRenderAlgo( int w, int h ) {
   gbuf.vs     = res.vshader("unit_main_material");
   gbuf.fs     = res.fshader("unit_main_material");
 
+  gbuf.vsA    = res.vshader("main_material_atest");
+  gbuf.fsA    = res.fshader("main_material_atest");
+
+  gbuf.zfillVs   = res.vshader("zfill_material");
+  gbuf.zfillFs   = res.fshader("zfill_material");
+
   gbuf.grassVs   = res.vshader("grass_material");
   gbuf.grassFs   = res.fshader("grass_material");
 
@@ -198,6 +204,10 @@ void GraphicsSystem::makeRenderAlgo( int w, int h ) {
 
   glowData.vs = res.vshader("glow");
   glowData.fs = res.fshader("glow");
+
+  Tempest::Pixmap pm(1,1, false);
+  pm.set(0,0, Tempest::Pixmap::Pixel{0,0,0,0});
+  glowData.black1x1 = localTex.create(pm);
 
   fogOfWar.vsAcept = gaussData.vs;
   fogOfWar.fsAcept = res.fshader("aceptFog");
@@ -411,7 +421,7 @@ bool GraphicsSystem::render( Scene &scene,
                useDirectRender?0:4,
                rsm,
                settings.shadowMapRes,
-               false );
+               true );
 
   Tempest::Texture2d fog;
   if( fogView.width()>0 ){
@@ -542,8 +552,7 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
   Frustum frustum;
   mkFrustum( matrix, frustum );
 
-  draw( render,
-        frustum,
+  draw( frustum,
         true,
         camera,
         v,
@@ -685,13 +694,19 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
   if( !gbuffer )
     gbuffSize = 0;
 
-  setupLight( scene, gbuf.terrainVs, gbuf.terrainFs, sm, smCl, ao );
+  setupLight( scene, gbuf.terrainVs,      gbuf.terrainFs,      sm, smCl, ao );
+  setupLight( scene, gbuf.vs,             gbuf.fs,             sm, smCl, ao );
+  setupLight( scene, gbuf.vsA,            gbuf.fsA,            sm, smCl, ao );
+  setupLight( scene, gbuf.terrainMinorVs, gbuf.terrainMinorFs, sm, smCl, ao );
+  setupLight( scene, gbuf.grassVs,        gbuf.grassFs,        sm, smCl, ao );
+  setupLight( scene, transparentData.vs,  transparentData.fs,  sm, smCl, ao );
+
   particles->exec( scene.camera().view(),
                    scene.camera().projective(),
                    1 );
 
-  drawObjects( gbuf.terrainVs,
-               gbuf.terrainFs,
+  drawObjects( gbuf.zfillVs,
+               gbuf.zfillFs,
                gbuffer,
                &mainDepth,
                gbuffSize,
@@ -707,12 +722,23 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
     Tempest::Render r( device,
                        gbuffer,
                        gbuffSize,
-                       gbuf.terrainVs,
-                       gbuf.terrainFs );
+                       gbuf.zfillVs,
+                       gbuf.zfillFs );
     r.clear( Tempest::Color(0) );
     }
 
-  setupLight( scene, gbuf.vs, gbuf.fs, sm, smCl, ao );
+  drawObjects( gbuf.vsA,
+               gbuf.fsA,
+               gbuffer,
+               &mainDepth,
+               gbuffSize,
+               scene,
+               camera,
+               scene.mainObjectsAtest(),
+               MaterialSort::less,
+               &Material::gbuffer,
+               false );
+
   drawObjects( gbuffer,
                &mainDepth,
                gbuffSize,
@@ -723,18 +749,19 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                &Material::gbuffer,
                false );
 
-  setupLight( scene, gbuf.terrainMinorVs, gbuf.terrainMinorFs, sm, smCl, ao );
-  drawObjects( gbuf.terrainMinorVs,
-               gbuf.terrainMinorFs,
-               gbuffer,
-               &mainDepth,
-               gbuffSize,
-               scene,
-               camera,
-               scene.terrainMinorObjects(),
-               MaterialSort::terrain,
-               &Material::terrainMinor,
-               false );
+  if(1){
+    drawObjects( gbuf.terrainMinorVs,
+                 gbuf.terrainMinorFs,
+                 gbuffer,
+                 &mainDepth,
+                 gbuffSize,
+                 scene,
+                 camera,
+                 scene.terrainMinorObjects(),
+                 MaterialSort::terrain,
+                 &Material::terrainMinor,
+                 false );
+    }
 
   if(1){
     int count =
@@ -752,7 +779,6 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
     (void)count;
     }
 
-  setupLight( scene, gbuf.grassVs, gbuf.grassFs, sm, smCl, ao );
   drawObjects( gbuf.grassVs,
                gbuf.grassFs,
                gbuffer,
@@ -775,7 +801,6 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                MaterialSort::less,
                &Material::additive );
 
-  setupLight( scene, transparentData.vs, transparentData.fs, sm, smCl, ao );
   drawObjects( transparentData.vs, transparentData.fs,
                gbuffer,
                &mainDepth,
@@ -814,10 +839,10 @@ void GraphicsSystem::renderVolumeLight( const Scene &scene,
                                           Tempest::AbstractTexture::Format::RGBA );
 
   { Tempest::Render render( device,
-                         vlTex,
-                         d,
-                         volumetricData.vs,
-                         volumetricData.fs );
+                            vlTex,
+                            d,
+                            volumetricData.vs,
+                            volumetricData.fs );
     render.setRenderState( Tempest::RenderState::PostProcess );
 
     Tempest::Matrix4x4 mat = scene.camera().projective();
@@ -902,8 +927,7 @@ void GraphicsSystem::drawOmni( Tempest::Texture2d *gbuffer,
   Frustum frustum;
   mkFrustum( camera, frustum );
 
-  draw( render,
-        frustum,
+  draw( frustum,
         true,
         camera,
         v,
@@ -951,34 +975,40 @@ int GraphicsSystem::drawObjects( Tempest::VertexShader   & vs,
                                  bool clrDepth ) {
   toDraw.clear();
   if( bufC>0 && gbuffer ){
-    Tempest::Render render( device,
-                            gbuffer,
-                            bufC,
-                            *mainDepth,
-                            vs, fs );
-    if( clr ){
-      if( clrDepth )
-        render.clear( Tempest::Color(0.0), 1 ); else
-        render.clear( Tempest::Color(0.0) );
-      }
-
     Frustum frustum;
     mkFrustum( camera, frustum );
-    int r = draw( render, frustum, true, camera, v, func );
-    completeDraw( render, camera, cmp, func );
+    int r = draw( frustum, true, camera, v, func );
+
+    if( r || clr ){
+      Tempest::Render render( device,
+                              gbuffer,
+                              bufC,
+                              *mainDepth,
+                              vs, fs );
+      if( clr ){
+        if( clrDepth )
+          render.clear( Tempest::Color(0.0), 1 ); else
+          render.clear( Tempest::Color(0.0) );
+        }
+
+      completeDraw( render, camera, cmp, func );
+      }
     return r;
     } else {
-    Tempest::Render render( device, vs, fs );
-    if( clr ){
-      if( clrDepth )
-        render.clear( Tempest::Color(0.0), 1 ); else
-        render.clear( Tempest::Color(0.0) );
-      }
-
     Frustum frustum;
     mkFrustum( camera, frustum );
-    int r = draw( render, frustum, true, camera, v, func );
-    completeDraw( render, camera, cmp, func );
+    int r = draw( frustum, true, camera, v, func );
+
+    if( r || clr ){
+      Tempest::Render render( device, vs, fs );
+      if( clr ){
+        if( clrDepth )
+          render.clear( Tempest::Color(0.0), 1 ); else
+          render.clear( Tempest::Color(0.0) );
+        }
+
+      completeDraw( render, camera, cmp, func );
+      }
     return r;
     }
   }
@@ -1004,7 +1034,7 @@ void GraphicsSystem::drawTranscurent( Tempest::Texture2d& screen,
 
   Frustum frustum;
   mkFrustum( camera, frustum );
-  draw( render, frustum, true, camera, v, &Material::displace );
+  draw( frustum, true, camera, v, &Material::displace );
   completeDraw( render,
                 camera,
                 MaterialSort::less,
@@ -1012,8 +1042,7 @@ void GraphicsSystem::drawTranscurent( Tempest::Texture2d& screen,
   }
 
 template< class ... Args, class ... FArgs >
-int GraphicsSystem::draw(  Tempest::Render  & render,
-                           const Frustum &frustum,
+int GraphicsSystem::draw(  const Frustum &frustum,
                            bool deepVTest,
                            const Tempest::AbstractCamera & camera,
                            const Scene::Objects & v,
@@ -1047,7 +1076,7 @@ int GraphicsSystem::draw(  Tempest::Render  & render,
               ret = isVisible( t.x+dpos, t.y+dpos, t.z+dpos, t.r, frustum );
 
             if( ret ){
-              c+=draw( render, frustum, ret!=FullVisible, camera, t, func, args... );
+              c+=draw( frustum, ret!=FullVisible, camera, t, func, args... );
               }
             }
           }
@@ -1068,11 +1097,11 @@ void GraphicsSystem::completeDraw( Tempest::Render  & render,
                                    Args... args ) {
   std::sort( toDraw.begin(), toDraw.end(), cmp );
 
+  Tempest::UniformTable table( render );
+  Tempest::RenderState rs;
+
   for( size_t i=0; i<toDraw.size(); ++i ){
     const AbstractGraphicObject& ptr = *toDraw[i];
-
-    Tempest::UniformTable table( render );
-    Tempest::RenderState rs;
 
     (ptr.material().*func)( rs, ptr.transform(), camera, table, args... );
     render.setRenderState(rs);
@@ -1123,8 +1152,7 @@ void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
   Frustum frustum;
   mkFrustum( camera, frustum );
 
-  draw( render,
-        frustum,
+  draw( frustum,
         true,
         camera,
         v,
@@ -1154,10 +1182,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
     size = ps;
 
   if( !settings.glow ){
-    out = localTex.create( 1,1, Tempest::Texture2d::Format::RGB5 );//colorBuf( 16, 16 );
-    device.beginPaint(out);
-    device.clear( Tempest::Color(0) );
-    device.endPaint();
+    out = glowData.black1x1;
 
     if( depth.width()>0 ){
       drawObjects( glowData.vs,
@@ -1214,10 +1239,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
     gauss( buffer, tmp,  size, size, 1.0, 0.0 );
     gauss( out,  buffer, size, size, 0.0, 1.0 );
     } else {
-    out = localTex.create( 1,1, Tempest::Texture2d::Format::RGB5 );//colorBuf( 16, 16 );
-    device.beginPaint(out);
-    device.clear( Tempest::Color(0) );
-    device.endPaint();
+    out = glowData.black1x1;
     }
 
   //out = tmp;
@@ -1300,6 +1322,7 @@ void GraphicsSystem::gauss( Tempest::Texture2d &out,
                           out,
                           gaussData.vs, gaussData.fs );
 
+  render.clear( Tempest::Color(0.0), 1 );
   render.setRenderState( Tempest::RenderState::PostProcess );
 
   bltData.texture.set( &in );
@@ -1499,11 +1522,11 @@ void GraphicsSystem::drawFogOfWar( Tempest::Texture2d &out,
 
     Frustum frustum;
     mkFrustum( camera, frustum );
-    draw( render, frustum, true, camera, v, &Material::fogOfWar, true );
+    draw( frustum, true, camera, v, &Material::fogOfWar, true );
     completeDraw( render, camera,
                   MaterialSort::less,
                   &Material::fogOfWar, true );
-    draw( render, frustum, true, camera, v, &Material::fogOfWar, false );
+    draw( frustum, true, camera, v, &Material::fogOfWar, false );
     completeDraw( render, camera,
                   MaterialSort::less,
                   &Material::fogOfWar, false );
@@ -1663,8 +1686,7 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
     Frustum frustum;
     mkFrustum( matrix, frustum );
 
-    draw( render,
-          frustum,
+    draw( frustum,
           true,
           camera,
           v,

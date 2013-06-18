@@ -58,7 +58,7 @@ class GraphicsSystem {
     void setSettings( const GraphicsSettingsWidget::Settings& s );
 
   private:
-    std::shared_ptr<Tempest::AbstractAPI> api;
+    std::unique_ptr<Tempest::AbstractAPI> api;
 
     static Tempest::Device::Options makeOpt( bool isFullScreen );
   public:
@@ -133,8 +133,8 @@ class GraphicsSystem {
       } smap;
 
     struct GBuf{
-      Tempest::VertexShader   vs, grassVs;
-      Tempest::FragmentShader fs, grassFs;
+      Tempest::VertexShader   vs, vsA, grassVs, zfillVs;
+      Tempest::FragmentShader fs, fsA, grassFs, zfillFs;
 
       Tempest::VertexShader   terrainVs;
       Tempest::FragmentShader terrainFs;
@@ -166,6 +166,7 @@ class GraphicsSystem {
     struct Glow{
       Tempest::VertexShader   vs;
       Tempest::FragmentShader fs;
+      Tempest::Texture2d      black1x1;
       } glowData;
 
     struct FogOfWar{
@@ -417,8 +418,7 @@ class GraphicsSystem {
     struct MaterialSort;
 
     template< class ... Args, class ... FArgs >
-    int draw(  Tempest::Render & render,
-               const Frustum &frustum,
+    int draw(  const Frustum &frustum,
                bool  deepVTest,
                const Tempest::AbstractCamera & camera,
                const Scene::Objects & obj,

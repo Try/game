@@ -42,7 +42,8 @@ class Terrain {
         None,
         Up,
         Down,
-        Align
+        Align,
+        Smooth
         };
       EHeight map, wmap;
       double R;

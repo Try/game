@@ -35,6 +35,10 @@ const Scene::Objects &Scene::mainObjects() const {
   return mainObj;
   }
 
+const Scene::Objects &Scene::mainObjectsAtest() const {
+  return mainObjAtst;
+  }
+
 const Scene::Objects &Scene::glowObjects() const {
   return glowObj;
   }
@@ -101,6 +105,9 @@ void Scene::onObjectOp( const AbstractGraphicObject *t,
 
   if( t->material().usage.mainPass )
     onObjectOp( mainObj, t, ins, mat );
+
+  if( t->material().usage.mainPassAtst )
+    onObjectOp( mainObjAtst, t, ins, mat );
 
   if( !t->material().glow.isEmpty() )
     onObjectOp( glowObj, t, ins, mat );

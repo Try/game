@@ -73,8 +73,13 @@ class DesertStrikeScenario  : public Scenario {
     PlInfo plC[2];
     float moveZ;
 
+    std::string spellToCast;
+
     void mkUnits(int pl, int x, int y, int tgX, int tgY, bool rev);
     void aiTick(int pl);
+
+    void grade( PlInfo &pl, const std::string &g );
+    bool isTestRun;
   };
 
 #endif // DESERTSTRIKESCENARIO_H

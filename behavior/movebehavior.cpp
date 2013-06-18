@@ -68,6 +68,14 @@ void MoveBehavior::atackMoveEvent( MoveSingleEvent &m ) {
   }
 
 void MoveBehavior::atackContinueEvent(MoveSingleEvent &m) {
+  int qs = Terrain::quadSize/2;
+
+  if( way.size() &&
+      m.x/qs==way[0].x/qs &&
+      m.y/qs==way[0].y/qs &&
+      clos.isOnMove )
+    return;
+
   moveEvent(m);
   }
 
@@ -321,6 +329,7 @@ void MoveBehavior::tick(const Terrain &terrain) {
                               0, 0 );
       l = std::max(l, 1);
       int s = obj.getClass().data.size*Terrain::quadSize;
+      //int s = obj.getClass().data.speed*Terrain::quadSize;
 
       tx = obj.x() + clos.colisionDisp[0]*s/l;
       ty = obj.y() + clos.colisionDisp[1]*s/l;
@@ -591,14 +600,15 @@ bool MoveBehavior::isCloseEnough( int x1, int y1,
   }
 
 void MoveBehavior::updatePos( const Terrain &t ) {
-  if( intentToHold==1 ){
-    int x = obj.x()/Terrain::quadSize,
-        y = obj.y()/Terrain::quadSize;
+  int ux = obj.x()/Terrain::quadSize,
+      uy = obj.y()/Terrain::quadSize;
+  bool uenable = t.isEnableQuad( ux, uy, 1 );
 
-    if( clos.isMVLock==0 && t.isEnableQuad( x, y, 1 ) ){
+  if( intentToHold==1 ){
+    if( clos.isMVLock==0 && uenable ){
       clos.isMVLock = true;
-      clos.lkX = x;
-      clos.lkY = y;
+      clos.lkX = ux;
+      clos.lkY = uy;
       obj.world().terrain().editBuildingsMap( clos.lkX, clos.lkY, 2, 2, 1 );
       intentToHold = 2;
       }
@@ -610,14 +620,20 @@ void MoveBehavior::updatePos( const Terrain &t ) {
   if( intentToHold==2 )
     return;
 
+  int l = Math::distance( clos.colisionDisp[0], clos.colisionDisp[1],
+                          0, 0 );
+  l = std::max(l, 1);
+  int s = obj.getClass().data.speed;
+
   int x = intentPos[0],
       y = intentPos[1],
+      tx = x + clos.colisionDisp[0]*s/l,
+      ty = y + clos.colisionDisp[1]*s/l;
 
-      tx = x + clos.colisionDisp[0],
-      ty = y + clos.colisionDisp[1];
-
-  if( t.isEnable( tx/Terrain::quadSize, ty/Terrain::quadSize ) &&
-      abs(x/Terrain::quadSize - tx/Terrain::quadSize)+abs(y/Terrain::quadSize - ty/Terrain::quadSize)<=1 ){
+  if( !uenable || (
+      t.isEnable( tx/Terrain::quadSize, ty/Terrain::quadSize ) &&
+      abs(x/Terrain::quadSize - tx/Terrain::quadSize)+
+      abs(y/Terrain::quadSize - ty/Terrain::quadSize)<=1) ){
     x = tx;
     y = ty;
     }

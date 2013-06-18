@@ -78,6 +78,8 @@ struct Scenario {
 
     virtual void onUnitDied( GameObject &obj );
     virtual void updateSelectUnits( const std::vector<GameObject *> &u );
+
+    std::string name() const;
   protected:
     Game    & game;
     MainGui & gui;

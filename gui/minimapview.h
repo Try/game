@@ -51,7 +51,7 @@ class MiniMapView : public TextureView {
     Tempest::Pixmap hudPx;
 
     World * world;
-    bool    needToUpdateTerrain;
+    bool    needToUpdateTerrain, needToUpdateTerrainV;
 
     void onTerrainCanged();
   };

@@ -8,10 +8,13 @@
 MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
   rtime   = 0;
   rtime2  = 0;
+  tcount  = -1;
+
   pressed = false;
   world   = 0;
 
-  needToUpdateTerrain = true;
+  needToUpdateTerrain  = true;
+  needToUpdateTerrainV = true;
   }
 
 MiniMapView::~MiniMapView() {
@@ -28,6 +31,7 @@ void MiniMapView::setup(World * w) {
     world->terrain().onTerrainChanged.ubind(*this, &MiniMapView::onTerrainCanged );
   world = w;
   needToUpdateTerrain = true;
+  needToUpdateTerrainV = true;
 
   if(w)
     w->terrain().onTerrainChanged.bind(*this, &MiniMapView::onTerrainCanged );
@@ -39,8 +43,6 @@ void MiniMapView::render() {
 
   if( world->game.isPaused() )
     return;
-
-  ++tcount;
 
   World &wx = *world;
 
@@ -56,7 +58,8 @@ void MiniMapView::render() {
     update();
     }
 
-  if( needToUpdateTerrain ){
+  if( needToUpdateTerrainV && rtime2+mk*40 < tcount ){
+    needToUpdateTerrainV = false;
     rtime2 = tcount;
 
     Tempest::Pixmap terr = Tempest::Pixmap(w(), h(), true);
@@ -148,6 +151,7 @@ void MiniMapView::render() {
 
   hud   = res.ltexHolder.create(hudPx, false, false);
   needToUpdateTerrain = false;
+  ++tcount;
   }
 
 void MiniMapView::lineTo( Tempest::Pixmap &renderTo,
@@ -330,7 +334,8 @@ void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
   }
 
 void MiniMapView::onTerrainCanged() {
-  needToUpdateTerrain = true;
+  needToUpdateTerrain  = true;
+  needToUpdateTerrainV = true;
   hudPx.fill( {0,0,0,0} );
   }
 

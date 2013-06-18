@@ -152,6 +152,8 @@ class Game : public Tempest::Window {
     void addPlayer();
     void cancelEdit( int );
 
+    void loadPngWorld(const Tempest::Pixmap &png );
+
     int currentPlayer;
     void createEditorObject( const ProtoObject & p, int pl );
     void setEditorObjectPl( int pl );

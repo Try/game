@@ -22,8 +22,10 @@
 #include "network/client.h"
 
 #include "game/missions/scenariomission1.h"
-#include "game/missions/deatmachscenarion.h"
+#include "game/missions/deatmachscenario.h"
 #include "game/missions/desertstrikescenario.h"
+
+#include "util/scenariofactory.h"
 
 #include <cmath>
 
@@ -46,13 +48,6 @@ Game::Game( ShowMode sm )
   paused       = false;
   needToUpdate = false;
 
-  /*
-  acceptMouseObj = true;
-  mouseTracking         = 0;
-  selectionRectTracking = 0;
-  curMPos = Tempest::Point(w()/2, h()/2);
-  */
-
   currentPlayer = 1;
 
   initFactorys();
@@ -60,8 +55,9 @@ Game::Game( ShowMode sm )
 
   //graphics.drawOpWindow.bind(*this, &Game::update);
 
-  isRunning     = true;
-  physicStarted = false;
+  isRunning        = true;
+  physicStarted    = false;
+
   physicCompute = async( this, &Game::computePhysic, 0 );
   }
 
@@ -117,18 +113,42 @@ void Game::loadData() {
 
   setPlaylersCount(1);
 
-#ifndef __ANDROID__
-  //load(L"campagin/0.sav");
-  loadMission("campagin/td.sav");
+#ifdef __ANDROID__
+  loadMission("campagin/td2.sav");
+  setScenario( new DesertStrikeScenario(*this, gui, msg) );
 #else
-  loadMission("campagin/td.sav");
+  //load(L"campagin/0.sav");
+  loadMission("campagin/td2.sav");
+  //loadMission("save/td2.sav");
+  setScenario( new DeatmachScenario(*this, gui, msg) );
 #endif
-  //world->terrain().loadFromPixmap( Tempest::Pixmap("./terrImg/h1.png") );
+  //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );
 
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
-  //setScenario( new DeatmachScenarion(*this, gui, msg) );
+  //setScenario( new DeatmachScenario(*this, gui, msg) );
   mscenario->onStartGame();
   updateTime = Time::tickCount();
+  }
+
+void Game::loadPngWorld( const Tempest::Pixmap& png ){
+  world = 0;
+  gui.setupMinimap(0);
+  worlds.clear();
+  worlds.push_back( std::shared_ptr<World>( new World(*this,
+                                                      png.width(), png.height()) ) );
+
+  world = worlds[0].get();
+
+  world->camera.setPerespective( true, w(), h() );
+  world->setupMaterial.bind(*this, &Game::setupMaterials );
+
+  gui.toogleEditLandMode = Tempest::signal<const Terrain::EditMode&>();
+  gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
+
+  gui.paintObjectsHud = Tempest::signal< Tempest::Painter&, int, int>();
+  gui.paintObjectsHud.bind( *world, &World::paintHUD );
+
+  world->terrain().loadFromPixmap( png );
   }
 
 void Game::setScenario(Scenario *s) {
@@ -337,6 +357,13 @@ void Game::keyUpEvent( Tempest::KeyEvent & e ) {
     return;
 
   scenario().keyUpEvent(e);
+
+  if( e.key==Tempest::Event::K_Delete ){
+    world->camera.setSpinX( world->camera.spinX()+10 );
+    }
+  if( e.key==Tempest::Event::K_Insert ){
+    world->camera.setSpinX( world->camera.spinX()-10 );
+    }
   }
 
 void Game::toogleFullScr() {
@@ -609,9 +636,12 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
   material.specular  = src.specularFactor;
 
   if( contains( src.materials, "phong" ) ||
-      contains( src.materials, "unit" )  ||
-      contains( src.materials, "blush" ) ){
+      contains( src.materials, "unit"  ) ){
     material.usage.mainPass = true;
+    }
+
+  if( contains( src.materials, "phong_atest" ) ){
+    material.usage.mainPassAtst = true;
     }
 
   if( contains( src.materials, "unit" ) ){
@@ -645,9 +675,9 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
     material.usage.water = true;
     }
 
-  if( contains( src.materials, "blush" ) ||
-      contains( src.materials, "grass" ) ){
+  if( contains( src.materials, "blush" ) ){
     material.usage.blush = true;
+    //material.usage.mainPass = !material.usage.mainPassAtst;
     }
 
   if( contains( src.materials, "grass" ) ){
@@ -718,7 +748,7 @@ void Game::serialize( GameSerializer &s ) {
     world = 0;
     gui.setupMinimap(0);
     worlds.clear();
-    setScenario( new DeatmachScenarion(*this, gui, msg) );
+    setScenario( new DeatmachScenario(*this, gui, msg) );
     }
 
   //Tempest::Application::processEvents();
@@ -773,17 +803,24 @@ void Game::serialize( GameSerializer &s ) {
     bool isScenario = mscenario->isCampagin();
     s + isScenario;
 
+    std::string taget = mscenario->name();
+    if( s.version() >=8 ){
+      s + taget;
+      } else {
+      if( isScenario )
+        taget = "mission1";
+      }
+
     if( s.isReader() ){
       if( isScenario ){
-        setScenario( new ScenarioMission1(*this, gui, msg) );
+        setScenario( ScenarioFactory::create(taget, *this, gui, msg) );
         } else {
-        setScenario( new DeatmachScenarion(*this, gui, msg) );
+        setScenario( new DeatmachScenario(*this, gui, msg) );
         }
       }
     mscenario->serialize(s);
     } else {
-    setScenario( new DeatmachScenarion(*this, gui, msg) );
-    //mscenario.reset( new ScenarioMission1(*this, gui) );
+    setScenario( new DeatmachScenario(*this, gui, msg) );
     mscenario->serialize(s);
     }
 

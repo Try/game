@@ -26,20 +26,37 @@ EditTerrainPanel::EditTerrainPanel( Resource &res,
   layout().setMargin( 6 );
   setLayout( Tempest::Vertical );
 
+  Widget *w = 0;
+  w = new Widget();
+  w->setLayout( Tempest::Horizontal );
+
   Button *btn = new Button(res);
   btn->clicked.bind( *this, &EditTerrainPanel::setupEHeight );
   btn->setText("Edit height");
-  layout().add( btn );
+  w->layout().add( btn );
 
   btn = new Button(res);
   btn->clicked.bind( *this, &EditTerrainPanel::setupCombo );
   btn->setText("Edit height");
-  layout().add( btn );
+  w->layout().add( btn );
+  w->setMaximumSize( w->sizePolicy().maxSize.w, 27 );
+  w->setSizePolicy( Tempest::Preferred, Tempest::FixedMax );
+  layout().add( w );
 
+  w = new Widget();
+  w->setLayout( Tempest::Horizontal );
   btn = new Button(res);
   btn->clicked.bind( *this, &EditTerrainPanel::setupAlign );
   btn->setText("Align height");
-  layout().add( btn );
+  w->layout().add( btn );
+
+  btn = new Button(res);
+  btn->clicked.bind( *this, &EditTerrainPanel::setupSmooth );
+  btn->setText("Smooth height");
+  w->layout().add( btn );
+  w->setMaximumSize( w->sizePolicy().maxSize.w, 27 );
+  w->setSizePolicy( Tempest::Preferred, Tempest::FixedMax );
+  layout().add( w );
 
   ScroolBar *sb = new ScroolBar(res);
   sb->setOrientation( Tempest::Horizontal );
@@ -48,7 +65,7 @@ EditTerrainPanel::EditTerrainPanel( Resource &res,
 
   layout().add( sb );
 
-  Widget* w = new Widget();
+  //Widget* w = new Widget();
   w->setLayout( Tempest::Horizontal );
 
   btn = new Button(res);
@@ -123,6 +140,17 @@ void EditTerrainPanel::setupAlign() {
   m.R = r;
   m.map  = Terrain::EditMode::Align;
   m.wmap = Terrain::EditMode::Align;
+
+  m.isEnable = true;
+  toogleEditLandMode(m);
+  }
+
+void EditTerrainPanel::setupSmooth() {
+  int  r  = m.R;
+  m = Terrain::EditMode();
+  m.R = r;
+  m.map  = Terrain::EditMode::Smooth;
+  m.wmap = Terrain::EditMode::Smooth;
 
   m.isEnable = true;
   toogleEditLandMode(m);

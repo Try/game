@@ -60,12 +60,12 @@ void Material::gbuffer( Tempest::RenderState &rs,
 
   table.add( m,      "mvpMatrix",    Tempest::UniformTable::Vertex );
   table.add( object, "objectMatrix", Tempest::UniformTable::Vertex );
-  //table.add( sh,     "shadowMatrix", Tempest::UniformTable::Vertex );
 
   table.add( diffuse,  "texture",        Tempest::UniformTable::Fragment );
-  if( settings.normalMap )
-    table.add( normal,   "normalMap",      Tempest::UniformTable::Fragment );
   table.add( specular, "specularFactor", Tempest::UniformTable::Fragment );
+
+  if( settings.normalMap )
+    table.add( normal, "normalMap",      Tempest::UniformTable::Fragment );
 
   {
     float cl[3] = { teamColor->r(),
@@ -74,10 +74,13 @@ void Material::gbuffer( Tempest::RenderState &rs,
     table.add( cl, 3, "tmColor", Tempest::UniformTable::Fragment );
     }
 
+  /*
   if( useAlphaTest ){
     rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
     rs.setAlphaTestRef( alphaTrestRef );
-    }
+    } else {
+    rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::Always );
+    }*/
   }
 
 void Material::grass( Tempest::RenderState &rs,
@@ -144,7 +147,7 @@ void Material::terrainMain( Tempest::RenderState & rs,
   //return;
   if(0){
     rs.setZWriting(0);
-    rs.setBlend(1);
+    rs.setBlend(0);
     rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
                      Tempest::RenderState::AlphaBlendMode::one );
     }
@@ -157,10 +160,9 @@ void Material::terrainMinor( Tempest::RenderState &rs,
   gbuffer( rs, m, c, u );
 
   rs.setZTestMode( Tempest::RenderState::ZTestMode::Equal );
-  rs.setZWriting(0);
+  rs.setZWriting(1);
 
   rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::Always );
-  rs.setAlphaTestRef(0.5);
 
   rs.setBlend(1);
   rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
@@ -168,10 +170,25 @@ void Material::terrainMinor( Tempest::RenderState &rs,
   }
 
 void Material::terrainMinorZ( Tempest::RenderState &rs,
-                              const Tempest::Matrix4x4 &m,
+                              const Tempest::Matrix4x4 &object,
                               const Tempest::AbstractCamera &c,
-                              Tempest::UniformTable &u ) const {
-  terrainMinor( rs, m, c, u );
+                              Tempest::UniformTable &table ) const {
+  //terrainMinor( rs, object, c, table );
+  Tempest::Matrix4x4 m = c.projective();
+  m.mul( c.view() );
+
+  if( usage.blush ){
+    Tempest::Matrix4x4 mobj = animateObjMatrix(object);
+    m.mul( mobj );
+    } else {
+    m.mul( object );
+    }
+
+  //Tempest::Matrix4x4 sh = shadowMatrix;
+  //sh.mul( object );
+
+  table.add( m,      "mvpMatrix",    Tempest::UniformTable::Vertex );
+  table.add( object, "objectMatrix", Tempest::UniformTable::Vertex );
 
   rs.setZTestMode( Tempest::RenderState::ZTestMode::Less );
   rs.setZWriting(1);
@@ -229,7 +246,7 @@ void Material::glowPass(Tempest::RenderState & rs,
                          Tempest::UniformTable & table ) const {
   rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
   rs.setZTest(true);
-  rs.setZWriting(false);
+  rs.setZWriting(true);
 
   Tempest::Matrix4x4 m = c.projective();
   m.mul( c.view() );

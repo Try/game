@@ -5,6 +5,7 @@
 #include "game/world.h"
 
 #include "behavior/buildingbehavior.h"
+#include "util/scenariofactory.h"
 #include <cmath>
 
 #include "gui/gen/ui_toppanel.h"
@@ -471,6 +472,10 @@ void Scenario::onUnitDied(GameObject &obj) {
 void Scenario::updateSelectUnits(const std::vector<GameObject *> &u) {
   if( units )
     units->setup(u);
+  }
+
+std::string Scenario::name() const {
+  return ScenarioFactory::productName(this);
   }
 
 void Scenario::showFormBuilder() {

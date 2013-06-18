@@ -9,7 +9,7 @@ GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
   = GraphicsSettingsWidget::Settings::openGL;
 #else
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
-  = GraphicsSettingsWidget::Settings::directX;
+  = GraphicsSettingsWidget::Settings::openGL;
 #endif
 
 GraphicsSettingsWidget::Settings::Settings() {
@@ -22,7 +22,7 @@ GraphicsSettingsWidget::Settings::Settings() {
   oclusion       = true;
   shadowTextures = true;
 #ifdef __ANDROID__
-  shadowMapRes  = 512;
+  shadowMapRes  = 1024;
   bloom         = Hight;
   glow          = true;
   normalMap     = true;

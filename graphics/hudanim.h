@@ -3,7 +3,14 @@
 
 #include "game/gameobjectview.h"
 
-class HudAnim {
+class EfectBase{
+  public:
+    virtual ~EfectBase(){}
+    virtual void tick(){}
+    virtual bool isEnd() const { return true; }
+  };
+
+class HudAnim : public EfectBase {
   public:
     HudAnim( Scene & s,
              World       & wrld,

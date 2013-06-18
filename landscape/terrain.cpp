@@ -96,49 +96,54 @@ void Terrain::buildGeometry(){
       chunks[i][r].needToUpdate  = false;
   }
 
-MVertex Terrain::mkVertex(int x, int y, int plane) {
+MVertex Terrain::mkVertex(int ix, int iy, int plane) {
   const double texCoordScale = 0.1;
 
-  MVertex v;// = {0,0,0,0, {0,0,1,0}, {1,1,1,1}, {-1,0,0}, 0 };
-  //std::fill( v.color,   v.color  +4, 1 );
-  std::fill( v.normal,  v.normal +4, 0 );
-  std::fill( v.bnormal, v.bnormal+4, 0 );
-  v. normal[2] =  1;
-  v.bnormal[0] = -1;
+  float bnormal[3] = {-1,0,0};
+  //float  normal[3] = {0,0, 1};
+  float x, y, z, u, v;
 
-  v.x = World::coordCast( x*quadSize );
-  v.y = World::coordCast( y*quadSize );
+  int dz    = waterMap[ ix ][ iy ];
+  float iz  = -(heightMap[ ix ][ iy ]-dz)/quadSizef;
 
-  int dz   = waterMap[ x ][ y ];
-  float z  = -(heightMap[ x ][ y ]-dz)/quadSizef;
+  x = World::coordCast( ix*quadSize );
+  y = World::coordCast( iy*quadSize );
+  z = World::coordCast( heightMap[ ix ][ iy ]-dz );
 
-  v.z = World::coordCast( heightMap[ x ][ y ]-dz );
-
-  if( y+1 < heightMap.height() ){
-    v.bnormal[2] = World::coordCast(  heightMap[ x ][ y+1 ]
-                                     - waterMap[ x ][ y+1 ] ) - v.z;
+  if( iy+1 < heightMap.height() ){
+    bnormal[2] = World::coordCast(  heightMap[ ix ][ iy+1 ]
+                                   - waterMap[ ix ][ iy+1 ] ) - z;
     }
 
   //int plane = tileset[ i+dx[q] ][ r+dy[q] ].plane;
 
   if( plane==2 ){
-    v.u = x*texCoordScale;
-    v.v = y*texCoordScale;
+    u = ix*texCoordScale;
+    v = iy*texCoordScale;
     }
   if( plane==1 ){
-    v.u = x*texCoordScale;
-    v.v = z*texCoordScale;
+    u = ix*texCoordScale;
+    v = iz*texCoordScale;
     }
   if( plane==0 ){
-    v.u = z*texCoordScale;
-    v.v = y*texCoordScale;
+    u = iz*texCoordScale;
+    v = iy*texCoordScale;
     }
 
-  float *n = tileset[x][y].normal;
-  std::copy( n, n+3, v.normal );
+  float *n = tileset[ix][iy].normal;
 
+  MVertex vx;
+  vx.x = x;
+  vx.y = y;
+  vx.z = z;
 
-  return v;
+  vx.u = u;
+  vx.v = v;
+
+  std::copy( n, n+3, vx.normal );
+  std::copy( bnormal, bnormal+3, vx.bnormal );
+
+  return vx;
   }
 
 bool Terrain::isSame(const MVertex &z0, const MVertex &z1) {
@@ -331,12 +336,6 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
         for( int q=0; q<dcount; ++q ){
           MVertex v = mkVertex(i+dx[q], r+dy[q], plane);
           v.h = inf.black[q]?0:1;
-          //TODO: color
-          /*
-          if( inf.black[q] )
-            std::fill(v.color+0, v.color+4, 0); else
-            std::fill(v.color+0, v.color+4, 1);
-            */
           minor.push_back( v );
           }
         }
@@ -685,6 +684,66 @@ void Terrain::brushHeight( int x, int y,
   if( alternative )
     dh = -dh;
 
+  if( m.map==EditMode::Smooth ){
+    int maxX = lx,
+        maxY = ly,
+        minX = lx,
+        minY = ly,
+        maxH = waterMap[lx][ly],
+        minH = maxH;
+
+    int yp[] = {ly, ry};
+    int xp[] = {lx, rx};
+
+    for( int p=0; p<2; ++p ){
+      for( int i=lx; i<rx; ++i ){
+        int h0 = waterMap[i][yp[p]];
+        if( h0 > maxH ){
+          maxH = h0;
+          maxX = i;
+          maxY = yp[p];
+          }
+        if( h0 < minH ){
+          minH = h0;
+          minX = i;
+          minY = yp[p];
+          }
+        }
+      for( int i=ly; i<ry; ++i ){
+        int h0 = waterMap[xp[p]][i];
+        if( h0 > maxH ){
+          maxH = h0;
+          maxY = i;
+          maxX = xp[p];
+          }
+        if( h0 < minH ){
+          minH = h0;
+          minY = i;
+          minX = xp[p];
+          }
+        }
+      }
+
+    for( int i=lx; i<rx; ++i )
+      for( int r=ly; r<ry; ++r ){
+
+        for( int dx = 0; dx<2; ++dx)
+          for( int dy = 0; dy<2; ++dy )
+            if( chunks.validate(i/chunkSize+dx, r/chunkSize+dy) )
+              chunks[i/chunkSize+dx][r/chunkSize+dy].needToUpdate = true;
+
+        float ax = maxX - minX,
+              ay = maxY - minY,
+              la = sqrt(ax*ax+ay*ay),
+              bx = i-minX,
+              by = r-minY;
+
+        float a = (ax*bx+ay*by)/(la*la);
+        a = std::min(1.0f, std::max(a, 0.0f));
+
+        waterMap[i][r] = maxH*a + minH*(1.0f-a);
+        }
+    } else
   if( m.map==EditMode::Align ){
     x = std::max(0, std::min(x, heightMap.width() -1) );
     y = std::max(0, std::min(y, heightMap.height()-1) );
@@ -1025,6 +1084,7 @@ void Terrain::serialize( GameSerializer &s ) {
 
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
+  wcorrMap.resize(w+1, h+1);
   buildingsMap.resize(w+1, h+1);
   tileset.resize( w+1, h+1 );
   tileinf.resize( w+1, h+1 );

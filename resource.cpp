@@ -422,10 +422,10 @@ void Resource::load( Box<Texture> &textures,
           cl[i] /= (pm.width()*pm.height());
         }
 
-      tex.color  = Tempest::Color( cl[0]/255.0,
-                                   cl[1]/255.0,
-                                   cl[2]/255.0,
-                                   cl[3]/255.0 );
+      tex.color  = Tempest::Color( 0.75*cl[0]/255.0,
+                                   0.75*cl[1]/255.0,
+                                   0.75*cl[2]/255.0,
+                                   0.75*cl[3]/255.0 );
 
       tex.data = texHolder.load(f);
       } else {

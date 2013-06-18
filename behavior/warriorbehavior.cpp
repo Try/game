@@ -6,6 +6,7 @@
 #include "movebehavior.h"
 
 #include <cmath>
+#include "util/math.h"
 
 WarriorBehavior::WarriorBehavior( GameObject &obj,
                                   Behavior::Closure &c )
@@ -44,7 +45,8 @@ void WarriorBehavior::tick( const Terrain & ) {
     return;
 
   if( !isAClick ){
-    //std::cout << "";
+    int dummy;
+    (void)dummy;
     }
 
   if( dAtkTime>0 )
@@ -180,10 +182,17 @@ void WarriorBehavior::takeTaget( GameObject *&out, GameObject *tg, int /*d*/ ){
 bool WarriorBehavior::message( AbstractBehavior::Message msg,
                                int x, int y,
                                AbstractBehavior::Modifers md) {
+  if( msg==MoveSingle ){
+    mvTaget = WeakWorldPtr();
+
+    isAtk    = false;
+    isAClick = false;
+
+    unlockGround();
+    }
   if( msg==Move ||
       msg==MoveGroup ||
       msg==MineralMove ||
-      msg==MoveSingle  ||
       msg==Cancel ){
     mvTaget = WeakWorldPtr();
 
@@ -387,16 +396,40 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
                       taget.value().getClass().data.size)/2 )*Terrain::quadSize;
 
       vrange = vrange*vrange;
+
+      int oldAR = arange;
       arange = arange*arange;
       d = taget.value().distanceSQ(obj.x(), obj.y());
 
       if( d <= vrange || ignoreVrange ){
         if( obj.distanceQL(lastX, lastY)>0 || !obj.isOnMove() ){
           unlockGround();
-          int x = obj.x()/2 + taget.value().x()/2,
-              y = obj.y()/2 + taget.value().y()/2;
 
-          move( x, y );
+          if( taget.value().getClass().data.speed>0 ){
+            int x = obj.x()/2 + taget.value().x()/2,
+                y = obj.y()/2 + taget.value().y()/2;
+
+            move( x, y );
+            } else {
+            int x = taget.value().x(),
+                y = taget.value().y(),
+                dx = (x-obj.x()),
+                dy = (y-obj.y()),
+                l  = Math::sqrt(dx*dx+dy*dy);
+
+            if( oldAR>2 )
+              oldAR -= 2;
+
+            if( l>oldAR && l>0 ){
+              dx = dx*oldAR/l;
+              dy = dy*oldAR/l;
+              } else {
+              dx = 0;
+              dy = 0;
+              }
+
+            move( x-dx, y-dy );
+            }
           }
         } else {
         //std::cout << d << std::endl;

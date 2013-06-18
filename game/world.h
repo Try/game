@@ -169,7 +169,7 @@ class World {
     std::vector< WeakWorldPtr* > wptrs;
     GameObject* mouseObject;
 
-    std::vector< std::shared_ptr<HudAnim> > hudAnims;
+    std::vector< std::shared_ptr<EfectBase> > hudAnims;
 
     std::vector< GameObject* > warehouses, resouces;
 

@@ -79,8 +79,11 @@ class SpatialIndex {
         }
 
       void move( GameObject* obj,
-                 int x, int y,
+                 int x,  int y,
                  int nx, int ny ){
+        if( x==nx && y==ny )
+          return;
+
         if( &node(x,y)==&node(nx,ny) )
           return;
 
@@ -176,7 +179,7 @@ class SpatialIndex {
           }
         if( y>hh ){
           r = 1;
-          hw = h-hh;
+          nh = h-hh;
           dy = hh;
           }
 

@@ -26,7 +26,7 @@ class Material {
     static Tempest::Color nullColor;
 
     struct Usage{
-      bool mainPass, shadowCast, terrainMinor, terrainMain,
+      bool mainPass, mainPassAtst, shadowCast, terrainMinor, terrainMain,
            atest,
            displace, water, blush, add,
            transparent, fogOfWar,

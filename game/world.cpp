@@ -72,7 +72,7 @@ World::World( Game & gm,
   light.setDirection( -2, 1, -2 );
   light.setColor    ( Tempest::Color( 0.7, 0.7, 0.7 ) );
   light.setAblimient( Tempest::Color( 0.23, 0.23,  0.35) );
-  //scene.lights().direction()[0] = light;
+  scene.lights().direction()[0] = light;
 
   camera.setPerespective( true, w, h );
   camera.setPosition( 2, 3, 0 );
@@ -104,7 +104,7 @@ void World::emitHudAnim( const std::string &s,
 
   a->setPosition( x, y, z+zAt(x,y) );
 
-  hudAnims.push_back( std::shared_ptr<HudAnim>(a) );
+  hudAnims.push_back( std::shared_ptr<EfectBase>(a) );
   }
 
 float World::zAt(float x, float y) const {
@@ -305,6 +305,7 @@ void World::deleteObject(GameObject *obj) {
 void World::onObjectMoved( GameObject* obj,
                            int x, int y,
                            int nx, int ny ){
+  // std::cout << obj <<": "<< x <<" " << y <<" | " << nx <<" " << ny << std::endl;
   spatialId->move(obj, x, y, nx, ny);
   }
 
@@ -1009,6 +1010,7 @@ void World::serialize(GameSerializer &s) {
     scene.lights().direction()[0] = light;
     }
 
+  wayFindRq.reset( new WayFindRequest( *terr ) );
   moveCamera(0,0);
   }
 

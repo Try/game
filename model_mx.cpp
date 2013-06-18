@@ -189,8 +189,8 @@ void Model::loadMX( Tempest::VertexBufferHolder & vboHolder,
 
         if( type==0 ){
           groups[i].physicType = Sphere;
-          fin.read( (char*)&groups[i].r,  sizeof(groups[i].r)  );
-          fin.read( (char*)&groups[i].cen,  sizeof(groups[i].cen)*3  );
+          fin.read( (char*)&groups[i].r,    sizeof(groups[i].r)  );
+          fin.read( (char*)&groups[i].cen,  sizeof(groups[i].cen[0])*3  );
           }
 
         if( type==1 ){

@@ -167,7 +167,6 @@ HEADERS += \
     gui/richtext.h \
     model_mx.h \
     gui/missiontargets.h \
-    game/missions/deatmachscenarion.h \
     game/particlesystemdeclaration.h \
     graphics/material.h \
     graphics/scene.h \
@@ -177,7 +176,9 @@ HEADERS += \
     util/tnloptimize.h \
     gui/graphicssettingswidget.h \
     game/missions/desertstrikescenario.h \
-    util/behaviorsfactory.h
+    util/behaviorsfactory.h \
+    util/scenariofactory.h \
+    game/missions/deatmachscenario.h
 
 SOURCES += \
     main.cpp \
@@ -277,7 +278,6 @@ SOURCES += \
     gui/richtext.cpp \
     model_mx.cpp \
     gui/missiontargets.cpp \
-    game/missions/deatmachscenarion.cpp \
     game/particlesystemdeclaration.cpp \
     graphics/material.cpp \
     graphics/scene.cpp \
@@ -286,7 +286,8 @@ SOURCES += \
     util/ifstream.cpp \
     util/tnloptimize.cpp \
     gui/graphicssettingswidget.cpp \
-    game/missions/desertstrikescenario.cpp
+    game/missions/desertstrikescenario.cpp \
+    game/missions/deatmachscenario.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

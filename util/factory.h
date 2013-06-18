@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <typeinfo>
 
 //#include "behavior/behavior.h"
 
@@ -18,6 +19,7 @@ class Factory{
         }
 
       virtual Base* create( ConstructArgs&&... a ) = 0;
+      virtual const std::type_info& typeInfo() const = 0;
       std::string name;
       size_t id;
       };
@@ -26,6 +28,9 @@ class Factory{
     struct Product : public AbstractProduct {
       Product( const std::string & n ):AbstractProduct(n){}
       virtual Base* create( ConstructArgs&&... a ) { return new T( a... ); }
+      virtual const std::type_info& typeInfo() const {
+        return typeid(T);
+        }
       };
 
     static Base* create( const std::string & name, ConstructArgs&& ... a ){
@@ -69,6 +74,17 @@ class Factory{
 
     static size_t productsCount() {
       return products.size();
+      }
+
+    static std::string productName( const Base* p ){
+      const std::type_info& t = typeid(*p);
+
+      for( size_t i=0; i<products.size(); ++i ){
+        if( products[i]->typeInfo()==t )
+          return products[i]->name;
+        }
+
+      return "";
       }
   private:
     static std::vector< std::shared_ptr<AbstractProduct> > products;
