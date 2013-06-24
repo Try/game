@@ -206,12 +206,15 @@ void GameObject::setPosition(int x, int y, int z) {
   if( !getClass().data.isBackground && !m.isEnv )
     wrld.onObjectMoved( this, m.x, m.y, x, y );
 
+  bool repXY = !(m.x==x && m.y==y);
   m.x = x;
   m.y = y;
   m.z = z;//world.terrain().heightAt(x, y);
-  view.setPosition(x,y);
 
-  behavior.message( Behavior::onPositionChange, x, y );
+  if( repXY ){
+    view.setPosition(x,y);
+    behavior.message( Behavior::onPositionChange, x, y );
+    }
   }
 
 void GameObject::setPositionSmooth(int x, int y, int z) {

@@ -18,7 +18,7 @@
 
 struct UnitList::Btn : public Button {
   Btn( Resource & res ):Button(res){
-    Button::clicked.bind(*this, &Btn::onClick );
+    Button::clicked.bind( this, &Btn::onClick );
     oldHp = 255;
     }
 
@@ -45,7 +45,7 @@ struct UnitList::Btn : public Button {
         icH = icon.data.rect.h*k;
 
     Tempest::Rect s = p.scissor();
-    p.setScissor( viewRect() );
+    p.setScissor( s.intersected(viewRect()) );
     p.drawRect( (w()-icW)/2, (h()-icH)/2, icW, icH,
                 0, 0, icon.data.rect.w, icon.data.rect.h );
     p.setScissor(s);
@@ -127,7 +127,7 @@ void UnitList::setup(const std::vector<GameObject*> &ux ) {
 
   for( size_t i=0; i<units.size(); ++i ){
     Btn *b = new Btn(res);
-    b->clicked.bind(*this, &UnitList::onBtn );
+    b->clicked.bind( this, &UnitList::onBtn );
     b->icon.data = res.pixmap("gui/icon/"+units[i]->getClass().name);
     b->owner = units[i];
     int x = sz*(i%10);

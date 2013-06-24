@@ -14,6 +14,7 @@ ParticleSystemEngine::ParticleSystemEngine( Scene &s,
   :scene(s), proto(p), res(r) {
   raw.vertex.reserve(1024*32);
   visible.reserve( 128 );
+  view.reserve(128);
   }
 
 void ParticleSystemEngine::exec( const Tempest::Matrix4x4 &mview,
@@ -141,22 +142,18 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
   MVertex v;
   v.u = 0.5;
   v.v = 0.5;
-  v.normal[0] = -norm[0];
-  v.normal[1] = -norm[1];
-  v.normal[2] = -norm[2];
+  v.nx = -norm[0];
+  v.ny = -norm[1];
+  v.nz = -norm[2];
 
-  //TODO: color
-  /*
-  v.color[0] = color.r();
-  v.color[1] = color.g();
-  v.color[2] = color.b();
-  v.color[3] = color.a();
-  */
+  v.color[0] = 255*color.r();
+  v.color[1] = 255*color.g();
+  v.color[2] = 255*color.b();
+  v.color[3] = 255*color.a();
 
-  v.bnormal[0] = -left[0];
-  v.bnormal[1] = -left[1];
-  v.bnormal[2] = -left[2];
-  v.bnormal[3] = 0;
+  v.bx = -left[0];
+  v.by = -left[1];
+  v.bz = -left[2];
 
   double mul[2] = {-1, 1};
 
@@ -172,13 +169,13 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
       v.y = y + sz*dy;
       v.z = z + sz*dz;
 
-      v.normal[0] = v.normal[0]+0.25*dx;
-      v.normal[1] = v.normal[1]+0.25*dy;
-      v.normal[2] = v.normal[2]+0.25*dz;
+      v.nx = v.nx+0.25*dx;
+      v.ny = v.ny+0.25*dy;
+      v.nz = v.nz+0.25*dz;
 
-      v.x = v.x+0.5*sz*v.normal[0];
-      v.y = v.y+0.5*sz*v.normal[1];
-      v.z = v.z+0.5*sz*v.normal[2];
+      v.x = v.x+0.5*sz*v.nx;
+      v.y = v.y+0.5*sz*v.ny;
+      v.z = v.z+0.5*sz*v.nz;
 
       v.u = std::max(0.0, mul[i]);
       v.v = 1.0 - std::max(0.0, mul[r]);

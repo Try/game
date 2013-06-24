@@ -4,6 +4,8 @@
 
 TerrainChunk::TerrainChunk() {
   needToUpdate = true;
+  x = 0;
+  y = 0;
   }
 
 void TerrainChunk::update( Resource & res ) {

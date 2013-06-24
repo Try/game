@@ -28,8 +28,13 @@ Terrain::Terrain( int w, int h,
   :scene(s), world(wrld), prototype(pl), vboHolder(vb), iboHolder(ib), res(res) {
   //groupMask = 0;
 
-  land. reserve( w*h*6 );
-  minor.reserve( w*h*6 );
+  int sz = chunkSize*chunkSize*4;
+  land. reserve( sz*4 );
+  minor.reserve( sz*4 );
+  ibo.  reserve(sz*6);
+
+  quads. reserve(sz);
+  squads.reserve(sz);
 
   aviableTiles.push_back("land.grass");
   aviableTiles.push_back("land.rock" );
@@ -51,16 +56,14 @@ Terrain::Terrain( int w, int h,
 
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
-  wcorrMap.resize(w+1, h+1);
+
   buildingsMap.resize(w+1, h+1);
   chunks.resize( w/chunkSize+1, h/chunkSize+1 );
 
   std::fill( heightMap.begin(),    heightMap.end(),     0 );
   std::fill( waterMap.begin(),     waterMap.end(),      0 );
   std::fill( buildingsMap.begin(), buildingsMap.end(),  0 );
-  std::fill( wcorrMap.begin(),     wcorrMap.end(),      0 );
 
-  needToUpdateWCMap = false;
   computeEnableMap();
   }
 
@@ -140,20 +143,96 @@ MVertex Terrain::mkVertex(int ix, int iy, int plane) {
   vx.u = u;
   vx.v = v;
 
-  std::copy( n, n+3, vx.normal );
-  std::copy( bnormal, bnormal+3, vx.bnormal );
+  vx.nx = n[0];
+  vx.ny = n[1];
+  vx.nz = n[2];
+
+  vx.bx = bnormal[0];
+  vx.by = bnormal[1];
+  vx.bz = bnormal[2];
 
   return vx;
   }
 
-bool Terrain::isSame(const MVertex &z0, const MVertex &z1) {
-  bool next = ( z0.z==z1.z);
-  for( int q=0; q<3; ++q ){
-    next &= (z0. normal[q]==z1. normal[q]);
-    next &= (z0.bnormal[q]==z1.bnormal[q]);
+void Terrain::buildVBO( int lx, int rx, int ly, int ry,
+                        std::vector<MVertex>& land,
+                        std::vector<uint16_t> & ibo,
+                        bool isLand,
+                        int plane ) {
+  land.clear();
+  quads.clear();
+  ibo.clear();
+
+  static const int dx[] = {0, 1, 1, 0},
+                   dy[] = {0, 0, 1, 1};
+  static int dcount = 4;
+
+  for( int i=lx; i+1<rx; ++i )
+    for( int r=ly; r+1<ry; ++r ){
+      TileInfo &inf = tileinf[i][r];
+
+      if( (inf.land && isLand) || (inf.minor && !isLand) ){
+        quads.push_back( Tempest::Point(i,r) );
+        }
+      }
+
+  squads.clear();
+  Tempest::Point p;
+  while( quads.size() ){
+    Tempest::Point px = quads[0];
+    int dp = abs(px.x-p.x) + abs(px.y-p.y), id = 0;
+
+    for( size_t i=1; i<quads.size(); ++i ){
+      int ndp = abs(quads[i].x-p.x) + abs(quads[i].y-p.y);
+      if( ndp<dp ){
+        id = i;
+        px = quads[i];
+        dp = ndp;
+        }
+      }
+
+    squads.push_back(px);
+    quads[id] = quads.back();
+    quads.pop_back();
     }
 
-  return next;
+  int di[] = {0,1,2, 0,2,3};
+
+  ibo.clear();
+  for( size_t id=0; id<squads.size(); ++id ){
+    int i= squads[id].x, r = squads[id].y;
+
+    TileInfo &inf = tileinf[i][r];
+
+    size_t r0 = std::max<size_t>( 0, land.size()-1024 );
+
+    MVertex vx[dcount];
+    for( int q=0; q<dcount; ++q ){
+      vx[q] = mkVertex(i+dx[q], r+dy[q], plane);
+      if( !isLand )
+        vx[q].h = inf.black[q]?0:1;
+      //land.push_back( v );
+      }
+
+    for( int r=0; r<6; ++r ){
+      const MVertex& v = vx[ di[r] ];
+      size_t id = size_t(-1);
+      for( size_t q=r0; q<land.size(); ++q ){
+        if( land[q]==v ){
+          id = q;
+          }
+        }
+
+      if( id==size_t(-1) ){
+        ibo.push_back( land.size() );
+        land.push_back(v);
+        } else {
+        ibo.push_back(id);
+        }
+      //ibo.push_back(r1+di[r]);
+      }
+    }
+
   }
 
 void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
@@ -178,13 +257,14 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
   land.clear();
   minor.clear();
 
-
+  /*
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
-  /*
+  */
+
   const int dx[] = {0, 1, 1, 0},
-            dy[] = {0, 0, 1, 1};*/
-  int dcount = 6;
+            dy[] = {0, 0, 1, 1};
+  int dcount = 4;
 
   for( int i=lx; i+1<rx; ++i )
     for( int r=ly; r+1<ry; ++r ){
@@ -219,132 +299,10 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
         }
       }
 
-  land.clear();
-  minor.clear();
-/*
-  for( int i=lx; i+1<rx; ++i )
-    for( int r=ly; r+1<ry; ){
-      TileInfo &inf = tileinf[i][r];
-      if( inf.land ){
-        int r0 = r, dr0 = 0;
-        int r1 = r, dr1 = 0;
+  buildVBO(lx, rx, ly, ry, land,  ibo, true, plane );
 
-        MVertex z0 = mkVertex(  i,r,plane);
-        MVertex z1 = mkVertex(i+1,r0,plane);
-
-        int oldDr0 = dr0;
-        while( r0+1<ry &&
-               tileinf[i][r0].land &&
-               (i!=lx && tileinf[i-1][r0].land) &&
-               isSame( z0, mkVertex(i,  r0+1,plane) )&&
-               isSame( z1, mkVertex(i+1,r0+1,plane) ) ){
-          ++r0;
-          ++dr0;
-          }
-        r0  = std::max(r+1,r0);
-        dr0 = std::max(1,dr0);
-
-        while( r1!=r0 ){
-          if( r1<r0 ){
-            land.push_back( mkVertex(i+0, r+0, plane) );
-            land.push_back( mkVertex(i+1, r+dr1, plane) );
-
-            //MVertex z0 = mkVertex(i  ,r1,plane);
-            MVertex z1 = mkVertex(i+1,r1,plane);
-
-            bool v = false;
-            while( r1+1<ry &&
-                   //r1<r0 &&
-                   tileinf[i  ][r1].land &&
-                   tileinf[i+1][r1].land &&
-                   isSame( z0, mkVertex(i  ,r1+1,plane) ) &&
-                   isSame( z1, mkVertex(i+1,r1+1,plane) )
-                   ){
-              ++r1;
-              ++dr1;
-              v = true;
-              }
-
-            if( !v ){
-              ++r1;
-              ++dr1;
-              }
-
-            oldDr0 = dr0;
-            land.push_back( mkVertex(i+1, r+dr1, plane) );
-            } else {
-            MVertex z0 = mkVertex(i  ,r0,plane);
-            MVertex z1 = mkVertex(i+1,r0,plane);
-
-            bool v = false;
-            while( r0+1<ry &&
-                   tileinf[i][r0].land &&
-                   (i!=lx && tileinf[i-1][r0].land) &&
-                   isSame( z0, mkVertex(i  ,r0+1,plane) )&&
-                   isSame( z1, mkVertex(i+1,r0+1,plane) )   ){
-              ++r0;
-              ++dr0;
-              v = true;
-              }
-
-            if( !v ){
-              ++r0;
-              ++dr0;
-              }
-
-            land.push_back( mkVertex(i+0, r+dr0, plane) );
-            land.push_back( mkVertex(i+0, r+oldDr0, plane) );
-            oldDr0 = dr0;
-            land.push_back( mkVertex(i+1, r+std::max(dr0, dr1), plane) );
-            }
-          }
-
-        land.push_back( mkVertex(i+0, r+dr0, plane) );
-        land.push_back( mkVertex(i+0, r+oldDr0, plane) );
-        land.push_back( mkVertex(i+1, r+std::max(dr0, dr1), plane) );
-
-        r = std::max(r1, r0);
-        } else {
-        ++r;
-        }
-
-      }*/
-
-
-  for( int i=lx; i+1<rx; ++i )
-    for( int r=ly; r+1<ry; ++r ){
-      TileInfo &inf = tileinf[i][r];
-
-      if( inf.land ){
-        for( int q=0; q<dcount; ++q ){
-          MVertex v = mkVertex(i+dx[q], r+dy[q], plane);
-          land.push_back( v );
-          }
-        }
-      }
-/*
-  int ddx = rx-lx-1, ddy = ry-ly-1;
-  for( int q=0; q<dcount; ++q )
-    if( tileinf[lx][ly].land )
-      land.push_back( mkVertex(lx+dx[q]*ddx, ly+dy[q]*ddy, plane) );
-*/
-  for( int i=lx; i+1<rx; ++i )
-    for( int r=ly; r+1<ry; ++r ){
-      TileInfo &inf = tileinf[i][r];
-
-      if( inf.minor ){
-        for( int q=0; q<dcount; ++q ){
-          MVertex v = mkVertex(i+dx[q], r+dy[q], plane);
-          v.h = inf.black[q]?0:1;
-          minor.push_back( v );
-          }
-        }
-      }
-
-  std::vector<uint16_t> index;
   if( land.size() ){
-    TnlOptimize::index( land, index );
-    model.load( vboHolder, iboHolder, land, index, MVertex::decl() );
+    model.load( vboHolder, iboHolder, land, ibo, MVertex::decl() );
     //model.load( vboHolder, iboHolder, land,  MVertex::decl() );
 
     TerrainChunk::View view;
@@ -365,9 +323,9 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     chunk.landView.push_back( view );
     }
 
+  buildVBO(lx, rx, ly, ry, minor, ibo, false, plane );
   if( minor.size() ){
-    TnlOptimize::index( minor, index );
-    model.load( vboHolder, iboHolder, minor, index, MVertex::decl() );
+    model.load( vboHolder, iboHolder, minor, ibo, MVertex::decl() );
 
     TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
@@ -463,66 +421,6 @@ void Terrain::computePlanes() {
       }
   }
 
-void Terrain::updateWCMap() const {
-  needToUpdateWCMap = false;
-
-  for( int i=0; i<wcorrMap.width(); ++i )
-    for( int r=0; r<wcorrMap.height(); ++r ){
-      wcorrMap[i][r] = isEnable(i,r)?9:-1;
-      }
-
-  for( int r=0; r<9; ++r )
-    for( int i=1; i+1<wcorrMap.width(); ++i )
-      for( int r=1; r+1<wcorrMap.height(); ++r ){
-        int m1 = std::min( wcorrMap[i-1][r], wcorrMap[i+1][r] );
-        int m2 = std::min( wcorrMap[i][r-1], wcorrMap[i][r+1] );
-
-        wcorrMap[i][r] = std::min( wcorrMap[i][r], std::min(m1, m2)+1 );
-        }
-  for( int i=0; i<wcorrMap.width(); ++i )
-    for( int r=0; r<wcorrMap.height(); ++r ){
-      wcorrMap[i][r] = 9-wcorrMap[i][r];
-      }
-
-  return;
-  std::vector<Point> pt;
-  for( int i=1; i+1<wcorrMap.width(); ++i )
-    for( int r=1; r+1<wcorrMap.height(); ++r ){
-      int c = 0, v = wcorrMap[i][r];
-
-      if( v>-1 ){
-        if( v>=wcorrMap[i+1][r] )
-          ++c;
-        if( v>=wcorrMap[i-1][r] )
-          ++c;
-        if( v>=wcorrMap[i][r+1] )
-          ++c;
-        if( v>=wcorrMap[i][r-1] )
-          ++c;
-
-        if( (v>=wcorrMap[i+1][r] && v>=wcorrMap[i-1][r])||
-            (v>=wcorrMap[i][r+1] && v>=wcorrMap[i][r-1]) ){
-          pt.push_back( Point{i,r} );
-          //wcorrMap[i][r] = 10;
-          }
-        }
-      }
-
-  for( size_t i=0; i<pt.size(); ++i )
-    wcorrMap[ pt[i].x ][pt[i].y ] = 10;
-
-  return;
-  for( int i=1; i<wcorrMap.width(); ++i )
-    for( int r=1; r<wcorrMap.height(); ++r ){
-      if( wcorrMap[i][r]==-2 ){
-        wcorrMap[i  ][r  ] = 10;
-        wcorrMap[i-1][r  ] = 10;
-        wcorrMap[i-1][r-1] = 10;
-        wcorrMap[i  ][r-1] = 10;
-        }
-      }
-  }
-
 Tempest::Model<WaterVertex>
       Terrain::waterGeometry(int cX, int cY ) const {
   Tempest::Model<WaterVertex> model;
@@ -575,8 +473,9 @@ Tempest::Model<WaterVertex>
           normal[1] /= quadSize;
           double l = sqrt(normal[0]*normal[0] + normal[1]*normal[1] + 1);
 
-          for( int t=0; t<3; ++t )
-            v.normal[t] = normal[t]/l;
+          v.nx = normal[0]/l;
+          v.ny = normal[1]/l;
+          v.nz = normal[2]/l;
 
           v.h = World::coordCast( depthAt(i+dx[q], r+dy[q]) )-0.2;
           v.h = v.h*3;
@@ -640,9 +539,11 @@ Model Terrain::fogGeometry(int cX, int cY ) const {
           v.u = x/double( heightMap.width() );
           v.v = y/double( heightMap.height() );
 
-          v.normal[0] = 0;
-          v.normal[1] = 0;
-          v.normal[2] = 1;
+          v.nx = 0;
+          v.ny = 0;
+          v.nz = 1;
+
+          std::fill( v.color, v.color+4, 1);
 
           land.push_back(v);
           }
@@ -675,6 +576,7 @@ void Terrain::brushHeight( int x, int y,
   x/=quadSize;
   y/=quadSize;
 
+  bool updateEnable = false;
   double R = m.R, dh = 800;
 
   int iR = int(R+2);
@@ -685,6 +587,8 @@ void Terrain::brushHeight( int x, int y,
     dh = -dh;
 
   if( m.map==EditMode::Smooth ){
+    updateEnable = true;
+
     int maxX = lx,
         maxY = ly,
         minX = lx,
@@ -745,6 +649,8 @@ void Terrain::brushHeight( int x, int y,
         }
     } else
   if( m.map==EditMode::Align ){
+    updateEnable = true;
+
     x = std::max(0, std::min(x, heightMap.width() -1) );
     y = std::max(0, std::min(y, heightMap.height()-1) );
 
@@ -768,6 +674,8 @@ void Terrain::brushHeight( int x, int y,
         }
     } else
   if( m.wmap!= EditMode::None || m.map!=EditMode::None ){
+    updateEnable = true;
+
     for( int i=lx; i<rx; ++i )
       for( int r=ly; r<ry; ++r ){
         double factor = std::max(0.0,
@@ -814,7 +722,20 @@ void Terrain::brushHeight( int x, int y,
         }
     }
 
-  computeEnableMap();
+  if( updateEnable ){
+    int dw = enableMapUpdateRect.x,
+        dh = enableMapUpdateRect.y;
+    enableMapUpdateRect.x = std::min(lx, enableMapUpdateRect.x);
+    enableMapUpdateRect.y = std::min(ly, enableMapUpdateRect.y);
+
+    enableMapUpdateRect.w += dw - enableMapUpdateRect.x;
+    enableMapUpdateRect.h += dh - enableMapUpdateRect.y;
+
+    enableMapUpdateRect.w = std::max(rx-lx, enableMapUpdateRect.w);
+    enableMapUpdateRect.h = std::max(ry-ly, enableMapUpdateRect.h);
+
+    computeEnableMap();
+    }
   onTerrainChanged();
   }
 
@@ -1015,7 +936,6 @@ void Terrain::editBuildingsMap(int x, int y, int w, int h, int dv) {
         buildingsMap[i][r] += dv;
 
   onTerrainChanged();
-  needToUpdateWCMap = true;
   }
 
 int Terrain::clampX(int x) const {
@@ -1041,8 +961,11 @@ int Terrain::clampY(int y) const {
 void Terrain::computeEnableMap() {
   enableMap.resize( heightMap.width()-1, heightMap.height()-1 );
 
-  for( int i=0; i<enableMap.width(); ++i )
-    for( int r=0; r<enableMap.height(); ++r ){
+  if( enableMapUpdateRect.isEmpty() )
+    enableMapUpdateRect = Tempest::Rect(0,0,enableMap.width(), enableMap.height());
+
+  for( int i=enableMapUpdateRect.x; i<enableMapUpdateRect.x+enableMapUpdateRect.w; ++i )
+    for( int r=enableMapUpdateRect.y; r<enableMapUpdateRect.y+enableMapUpdateRect.h; ++r ){
       int h[4] = { heightAt(i,r),
                    heightAt(i+1,r),
                    heightAt(i,r+1),
@@ -1053,7 +976,7 @@ void Terrain::computeEnableMap() {
       enableMap[i][r] = (det<4*75);
       }
 
-  needToUpdateWCMap = true;
+  enableMapUpdateRect = Tempest::Rect();
   }
 
 int Terrain::heightAtNoDepth(int x, int y) const {
@@ -1062,13 +985,13 @@ int Terrain::heightAtNoDepth(int x, int y) const {
 
   return heightMap[x][y];
   }
-
+/*
 const array2d<int> &Terrain::wayCorrMap() const {
   if( needToUpdateWCMap )
     updateWCMap();
   return wcorrMap;
   }
-
+*/
 int Terrain::depthAt(int x, int y) const {
   x = std::max(0, std::min(x, width()-1) );
   y = std::max(0, std::min(y, height()-1) );
@@ -1084,7 +1007,7 @@ void Terrain::serialize( GameSerializer &s ) {
 
   heightMap.resize( w+1, h+1 );
   waterMap .resize( w+1, h+1 );
-  wcorrMap.resize(w+1, h+1);
+
   buildingsMap.resize(w+1, h+1);
   tileset.resize( w+1, h+1 );
   tileinf.resize( w+1, h+1 );

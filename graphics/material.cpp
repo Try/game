@@ -41,7 +41,7 @@ Tempest::Matrix4x4 Material::animateObjMatrix( const Tempest::Matrix4x4 &object,
   return mobj;
   }
 
-void Material::gbuffer( Tempest::RenderState &rs,
+void Material::gbuffer( Tempest::RenderState &,
                         const Tempest::Matrix4x4 &object,
                         const Tempest::AbstractCamera &c,
                         Tempest::UniformTable & table ) const {
@@ -284,10 +284,11 @@ void Material::shadow( Tempest::RenderState &rs,
 
   rs.setCullFaceMode( Tempest::RenderState::CullMode::front );
 
+  /*
   if( useAlphaTest ){
     rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::GEqual );
     rs.setAlphaTestRef( alphaTrestRef );
-    }
+    }*/
   }
 
 void Material::displace(Tempest::RenderState &rs,

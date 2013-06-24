@@ -99,7 +99,7 @@ class Terrain {
 
     Tempest::signal<> onTerrainChanged;
 
-    const array2d<int>& wayCorrMap() const;
+    //const array2d<int>& wayCorrMap() const;
   private:
     Scene                  & scene;
     World                  & world;
@@ -126,13 +126,16 @@ class Terrain {
     array2d<TerrainChunk> chunks;
 
     std::vector< Model::Vertex > land, minor;
+    std::vector<uint16_t>        ibo;
 
     array2d<int>  heightMap;
     array2d<int>  waterMap;
     array2d<int>  buildingsMap;
-    mutable array2d<int>  wcorrMap;
-    mutable bool needToUpdateWCMap;
+
     array2d<unsigned char>  enableMap;
+    Tempest::Rect enableMapUpdateRect;
+
+    std::vector<Tempest::Point> quads, squads;
 
     int clampX( int x ) const;
     int clampY( int y ) const;
@@ -151,7 +154,6 @@ class Terrain {
                         int cX, int cy );
 
     void computePlanes();
-    void updateWCMap() const;
     Resource & res;
 
     friend class SmallGraphicsObject;
@@ -160,6 +162,11 @@ class Terrain {
     static bool isSame( const MVertex& a, const MVertex& b );
 
     static const int chunkSize;
+
+    void buildVBO( int lx, int rx, int ly, int ry,
+                   std::vector<MVertex>& land,
+                   std::vector<uint16_t> & ibo,
+                   bool isLand , int plane);
   };
 
 #endif // TERRAIN_H

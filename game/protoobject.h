@@ -19,14 +19,17 @@ struct ProtoObject {
 
       int gold, lim, limInc, buildTime;
       bool isBackground, invincible, isDynamic;
+      std::vector<size_t> utype;
 
       int armor;
 
       struct Atack{
-        Atack():range(0), damage(0), delay(0), splashSize(0), splashDamage(0){}
+        Atack():range(0), damage(0), delay(0), uDestType(-1), splashSize(0), splashDamage(0){}
 
         int range;
         int damage, delay;
+        size_t uDestType;
+
         int splashSize, splashDamage;
 
         std::string bullet;

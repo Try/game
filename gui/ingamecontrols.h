@@ -45,6 +45,7 @@ class InGameControls : public Tempest::Widget {
 
     Tempest::signal<> save, load;
     Tempest::signal<> updateView;
+
     Tempest::signal<GameObject&>  setCameraPos;
     Tempest::signal< float, float,
                       Tempest::MouseEvent::MouseButton,
@@ -63,7 +64,6 @@ class InGameControls : public Tempest::Widget {
     void removeHook(InputHookBase *h);
     void enableHooks(bool e);
 
-    void updateValues();
     void setupMinimap(World *w );
     void renderMinimap();
 

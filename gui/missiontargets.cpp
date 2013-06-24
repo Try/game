@@ -15,7 +15,7 @@ MissionTargets::MissionTargets( Game & game, Resource &res )
   ckFrame.data = res.pixmap("gui/ckBoxFrame");
   ck.data      = res.pixmap("gui/ckBox");
 
-  game.updateMissionTargets.bind(*this, &MissionTargets::setupTagets);
+  game.updateMissionTargets.bind( this, &MissionTargets::setupTagets);
 
   setupTagets();
   }

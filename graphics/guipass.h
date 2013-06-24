@@ -36,6 +36,8 @@ class GUIPass {
              Tempest::IndexBufferHolder  &ibo,
              Tempest::Size &s );
 
+    void update( MainGui &gui,
+                 Tempest::Device &device );
     void exec( MainGui &gui,
                Tempest::Texture2d *rt,
                Tempest::Texture2d *depth,
@@ -69,6 +71,8 @@ class GUIPass {
       Tempest::Half color[4];
       };
 
+    typedef Vertex Vert;
+
     Tempest::Rect texRect;
 
     struct GeometryBlock{
@@ -79,9 +83,9 @@ class GUIPass {
 
     struct Layer{
       std::vector<GeometryBlock> geometryBlocks;
-      Tempest::VertexBuffer<HVertex>  guiGeometry;
+      Tempest::VertexBuffer<Vert>  guiGeometry;
 
-      std::vector<HVertex> guiRawData;
+      std::vector<Vert> guiRawData;
       bool needToUpdate;
       };
 

@@ -68,7 +68,8 @@ class WarriorBehavior : public AbstractBehavior  {
     void lockGround();
     void unlockGround();
 
-    bool canShoot( GameObject & obj );
+    bool canShoot(GameObject & obj, const ProtoObject::GameSpecific::Atack &atk);
+    bool canShoot(GameObject & obj );
   };
 
 #endif // WARRIORBEHAVIOR_H

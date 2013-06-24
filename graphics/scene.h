@@ -10,6 +10,7 @@ class Scene : public Tempest::AbstractScene< AbstractGraphicObject > {
     typedef OcTree<const AbstractGraphicObject*> Objects;
 
     const Objects& shadowCasters() const;
+    const Objects& shadowCastersAtst() const;
     const Objects& mainObjects() const;
     const Objects& mainObjectsAtest() const;
 
@@ -29,7 +30,8 @@ class Scene : public Tempest::AbstractScene< AbstractGraphicObject > {
     const Objects& omni() const;
 
   private:
-    Objects shCast, mainObj, mainObjAtst, glowObj, terrainMinor, terrain,
+    Objects shCast, shCastAtst,
+            mainObj, mainObjAtst, glowObj, terrainMinor, terrain,
             displaceObj, waterObj, addObj, transpObj,
             transpObjZW, fogOfWarObj,
             omniObj, grassObj;

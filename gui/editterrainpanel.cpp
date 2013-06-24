@@ -65,12 +65,12 @@ EditTerrainPanel::EditTerrainPanel( Resource &res,
 
   layout().add( sb );
 
-  //Widget* w = new Widget();
+  w = new Widget();
   w->setLayout( Tempest::Horizontal );
 
   btn = new Button(res);
   btn->setText("Main");
-  btn->clicked.bind(*this, &EditTerrainPanel::setTexID<0> );
+  btn->clicked.bind( this, &EditTerrainPanel::setTexID<0> );
   Tempest::SizePolicy policy = btn->sizePolicy();
   policy.typeH = Tempest::Preferred;
   btn->setSizePolicy( policy );
@@ -78,7 +78,7 @@ EditTerrainPanel::EditTerrainPanel( Resource &res,
 
   btn = new Button(res);
   btn->setText("Secondary");
-  btn->clicked.bind(*this, &EditTerrainPanel::setTexID<1> );
+  btn->clicked.bind( this, &EditTerrainPanel::setTexID<1> );
   btn->setSizePolicy( policy );
   w->layout().add( btn );
 

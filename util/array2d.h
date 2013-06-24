@@ -35,6 +35,11 @@ class array2d {
         LineRef( const LineRef& ){}
       };
 
+#ifdef __ANDROID__
+    T* operator [] ( int x ) {
+      return &data[x*h];
+      }
+#else
     LineRef operator [] ( int x ){
       assert( 0<=x && x< w );
 
@@ -44,7 +49,13 @@ class array2d {
 
       return r;
       }
+#endif
 
+#ifdef __ANDROID__
+    const T* operator [] ( int x ) const{
+      return &data[x*h];
+      }
+#else
     const LineRef operator [] ( int x ) const{
       assert( 0<=x && x< w );
 
@@ -54,6 +65,7 @@ class array2d {
 
       return r;
       }
+#endif
 
     const T& at( int x, int y ) const{
       return data[y+x*h];

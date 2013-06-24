@@ -6,13 +6,19 @@
 #include <cstring>
 #include <functional>
 
-struct MVertex {
-  Tempest::Half x,y,z,u;
-  //Tempest::Half u,v;
-  Tempest::Half normal[3], v;
-  //Tempest::Half color[4];
+#include <cstdint>
 
+struct MVertex {
+  /*
+  Tempest::Half x,y,z,u;
+  Tempest::Half normal[3], v;
   Tempest::Half bnormal[3], h;
+  uint32_t color;*/
+
+  Tempest::Half x,y,z,u;
+  Tempest::Half nx, ny, v, bx;
+  Tempest::Half by,  h; float nz;
+  float bz; uint8_t color[4];
 
   bool operator == ( const MVertex& v ) const {
     return memcmp( this, &v, sizeof(*this) )==0;

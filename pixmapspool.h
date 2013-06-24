@@ -39,7 +39,8 @@ class PixmapsPool {
     void addPage();
     TexturePtr add( const Tempest::Pixmap & p, Page &page );
 
-    static const int pageSize;
+    int pageSize;
+    //static const int pageSize;
   };
 
 #endif // PIXMAPSPOOL_H

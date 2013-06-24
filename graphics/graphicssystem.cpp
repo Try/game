@@ -19,7 +19,7 @@
 
 struct GraphicsSystem::MaterialSort{
   static bool sm( const AbstractGraphicObject* xa,
-                    const AbstractGraphicObject* xb ){
+                  const AbstractGraphicObject* xb ){
     const AbstractGraphicObject& a = *xa;
     const AbstractGraphicObject& b = *xb;
 
@@ -142,7 +142,7 @@ void GraphicsSystem::makeRenderAlgo( int w, int h ) {
                           res.fshader("gui"),
                           lvboHolder,
                           liboHolder,
-                          guiSize  ) );
+                          guiSize ) );
   setupScreenSize(w,h);
 
   gbuf.vs     = res.vshader("unit_main_material");
@@ -170,6 +170,9 @@ void GraphicsSystem::makeRenderAlgo( int w, int h ) {
 
   smap.vs = res.vshader("shadow_map");
   smap.fs = res.fshader("shadow_map");
+
+  smap.vsA = res.vshader("shadow_map_atest");
+  smap.fsA = res.fshader("shadow_map_atest");
 
   transparentData.vs = res.vshader("transparent_material");
   transparentData.fs = res.fshader("transparent_material");
@@ -296,7 +299,7 @@ Tempest::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene ){
                    float(light.yDirection()),
                    float(light.zDirection()) };
 
-  return makeShadowMatrix(scene,dir);
+  return makeShadowMatrix( scene,dir,0 );
   }
 
 Tempest::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene,
@@ -324,12 +327,27 @@ Tempest::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene,
        s, 0,  0, 0,
        0, s,  0, 0,
        s*dir[0], s*dir[1], cs*dir[2], 0,
-       -s*x, -s*y, s*z+dist, 1,
+       -s*x+s*z, -s*y, s*z+dist, 1,
        };
 
     mat.setData( m );
 
-    return mat;
+    Tempest::Matrix4x4 proj;
+
+    float a = screenSize.h/float(screenSize.w);
+    proj.scale(a,1,1);
+#ifdef __ANDROID__
+    proj.scale(1.3, 1.3, 1);
+#else
+    proj.scale(1.15, 1.15, 1);
+#endif
+
+    proj.rotateOZ( view.spinX() );
+    proj.translate(0,0.1,0);
+
+    proj.mul( mat );
+    //proj.set( 3, 1, proj.at(3,1)+0.1 );
+    return proj;
     }
 
 void GraphicsSystem::resizeEvent( int w, int h, bool isFullScreen ){
@@ -371,6 +389,7 @@ bool GraphicsSystem::render( Scene &scene,
   ++nFrame;
 
   onRender( std::max<size_t>(dt-time, 0) );
+  gui->update( *widget, device );
 
   time = dt;//(time+dt);
   unsigned tx = time%(16*1024);
@@ -421,7 +440,7 @@ bool GraphicsSystem::render( Scene &scene,
                useDirectRender?0:4,
                rsm,
                settings.shadowMapRes,
-               true );
+               false );
 
   Tempest::Texture2d fog;
   if( fogView.width()>0 ){
@@ -429,11 +448,16 @@ bool GraphicsSystem::render( Scene &scene,
     aceptFog( gbuffer[0], fog );
     }
 
-  if( widget ){ 
+  //device.present();
+  //return 1;
+
+  static bool renderUI = true;
+  if( widget && renderUI ){
     if( useDirectRender )
       gui->exec( *widget, 0, 0, device ); else
       gui->exec( *widget, gbuffer, &mainDepth, device );
     }
+
 
   Tempest::Texture2d glow, bloomTex;
 
@@ -462,7 +486,8 @@ bool GraphicsSystem::render( Scene &scene,
     render.setRenderState( Tempest::RenderState::PostProcess );
 
     cpyOffset.set( 1.0/screenSize.w, 1.0/screenSize.h );
-    device.setUniform( finalData.vs, cpyOffset );
+    if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+      device.setUniform( finalData.vs, cpyOffset );
 
     finalData.bloom.set( &bloomTex );
     finalData.scene.set( &gbuffer[0] );
@@ -481,7 +506,6 @@ bool GraphicsSystem::render( Scene &scene,
   //blt( gbuffer[2] );
   //blt( mainDepth );
   //blt( waterWaves );
-  //blt( shadowMap );
   //blt( fog );
   //blt( final );
   //blt( gao );
@@ -502,15 +526,12 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& shadowMap,
   //s.mipFilter   = Tempest::Texture2d::FilterType::Nearest;
   //shadowMap.setSampler( s );
 
-  fillShadowMap( shadowMap, depthSm, scene,
-                 scene.shadowCasters(),
-                 clr );
+  fillShadowMap( shadowMap, depthSm, scene, clr );
   }
 
 void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
                                     Tempest::Texture2d& depthSm,
                                     const Scene & scene,
-                                    const Scene::Objects &v,
                                     bool clr ) {
   Tempest::RenderState rstate;
   rstate.setCullFaceMode( Tempest::RenderState::CullMode::front );
@@ -522,40 +543,33 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
   float dir[3] = { float(light.xDirection()),
                    float(light.yDirection()),
                    float(light.zDirection()) };
-  Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir);
+  Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir, 0);
 
-  Tempest::Render render( device,
-                          sm, depthSm,
-                          smap.vs, smap.fs );
-  {
+  Tempest::Matrix4x4 proj;
+  proj.identity();
 
-    if(clr)
-      render.clear( Tempest::Color(1.0), 1 ); else
-      device.clearZ(1);
-
-    if( !(sm.width()==1 && sm.height()==1) ){
-      Tempest::Matrix4x4 proj;
-      proj.identity();
-
-      particles->exec( matrix, proj, 0, true );
-      }
-    }
-
-  if( sm.width()==1 && sm.height()==1 )
-    return;
-
-  render.setRenderState( rstate );
+  particles->exec( matrix, proj, 0, true );
   //return;
 
   const Tempest::AbstractCamera & camera = scene.camera();
 
   Frustum frustum;
-  mkFrustum( matrix, frustum );
+  mkFrustum( matrix, frustum );  
+
+  {
+  Tempest::Render render( device,
+                          sm, depthSm,
+                          smap.vsA, smap.fsA );
+  if(1)
+    render.clear( Tempest::Color(1.0), 1 ); else
+    device.clearZ(1);
+
+  render.setRenderState( rstate );
 
   draw( frustum,
         true,
         camera,
-        v,
+        scene.shadowCastersAtst(),
         &Material::shadow,
         ref(matrix) );
   completeDraw( render,
@@ -563,6 +577,27 @@ void GraphicsSystem::fillShadowMap( Tempest::Texture2d& sm,
                 MaterialSort::sm,
                 &Material::shadow,
                 ref(matrix));
+  }
+
+  {
+  Tempest::Render render( device,
+                          sm, depthSm,
+                          smap.vs, smap.fs );
+  render.setRenderState( rstate );
+
+  draw( frustum,
+        true,
+        camera,
+        scene.shadowCasters(),
+        &Material::shadow,
+        ref(matrix) );
+  completeDraw( render,
+                camera,
+                MaterialSort::sm,
+                &Material::shadow,
+                ref(matrix));
+  }
+
   drawOpWindow();
   }
 
@@ -824,7 +859,7 @@ void GraphicsSystem::fillGBuf( Tempest::Texture2d* gbuffer,
                false );
 
   if( gcall )
-    ;//drawOpWindow();
+    {}//drawOpWindow();
   }
 
 void GraphicsSystem::renderVolumeLight( const Scene &scene,
@@ -857,7 +892,8 @@ void GraphicsSystem::renderVolumeLight( const Scene &scene,
     device.setUniform( volumetricData.fs, mainDepth, "mainDepth");
 
     cpyOffset.set( 1.0f/vlTex.width(), 1.0f/vlTex.height() );
-    device.setUniform( volumetricData.vs, cpyOffset );
+    if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+      device.setUniform( volumetricData.vs, cpyOffset );
 
     ppHelper.drawFullScreenQuad( device, volumetricData.vs, volumetricData.fs );
     }
@@ -880,7 +916,8 @@ void GraphicsSystem::renderVolumeLight( const Scene &scene,
     render.setRenderState( rs );
 
     bltData.texture.set( &vlTex );
-    cpyOffset.set( 1.0f/gbuffer.width(), 1.0f/gbuffer.height() );
+    if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+      cpyOffset.set( 1.0f/gbuffer.width(), 1.0f/gbuffer.height() );
     device.setUniform( bltData.vs, cpyOffset );
     device.setUniform( bltData.fs, bltData.texture );
 
@@ -919,7 +956,8 @@ void GraphicsSystem::drawOmni( Tempest::Texture2d *gbuffer,
 
 
   float tc[] = { 1.0f/gbuffer[3].width(), 1.0f/gbuffer[3].height() };
-  device.setUniform( omniData.fs, tc, 2, "dTexCoord");
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( omniData.fs, tc, 2, "dTexCoord");
 
   const Tempest::AbstractCamera & camera = scene.camera();
   const Scene::Objects &v = scene.omni();
@@ -1028,7 +1066,8 @@ void GraphicsSystem::drawTranscurent( Tempest::Texture2d& screen,
                      sceneCopy,
                      "scene" );
   float tc[] = { 1.0f/sceneCopy.width(), 1.0f/sceneCopy.height() };
-  device.setUniform( displaceData.fs, tc, 2, "dTexCoord");
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( displaceData.fs, tc, 2, "dTexCoord");
 
   const Tempest::AbstractCamera & camera = scene.camera();
 
@@ -1140,7 +1179,8 @@ void GraphicsSystem::drawWater( Tempest::Texture2d& screen,
                      "envMap" );
 
   float tc[] = { 1.0f/sceneCopy.width(), 1.0f/sceneCopy.height() };
-  device.setUniform( displaceData.fsWater, tc, 2, "dTexCoord");
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( displaceData.fsWater, tc, 2, "dTexCoord");
   device.setUniform( displaceData.fsWater, waterWaves, "normalMap");
   device.setUniform( displaceData.fsWater, sceneDepth, "sceneDepth");
 
@@ -1251,7 +1291,9 @@ void GraphicsSystem::blt( const Tempest::Texture2d & tex ) {
   render.setRenderState( Tempest::RenderState::PostProcess );
 
   bltData.texture.set( &tex );
-  device.setUniform( bltData.vs, scrOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( bltData.vs, scrOffset );
+
   device.setUniform( bltData.fs, bltData.texture );
 
   ppHelper.drawFullScreenQuad( device, bltData.vs, bltData.fs );
@@ -1265,25 +1307,25 @@ void GraphicsSystem::copy( Tempest::Texture2d &out,
 void GraphicsSystem::copy( Tempest::Texture2d &out,
                            const Tempest::Texture2d& in,
                            int w, int h ) {
-  copy( out, out.format(), in, w, h);
+  copy( out, in.format(), in, w, h);
   }
 
 void GraphicsSystem::copy( Tempest::Texture2d &out,
                            Tempest::Texture2d::Format::Type outFrm,
                            const Tempest::Texture2d& in,
                            int w, int h ) {
-  out = localTex.create( w,h, outFrm );//colorBuf( w,h );
-  out.setSampler( reflect );
+  out = localTex.create(w, h, outFrm);//colorBuf( w,h );
+  out.setSampler( in.sampler() );
 
   Tempest::Render render( device,
                           out,
                           bltData.vs, bltData.fs );
-
   render.setRenderState( Tempest::RenderState::PostProcess );
 
   bltData.texture.set( &in );
   cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( bltData.vs, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( bltData.vs, cpyOffset );
   device.setUniform( bltData.fs, bltData.texture );
 
   ppHelper.drawFullScreenQuad( device, bltData.vs, bltData.fs );
@@ -1305,7 +1347,8 @@ void GraphicsSystem::copyDepth( Tempest::Texture2d &out,
 
   bltData.texture.set( &in );
   cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( bltData.vs, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( bltData.vs, cpyOffset );
   device.setUniform( bltData.fs, bltData.texture );
 
   ppHelper.drawFullScreenQuad( device, bltData.vs, bltData.fs );
@@ -1321,13 +1364,14 @@ void GraphicsSystem::gauss( Tempest::Texture2d &out,
   Tempest::Render render( device,
                           out,
                           gaussData.vs, gaussData.fs );
+  //render.clear( Tempest::Color(0.0), 1 );
 
-  render.clear( Tempest::Color(0.0), 1 );
   render.setRenderState( Tempest::RenderState::PostProcess );
 
   bltData.texture.set( &in );
   cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( gaussData.vs, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( gaussData.vs, cpyOffset );
 
   //cpyOffset.set( dx/w, dy/h );
   float blurCoord[2] = { dx/w, dy/h };
@@ -1351,7 +1395,8 @@ void GraphicsSystem::gauss_ao( Tempest::Texture2d &out,
 
   bltData.texture.set( &in );
   cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( gaussData.vsAO, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( gaussData.vsAO, cpyOffset );
 
   float blurCoord[2] = { dx/w, dy/h };
   device.setUniform( gaussData.fsAO, blurCoord, 2, "blurCoord" );
@@ -1375,7 +1420,8 @@ void GraphicsSystem::gauss_gb( Tempest::Texture2d &out,
 
   bltData.texture.set( &in );
   cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( gaussData.vsGB, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( gaussData.vsGB, cpyOffset );
 
   float blurCoord[2] = { dx/w, dy/h };
   device.setUniform( gaussData.fsGB, blurCoord, 2, "blurCoord" );
@@ -1399,7 +1445,8 @@ void GraphicsSystem::gauss_b( Tempest::Texture2d &out,
 
   bltData.texture.set( &in );
   cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( gaussData.vsB, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( gaussData.vsB, cpyOffset );
 
   float blurCoord[2] = { dx/w, dy/h };
   device.setUniform( gaussData.fsB, blurCoord, 2, "blurCoord" );
@@ -1425,7 +1472,7 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
   const int w = sizes[0].w, h = w;
 
   if( settings.bloom==GraphicsSettingsWidget::Settings::Off ){
-    result = colorBuf(16,16);
+    result = colorBuf(1,1);
     Tempest::Render render( device,
                             result,
                             bloomData.vs, bloomData.brightPass );
@@ -1449,7 +1496,8 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
 
     bltData.texture.set( &in );
     cpyOffset.set( 1.0f/w, 1.0f/h );
-    device.setUniform( bloomData.vs, cpyOffset );
+    if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+      device.setUniform( bloomData.vs, cpyOffset );
 
     device.setUniform( bloomData.brightPass, bltData.texture );
 
@@ -1487,7 +1535,8 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
     render.setRenderState( Tempest::RenderState::PostProcess );
 
     cpyOffset.set( 0,0 );
-    device.setUniform( bloomData.vs, cpyOffset );
+    if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+      device.setUniform( bloomData.vs, cpyOffset );
 
     for( int i=0; i<3; ++i ){
       bloomData.b[i].set( &tmp[i+1] );
@@ -1556,7 +1605,8 @@ void GraphicsSystem::aceptFog( Tempest::Texture2d &in_out,
   render.setRenderState( Tempest::RenderState::PostProcess );
 
   cpyOffset.set( 1.0/tmp.width(), 1.0/tmp.height() );
-  device.setUniform( fogOfWar.vsAcept, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( fogOfWar.vsAcept, cpyOffset );
 
   device.setUniform( fogOfWar.fsAcept, tmp, "scene" );
   device.setUniform( fogOfWar.fsAcept, fog, "fog"   );
@@ -1580,7 +1630,8 @@ void GraphicsSystem::waves( Tempest::Texture2d &out,
 
   bltData.texture.set( &in );
   cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( water.vs, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( water.vs, cpyOffset );
 
   device.setUniform( water.fs, bltData.texture );
   device.setUniform( water.fs, in1, "texture1" );
@@ -1621,7 +1672,8 @@ void GraphicsSystem::aceptGI(   const Scene & s,
   render.setRenderState( Tempest::RenderState::PostProcess );
 
   cpyOffset.set( 1.0f/w, 1.0f/h );
-  device.setUniform( ssaoData.vs, cpyOffset );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( ssaoData.vs, cpyOffset );
 
   const Tempest::AbstractCamera &camera = s.camera();
   Tempest::Matrix4x4 mat = camera.projective();
@@ -1662,29 +1714,47 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
   /*
   sm = localTex.create( 256, 256,
                         Tempest::AbstractTexture::Format::RGB10_A2 );*/
-  sm = localTex.create( 256, 256,
+  sm = localTex.create( 512, 512,
                         Tempest::AbstractTexture::Format::RGB5 );
 
   Tempest::RenderState rstate;
   rstate.setCullFaceMode( Tempest::RenderState::CullMode::front );
 
+  const Tempest::AbstractCamera & camera = scene.camera();
+
+  float dir[] = {0,0, -1};
+  Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir, 0.3);
+
+  Frustum frustum;
+  mkFrustum( matrix, frustum );
+
   Tempest::Texture2d depthSm = depth( sm.width(), sm.height() );
-  { const Scene::Objects &v = scene.shadowCasters();
+  { const Scene::Objects &v = scene.shadowCastersAtst();
     Tempest::Render render( device,
                             sm, depthSm,
-                            smap.vs, smap.fs );
+                            smap.vsA, smap.fsA );
     if( clr )
       render.clear( Tempest::Color(1.0), 1 ); else
       device.clearZ(1);
     render.setRenderState( rstate );
 
-    const Tempest::AbstractCamera & camera = scene.camera();
-
-    float dir[] = {0,0, -1};
-    Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir, 0.3);
-
-    Frustum frustum;
-    mkFrustum( matrix, frustum );
+    draw( frustum,
+          true,
+          camera,
+          v,
+          &Material::shadow,
+          ref(matrix) );
+    completeDraw( render,
+                  camera,
+                  MaterialSort::less,
+                  &Material::shadow,
+                  ref(matrix) );
+    }
+  { const Scene::Objects &v = scene.shadowCasters();
+    Tempest::Render render( device,
+                            sm, depthSm,
+                            smap.vs, smap.fs );
+    render.setRenderState( rstate );
 
     draw( frustum,
           true,
@@ -1728,6 +1798,13 @@ void GraphicsSystem::blurSm( Tempest::Texture2d &sm,
   Tempest::Texture2d tmp = localTex.create( sm.width(), sm.height(), frm );
   out = localTex.create( sm.width(), sm.height(), frm );
 
+  Tempest::Texture2d::Sampler sampler = reflect;
+  sampler.uClamp = Tempest::Texture2d::ClampMode::Clamp;
+  sampler.vClamp = sampler.uClamp;
+
+  sm. setSampler( sampler );
+  out.setSampler( sampler );
+
   float sb = smMatSize(scene);
   float s = 3*sb;
 
@@ -1737,18 +1814,8 @@ void GraphicsSystem::blurSm( Tempest::Texture2d &sm,
   gauss_gb( tmp, out, sm.width(), sm.height(), s*2, 0 );
   gauss_gb( out, tmp, sm.width(), sm.height(), 0, s*2 );
 
-  for( int i=0; i<1; ++i ){
-    gauss_b( tmp, out, sm.width(), sm.height(),  s*3, 0 );
-    gauss_b( out, tmp, sm.width(), sm.height(),  0, s*3 );
-    }
-  //gauss( tmp, out, sm.width(), sm.height(),  s, 0 );
-  //gauss( out, tmp, sm.width(), sm.height(),  0, s );
-
-  Tempest::Texture2d::Sampler sampler = reflect;
-  sampler.uClamp = Tempest::Texture2d::ClampMode::Clamp;
-  sampler.vClamp = sampler.uClamp;
-
-  sm.setSampler( sampler );
+  gauss_b( tmp, out, sm.width(), sm.height(),  s*3, 0 );
+  gauss_b( out, tmp, sm.width(), sm.height(),  0, s*3 );
   }
 
 void GraphicsSystem::buildRSM( Scene &scene,
@@ -1973,6 +2040,7 @@ void GraphicsSystem::renderScene( const Scene &scene,
   if( settings.shadowMapRes>0 ){
     shadowMap = this->shadowMap( shadowMapSize, shadowMapSize );
     fillShadowMap( shadowMap, scene, clrSm );
+    //blt(shadowMap);
     }
 
   if( 0 ){
@@ -1984,7 +2052,12 @@ void GraphicsSystem::renderScene( const Scene &scene,
   Tempest::Texture2d topSm, aoBlured;
   if( settings.oclusion ){
     ssaoGMap( scene, topSm, clrSm );
-    blurSm(topSm, aoBlured, scene);
+    Tempest::Texture2d tmp;
+    copy(tmp, topSm, 256, 256);
+    blurSm(tmp, aoBlured, scene);
+
+    //blt(aoBlured);
+    //return;
     }
 
   if( gbufferSize==0 ){

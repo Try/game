@@ -46,7 +46,7 @@ void Button::setBackTexture(const Button::Texture &t) {
 void Button::setShortcut(const Tempest::Shortcut &sc) {
   hotKey = sc;
   hotKey.activated.bind( clicked );
-  hotKey.activated.bind(*this, &Button::onShortcut);
+  hotKey.activated.bind( this, &Button::onShortcut);
   }
 
 const std::wstring Button::text() const {

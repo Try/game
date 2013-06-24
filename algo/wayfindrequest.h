@@ -43,6 +43,7 @@ class WayFindRequest {
 
     const Terrain &terr;
     WayFindAlgo algo;
+    std::vector<Point> wayFix;
 
     void makeGroup( GameObject * obj,
                     std::vector<GameObject *> &objs,

@@ -327,7 +327,7 @@ void MoveBehavior::tick(const Terrain &terrain) {
     if( !clos.isOnMove && !clos.isReposMove ){
       int l = Math::distance( clos.colisionDisp[0], clos.colisionDisp[1],
                               0, 0 );
-      l = std::max(l, 1);
+      l = 2*std::max(l, 1);
       int s = obj.getClass().data.size*Terrain::quadSize;
       //int s = obj.getClass().data.speed*Terrain::quadSize;
 
@@ -622,7 +622,7 @@ void MoveBehavior::updatePos( const Terrain &t ) {
 
   int l = Math::distance( clos.colisionDisp[0], clos.colisionDisp[1],
                           0, 0 );
-  l = std::max(l, 1);
+  l = 2*std::max(l, 1);
   int s = obj.getClass().data.speed;
 
   int x = intentPos[0],

@@ -31,6 +31,10 @@ const Scene::Objects &Scene::shadowCasters() const {
   return shCast;
   }
 
+const Scene::Objects &Scene::shadowCastersAtst() const {
+  return shCastAtst;
+  }
+
 const Scene::Objects &Scene::mainObjects() const {
   return mainObj;
   }
@@ -100,8 +104,11 @@ void Scene::onObjectTransform( const AbstractGraphicObject *t,
 void Scene::onObjectOp( const AbstractGraphicObject *t,
                         Act ins,
                         const Tempest::Matrix4x4 &mat ) {
-  if( t->material().usage.shadowCast )
-    onObjectOp( shCast, t, ins, mat );
+  if( t->material().usage.shadowCast ){
+    if( t->material().usage.mainPassAtst )
+      onObjectOp( shCastAtst, t, ins, mat ); else
+      onObjectOp( shCast, t, ins, mat );
+    }
 
   if( t->material().usage.mainPass )
     onObjectOp( mainObj, t, ins, mat );

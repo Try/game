@@ -98,6 +98,7 @@ void SaveDialog::acceptAction() {
 
 std::vector<std::wstring> SaveDialog::filesInDir( const std::wstring &dirName ){
   std::vector<std::wstring> vec;
+  (void)dirName;
 
 #ifndef __ANDROID__
   _WDIR *dir = _wopendir ( L"./save" );//data->curDir;

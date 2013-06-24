@@ -95,10 +95,9 @@ const Tempest::Bind::UserFont::Leter&
     Tempest::Bind::UserFont::fetchLeter( Resource &res, wchar_t ch ) const {
   Leters & leters = *lt;
 
-  std::unordered_map< wchar_t, Leter >::iterator it = leters.find(ch);
-  if( it != leters.end() )
-    return it->second;
-
+  if( Leter *l = leters.find(ch) ){
+    return *l;
+    }
 
   FT_Face       face;
   FT_Vector     pen = {0,0};
@@ -258,4 +257,61 @@ void Tempest::Bind::UserFont::update() {
     lt = new Leters();
     letterBox[key] = lt;
     }
+  }
+
+Tempest::Bind::UserFont::Leter *Tempest::Bind::UserFont::LMap::find(wchar_t c) const {
+  unsigned char cp[sizeof(c)];
+  for( size_t i=0; i<sizeof(wchar_t); ++i){
+    cp[i] = c%256;
+    c/=256;
+    }
+
+  const LMap *l = this;
+
+  for( size_t i=sizeof(wchar_t)-1; i>0; --i ){
+    unsigned char cx = cp[i];
+    if( l->n[cx]==0 )
+      return 0;
+
+    l = l->n[cx];
+    }
+
+  if( l->l==0 ){
+    l->l = new Leter[256];
+    l->e = new bool[256];
+    std::fill( l->e, l->e+256, false );
+    }
+
+  if( l->e[cp[0]] )
+    return l->l+cp[0];
+
+  return 0;
+  }
+
+Tempest::Bind::UserFont::Leter &Tempest::Bind::UserFont::LMap::operator [](wchar_t c) {
+  unsigned char cp[sizeof(c)];
+  for( size_t i=0; i<sizeof(wchar_t); ++i){
+    cp[i] = c%256;
+    c/=256;
+    }
+
+  const LMap *l = this;
+
+  for( size_t i=sizeof(wchar_t)-1; i>0; --i ){
+    unsigned char cx = cp[i];
+    if( l->n[cx]==0 ){
+      l->n[cx] = new LMap();
+      }
+
+    l = l->n[cx];
+    }
+
+  if( l->l==0 ){
+    l->l = new Leter[256];
+    l->e = new bool[256];
+    std::fill( l->e, l->e+256, false );
+    }
+
+  l->e[cp[0]] = 1;
+  return *(l->l+cp[0]);
   }

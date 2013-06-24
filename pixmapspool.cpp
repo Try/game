@@ -3,14 +3,19 @@
 #include <cassert>
 #include <string>
 
+#include <Tempest/Device>
+
+/*
 #ifdef __ANDROID__
 const int PixmapsPool::pageSize = 2048;
 #else
 const int PixmapsPool::pageSize = 1024;
 #endif
+*/
 
 PixmapsPool::PixmapsPool(Tempest::TextureHolder &h):holder(h) {
   needToflush = true;
+  pageSize    = std::min( h.device().caps().maxTextureSize, 2048 );
   addPage();
   }
 
@@ -22,7 +27,7 @@ PixmapsPool::TexturePtr PixmapsPool::add(const Tempest::Pixmap &p) {
     return n;
     }
 
-  if( p.width() > pageSize ||
+  if( p.width()  > pageSize ||
       p.height() > pageSize ){
     Page pg;
     pg.p = p;

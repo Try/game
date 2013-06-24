@@ -7,18 +7,17 @@
 #include "util/tnloptimize.h"
 
 Tempest::VertexDeclaration::Declarator MVertex::mkDecl() {
-  /*
-  Tempest::VertexDeclaration::Declarator d;
-  d   .add( Tempest::Decl::float3, Tempest::Usage::Position )
-      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
-      .add( Tempest::Decl::float3, Tempest::Usage::Normal   )
-      .add( Tempest::Decl::float4, Tempest::Usage::Color    )
-      .add( Tempest::Decl::float4, Tempest::Usage::BiNormal );*/
-  Tempest::VertexDeclaration::Declarator d;
+  Tempest::VertexDeclaration::Declarator d;/*
   d   .add( Tempest::Decl::half4, Tempest::Usage::Position )
       .add( Tempest::Decl::half4, Tempest::Usage::Normal   )
-      //.add( Tempest::Decl::half4, Tempest::Usage::Color    )
-      .add( Tempest::Decl::half4, Tempest::Usage::BiNormal );
+      .add( Tempest::Decl::half4, Tempest::Usage::BiNormal )
+      .add( Tempest::Decl::color, Tempest::Usage::Color    );*/
+
+  d   .add( Tempest::Decl::half4,  Tempest::Usage::Position )
+      .add( Tempest::Decl::half4,  Tempest::Usage::Normal   )
+      .add( Tempest::Decl::half2,  Tempest::Usage::BiNormal )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
+      .add( Tempest::Decl::color,  Tempest::Usage::Color    );
 
   return d;
   }
@@ -61,20 +60,28 @@ void Model::computeBiNormal( MVertex &va, MVertex &vb, MVertex &vc ) {
       u[i]/= l;
       */
 
-    for( int i=0; i<4; ++i ){
-      va.bnormal[i] = -u[i];
-      vb.bnormal[i] = -u[i];
-      vc.bnormal[i] = -u[i];
+    MVertex *v[3] = {&va, &vb, &vc};
+    for( int i=0; i<3; ++i ){
+      v[i]->bx = -u[0];
+      v[i]->by = -u[1];
+      v[i]->bz = -u[2];
       }
     //float v[3] = {};
     } else {
     float u[4] = { b[0]/t2[0], b[1]/t2[0], b[2]/t2[0], 0 };
 
+    MVertex *v[3] = {&va, &vb, &vc};
+    for( int i=0; i<3; ++i ){
+      v[i]->bx = -u[0];
+      v[i]->by = -u[1];
+      v[i]->bz = -u[2];
+      }
+    /*
     for( int i=0; i<4; ++i ){
       va.bnormal[i] = -u[i];
       vb.bnormal[i] = -u[i];
       vc.bnormal[i] = -u[i];
-      }
+      }*/
     }
   }
 
@@ -121,9 +128,12 @@ void Model::loadMX( Tempest::VertexBufferHolder & vboHolder,
     v.u = d.u;
     v.v = d.v;
 
-    std::copy( d.normal, d.normal+3, v.normal );
+    v.nx = d.normal[0];
+    v.ny = d.normal[1];
+    v.nz = d.normal[2];
     //memcpy( &v, &d, sizeof(d) );
-    //std::fill( v.color, v.color+4, 1) ;
+
+    std::fill( v.color, v.color+4, 1) ;
     }
 
   if( rawN.vertex.size()%3==0 ){

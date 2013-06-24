@@ -22,9 +22,9 @@ GraphicsSettingsWidget::Settings::Settings() {
   oclusion       = true;
   shadowTextures = true;
 #ifdef __ANDROID__
-  shadowMapRes  = 1024;
-  bloom         = Hight;
-  glow          = true;
+  shadowMapRes  = 512;
+  bloom         = Off;
+  glow          = false;
   normalMap     = true;
 
   shadowFilterQ  = 0;
@@ -53,7 +53,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   //l.push_back(L"sm 4096x4096");
 
   b->setItemList(l);
-  b->setCurrentItem(2);
+  b->setCurrentItem(0);
   if( s.shadowMapRes==512 )
     b->setCurrentItem(1);
   if( s.shadowMapRes==1024 )
@@ -61,7 +61,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   if( s.shadowMapRes==2048 )
     b->setCurrentItem(3);
 
-  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::shadowMapRes);
+  b->onItemSelected.bind( this, &GraphicsSettingsWidget::shadowMapRes);
   layout().add(b);
 
   b = new ListBox(res);
@@ -72,7 +72,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   b->setItemList(l);
   b->setCurrentItem( s.shadowFilterQ );
-  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::smFilterQ );
+  b->onItemSelected.bind( this, &GraphicsSettingsWidget::smFilterQ );
   layout().add(b);
 
   b = new ListBox(res);
@@ -83,7 +83,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   b->setItemList(l);
   b->setCurrentItem( s.bloom );
-  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::bloomQ );
+  b->onItemSelected.bind( this, &GraphicsSettingsWidget::bloomQ );
 
   layout().add(b);
 
@@ -94,7 +94,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   b->setItemList(l);
   b->setCurrentItem( s.glow?1:0 );
-  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::glow );
+  b->onItemSelected.bind( this, &GraphicsSettingsWidget::glow );
 
   layout().add(b);
 
@@ -105,7 +105,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   b->setItemList(l);
   b->setCurrentItem( s.normalMap?1:0);
-  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::normalMap );
+  b->onItemSelected.bind( this, &GraphicsSettingsWidget::normalMap );
   layout().add(b);
 
   b = new ListBox(res);
@@ -115,7 +115,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   b->setItemList(l);
   b->setCurrentItem( s.oclusion? 1:0 );
-  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::oclusion );
+  b->onItemSelected.bind( this, &GraphicsSettingsWidget::oclusion );
   layout().add(b);
 
   b = new ListBox(res);
@@ -125,7 +125,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   b->setItemList(l);
   b->setCurrentItem( s.shadowTextures? 1:0 );
-  b->onItemSelected.bind(*this, &GraphicsSettingsWidget::shTexture );
+  b->onItemSelected.bind( this, &GraphicsSettingsWidget::shTexture );
   layout().add(b);
   }
 

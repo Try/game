@@ -261,7 +261,7 @@ void WarriorBehavior::move( int x, int y ) {
 
   isAtk = true;
 
-  dRqTime = 30+(obj.distanceQ(x,y)*4);
+  dRqTime = std::min(50, 30+(obj.distanceQ(x,y)*4));
   /*
   for( size_t i=0; i<obj.getClass().data.atk.size(); ++i ){
     if( obj.getClass().data.atk[i].range>0 ){
@@ -274,14 +274,35 @@ void WarriorBehavior::move( int x, int y ) {
   }
 
 void WarriorBehavior::damageTo(GameObject &dobj) {
-  dAtkTime = obj.getClass().data.atk[0].delay;
+  const ProtoObject::GameSpecific::Atack *ax = 0;
+
+  const std::vector<ProtoObject::GameSpecific::Atack>& atk = obj.getClass().data.atk;
+  const ProtoObject& cls = dobj.getClass();
+
+  for( size_t i=0; i<atk.size(); ++i ){
+    bool ok = false;
+    if( atk[i].uDestType!=size_t(-1) ){
+      for( size_t r=0; r<cls.data.utype.size(); ++r )
+        if( cls.data.utype[r]==atk[i].uDestType )
+          ok = true;
+      } else {
+      ok = true;
+      }
+
+    if( ok ){
+      if( ax==0 || ax->damage*atk[i].delay < atk[i].damage*ax->delay )
+        ax = &atk[i];
+      }
+    }
 
   obj.setViewDirection( dobj.x() - obj.x(),
                         dobj.y() - obj.y() );
 
-  if( obj.getClass().data.atk[0].range>0 &&
-      obj.getClass().data.atk[0].bullet.size() ){
-    auto bul = dobj.reciveBulldet( obj.getClass().data.atk[0].bullet );
+  const ProtoObject::GameSpecific::Atack& a = *ax;
+  dAtkTime = a.delay;
+
+  if( a.range>0 && a.bullet.size() ){
+    auto bul = dobj.reciveBulldet( a.bullet );
     Bullet& b = *bul;
 
     b.x = obj.x();
@@ -292,7 +313,7 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     b.tgZ = dobj.viewHeight()/2 + World::coordCast(dobj.z());
 
     b.plOwner      = obj.player().number();
-    b.atack        = obj.getClass().data.atk[0];
+    b.atack        = a;
 
     b.tick();
     obj.world().game.resources().sound("fire_ball").play();
@@ -300,7 +321,7 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     //obj.world().game.resources().sound("attack-sword-001").play();
     mkDamage( dobj, obj.playerNum(),
               dobj.x(), dobj.y(),
-              obj.getClass().data.atk[0] );
+              a );
     }
 
   if( intentToHold==0 ){
@@ -368,8 +389,29 @@ void WarriorBehavior::positionChangeEvent(PositionChangeEvent &) {
   }
 
 bool WarriorBehavior::canShoot( GameObject &taget ) {
+  for( size_t i=0; i<obj.getClass().data.atk.size(); ++i )
+    if( canShoot(taget, obj.getClass().data.atk[i]) )
+      return true;
+
+  return false;
+  }
+
+bool WarriorBehavior::canShoot( GameObject &taget,
+                                const ProtoObject::GameSpecific::Atack & atk ) {
+  if( atk.uDestType!=size_t(-1) ){
+    bool ok = false;
+    for( size_t i=0; i<taget.getClass().data.utype.size(); ++i )
+      if( taget.getClass().data.utype[i]==atk.uDestType ){
+        ok = true;
+        break;
+        }
+
+    if( !ok )
+      return false;
+    }
+
   int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
-  int arange = (  obj.getClass().data.atk[0].range +
+  int arange = (  atk.range +
                  (obj.getClass().data.size + 2 +
                   taget.getClass().data.size)/2 )*Terrain::quadSize;
 
@@ -385,20 +427,33 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
 
   if( taget ){
     if( canShoot( taget.value() ) ){
+      bool isPat     = isPatrul;
+      obj.behavior.message( StopMove, 0,0 );
+      isPatrul = isPat;
+
       if( dAtkTime==0 ){
         damageTo( taget.value() );
         lockGround();
         }
       } else{
       int vrange = obj.getClass().data.visionRange*Terrain::quadSize;
-      int arange = (  obj.getClass().data.atk[0].range +
-                     (obj.getClass().data.size + 2 +
-                      taget.value().getClass().data.size)/2 )*Terrain::quadSize;
+      int arange = 0;
+
+      const std::vector<size_t>& id = taget.value().getClass().data.utype;
+      for( size_t i=0; i<obj.getClass().data.atk.size(); ++i )
+        for( size_t r=0; r<id.size(); ++r ){
+          if( obj.getClass().data.atk[i].uDestType==size_t(-1) ||
+              obj.getClass().data.atk[i].uDestType==id[r] ){
+            arange = (  obj.getClass().data.atk[i].range +
+                       (obj.getClass().data.size + 2 +
+                        taget.value().getClass().data.size)/2 )*Terrain::quadSize;
+            }
+          }
 
       vrange = vrange*vrange;
 
-      int oldAR = arange;
-      arange = arange*arange;
+      //int oldAR = arange;
+      //arange = arange*arange;
       d = taget.value().distanceSQ(obj.x(), obj.y());
 
       if( d <= vrange || ignoreVrange ){
@@ -406,8 +461,19 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
           unlockGround();
 
           if( taget.value().getClass().data.speed>0 ){
-            int x = obj.x()/2 + taget.value().x()/2,
-                y = obj.y()/2 + taget.value().y()/2;
+            int dx = taget.value().x()-obj.x(),
+                dy = taget.value().y()-obj.y();
+
+            int x = obj.x(),
+                y = obj.y();
+
+            if( abs(dx)>2*Terrain::quadSize && abs(dy)>2*Terrain::quadSize ){
+              x += dx/2;
+              y += dy/2;
+              } else {
+              x += dx;
+              y += dy;
+              }
 
             move( x, y );
             } else {
@@ -417,18 +483,20 @@ void WarriorBehavior::tickAtack( bool ignoreVrange ) {
                 dy = (y-obj.y()),
                 l  = Math::sqrt(dx*dx+dy*dy);
 
-            if( oldAR>2 )
-              oldAR -= 2;
+            if( arange>2*Terrain::quadSize )
+              arange -= 2*Terrain::quadSize;
 
-            if( l>oldAR && l>0 ){
-              dx = dx*oldAR/l;
-              dy = dy*oldAR/l;
+            if( l>arange && l>0 ){
+              dx = dx*arange/l;
+              dy = dy*arange/l;
               } else {
               dx = 0;
               dy = 0;
               }
 
-            move( x-dx, y-dy );
+            if( obj.world().terrain().isEnable(x-dx, y-dy) )
+              move( x-dx, y-dy ); else
+              move( x, y );
             }
           }
         } else {

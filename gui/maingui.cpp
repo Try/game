@@ -106,7 +106,6 @@ bool MainGui::draw(GUIPass &pass) {
 
   if( mainwidget ){
     updateValues();
-    mainwidget->updateValues();
     mainwidget->updateView();
     updateView();
     }

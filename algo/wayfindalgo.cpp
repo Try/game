@@ -22,6 +22,7 @@ WayFindAlgo::WayFindAlgo( const Terrain &t ) : terrain(t){
   waveBuf.reserve(1024);
   rwPoint.reserve(1024);
   way.reserve(1024);
+  wayBuf.reserve(1024);
   }
 
 void WayFindAlgo::fillClasrerMap( const std::vector< GameObject* > &objects ) {
@@ -220,7 +221,7 @@ void WayFindAlgo::findWay( GameObject & obj, int x, int y, int rx, int ry,
 
   int dimCount = 8;
   waveAstar( wayMap,
-             terrain.wayCorrMap(),
+             //terrain.wayCorrMap(),
              x, y,
              func, incMapPointR<int>,
              rx, ry,
@@ -325,7 +326,7 @@ void WayFindAlgo::optimizeWay() {
   int s = 0;
   int e = 2, wr = 1;
   while( e < int(way.size()) ){
-    if( !optimizeWay( way[s], way[e] ) || e-s>20 ){
+    if( !optimizeWay( way[s], way[e] )/* || e-s>20*/ ){
       way[wr] = way[e-1];
       ++wr;
       s  = e-1;
@@ -345,6 +346,31 @@ void WayFindAlgo::optimizeWay() {
         way[way.size()-1].y==way[way.size()-2].y )
       way.pop_back();
     }
+
+  wayBuf.clear();
+  if( way.size() )
+    wayBuf.push_back(way[0]);
+
+  for( size_t i=1; i<way.size(); ++i ){
+    const Point &a = way[i-1],
+                &b = way[i];
+    int dx = a.x-b.x, dy = a.y-b.y, c = 0;
+    while( abs(dx)+abs(dy) > Terrain::quadSize*20 ){
+      dx /= 2;
+      dy /= 2;
+      ++c;
+      }
+
+    dx = a.x-b.x;
+    dy = a.y-b.y;
+    ++c;
+    for( int i=1; i<c; ++i ){
+      wayBuf.push_back( Point{a.x+dx*i/c, a.y+dy*i/c} );
+      }
+    wayBuf.push_back(b);
+    }
+
+  way = wayBuf;
   }
 
 bool WayFindAlgo::optimizeWay( const Point& a, const Point& b) {

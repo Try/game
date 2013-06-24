@@ -116,9 +116,11 @@ class GraphicsSystem {
     size_t nFrame;
 
     static  float smMatSize(const Scene & s, float sv = 0 );
-    static  Tempest::Matrix4x4 makeShadowMatrix( const Scene & s );
-    static  Tempest::Matrix4x4 makeShadowMatrix(const Scene & s, float *dxyz,
-                                                 float sv = 0 );
+
+    Tempest::Matrix4x4 makeShadowMatrix( const Scene & s );
+    Tempest::Matrix4x4 makeShadowMatrix( const Scene & s,
+                                         float *dxyz,
+                                         float sv = 0 );
 
     Tempest::Texture2d::Sampler reflect, bufSampler;
 
@@ -128,8 +130,8 @@ class GraphicsSystem {
                  const Scene &scene );
 
     struct Sm{
-      Tempest::VertexShader   vs;
-      Tempest::FragmentShader fs;
+      Tempest::VertexShader   vs, vsA;
+      Tempest::FragmentShader fs, fsA;
       } smap;
 
     struct GBuf{
@@ -254,8 +256,7 @@ class GraphicsSystem {
 
     void fillShadowMap(Tempest::Texture2d &sm,
                         Tempest::Texture2d &depth,
-                        const Scene &scene,
-                        const Scene::Objects &v , bool clr);
+                        const Scene &scene, bool clr);
 
     int drawObjects( Tempest::Texture2d* gbuffer,
                       Tempest::Texture2d* mainDepth,

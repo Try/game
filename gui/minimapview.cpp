@@ -19,7 +19,7 @@ MiniMapView::MiniMapView( Resource &res ):TextureView(res), res(res) {
 
 MiniMapView::~MiniMapView() {
   if( world )
-    world->terrain().onTerrainChanged.ubind(*this, &MiniMapView::onTerrainCanged );
+    world->terrain().onTerrainChanged.ubind( this, &MiniMapView::onTerrainCanged );
   }
 
 void MiniMapView::setup(World * w) {
@@ -28,13 +28,13 @@ void MiniMapView::setup(World * w) {
   rtime2  = 0;
 
   if( world )
-    world->terrain().onTerrainChanged.ubind(*this, &MiniMapView::onTerrainCanged );
+    world->terrain().onTerrainChanged.ubind( this, &MiniMapView::onTerrainCanged );
   world = w;
   needToUpdateTerrain = true;
   needToUpdateTerrainV = true;
 
   if(w)
-    w->terrain().onTerrainChanged.bind(*this, &MiniMapView::onTerrainCanged );
+    w->terrain().onTerrainChanged.bind( this, &MiniMapView::onTerrainCanged );
   }
 
 void MiniMapView::render() {
@@ -49,20 +49,21 @@ void MiniMapView::render() {
   int mk = std::max( 1, wx.terrain().width()*wx.terrain().height()/(128*128) );
 
   if( terr.width() != w() || terr.height()!= h() ){
-   rtime = tcount - mk*40;
+    rtime = tcount - mk*200;
 
-    hudPx = Tempest::Pixmap(w(), h(), true);
+    hudPx  = Tempest::Pixmap(w(), h(), true);
+    tmpPix = Tempest::Pixmap(w(), h(), true);;
     Tempest::Pixmap::Pixel px = {0,0,0,0};
     hudPx.fill(px);
 
     update();
     }
 
-  if( needToUpdateTerrainV && rtime2+mk*40 < tcount ){
+  if( needToUpdateTerrainV && rtime2+mk*50 < tcount ){
     needToUpdateTerrainV = false;
     rtime2 = tcount;
 
-    Tempest::Pixmap terr = Tempest::Pixmap(w(), h(), true);
+    Tempest::Pixmap& terr = tmpPix;
     Tempest::Pixmap::Pixel pix;
     pix.r = 0;
     pix.g = 0;
@@ -109,20 +110,20 @@ void MiniMapView::render() {
     this->terr = res.ltexHolder.create(terr, false, false);
     }
 
-  if( needToUpdateTerrain ||
+  if( //needToUpdateTerrain ||
       tcount >= rtime+mk*40 ||
       tcount < rtime ){
     rtime = tcount;
 
     Tempest::Pixmap::Pixel pix = {0,0,0,0};
-    Tempest::Pixmap renderTo = Tempest::Pixmap(w(), h(), true);
+    Tempest::Pixmap& renderTo = tmpPix;
     renderTo.fill(pix);
 
     drawUnits(renderTo, wx);
     //aceptFog(renderTo, wx.game.player().fog() );
     units = res.ltexHolder.create(renderTo, false, false);
 
-    Tempest::Pixmap fogTex = Tempest::Pixmap(w(), h(), true);
+    Tempest::Pixmap& fogTex = tmpPix;
     aceptFog(fogTex, wx.game.player().fog() );
 
     fog   = res.ltexHolder.create(fogTex, false, false);

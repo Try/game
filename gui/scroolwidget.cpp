@@ -18,7 +18,7 @@ ScroolWidget::ScroolWidget(Resource &res)
   cen->setLayout( lay );
   box.setLayout( Tempest::Vertical );
 
-  onResize.bind(*this, &ScroolWidget::resizeEv);
+  onResize.bind( this, &ScroolWidget::resizeEv);
   sb.valueChanged.bind( *this, &ScroolWidget::scrool );
   }
 

@@ -66,6 +66,9 @@ void UnitView::setupUnit( Game &game,
   }
 
 void UnitView::updateView() {
+  if( !isVisible() )
+    return;
+
   if( curUnit && folowMode ){
     setCameraPos(*curUnit);
     }

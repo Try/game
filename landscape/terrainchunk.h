@@ -17,6 +17,8 @@ struct TerrainChunk {
     std::vector<View> landView;
     View waterView, fogView;
 
+    float x,y;
+
     struct PolishView {
       PolishView( Scene& s,
                   const ProtoObject::View *v ):obj(s), baseView(v){}
@@ -26,6 +28,7 @@ struct TerrainChunk {
 
       const ProtoObject::View  *baseView;
       float zView;
+      float posX, posY;
 
       bool needToUpdate;
       };

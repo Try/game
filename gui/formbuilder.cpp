@@ -362,7 +362,7 @@ Widget *FormBuilder::createPropertys(Resource &res) {
   ScroolWidget *sc = new ScroolWidget(res);
   p->layout().add( sc );
   prop = new PropertyEditor(res);
-  prop->onEditor.bind(*this, &FormBuilder::propEditor );
+  prop->onEditor.bind( this, &FormBuilder::propEditor );
 
   sc->centralWidget().layout().add( prop );
 

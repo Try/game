@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 #include <map>
+#include <memory>
 
 class Resource;
 
@@ -43,8 +44,32 @@ namespace Bind{
 
       void setSize( int s );
     private:
+      struct LMap{
+        LMap(){
+          l = 0;
+          e = 0;
+          std::fill( n, n+256, (LMap*)0 );
+          }
+        ~LMap(){
+          delete l;
+          delete e;
+          for( int i=0; i<256; ++i )
+            delete n[i];
+          }
+
+        Leter* find( wchar_t c ) const;
+        Leter& operator[]( wchar_t c );
+
+        private:
+          mutable Leter* l;
+          mutable bool * e;
+          mutable LMap*  n[256];
+        };
+
+      /*
       typedef std::unordered_map< wchar_t, Leter,
-                                  std::hash<size_t> > Leters;
+                                  std::hash<size_t> > Leters;*/
+      typedef LMap Leters;
       Leters * lt;
 
       struct FreeTypeLib;

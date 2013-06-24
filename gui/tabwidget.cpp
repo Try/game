@@ -15,7 +15,7 @@ struct TabWidget::MPanel: public Panel{
 
 struct TabWidget::MBtn: public Button {
   MBtn( Resource& res, int tab ):Button(res), tab(tab){
-    clicked.bind(*this, &MBtn::exec );
+    clicked.bind( this, &MBtn::exec );
     }
 
   Tempest::signal<int> setPage;
@@ -69,7 +69,7 @@ void TabWidget::addTab(Tempest::Widget *w) {
     while( btns.size()<tabs.size() ){
       MBtn* b = new MBtn( res, btns.size() );
       b->setMaximumSize( 50, b->sizePolicy().maxSize.h );
-      b->setPage.bind(*this, &TabWidget::setCurrentTab );
+      b->setPage.bind( this, &TabWidget::setCurrentTab );
 
       wbtns->layout().add( b );
       btns.push_back(b);

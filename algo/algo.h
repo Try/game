@@ -165,7 +165,7 @@ struct Pt:Point{
 
 template< class Val, class Test, class Edit >
 void waveAstar( array2d<Val> &  map,
-                const array2d<Val> &  evMap,
+                //const array2d<Val> &  evMap,
                 int x, int y,
                 Test test, Edit edit,
                 int rx, int ry,
@@ -204,7 +204,7 @@ void waveAstar( array2d<Val> &  map,
         if( test( map,  p, px )   ){
           edit( map, p, px );
           p.mkF(rx, ry, map[p.x][p.y] );
-          p.f += evMap[p.x][p.y];
+          //p.f += evMap[p.x][p.y];
 
           size_t l = std::lower_bound( stk.begin(), stk.end(), p ) - stk.begin();
           stk.insert( stk.begin()+l, p );

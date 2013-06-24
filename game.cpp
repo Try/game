@@ -50,10 +50,12 @@ Game::Game( ShowMode sm )
 
   currentPlayer = 1;
 
+  //size_t s = sizeof(MVertex);
+
   initFactorys();
   loadData();
 
-  //graphics.drawOpWindow.bind(*this, &Game::update);
+  //graphics.drawOpWindow.bind( this, &Game::update);
 
   isRunning        = true;
   physicStarted    = false;
@@ -77,11 +79,11 @@ void Game::loadData() {
 
   gui.toogleFullScreen.bind( *this, &Game::toogleFullScr );
   gui.addObject.bind( *this, &Game::createEditorObject );
-  gui.onSetPlayer.bind(*this, &Game::setEditorObjectPl );
-  gui.toogleEditTab.bind(*this, &Game::cancelEdit );
+  gui.onSetPlayer.bind( this, &Game::setEditorObjectPl );
+  gui.toogleEditTab.bind( this, &Game::cancelEdit );
 
-  gui.setCameraPos.bind(*this, &Game::setCameraPos );
-  gui.minimapEvent.bind(*this, &Game::minimapEvent );
+  gui.setCameraPos.bind( this, &Game::setCameraPos );
+  gui.minimapEvent.bind( this, &Game::minimapEvent );
 
   gui.onSettingsChanged.bind( *this, &Game::settingsChanged );
 
@@ -99,7 +101,7 @@ void Game::loadData() {
   world = worlds[0].get();
 
   world->camera.setPerespective( true, w(), h() );
-  world->setupMaterial.bind(*this, &Game::setupMaterials );
+  world->setupMaterial.bind( this, &Game::setupMaterials );
 
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
   gui.paintObjectsHud.bind( *world, &World::paintHUD );
@@ -118,7 +120,7 @@ void Game::loadData() {
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
 #else
   //load(L"campagin/0.sav");
-  loadMission("campagin/td2.sav");
+  loadMission("save/td2.sav");
   //loadMission("save/td2.sav");
   setScenario( new DeatmachScenario(*this, gui, msg) );
 #endif
@@ -126,6 +128,9 @@ void Game::loadData() {
 
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
   //setScenario( new DeatmachScenario(*this, gui, msg) );
+  //for( size_t i=0; i<world->activeObjects().size(); ++i )
+    //world->activeObjects()[i]->setHP(0);
+
   mscenario->onStartGame();
   updateTime = Time::tickCount();
   }
@@ -140,7 +145,7 @@ void Game::loadPngWorld( const Tempest::Pixmap& png ){
   world = worlds[0].get();
 
   world->camera.setPerespective( true, w(), h() );
-  world->setupMaterial.bind(*this, &Game::setupMaterials );
+  world->setupMaterial.bind( this, &Game::setupMaterials );
 
   gui.toogleEditLandMode = Tempest::signal<const Terrain::EditMode&>();
   gui.toogleEditLandMode.bind( *world, &World::toogleEditLandMode );
@@ -149,6 +154,7 @@ void Game::loadPngWorld( const Tempest::Pixmap& png ){
   gui.paintObjectsHud.bind( *world, &World::paintHUD );
 
   world->terrain().loadFromPixmap( png );
+  gui.setupMinimap(world);
   }
 
 void Game::setScenario(Scenario *s) {
@@ -163,7 +169,8 @@ void Game::setScenario(Scenario *s) {
 void Game::computePhysic(void *) {
   while( isRunning ){
     if( world ){
-      world->physics.tick(1);
+      if( !isPaused() )
+        world->physics.tick(1);
       physicStarted = true;
       }
 
@@ -780,7 +787,7 @@ void Game::serialize( GameSerializer &s ) {
       world->camera.setPerespective( true, w(), h() );
       world->camera.setPosition( 2, 3, 0 );
       world->camera.setDistance( 4 );
-      world->setupMaterial.bind(*this, &Game::setupMaterials );
+      world->setupMaterial.bind( this, &Game::setupMaterials );
       }
     }
 

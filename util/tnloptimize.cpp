@@ -12,7 +12,7 @@ void TnlOptimize::optimizeTerrain(std::vector<MVertex> &v){
 
   size_t wr = 0;
   for( size_t i=0; i<v.size(); ++i ){
-    if( v[i].normal[2]<0.9 || m[v[i]]!=6 ){
+    if( v[i].nz<0.9 || m[v[i]]!=6 ){
       v[wr] = v[i];
       ++wr;
       }

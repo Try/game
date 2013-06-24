@@ -6,9 +6,12 @@
 #include "algo.h"
 #include "behavior/movebehavior.h"
 
+#include "util/math.h"
+
 WayFindRequest::WayFindRequest( const Terrain &t ):terr(t), algo(t) {
   visited.reserve(400);
-  group  .reserve(400);
+  group  .reserve(400);  
+  wayFix .reserve( 256 );
 
   rq.reserve(256);
   }
@@ -151,8 +154,8 @@ void WayFindRequest::findWayGr( int x, int y,
       obj = objs[i];
       }
 
-    if( i*i<=objs.size() )
-      vMapRef = i;
+    if( (i+1)*(i+1)<=objs.size() )
+      vMapRef = i+1;
     }
 
   algo.findWay( *obj,
@@ -161,6 +164,75 @@ void WayFindRequest::findWayGr( int x, int y,
                 x,
                 y,
                 vMapRef );
+/*
+  wayFix.clear();
+  if( algo.way.size() )
+    wayFix.push_back( algo.way[0] );
+
+  int dx = 0, dy = 0;
+  //vMapRef = 2*objs.size();
+
+  for( size_t i=1; i+1<algo.way.size(); ++i ){
+    Point a = algo.way[i-1],
+          b = algo.way[i],
+          c = algo.way[i+1];
+
+    a.x -= b.x;
+    a.y -= b.y;
+
+    c.x -= b.x;
+    c.y -= b.y;
+
+    int la = Math::distance(a.x, a.y, 0,0),
+        lc = Math::distance(c.x, c.y, 0,0);
+
+    if( la>0 && lc>0 ){
+      if( la>lc ){
+        c.x = (c.x*la)/lc;
+        c.y = (c.y*la)/lc;
+        } else {
+        a.x = (a.x*lc)/la;
+        a.y = (a.y*lc)/la;
+        }
+
+      dx = (a.x+c.x);
+      dy = (a.y+c.y);
+      int lm = std::max(1,Math::distance(dx, dy, 0,0));
+
+      dx = -(dx*vMapRef)/lm;
+      dy = -(dy*vMapRef)/lm;
+      }
+
+    if( !terr.isEnable(b.x+dx, b.y+dy) ){
+      if( terr.isEnable(b.x-dx, b.y-dy) ){
+        dx = -dx;
+        dy = -dy;
+        } else {
+        dx = 0;
+        dy = 0;
+        }
+      }
+
+    b.x += dx;
+    b.y += dy;
+
+    if( !(la>0 && lc>0) ){
+      dx = 0;
+      dy = 0;
+      }
+
+    wayFix.push_back(b);
+
+    if( i==1 ){
+      wayFix[0].x += dx;
+      wayFix[0].y += dy;
+      }
+    }
+
+  if( algo.way.size()>1 ){
+    Point b = algo.way.back();
+    wayFix.push_back( b );
+    }*/
 
   for( size_t i=0; i<objs.size(); ++i ){
     MoveBehavior *b = objs[i]->behavior.find<MoveBehavior>();

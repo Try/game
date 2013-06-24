@@ -181,30 +181,37 @@ void SmallGraphicsObject::applyTransform() {
   Tempest::Matrix4x4& mat = transformV;
 
   mat.identity();
-  mat.translate( mx, my, mz );
+  mat.translate( mx - vx.posX, my - vx.posY, mz );
 
   mat.rotate( ax, 1, 0, 0 );
   mat.rotate( az, 0, 0, 1 );
 
   mat.scale( sx,sy,sz );
 
-  Model::Vertex *v = &vx.geometry.vertex[glocation];
+  MVertex *v = &vx.geometry.vertex[glocation];
   float x, y, z, w = 1;
 
   for( size_t i=0; i<model->vertex.size(); ++i, ++v ){
-    const Model::Vertex & s = model->vertex[i];
+    const MVertex & s = model->vertex[i];
     *v = s;
-    mat.project( s.x, s.y, s.z-vx.zView/sz, 1, x, y, z, w );
+    mat.project( s.x,
+                 s.y,
+                 s.z - vx.zView/sz,
+                 1, x, y, z, w );
 
     v->x = x;
     v->y = y;
     v->z = z;
 
-    mat.project( s.normal[0], s.normal[1], s.normal[2], 0, x, y, z, w );
+    mat.project( s.nx, s.ny, s.nz, 0, x, y, z, w );
+    v->nx = x;
+    v->ny = y;
+    v->nz = z;
 
-    v->normal[0] = x;
-    v->normal[1] = y;
-    v->normal[2] = z;
+    mat.project( s.bx, s.by, s.bz, 0, x, y, z, w );
+    v->bx = x;
+    v->by = y;
+    v->bz = z;
     }
 
   uint16_t * id = &vx.geometry.index[ ilocation ];
@@ -226,7 +233,9 @@ TerrainChunk::PolishView &SmallGraphicsObject::chunk() {
 
   TerrainChunk::PolishView *vx = new TerrainChunk::PolishView(scene, &view);
   vx->zView = z();
-  vx->obj.setPosition(0,0, z());
+  vx->obj.setPosition( c.x, c.y, z());
+  vx->posX = c.x;
+  vx->posY = c.y;
 
   game.setupMaterials( vx->obj, view, Tempest::Color() );
   c.polish.push_back( std::shared_ptr<TerrainChunk::PolishView>(vx) );
@@ -253,6 +262,9 @@ TerrainChunk &SmallGraphicsObject::chunkBase(float mx, float my) {
 
   tx = clamp( tx, 0, t->chunks.width()-1 );
   ty = clamp( ty, 0, t->chunks.height()-1 );
+
+  t->chunks[tx][ty].x = World::coordCast(tx*Terrain::chunkSize*Terrain::quadSize);
+  t->chunks[tx][ty].y = World::coordCast(ty*Terrain::chunkSize*Terrain::quadSize);
 
   return t->chunks[tx][ty];
   }

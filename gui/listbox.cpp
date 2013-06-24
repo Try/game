@@ -9,7 +9,7 @@
 class ListBox::ItemBtn:public Button{
   public:
     ItemBtn( Resource &r, size_t id ):Button(r), id(id){
-      clicked.bind(*this, &ItemBtn::onClick );
+      clicked.bind( this, &ItemBtn::onClick );
       }
 
     size_t id;

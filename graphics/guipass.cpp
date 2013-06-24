@@ -16,9 +16,9 @@ GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
                   Tempest::Size &s  )
   : vs(vsh), fs(fsh), vbHolder(vbo), ibHolder(ibo), size(s) {
   Tempest::VertexDeclaration::Declarator decl;
-  decl.add( Tempest::Decl::half2, Tempest::Usage::Position )
-      .add( Tempest::Decl::half2, Tempest::Usage::TexCoord, 0 )
-      .add( Tempest::Decl::half4, Tempest::Usage::TexCoord, 1 );
+  decl.add( Tempest::Decl::float2, Tempest::Usage::Position )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 0 )
+      .add( Tempest::Decl::float4, Tempest::Usage::TexCoord, 1 );
 
   vdecl = Tempest::VertexDeclaration( vbo.device(), decl );
 
@@ -31,12 +31,10 @@ GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
 
   setColor(1,1,1,1);
   iboTmp.reserve( 8096 );
+  stateStk.reserve(64);
   }
 
-void GUIPass::exec( MainGui &gui,
-                    Tempest::Texture2d *rt,
-                    Tempest::Texture2d *depth,
-                    Tempest::Device &device ) {
+void GUIPass::update( MainGui &gui, Tempest::Device &device ) {
   setColor(1,1,1,1);
   setBlendMode( Tempest::noBlend );
 
@@ -49,7 +47,7 @@ void GUIPass::exec( MainGui &gui,
       sz = std::max( lay.guiRawData.size(), sz );
 
       if( lay.needToUpdate ){
-        lay.guiGeometry = Tempest::VertexBuffer<HVertex>();
+        lay.guiGeometry = Tempest::VertexBuffer<Vert>();
         lay.guiGeometry = vbHolder.load( lay.guiRawData );
         lay.needToUpdate = false;
         }
@@ -72,8 +70,15 @@ void GUIPass::exec( MainGui &gui,
 
       guiIndex = ibHolder.load( iboTmp );
       }
+    }
+
+  stateStk.clear();
   }
 
+void GUIPass::exec( MainGui &gui,
+                    Tempest::Texture2d *rt,
+                    Tempest::Texture2d *depth,
+                    Tempest::Device &device ) {
   //std::cerr <<"guiIndex = " << guiIndex.size() << std::endl;
 
   Tempest::RenderState rs = makeRS( Tempest::noBlend );
@@ -91,7 +96,8 @@ void GUIPass::exec( MainGui &gui,
 
   //device.clear( Tempest::Color(0,0,0,1) );//FOR DROD TESTS
 
-  device.setUniform( vs, dTexCoord, 2, "dTexCoord" );
+  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+    device.setUniform( vs, dTexCoord, 2, "dTexCoord" );
 
   for( size_t r=0; r<layers.size(); ++r ){
     Layer& lay = layers[r];
@@ -123,8 +129,6 @@ void GUIPass::exec( MainGui &gui,
 
   device.endPaint();
   device.setRenderState( Tempest::RenderState() );
-
-  stateStk.clear();
   }
 
 void GUIPass::rect( int x0, int y0, int x1, int y1,
@@ -138,7 +142,7 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
   if( tw<0 || th<0 )
     return;
 
-  HVertex v[4];
+  Vert v[4];
   v[0].x = x0; v[0].u = texDx;
   v[0].y = y0; v[0].v = texDy;
 

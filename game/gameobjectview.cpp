@@ -649,12 +649,15 @@ void GameObjectView::setViewDirection(int lx, int ly) {
   int sLx = lx>0?1:-1,
       sIx = m.intentDirX>0?1:-1;
 
+  int sLy = lx>0?1:-1,
+      sIy = m.intentDirY>0?1:-1;
+
   if( lx==0 && ly==0 )
     return;
 
   int m0 = lx*m.intentDirY,
       m1 = ly*m.intentDirX;
-  if( m0 == m1 && sLx==sIx )
+  if( m0 == m1 && sLx==sIx && sLy==sIy )
     return;
 
   m.intentDirX = lx;

@@ -8,14 +8,15 @@
 
 int Math::sqrt( int arg ) {
   int re = 46340; // ::sqrt( std::numeric_limits<int>::max() )
-  int r = re/2;
+  int r = re/2, rd = 0;
 
   while( re*re!=arg && r>0 ){
     int q = re*re;
     if( q > arg )
-      re -= r; else
+      re -= (r+rd); else
       re += r;
 
+    rd = r%2;
     r/=2;
     }
 

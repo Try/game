@@ -199,7 +199,7 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       BuyBtn * btn   = new BuyBtn(res);
       btn->taget     = p.btn[i].taget;
       btn->icon.data = res.pixmap( "gui/icon/"+p.btn[i].taget );
-      btn->clicked.bind(*this, &CommandsPanel::buyEvent );
+      btn->clicked.bind( this, &CommandsPanel::buyEvent );
       b = btn;
       }
 
@@ -209,7 +209,7 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       if( p.btn[i].icon.size() )
         btn->icon.data = res.pixmap( p.btn[i].icon ); else
         btn->icon.data = res.pixmap( "gui/icon/build" );
-      btn->clicked.bind(*this, &CommandsPanel::setPage );
+      btn->clicked.bind( this, &CommandsPanel::setPage );
       b = btn;
       }
 
@@ -217,7 +217,7 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       BuyBtn * btn   = new BuyBtn(res);
       btn->taget     = p.btn[i].taget;
       btn->icon.data = res.pixmap( "gui/icon/"+p.btn[i].taget );
-      btn->clicked.bind(*this, &CommandsPanel::buyEvent );
+      btn->clicked.bind( this, &CommandsPanel::buyEvent );
       b = btn;
       }
 
@@ -234,10 +234,10 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       Spell::Mode m = msg.game.prototypes().spell( btn->taget ).mode;
 
       if( m==Spell::CastToCoord )
-        btn->clicked.bind(*this, &CommandsPanel::setupHook );
+        btn->clicked.bind( this, &CommandsPanel::setupHook );
 
       if( m==Spell::CastToUnit )
-        btn->clicked.bind(*this, &CommandsPanel::setupHookU );
+        btn->clicked.bind( this, &CommandsPanel::setupHookU );
 
       b = btn;
       }
@@ -364,12 +364,12 @@ void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
     layout().add( b  );
     }
 
-  btn[0]->clicked.bind(*this, &CommandsPanel::moveClick );
-  btn[1]->clicked.bind(*this, &CommandsPanel::stopClick );
-  btn[2]->clicked.bind(*this, &CommandsPanel::holdClick );
+  btn[0]->clicked.bind( this, &CommandsPanel::moveClick );
+  btn[1]->clicked.bind( this, &CommandsPanel::stopClick );
+  btn[2]->clicked.bind( this, &CommandsPanel::holdClick );
 
-  btn[3]->clicked.bind(*this, &CommandsPanel::patrulClick );
-  btn[4]->clicked.bind(*this, &CommandsPanel::atkClick  );
+  btn[3]->clicked.bind( this, &CommandsPanel::patrulClick );
+  btn[4]->clicked.bind( this, &CommandsPanel::atkClick  );
 
   if( obj.behavior.find<WarriorBehavior>()==0 ){
     btn[4]->deleteLater();

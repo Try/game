@@ -46,6 +46,13 @@ void setupTh(){}
 #endif
 
 int main( int, char** ){
+  /*
+  Tempest::Pixmap pm("data/textures/land/grass1.png");
+  pm.setFormat( Tempest::Pixmap::Format_DXT1 );
+  pm.save("data/textures/land/t.dds");
+  pm.setFormat( Tempest::Pixmap::Format_RGB );
+  pm.save("data/textures/land/t.png");*/
+
   Lang::load("lang/ru.lang");
   Tempest::Application app;
   setupTh();

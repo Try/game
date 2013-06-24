@@ -27,6 +27,7 @@ class WayFindAlgo {
     const Terrain & terrain;
 
     array2d<int> clasterMap, wayMap;
+    std::vector<Point> wayBuf;
     int clasterNum;
 
     std::vector<Point> rwPoint;

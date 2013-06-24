@@ -48,7 +48,7 @@ class MiniMapView : public TextureView {
 
     void drawUnits(Tempest::Pixmap &renderTo, World &wx);
 
-    Tempest::Pixmap hudPx;
+    Tempest::Pixmap hudPx, tmpPix;
 
     World * world;
     bool    needToUpdateTerrain, needToUpdateTerrainV;

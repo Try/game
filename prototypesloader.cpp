@@ -321,6 +321,20 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
       if( find(e, "mouseHint", str ) )
         obj.mouseHint.assign( str.begin(), str.end() );
 
+      if( find(e, "type", str ) ){
+        auto i = std::find( defs.back().unitTypes.begin(),
+                            defs.back().unitTypes.end(), str );
+
+        size_t id = defs.back().unitTypes.size();
+        if( i!=defs.back().unitTypes.end() ){
+          id = i-defs.back().unitTypes.begin();
+          } else {
+          defs.back().unitTypes.push_back(str);
+          }
+
+        obj.data.utype.push_back(id);
+        }
+
       if( find(e, "key", str ) ){
         readIf( e, "val", obj.data.propertyStr[str] );
         }
@@ -469,6 +483,13 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &b,
     }
   if( find(e, "slpashDamage", str ) ){
     b.splashDamage  = Lexical::cast<int>(str);
+    }
+
+  if( find(e, "type", str ) ){
+    auto i = std::find( defs.back().unitTypes.begin(),
+                        defs.back().unitTypes.end(), str );
+    if( i!=defs.back().unitTypes.end() )
+      b.uDestType  = i-defs.back().unitTypes.begin();
     }
 
   if( find(e, "bullet", str ) ){
