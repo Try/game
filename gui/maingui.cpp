@@ -73,7 +73,9 @@ void MainGui::setFocus() {
   }
 
 void MainGui::createControls(BehaviorMSGQueue & msg, Game &game) {
-  delete mainwidget;
+  //delete mainwidget;
+  for(size_t i=0; i<central.layout().widgets().size(); ++i)
+    central.layout().widgets()[i]->deleteLater();
 
   frame.data     = res.pixmap("gui/colors");
   hintFrame.data = res.pixmap("gui/hintFrame");

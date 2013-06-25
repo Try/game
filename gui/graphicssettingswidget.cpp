@@ -2,6 +2,8 @@
 
 #include "listbox.h"
 #include "lineedit.h"
+#include "checkbox.h"
+
 #include <Tempest/Layout>
 
 #ifdef __ANDROID__
@@ -87,46 +89,29 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   layout().add(b);
 
-  b = new ListBox(res);
-  l.clear();
-  l.push_back(L"glow off");
-  l.push_back(L"glow on");
+  CheckBox *ck = new CheckBox(res);
+  ck->setText("glow");
+  ck->setChecked( s.glow );
+  ck->checked.bind( this, &GraphicsSettingsWidget::glow );
+  layout().add(ck);
 
-  b->setItemList(l);
-  b->setCurrentItem( s.glow?1:0 );
-  b->onItemSelected.bind( this, &GraphicsSettingsWidget::glow );
+  ck = new CheckBox(res);
+  ck->setText("bumpMap");
+  ck->setChecked( s.normalMap );
+  ck->checked.bind( this, &GraphicsSettingsWidget::normalMap );
+  layout().add(ck);
 
-  layout().add(b);
+  ck = new CheckBox(res);
+  ck->setText("oclusion");
+  ck->setChecked( s.oclusion );
+  ck->checked.bind( this, &GraphicsSettingsWidget::oclusion );
+  layout().add(ck);
 
-  b = new ListBox(res);
-  l.clear();
-  l.push_back(L"normals off");
-  l.push_back(L"normals on");
-
-  b->setItemList(l);
-  b->setCurrentItem( s.normalMap?1:0);
-  b->onItemSelected.bind( this, &GraphicsSettingsWidget::normalMap );
-  layout().add(b);
-
-  b = new ListBox(res);
-  l.clear();
-  l.push_back(L"oclusion off");
-  l.push_back(L"oclusion on");
-
-  b->setItemList(l);
-  b->setCurrentItem( s.oclusion? 1:0 );
-  b->onItemSelected.bind( this, &GraphicsSettingsWidget::oclusion );
-  layout().add(b);
-
-  b = new ListBox(res);
-  l.clear();
-  l.push_back(L"shTexture off");
-  l.push_back(L"shTexture on");
-
-  b->setItemList(l);
-  b->setCurrentItem( s.shadowTextures? 1:0 );
-  b->onItemSelected.bind( this, &GraphicsSettingsWidget::shTexture );
-  layout().add(b);
+  ck = new CheckBox(res);
+  ck->setText("shTexture");
+  ck->setChecked( s.shadowTextures );
+  ck->checked.bind( this, &GraphicsSettingsWidget::shTexture );
+  layout().add(ck);
   }
 
 void GraphicsSettingsWidget::shadowMapRes(int v) {
@@ -147,25 +132,25 @@ void GraphicsSettingsWidget::bloomQ(int v) {
   onSettingsChanged(s);
   }
 
-void GraphicsSettingsWidget::glow(int v) {
+void GraphicsSettingsWidget::glow(bool v) {
   s.glow = v;
 
   onSettingsChanged(s);
   }
 
-void GraphicsSettingsWidget::normalMap(int v) {
+void GraphicsSettingsWidget::normalMap(bool v) {
   s.normalMap = v;
 
   onSettingsChanged(s);
   }
 
-void GraphicsSettingsWidget::oclusion(int v) {
+void GraphicsSettingsWidget::oclusion(bool v) {
   s.oclusion = v;
 
   onSettingsChanged(s);
   }
 
-void GraphicsSettingsWidget::shTexture(int v) {
+void GraphicsSettingsWidget::shTexture(bool v) {
   s.shadowTextures = v;
 
   onSettingsChanged(s);

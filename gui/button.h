@@ -29,9 +29,13 @@ class Button : public Tempest::Widget {
     void setHint( const std::wstring & str );
     const std::wstring &hint() const;
   protected:
-    void drawFrame(Tempest::Painter &p);
+    virtual void drawFrame(Tempest::Painter &p, const Tempest::Rect& r );
+    virtual void drawFrame(Tempest::Painter &p);
 
-    Tempest::Rect viewRect() const;
+    virtual void drawBack(Tempest::Painter &p, const Tempest::Rect& r );
+    virtual void drawBack(Tempest::Painter &p);
+
+    virtual Tempest::Rect viewRect() const;
 
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseMoveEvent(Tempest::MouseEvent &e);
@@ -50,6 +54,7 @@ class Button : public Tempest::Widget {
     Font font;
 
     void onShortcut();
+    virtual void emitClick();
 
     clock_t timePressed;
   };

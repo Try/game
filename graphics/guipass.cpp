@@ -75,7 +75,7 @@ void GUIPass::update( MainGui &gui, Tempest::Device &device ) {
   stateStk.clear();
   }
 
-void GUIPass::exec( MainGui &gui,
+void GUIPass::exec( MainGui &,
                     Tempest::Texture2d *rt,
                     Tempest::Texture2d *depth,
                     Tempest::Device &device ) {

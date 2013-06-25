@@ -517,8 +517,8 @@ bool World::isUnitUnderMouse( Tempest::Matrix4x4 & gmMat,
     }
 
   float x = 0,
-      y = 0,
-      z = 0;//0.5*obj.rawRadius();
+        y = 0,
+        z = 0;//0.5*obj.rawRadius();
 
   float r = 0.8*obj.rawRadius();
 

@@ -45,7 +45,7 @@ void Button::setBackTexture(const Button::Texture &t) {
 
 void Button::setShortcut(const Tempest::Shortcut &sc) {
   hotKey = sc;
-  hotKey.activated.bind( clicked );
+  hotKey.activated.bind( this, &Button::emitClick );
   hotKey.activated.bind( this, &Button::onShortcut);
   }
 
@@ -91,7 +91,7 @@ void Button::mouseMoveEvent( Tempest::MouseEvent & ) {
 
 void Button::mouseUpEvent(Tempest::MouseEvent &e) {
   if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 ){
-    clicked();
+    emitClick();
     res.sound("click").play();
     }
 
@@ -104,18 +104,11 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
   p.setBlendMode( Tempest::alphaBlend );
 
   Tempest::Rect vRect = viewRect();
-  int px = vRect.x, py = vRect.y,
-      pw = vRect.w, ph = vRect.h;
-
   Tempest::Rect r = p.scissor();
-  p.setScissor( r.intersected( Tempest::Rect(px, py, pw, ph) ) );
 
-  Texture bk = back[ (hasFocus() || presAnim) ? 1:0 ];
-  p.setTexture( bk );
-  p.drawRectTailed( px, py, pw, ph,
-                    0, 0,
-                    bk.data.rect.w, bk.data.rect.h );
+  p.setScissor( r.intersected( vRect ) );
 
+  drawBack(p);
 
   if( !icon.data.rect.isEmpty() ){
     p.setTexture( icon );
@@ -148,10 +141,28 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
     }
   }
 
-void Button::drawFrame( Tempest::Painter & p ) {
+void Button::drawBack(Tempest::Painter &p){
+  drawBack(p, viewRect());
+  }
+
+void Button::drawBack(Tempest::Painter &p, const Tempest::Rect& r ){
+  const int px = r.x, py = r.y,
+            pw = r.w, ph = r.h;
+
+  Texture bk = back[ (hasFocus() || presAnim) ? 1:0 ];
+  p.setTexture( bk );
+  p.drawRectTailed( px, py, pw, ph,
+                    0, 0,
+                    bk.data.rect.w, bk.data.rect.h );
+  }
+
+void Button::drawFrame( Tempest::Painter &p ) {
+  drawFrame(p, viewRect());
+  }
+
+void Button::drawFrame( Tempest::Painter & p, const Tempest::Rect &vRect ) {
   int fx = 0, fy = 0;
 
-  Tempest::Rect vRect = viewRect();
   int px = vRect.x, py = vRect.y,
       pw = vRect.w, ph = vRect.h;
 
@@ -203,7 +214,7 @@ Tempest::Rect Button::viewRect() const {
 
 void Button::keyPressEvent(Tempest::KeyEvent &e) {
   if( false && e.key==Tempest::KeyEvent::K_F1 ){
-    clicked();
+    emitClick();
     presAnim = true;
 
     update();
@@ -219,4 +230,8 @@ void Button::onShortcut() {
   presAnim = true;
   timePressed = clock();
   update();
+  }
+
+void Button::emitClick() {
+  clicked();
   }

@@ -178,7 +178,15 @@ Tempest::Matrix4x4 SmallGraphicsObject::transform() const {
 void SmallGraphicsObject::applyTransform() {
   TerrainChunk::PolishView& vx = chunk();
 
-  Tempest::Matrix4x4& mat = transformV;
+  transformV.identity();
+  transformV.translate( mx, my, mz );
+
+  transformV.rotate( ax, 1, 0, 0 );
+  transformV.rotate( az, 0, 0, 1 );
+
+  transformV.scale( sx,sy,sz );
+
+  Tempest::Matrix4x4 mat;// = transformV;
 
   mat.identity();
   mat.translate( mx - vx.posX, my - vx.posY, mz );

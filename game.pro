@@ -179,7 +179,8 @@ HEADERS += \
     util/behaviorsfactory.h \
     util/scenariofactory.h \
     game/missions/deatmachscenario.h \
-    game/missions/desertstrikescenariowidgets.h
+    game/missions/desertstrikescenariowidgets.h \
+    gui/checkbox.h
 
 SOURCES += \
     main.cpp \
@@ -289,7 +290,8 @@ SOURCES += \
     gui/graphicssettingswidget.cpp \
     game/missions/desertstrikescenario.cpp \
     game/missions/deatmachscenario.cpp \
-    game/missions/desertstrikescenariowidgets.cpp
+    game/missions/desertstrikescenariowidgets.cpp \
+    gui/checkbox.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

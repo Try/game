@@ -155,7 +155,14 @@ struct Pt:Point{
   int f;
 
   void mkF(int rx, int ry, int v ){
-    f = 2*(abs(x-rx)+abs(y-ry))+v;
+    //f = v;//4*(abs(x-rx)+abs(y-ry))+v;
+    rx = abs(rx-x);
+    ry = abs(ry-y);
+    if( rx<ry ){
+      f = v + rx*3 + (ry-rx)*2;
+      } else {
+      f = v + ry*3 + (rx-ry)*2;
+      }
     }
 
   bool operator < ( const Pt& x ) const{

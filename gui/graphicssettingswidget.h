@@ -39,10 +39,10 @@ class GraphicsSettingsWidget:public Panel {
     void shadowMapRes(int v);
     void smFilterQ(int v);
     void bloomQ(int v);
-    void glow( int v );
-    void normalMap( int v );
-    void oclusion( int v );
-    void shTexture( int v );
+    void glow(bool v );
+    void normalMap(bool v );
+    void oclusion(bool v );
+    void shTexture(bool v );
   };
 
 #endif // GRAPHICSSETTINGSWIDGET_H
