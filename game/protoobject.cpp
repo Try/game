@@ -54,6 +54,8 @@ ProtoObject::View::View() {
   specularFactor = 0;
   alignSize = 0;
 
+  isLandDecal = 0;
+
   //isParticle = 0;
   }
 

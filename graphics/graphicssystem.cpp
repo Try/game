@@ -1211,7 +1211,7 @@ void GraphicsSystem::drawGlow( Tempest::Texture2d &out,
                                int w, int h ) {
   int ps = 1;
 
-  Tempest::Texture2d buffer = localTex.create( w,h, Tempest::Texture2d::Format::RGB5 );//colorBuf( w,h );
+  Tempest::Texture2d buffer = localTex.create( w,h, Tempest::Texture2d::Format::RGB );//colorBuf( w,h );
 
   int sz = std::max(w,h);
   while( ps*2< sz ){
@@ -1359,7 +1359,7 @@ void GraphicsSystem::gauss( Tempest::Texture2d &out,
                             int w, int h,
                             float dx, float dy ) {
   out = localTex.create( w,h, in.format() );
-  out.setSampler( reflect );
+  //out.setSampler( in.sampler() );
 
   Tempest::Render render( device,
                           out,
@@ -1715,7 +1715,7 @@ void GraphicsSystem::ssaoGMap( const Scene &scene,
   sm = localTex.create( 256, 256,
                         Tempest::AbstractTexture::Format::RGB10_A2 );*/
   sm = localTex.create( 512, 512,
-                        Tempest::AbstractTexture::Format::RGB5 );
+                        Tempest::AbstractTexture::Format::RGB );
 
   Tempest::RenderState rstate;
   rstate.setCullFaceMode( Tempest::RenderState::CullMode::front );
@@ -1792,7 +1792,7 @@ void GraphicsSystem::blurSm( Tempest::Texture2d &sm,
                              const Scene & scene ) {
   Tempest::AbstractTexture::Format::Type frm = Tempest::AbstractTexture::Format::RGB10_A2;
 #ifdef __ANDROID__
-  frm = Tempest::AbstractTexture::Format::RGB5;
+  frm = Tempest::AbstractTexture::Format::RGB;
 #endif
 
   Tempest::Texture2d tmp = localTex.create( sm.width(), sm.height(), frm );

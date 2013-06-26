@@ -153,6 +153,11 @@ void SmallGraphicsObject::updateFull() {
   vx.geometry.index .resize( vx.geometry.index .size() + model->index .size() );
 
   applyTransform();
+  updateDecal(*t);
+  }
+
+void SmallGraphicsObject::updateDecal( const Terrain &t ) {
+
   }
 
 void SmallGraphicsObject::setVisible(bool v) {

@@ -41,6 +41,7 @@ class PainterGUI: public Tempest::PainterDevice {
 
     void setColor(float r, float g, float b, float a );
 
+    void setNullState();
     void pushState();
     void popState();
   private:

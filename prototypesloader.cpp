@@ -200,6 +200,8 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
         v.isParticle = "";
         }
 
+      readIf( e, "isLandDecal", v.isLandDecal );
+
       if( find( e, "specular", tmp) ){
         v.specularFactor = Lexical::cast<double>(tmp);
         } else {

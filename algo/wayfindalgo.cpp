@@ -395,10 +395,11 @@ bool WayFindAlgo::optimizeWay( const Point& a, const Point& b) {
     return true;
     }
 
-  if( !(terrain.isEnableQuad(a.x, a.y, 3) && terrain.isEnableQuad(b.x, b.y, 3)) )
+  if( !(/*terrain.isEnableQuad(a.x, a.y, 3) &&*/ terrain.isEnableQuad(b.x, b.y, 3)) )
     return false;
 
-  int x1 = a.x, y1 = a.y, x2 = b.x, y2 = b.y;
+  int x1 = a.x, y1 = a.y, x2 = b.x, y2 = b.y,
+      x = x1, y = y1;
   const int deltaX = abs(x2 - x1);
   const int deltaY = abs(y2 - y1);
   const int signX = x1 < x2 ? 1 : -1;
@@ -407,8 +408,15 @@ bool WayFindAlgo::optimizeWay( const Point& a, const Point& b) {
   int error = deltaX - deltaY;
 
   while(x1 != x2 || y1 != y2) {
-    if( !terrain.isEnableQuad(x1, y1, 2) )
+    if( !( terrain.isEnable(x1, y1) &&
+           terrain.isEnable(x,  y1) &&
+           terrain.isEnable(x1, y ) &&
+           terrain.isEnable(x,  y ) ) )
       return false;
+    //if( !terrain.isEnableQuad(x1, y1, 2) )
+      //return false;
+    x = x1;
+    y = y1;
 
     const int error2 = error * 2;
     //

@@ -223,9 +223,10 @@ void GameObjectView::loadView( const Resource & r,
 
     } else {
     if( src.isParticle.size()==0 ){
-      if( model.size() > GraphicsSystem::dipOptimizeRef() ||
-          !getClass().data.isBackground ||
-           getClass().data.isDynamic ){
+      if( (model.size() > GraphicsSystem::dipOptimizeRef() ||
+           !getClass().data.isBackground ||
+            getClass().data.isDynamic) &&
+          !src.isLandDecal ){
         GraphicObject object( scene );
         object.setModel( model );
 

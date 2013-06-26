@@ -31,6 +31,8 @@ void TerrainChunk::update( Resource & res ) {
     for( size_t i=0; i<polish.size(); ++i )
       if( polish[i]->needToUpdate ){
         polish[i]->geometry.vertex.reserve( 0 );
+        polish[i]->geometry.index.reserve( 0 );
+
         polish[i]->obj.setModel( Model() );
         polish[i]->obj.setModel( res.model(polish[i]->geometry) );
 

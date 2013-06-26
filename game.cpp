@@ -120,8 +120,7 @@ void Game::loadData() {
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
 #else
   //load(L"campagin/0.sav");
-  //loadMission("save/td2.sav");
-  //loadMission("save/td2.sav");
+  loadMission("save/td2.sav");
   setScenario( new DeatmachScenario(*this, gui, msg) );
 #endif
   //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );

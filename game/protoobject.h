@@ -60,6 +60,7 @@ struct ProtoObject {
       double boxSize[3];
 
       bool randRotate;
+      bool isLandDecal;
       std::string isParticle;
       };
 

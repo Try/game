@@ -159,6 +159,8 @@ class Terrain {
     friend class SmallGraphicsObject;
 
     MVertex mkVertex( int x, int y, int plane );
+    static void mkTexCoord( float &u, float &v, float x, float y );
+
     static bool isSame( const MVertex& a, const MVertex& b );
 
     static const int chunkSize;

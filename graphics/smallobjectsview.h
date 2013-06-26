@@ -43,6 +43,7 @@ class SmallGraphicsObject {
 
     void update();
     void updateFull();
+    void updateDecal( const Terrain& t );
 
     void setVisible( bool v );
 

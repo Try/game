@@ -99,15 +99,18 @@ void Terrain::buildGeometry(){
       chunks[i][r].needToUpdate  = false;
   }
 
-MVertex Terrain::mkVertex(int ix, int iy, int plane) {
-  const double texCoordScale = 0.1;
+void Terrain::mkTexCoord( float &u, float &v, float x, float y ){
+  static const double texCoordScale = World::coordCastD(0.1)/quadSizef;
 
+  u = x*texCoordScale;
+  v = y*texCoordScale;
+  }
+
+MVertex Terrain::mkVertex(int ix, int iy, int plane) {
   float bnormal[3] = {-1,0,0};
-  //float  normal[3] = {0,0, 1};
   float x, y, z, u, v;
 
   int dz    = waterMap[ ix ][ iy ];
-  float iz  = -(heightMap[ ix ][ iy ]-dz)/quadSizef;
 
   x = World::coordCast( ix*quadSize );
   y = World::coordCast( iy*quadSize );
@@ -121,16 +124,13 @@ MVertex Terrain::mkVertex(int ix, int iy, int plane) {
   //int plane = tileset[ i+dx[q] ][ r+dy[q] ].plane;
 
   if( plane==2 ){
-    u = ix*texCoordScale;
-    v = iy*texCoordScale;
+    mkTexCoord(u,v, x,y);
     }
   if( plane==1 ){
-    u = ix*texCoordScale;
-    v = iz*texCoordScale;
+    mkTexCoord(u,v, x,z);
     }
   if( plane==0 ){
-    u = iz*texCoordScale;
-    v = iy*texCoordScale;
+    mkTexCoord(u,v, z,y);
     }
 
   float *n = tileset[ix][iy].normal;

@@ -298,6 +298,11 @@ void GUIPass::setColor(float r, float g, float b, float a) {
   state.color[3] = a;
   }
 
+void GUIPass::setNullState(){
+  setColor( 1,1,1,1 );
+  setBlendMode( Tempest::noBlend );
+  }
+
 void GUIPass::pushState() {
   stateStk.push_back( state );
   }

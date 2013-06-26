@@ -47,6 +47,10 @@ void PainterGUI::setColor( float r, float g, float b, float a ) {
   drawer.setColor(r, g, b, a);
   }
 
+void PainterGUI::setNullState() {
+  drawer.setNullState();
+  }
+
 void PainterGUI::pushState() {
   drawer.pushState();
   }
