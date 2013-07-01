@@ -4,10 +4,11 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 
 #include <Tempest/Matrix4x4>
 
-template< class T >
+template< class T, class Cmp = std::less<T> >
 class OcTree {
   public:
     class POcTree{
@@ -49,7 +50,7 @@ class OcTree {
         }
 
     void reposition( const T &t, float x, float y, float z, float sZ ){
-      OcTree& tn = *nodes[t];
+      OcTree& tn = node(t);
       OcTree&  n = node( x, y, z, sZ);
 
       if( &tn!=&n ){
@@ -57,16 +58,19 @@ class OcTree {
           size_t id = tn.objects.size()-i-1;
 
           if( tn.objects[id]==t ){
-            tn.objects[id] = tn.objects.back();
-            tn.objects.pop_back();
+            tn.objects.erase( tn.objects.begin()+id );
             OcTree* p = &tn;
             while( p ){
               --p->count;
               p = p->owner;
               }
 
-            n.objects.push_back(t);
-            nodes[t] = &n;
+            //n.objects.push_back(t);
+            n.objects.insert( std::upper_bound( n.objects.begin(),
+                                                n.objects.end(),
+                                                t, cmp ), t );
+            enode(t);
+            insNode(t, n);
 
             p = &n;
             while( p ){
@@ -82,10 +86,14 @@ class OcTree {
     void insert( const T &t, float tx, float ty, float tz, float sz ){
       OcTree & n = node(tx, ty, tz, sz);
 
-      nodes[t] = &n;
-      n.objects.push_back(t);
+      n.objects.insert( std::upper_bound( n.objects.begin(),
+                                          n.objects.end(),
+                                          t, cmp ), t );
+      //n.objects.push_back(t);
+      insNode(t, n);
 
       OcTree* p = &n;
+
       while( p ){
         ++p->count;
         p = p->owner;
@@ -93,24 +101,19 @@ class OcTree {
       }
 
     bool remove( const T &t, float /*tx*/, float /*ty*/, float /*tz*/ ){
-      OcTree& n = *nodes[t];
-      nodes.erase(t);
+      OcTree& n = enode(t);
 
-      for( size_t i=0; i<n.objects.size(); ++i ){
-        size_t id = n.objects.size()-i-1;
-
-        if( n.objects[id]==t ){
-          n.objects[id] = n.objects.back();
-          n.objects.pop_back();
-
-          OcTree* p = &n;
-          while( p ){
-            --p->count;
-            p = p->owner;
-            }
-
-          return true;
+      auto i = std::remove( n.objects.begin(),
+                            n.objects.end(), t );
+      if( i!=n.objects.end() ){
+        n.objects.resize( i-n.objects.begin() );
+        OcTree* p = &n;
+        while( p ){
+          --p->count;
+          p = p->owner;
           }
+
+        return true;
         }
 
       return false;
@@ -171,15 +174,39 @@ class OcTree {
 
     size_t count;
   private:
+    void insNode( const T & t, OcTree& n ){
+      //nodes[t] = &n;
+
+      //t->ustate.erase(this);
+      t->ustate.insert(&n, this);
+      }
+
+    OcTree& node( const T & t ){
+      //return *nodes[t];
+
+      OcTree& n = *((OcTree*)t->ustate.at(this));
+      return n;
+      }
+
+    OcTree& enode( const T & t ){
+      //OcTree& n = *nodes[t];
+      //nodes.erase(t);
+
+      OcTree& n = *((OcTree*)t->ustate.erase(this));
+      return n;
+      }
+
     struct hash{
       template< class Tx >
       size_t operator ()( Tx t ) const {
         return size_t(t);
         }
       };
+
     std::unordered_map<T, OcTree*, hash > nodes;
-    //size_t count;
+
     OcTree * owner;
+    Cmp cmp;
   };
 
 #endif // OCTOTREE_H

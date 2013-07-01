@@ -41,6 +41,9 @@ void EnvObject::setModel(const Model &m){
   this->sceneDelObject();
 
   m_model = m;
+  vboH = m.vertexes().handle();
+  iboH = m.vertexes().handle();
+
   setTransform( mat );
 
   this->sceneAddObject();
@@ -72,7 +75,7 @@ void EnvObject::setTransform(const Tempest::Matrix4x4 &im) {
   this->onTransformChanged(old);
   }
 
-Tempest::ModelBounds EnvObject::bounds() const {
+const Tempest::ModelBounds &EnvObject::bounds() const {
   return m_model.bounds();
   }
 

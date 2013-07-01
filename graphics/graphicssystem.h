@@ -115,12 +115,13 @@ class GraphicsSystem {
     Tempest::Size  guiSize, screenSize, potScreenSize;
     size_t nFrame;
 
-    static  float smMatSize(const Scene & s, float sv = 0 );
+    static  float smMatSize(const Scene & s, float sv = 0, float maxSv = 0);
 
     Tempest::Matrix4x4 makeShadowMatrix( const Scene & s );
-    Tempest::Matrix4x4 makeShadowMatrix( const Scene & s,
+    Tempest::Matrix4x4 makeShadowMatrix(const Scene & s,
                                          float *dxyz,
-                                         float sv = 0 );
+                                         float sv = 0,
+                                         bool aspect = true );
 
     Tempest::Texture2d::Sampler reflect, bufSampler;
 
@@ -242,10 +243,12 @@ class GraphicsSystem {
                    Tempest::Texture2d &sm,
                    const Scene &scene);
 
-    void setupLight(const Scene &scene, Tempest::VertexShader &vs,
+    void setupLight( const Scene &scene, Tempest::VertexShader &vs,
                      Tempest::FragmentShader & fs,
-                     const Tempest::Texture2d &sm,
-                     const Tempest::Texture2d &smCl, const Tempest::Texture2d &ao);
+                     const Tempest::Texture2d *sm,
+                     const Tempest::Texture2d *smCl, const Tempest::Texture2d *ao,
+                     bool ldata = true,
+                     bool spec  = true );
 
     void fillShadowMap(Tempest::Texture2d &sm,
                         const Scene &scene , bool clr);
@@ -442,6 +445,8 @@ class GraphicsSystem {
                                                Tempest::UniformTable &,
                                                FArgs ... args ) const,
                        Args... args  );
+
+    static const float oclusionMSz;
   };
 
 

@@ -335,7 +335,7 @@ void WarriorBehavior::mkDamage( GameObject &dobj,
                                 int plOwner,
                                 int x, int y,
                                 const ProtoObject::GameSpecific::Atack &atk) {
-  int absDmg = std::max( atk.damage - dobj.getClass().data.armor, 0 );
+  int absDmg = std::max( atk.damage - dobj.getClass().data.armor, 1 );
   dobj.setHP( dobj.hp() - absDmg );
 
   if( atk.splashSize ){

@@ -15,23 +15,25 @@ GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
 #endif
 
 GraphicsSettingsWidget::Settings::Settings() {
-  shadowMapRes  = 1024;
-  bloom         = Hight;
-  glow          = true;
-  normalMap     = true;
+  shadowMapRes       = 1024;
+  bloom              = Hight;
+  glow               = true;
+  normalMap          = true;
 
-  shadowFilterQ  = 2;
-  oclusion       = true;
-  shadowTextures = true;
+  shadowFilterQ      = 2;
+  oclusion           = true;
+  shadowTextures     = true;
+  transcurentShadows = true;
 #ifdef __ANDROID__
-  shadowMapRes  = 512;
-  bloom         = Off;
-  glow          = false;
-  normalMap     = true;
+  shadowMapRes       = 512;
+  bloom              = Off;
+  glow               = false;
+  normalMap          = true;
 
-  shadowFilterQ  = 0;
-  oclusion       = false;
-  shadowTextures = false;
+  shadowFilterQ      = 0;
+  oclusion           = false;
+  shadowTextures     = false;
+  transcurentShadows = false;
 #endif
   }
 
@@ -77,6 +79,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
   b->onItemSelected.bind( this, &GraphicsSettingsWidget::smFilterQ );
   layout().add(b);
 
+  CheckBox *ck = new CheckBox(res);
+  ck->setText("colored shadows");
+  ck->setChecked( s.transcurentShadows );
+  ck->checked.bind( this, &GraphicsSettingsWidget::colorSh );
+  layout().add(ck);
+
   b = new ListBox(res);
   l.clear();
   l.push_back(L"bloom off");
@@ -89,7 +97,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(Resource &res) : Panel(res){
 
   layout().add(b);
 
-  CheckBox *ck = new CheckBox(res);
+  ck = new CheckBox(res);
   ck->setText("glow");
   ck->setChecked( s.glow );
   ck->checked.bind( this, &GraphicsSettingsWidget::glow );
@@ -123,6 +131,11 @@ void GraphicsSettingsWidget::shadowMapRes(int v) {
 
 void GraphicsSettingsWidget::smFilterQ(int v) {
   s.shadowFilterQ = v;
+  onSettingsChanged(s);
+  }
+
+void GraphicsSettingsWidget::colorSh(bool v) {
+  s.transcurentShadows = v;
   onSettingsChanged(s);
   }
 

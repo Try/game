@@ -3,6 +3,8 @@
 
 #include "game/scenario.h"
 #include <map>
+#include "gui/minimapview.h"
+#include "game/player.h"
 
 class Game;
 class MainGui;
@@ -25,9 +27,14 @@ class DesertStrikeScenario  : public Scenario {
     Tempest::Widget *createConsole( InGameControls *mainWidget,
                                     BehaviorMSGQueue & q );
 
+    void toogleCameraMode();
   private:
     void tick();
     int  tNum, interval;
+
+    GameObject * unitToView;
+    bool hasVTracking;
+    void cancelTracking(float, float, Tempest::Event::MouseButton, MiniMapView::Mode);
 
     virtual void onStartGame();
 
@@ -47,11 +54,33 @@ class DesertStrikeScenario  : public Scenario {
     struct TranscurentPanel;
     struct UpgradePanel;
     struct SpellPanel;
+    struct CentralPanel;
 
     struct Minimap;
     Minimap        *mmap;
     BuyUnitPanel   *buyUnitPanel;
+    CentralPanel   *cen;
 
+    struct DPlayer:Player{
+      DPlayer( int num ):Player(num),
+        atkGrade(0),
+        armorGrade(0),
+        castleGrade(0),
+        economyGrade(0),
+        btime(0),
+        maxBTime(0){}
+
+      std::map<std::string, int> units, realCount;
+      int atkGrade,    armorGrade;
+      int castleGrade, economyGrade;
+
+      int getParam( const std::string& p ) const;
+
+      std::vector<std::string> queue;
+      int btime, maxBTime;
+      };
+
+    /*
     struct PlInfo{
       PlInfo():atkGrade(0),
                armorGrade(0),
@@ -70,16 +99,22 @@ class DesertStrikeScenario  : public Scenario {
       int btime, maxBTime;
       };
 
-    PlInfo plC[2];
+    PlInfo plC[2];*/
+    int   plCenter;
     float moveZ;
 
     std::string spellToCast;
 
     void mkUnits(int pl, int x, int y, int tgX, int tgY, bool rev);
     void aiTick(int pl);
+    void updateCenterOwner();
 
-    void grade( PlInfo &pl, const std::string &g );
+    void grade( DPlayer &pl, const std::string &g );
     bool isTestRun;
+
+    virtual Player* createPlayer();
+    DPlayer& player(int i);
+    DPlayer& player();
   };
 
 #endif // DESERTSTRIKESCENARIO_H

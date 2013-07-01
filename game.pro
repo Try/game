@@ -4,7 +4,7 @@ CONFIG -= qt
 
 TARGET = game
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
-QMAKE_LFLAGS   += -pg
+#QMAKE_LFLAGS   += -pg
 
 win32:RC_FILE = game.rc
 
@@ -180,7 +180,9 @@ HEADERS += \
     util/scenariofactory.h \
     game/missions/deatmachscenario.h \
     game/missions/desertstrikescenariowidgets.h \
-    gui/checkbox.h
+    gui/checkbox.h \
+    gui/gamemessages.h \
+    network/netuserclient.h
 
 SOURCES += \
     main.cpp \
@@ -291,7 +293,9 @@ SOURCES += \
     game/missions/desertstrikescenario.cpp \
     game/missions/deatmachscenario.cpp \
     game/missions/desertstrikescenariowidgets.cpp \
-    gui/checkbox.cpp
+    gui/checkbox.cpp \
+    gui/gamemessages.cpp \
+    network/netuserclient.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

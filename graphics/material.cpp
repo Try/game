@@ -197,6 +197,43 @@ void Material::terrainMinorZ( Tempest::RenderState &rs,
   rs.setColorMask(0,0,0,0);
   }
 
+void Material::transparentSh(Tempest::RenderState &rs,
+                             const Tempest::Matrix4x4 &object,
+                             const Tempest::AbstractCamera &c,
+                             Tempest::UniformTable &table) const {
+
+  Tempest::Matrix4x4 m = c.projective();
+  m.mul( c.view() );
+
+  if( usage.blush ){
+    Tempest::Matrix4x4 mobj = animateObjMatrix(object);
+    m.mul( mobj );
+    } else {
+    m.mul( object );
+    }
+
+  table.add( m,      "mvpMatrix",    Tempest::UniformTable::Vertex );
+  table.add( object, "objectMatrix", Tempest::UniformTable::Vertex );
+
+  table.add( diffuse,  "texture",        Tempest::UniformTable::Fragment );
+
+  rs.setBlend(1);
+  rs.setAlphaTestRef(0.01);
+  rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
+                   Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
+  rs.setZWriting( zWrighting );
+  }
+
+void Material::transparentShZ(Tempest::RenderState &rs,
+                              const Tempest::Matrix4x4 &m,
+                              const Tempest::AbstractCamera &c,
+                              Tempest::UniformTable &u ) const {
+  transparentSh( rs, m, c, u );
+  rs.setBlend(0);
+  rs.setColorMask(0,0,0,0);
+  }
+
 void Material::transparent(Tempest::RenderState &rs,
                             const Tempest::Matrix4x4 &object,
                             const Tempest::AbstractCamera &c,
@@ -410,4 +447,21 @@ void Material::fogOfWar( Tempest::RenderState &rs,
   table.add( object,  "objectMatrix", Tempest::UniformTable::Vertex   );
 
   rs.setAlphaTestMode( Tempest::RenderState::AlphaTestMode::Always );
+  }
+
+GraphicObjectUserState::GraphicObjectUserState() {
+  std::fill( treeId,treeId+idCount, (void*)0);
+  realCount = 0;
+  }
+
+GraphicObjectUserState::GraphicObjectUserState(const GraphicObjectUserState &obj ) {
+  *this = obj;
+  }
+
+GraphicObjectUserState &GraphicObjectUserState::operator =(const GraphicObjectUserState & obj) {
+  std::copy( obj.treeId,   obj.treeId  +idCount, treeId   );
+  std::copy( obj.treeNode, obj.treeNode+idCount, treeNode );
+  realCount = obj.realCount;
+
+  return *this;
   }

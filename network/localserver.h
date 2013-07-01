@@ -27,8 +27,9 @@ class LocalServer : public NetUser {
   private:
     Mutex clientsMut;
     std::vector<Client*> clients;
-    SOCKET listenSocket;
-    sockaddr_in listenAddress;
+
+    struct Data;
+    std::unique_ptr<Data> data;
 
     bool isRunning;
     Future listner;

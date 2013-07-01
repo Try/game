@@ -49,7 +49,7 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
       p2->layout().add( t );
 
       Button * btn = new Button(res);
-      btn->setText( Lang::tr(L"$(play)") );
+      btn->setText( Lang::tr(L"$(game_menu/play)") );
       btn->clicked.bind( *this, &Tempest::Widget::deleteLater );
       p2->layout().add( btn );
       }
@@ -83,7 +83,7 @@ class ScenarioMission1::EndScreenWidget:public ModalWindow{
       RichText * t = new RichText(res);
       if( isWin )
         t->setText( Lang::tr(L"$(mission1/win)") ); else
-        t->setText( Lang::tr(L"$(defeat)") );
+        t->setText( Lang::tr(L"$(game_menu/defeat)") );
 
       p->layout().add( t );
 
@@ -95,7 +95,7 @@ class ScenarioMission1::EndScreenWidget:public ModalWindow{
 
       if( isWin ){
         Button * btn = new Button(res);
-        btn->setText( Lang::tr(L"$(continue_game)") );
+        btn->setText( Lang::tr(L"$(game_menu/continue_game)") );
         btn->clicked.bind( *this, &Tempest::Widget::deleteLater );
         p2->layout().add( btn );
 
@@ -104,7 +104,7 @@ class ScenarioMission1::EndScreenWidget:public ModalWindow{
 
       if( !isWin ){
         Button * btn = new Button(res);
-        btn->setText( Lang::tr(L"$(restart_mission)") );
+        btn->setText( Lang::tr(L"$(game_menu/restart_mission)") );
         btn->clicked.bind( game.scenario(), &Scenario::restartGame );
         btn->clicked.bind( *this, &Tempest::Widget::deleteLater );
         p2->layout().add( btn );
@@ -112,7 +112,7 @@ class ScenarioMission1::EndScreenWidget:public ModalWindow{
         }
 
       Button * btn = new Button(res);
-      btn->setText( Lang::tr(L"$(close_game)") );
+      btn->setText( Lang::tr(L"$(game_menu/close_game)") );
       btn->clicked.bind( game.exitGame );
       p2->layout().add( btn );
       }

@@ -270,6 +270,10 @@ const ProtoObject &GameObject::getClass() const {
   return *myClass;
   }
 
+void GameObject::setClass(const ProtoObject *p) {
+  myClass = p;
+  }
+
 int GameObject::x() const {
   return m.x;
   }

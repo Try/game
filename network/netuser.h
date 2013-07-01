@@ -4,30 +4,11 @@
 #include <Tempest/signal>
 #include <string>
 
-#ifdef _WIN32
-    #include "winsock.h"
-#else
-    #include <sys/socket.h>
-    #include <netinet/in.h>
-
-    #include <string.h>
-    #include <sys/types.h>
-    #include <arpa/inet.h>
-
-    typedef int SOCKET;
-#endif
-
 #include "threads/async.h"
 
 class NetUser {
   public:
-    class Client{
-      SOCKET sock;
-      sockaddr_in addr;
-
-      Future thread;
-      friend class LocalServer;
-      };
+    class Client;
 
     NetUser();
     virtual ~NetUser();
@@ -42,7 +23,10 @@ class NetUser {
 
     virtual bool isServer() const = 0;
     virtual bool isConnected() const = 0;
+
   protected:
+    typedef int SOCKET;
+
     int sendStr(SOCKET sock, const std::vector<char> &str);
     int recvStr(SOCKET sock, std::vector<char> &str);
   };

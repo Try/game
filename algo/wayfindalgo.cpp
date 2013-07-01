@@ -355,7 +355,7 @@ void WayFindAlgo::optimizeWay() {
     const Point &a = way[i-1],
                 &b = way[i];
     int dx = a.x-b.x, dy = a.y-b.y, c = 0;
-    while( abs(dx)+abs(dy) > Terrain::quadSize*20 ){
+    while( abs(dx)+abs(dy) > Terrain::quadSize*10 ){
       dx /= 2;
       dy /= 2;
       ++c;

@@ -464,10 +464,10 @@ void BehaviorMSGQueue::onNewClient( NetUser &usr,
   c.isSync = false;
   c.pid    = &nc;
 
-  for( size_t i=2/*null player + server player*/; i<game.plCount(); ++i ){
+  for( int i=2/*null player + server player*/; i<game.plCount(); ++i ){
     bool freedSlot = true;
     for( size_t r=0; r<clients.size(); ++r ){
-      if( clients[r].pl==i )
+      if( int(clients[r].pl)==i )
         freedSlot = false;
       }
 
@@ -478,7 +478,7 @@ void BehaviorMSGQueue::onNewClient( NetUser &usr,
     }
 
   s+c.pl;
-  if( c.pl==game.plCount() ){
+  if( int(c.pl)==game.plCount() ){
     game.player(c.pl);
     }
 

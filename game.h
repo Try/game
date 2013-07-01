@@ -52,7 +52,7 @@ class Game : public Tempest::Window {
 
     Player & player( int i );
     Player & player();
-    size_t plCount() const;
+    int plCount() const;
 
     void setPlaylersCount( int c );
     void addEditorObject( const std::string &p, int pl,
@@ -125,6 +125,7 @@ class Game : public Tempest::Window {
                        MiniMapView::Mode m);
 
     Scenario& scenario();
+    const Scenario& scenario() const;
     Tempest::signal<> updateMissionTargets;
 
     Tempest::signal<> exitGame;
@@ -157,7 +158,7 @@ class Game : public Tempest::Window {
     int currentPlayer;
     void createEditorObject( const ProtoObject & p, int pl );
     void setEditorObjectPl( int pl );
-    std::vector< std::shared_ptr<Player> > players;
+
     std::vector< std::shared_ptr<World> >  worlds;
     World * world;
 
@@ -171,6 +172,7 @@ class Game : public Tempest::Window {
     std::unique_ptr<Scenario> mscenario;
 
     void serialize( GameSerializer &s);
+    void serializeScenario( GameSerializer &s );
 
     void log(const std::string &l );
 
@@ -190,7 +192,9 @@ class Game : public Tempest::Window {
     bool   isRunning, physicStarted;
 
     void update();
+
   friend class World;
+  friend class Scenario;
   };
 
 #endif // GAME_H

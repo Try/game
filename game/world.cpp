@@ -273,7 +273,7 @@ GameObject &World::addObject( const ProtoObject &p,
 void World::deleteObject(GameObject *obj) {
   game.scenario().onUnitDied(*obj);
 
-  for( size_t i=0; i<game.plCount(); ++i )
+  for( int i=0; i<game.plCount(); ++i )
     if( game.player(i).editObj==obj )
       game.player(i).editObj = 0;
 
@@ -572,7 +572,7 @@ void World::paintHUD( Tempest::Painter & p,
   GraphicsSystem::mkFrustum( camera, frustum );
 
   p.setBlendMode( Tempest::alphaBlend );
-  for( size_t plN = 1; plN<game.plCount(); ++plN ){
+  for( int plN = 1; plN<game.plCount(); ++plN ){
     const Tempest::Pixmap & fog = game.player().fog();
 
     for( size_t i=0; i<game.player(plN).unitsCount(); ++i ){

@@ -654,3 +654,41 @@ void Scenario::showMenu() {
   m->onClosed.bind( game, &Game::unsetPause );
   m->quit.bind( game.exitGame );
   }
+
+Player *Scenario::createPlayer() {
+  return new Player( plCount() );
+  }
+
+void Scenario::addPlayer() {
+  players.push_back( std::shared_ptr<Player>( createPlayer() ) );
+
+  if( players.size() == 2 ){
+    players[1]->setHostCtrl(1);
+    }
+
+  players.back()->onUnitSelected.bind( game, &Game::onUnitsSelected );
+  players.back()->onUnitDied    .bind( game, &Game::onUnitDied );
+  }
+
+size_t Scenario::plCount() const {
+  return players.size();
+  }
+
+void Scenario::setPlaylersCount(int c) {
+  players.clear();
+
+  ++c;
+  for( int i=0; i<c; ++i )
+    addPlayer();
+  }
+
+Player &Scenario::player(int i) {
+  while( int(players.size())<=i )
+    addPlayer();
+
+  return *players[i];
+  }
+
+Player &Scenario::player() {
+  return game.player();
+  }

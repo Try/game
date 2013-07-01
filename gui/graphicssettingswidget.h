@@ -23,6 +23,7 @@ class GraphicsSettingsWidget:public Panel {
       bool  normalMap;
       bool  oclusion;
       bool  shadowTextures;
+      bool  transcurentShadows;
 
       enum API{
         openGL,
@@ -38,6 +39,7 @@ class GraphicsSettingsWidget:public Panel {
 
     void shadowMapRes(int v);
     void smFilterQ(int v);
+    void colorSh(bool v );
     void bloomQ(int v);
     void glow(bool v );
     void normalMap(bool v );

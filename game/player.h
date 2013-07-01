@@ -7,6 +7,7 @@
 #include <Tempest/Pixmap>
 
 #include "util/array2d.h"
+#include <memory>
 
 class GameObject;
 class ProtoObject;
@@ -16,7 +17,8 @@ class GameSerializer;
 
 class Player {
   public:
-    Player( int num );
+    Player(int num );
+    virtual ~Player();
 
     GameObject * editObj;
 

@@ -21,7 +21,7 @@ struct DesertStrikeScenario::NumButton: public Button {
 struct DesertStrikeScenario::BuyButton: public NumButton {
   BuyButton( Resource & r,
              const ProtoObject& obj,
-             PlInfo & pl,
+             DPlayer & pl,
              int tier );
   void emitClick();
   void paintEvent(Tempest::PaintEvent &e);
@@ -29,13 +29,13 @@ struct DesertStrikeScenario::BuyButton: public NumButton {
   Tempest::signal<const ProtoObject&> onClick;
 
   const ProtoObject& p;
-  PlInfo & pl;
+  DPlayer & pl;
   int tier;
   };
 
 struct DesertStrikeScenario::GradeButton: public Button {
   GradeButton( Resource & r,
-               PlInfo & p,
+               DPlayer & p,
                const std::string& obj,
                const int t );
   void emitClick();
@@ -43,7 +43,7 @@ struct DesertStrikeScenario::GradeButton: public Button {
 
   Tempest::signal<int> onClick;
   int type;
-  PlInfo & pl;
+  DPlayer & pl;
   Texture texture;
   };
 
@@ -68,7 +68,7 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
 
   Minimap( Resource &res,
            Game & game,
-           PlInfo & pl );
+           DPlayer & pl );
 
   void buildBase( Resource &res, Inf & inf );
   void buildCas( Resource &res, Inf & inf );
@@ -89,28 +89,31 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
   std::string unitToBuy;
 
   Game &game;
-  PlInfo & pl;
+  DPlayer & pl;
   };
 
 struct DesertStrikeScenario::SpellPanel: public TranscurentPanel {
   SpellPanel( Resource & res,
               Game & game,
-              PlInfo & pl );
+              DPlayer & pl );
   void spell( int i );
+  Tempest::signal<> toogleCameraMode;
 
   Game & game;
+
+  class SpellButton;
   };
 
 struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
   BuyUnitPanel( Resource & res,
                 Game & game,
-                PlInfo & pl,
+                DPlayer & pl,
                 Minimap * mmap);
   void onUnit( const ProtoObject & p );
   void setupBuyPanel( const std::string & s );
 
   template< int w, int h >
-  Widget* mkPanel( PlInfo & pl, const char * pr[w][h] ){
+  Widget* mkPanel( DPlayer & pl, const char * pr[w][h] ){
     using namespace Tempest;
 
     Widget *w = new Widget();
@@ -147,7 +150,7 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
 struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
   UpgradePanel( Resource & res,
                 Game & game,
-                PlInfo & pl,
+                DPlayer & pl,
                 DesertStrikeScenario::BuyUnitPanel *mmap );
 
   void buy( const int grade );
@@ -156,5 +159,22 @@ struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
   DesertStrikeScenario::BuyUnitPanel *mmap;
   };
 
+class DesertStrikeScenario::CentralPanel: public Tempest::Widget {
+  public:
+    CentralPanel( DesertStrikeScenario &ds, Resource & res );
+
+    void setRemTime(int t);
+    void setColor( const Tempest::Color & c );
+  protected:
+    void paintEvent(Tempest::PaintEvent &e);
+
+  private:
+    Resource & res;
+    DesertStrikeScenario &ds;
+    Tempest::Bind::UserTexture bg, cride;
+
+    int time;
+    Tempest::Color cl;
+  };
 
 #endif // DESERTSTRIKESCENARIOWIDGETS_H

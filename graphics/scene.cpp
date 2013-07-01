@@ -16,15 +16,23 @@ Scene::Scene(int sz)
        omniObj(sz),
        grassObj(sz){
   objPtrs.push_back( &shCast );
+  objPtrs.push_back( &shCastAtst );
+  objPtrs.push_back( &shCastTransp );
   objPtrs.push_back( &mainObj );
+  objPtrs.push_back( &mainObjAtst );
   objPtrs.push_back( &glowObj );
   objPtrs.push_back( &terrainMinor );
+  objPtrs.push_back( &terrain );
   objPtrs.push_back( &displaceObj );
   objPtrs.push_back( &waterObj );
   objPtrs.push_back( &addObj );
   objPtrs.push_back( &transpObj );
+  objPtrs.push_back( &transpObjZW );
+  objPtrs.push_back( &fogOfWarObj );
   objPtrs.push_back( &omniObj );
   objPtrs.push_back( &grassObj );
+
+  assert( int(objPtrs.size()) < GraphicObjectUserState::idCount );
   }
 
 const Scene::Objects &Scene::shadowCasters() const {
@@ -33,6 +41,10 @@ const Scene::Objects &Scene::shadowCasters() const {
 
 const Scene::Objects &Scene::shadowCastersAtst() const {
   return shCastAtst;
+  }
+
+const Scene::Objects &Scene::shadowCastersTransp() const {
+  return shCastTransp;
   }
 
 const Scene::Objects &Scene::mainObjects() const {
@@ -108,6 +120,10 @@ void Scene::onObjectOp( const AbstractGraphicObject *t,
     if( t->material().usage.mainPassAtst )
       onObjectOp( shCastAtst, t, ins, mat ); else
       onObjectOp( shCast, t, ins, mat );
+    }
+
+  if( t->material().usage.shadowCastTransp ){
+    onObjectOp( shCastTransp, t, ins, mat );
     }
 
   if( t->material().usage.mainPass )

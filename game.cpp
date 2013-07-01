@@ -28,6 +28,7 @@
 #include "util/scenariofactory.h"
 
 #include <cmath>
+#include "gui/gamemessages.h"
 
 const int Game::ticksPerSecond = 35;
 
@@ -119,14 +120,14 @@ void Game::loadData() {
   loadMission("campagin/td2.sav");
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
 #else
-  //load(L"campagin/0.sav");
   loadMission("save/td2.sav");
-  setScenario( new DeatmachScenario(*this, gui, msg) );
+  setScenario( new DesertStrikeScenario(*this, gui, msg) );
 #endif
   //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );
 
-  //setScenario( new DesertStrikeScenario(*this, gui, msg) );
+  setScenario( new DesertStrikeScenario(*this, gui, msg) );
   //setScenario( new DeatmachScenario(*this, gui, msg) );
+
   //for( size_t i=0; i<world->activeObjects().size(); ++i )
     //world->activeObjects()[i]->setHP(0);
 
@@ -163,6 +164,12 @@ void Game::setScenario(Scenario *s) {
   gui.enableHooks( !serializator.isReader() );
 
   gui.setupMinimap(world);
+
+  for( size_t i=0; i<worlds.size(); ++i )
+    for( size_t r=0; r<worlds[i]->objectsCount(); ++r ){
+      Player& pl = player( worlds[i]->object(r).playerNum() );
+      pl.addUnit( &worlds[i]->object(r) );
+      }
   }
 
 void Game::computePhysic(void *) {
@@ -179,6 +186,9 @@ void Game::computePhysic(void *) {
 
 void Game::tick() {
   scenario().uiTick();
+
+  if( !isPaused() )
+    GameMessages::tickAll();
 
   //size_t time = Time::tickCount();
 
@@ -205,8 +215,8 @@ void Game::tick() {
     }
 
   if( !isLag && !paused ){
-    for( size_t i=0; i<players.size(); ++i )
-      players[i]->computeFog(world);
+    for( int i=0; i<plCount(); ++i )
+      player().computeFog(world);
 
     world->tick();
     mscenario->tick();
@@ -377,11 +387,7 @@ void Game::toogleFullScr() {
   }
 
 void Game::setPlaylersCount(int c) {
-  players.clear();
-
-  ++c;
-  for( int i=0; i<c; ++i )
-    addPlayer();
+  scenario().setPlaylersCount(c);
   }
 
 void Game::addEditorObject(const std::string &p,
@@ -498,16 +504,7 @@ PrototypesLoader &Game::prototypes() {
   }
 
 void Game::addPlayer() {
-  players.push_back( std::shared_ptr<Player>( new Player( players.size() ) ) );
-
-  if( players.size() == 2 ){
-    players[1]->setHostCtrl(1);
-    }
-
-  players.back()->onUnitSelected.bind( *this, &Game::onUnitsSelected );
-  players.back()->onUnitDied    .bind( *this, &Game::onUnitDied );
-  //if( world )
-  //players.back()->computeFog(world);
+  scenario().addPlayer();
   }
 
 void Game::cancelEdit(int) {
@@ -517,14 +514,11 @@ void Game::cancelEdit(int) {
   }
 
 Player &Game::player(int i) {
-  while( int(players.size())<=i )
-    addPlayer();
-
-  return *players[i];
+  return scenario().player(i);
   }
 
-size_t Game::plCount() const {
-  return players.size();
+int Game::plCount() const {
+  return scenario().plCount();
   }
 
 Player &Game::player() {
@@ -622,6 +616,10 @@ Scenario &Game::scenario() {
   return *mscenario;
   }
 
+const Scenario &Game::scenario() const {
+  return *mscenario;
+  }
+
 World &Game::curWorld() {
   return *world;
   }
@@ -657,6 +655,10 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
 
   if( contains( src.materials, "shadow_cast" ) ){
     material.usage.shadowCast = true;
+    }
+
+  if( contains( src.materials, "shadowCastTransp" ) ){
+    material.usage.shadowCastTransp = true;
     }
 
   if( contains( src.materials, "glow" ) ){
@@ -759,7 +761,7 @@ void Game::serialize( GameSerializer &s ) {
 
   //Tempest::Application::processEvents();
 
-  int plCount = players.size()-1;
+  int plCount = this->plCount()-1;
   s + plCount;
   s + currentPlayer;
 
@@ -767,8 +769,8 @@ void Game::serialize( GameSerializer &s ) {
     setPlaylersCount( plCount );
     }
 
-  for( size_t i=0; i<players.size(); ++i )
-    players[i]->serialize(s);
+  for( int i=0; i<this->plCount(); ++i )
+    player(i).serialize(s);
 
   int wCount = worlds.size(), curWorld = 0;
   s + wCount;
@@ -799,38 +801,48 @@ void Game::serialize( GameSerializer &s ) {
   gui.paintObjectsHud = Tempest::signal< Tempest::Painter&, int, int>();
   gui.paintObjectsHud.bind( *world, &World::paintHUD );
 
+  if( s.version()>=9 ){
+    serializeScenario(s);
+    }
+
   for( size_t i=0; i<worlds.size(); ++i )
     worlds[i]->serialize(s);
 
-  for( size_t i=0; i<players.size(); ++i )
-    players[i]->computeFog(world);
+  for( int i=0; i<this->plCount(); ++i )
+    player(i).computeFog(world);
 
-  if( s.version()>=7 ){
-    bool isScenario = mscenario->isCampagin();
-    s + isScenario;
-
-    std::string taget = mscenario->name();
-    if( s.version() >=8 ){
-      s + taget;
+  if( s.version()<=8 ){
+    if( s.version()>=7 ){
+      serializeScenario(s);
       } else {
-      if( isScenario )
-        taget = "mission1";
+      setScenario( new DeatmachScenario(*this, gui, msg) );
+      mscenario->serialize(s);
       }
-
-    if( s.isReader() ){
-      if( isScenario ){
-        setScenario( ScenarioFactory::create(taget, *this, gui, msg) );
-        } else {
-        setScenario( new DeatmachScenario(*this, gui, msg) );
-        }
-      }
-    mscenario->serialize(s);
-    } else {
-    setScenario( new DeatmachScenario(*this, gui, msg) );
-    mscenario->serialize(s);
     }
 
   updateMissionTargets();
+  }
+
+void Game::serializeScenario( GameSerializer &s ) {
+  bool isScenario = mscenario->isCampagin();
+  s + isScenario;
+
+  std::string taget = mscenario->name();
+  if( s.version() >=8 ){
+    s + taget;
+    } else {
+    if( isScenario )
+      taget = "mission1";
+    }
+
+  if( s.isReader() ){
+    if( isScenario ){
+      setScenario( ScenarioFactory::create(taget, *this, gui, msg) );
+      } else {
+      setScenario( new DeatmachScenario(*this, gui, msg) );
+      }
+    }
+  mscenario->serialize(s);
   }
 
 void Game::log(const std::string &l) {

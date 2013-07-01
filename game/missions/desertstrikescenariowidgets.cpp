@@ -31,6 +31,7 @@ void DesertStrikeScenario::NumButton::paintEvent(Tempest::PaintEvent &e){
 
   Painter p(e);
   p.setFont(font);
+  p.setBlendMode(alphaBlend);
 
   std::stringstream s;
   s << num;
@@ -53,9 +54,9 @@ void DesertStrikeScenario::NumButton::paintEvent(Tempest::PaintEvent &e){
   p.drawText(4, h()-tsz.h-7, s.str());
   }
 
-DesertStrikeScenario::BuyButton::BuyButton( Resource & r,
+DesertStrikeScenario::BuyButton::BuyButton(Resource & r,
            const ProtoObject& obj,
-           PlInfo & pl,
+           DPlayer &pl,
            int tier ):NumButton(r), p(obj), pl(pl), tier(tier){
   icon.data        = res.pixmap("gui/icon/"+obj.name);
   //setText( obj.name );
@@ -76,7 +77,7 @@ void DesertStrikeScenario::BuyButton::paintEvent(Tempest::PaintEvent &e){
   }
 
 DesertStrikeScenario::GradeButton::GradeButton( Resource & r,
-             PlInfo & p,
+             DPlayer & p,
              const std::string& obj,
              const int t ):Button(r), type(t), pl(p){
   icon.data = res.pixmap(obj);
@@ -124,7 +125,7 @@ struct DesertStrikeScenario::Minimap::BuyButton: public Button {
     }
   };
 struct DesertStrikeScenario::Minimap::GradeButton: public Button {
-  GradeButton( Resource & r, PlInfo& pl ):Button(r), pl(pl) {
+  GradeButton( Resource & r, DPlayer& pl ):Button(r), pl(pl) {
     setMinimumSize( 50, 50 );
     setMaximumSize( 50, 50 );
 
@@ -155,14 +156,14 @@ struct DesertStrikeScenario::Minimap::GradeButton: public Button {
       }
     }
 
-  PlInfo& pl;
+  DPlayer& pl;
   std::string type;
   Texture texture;
   };
 
 DesertStrikeScenario::Minimap::Minimap( Resource &res,
          Game & game,
-         PlInfo & pl ):MiniMapView(res), game(game), pl(pl){
+         DPlayer & pl ):MiniMapView(res), game(game), pl(pl){
   infID = 0;
 
   base = new UnitView(res);
@@ -350,7 +351,7 @@ void DesertStrikeScenario::Minimap::updateValues(){
     return;
 
   { std::wstringstream s;
-    std::string name = "$(" +unitToBuy+")";
+    std::string name = "$(unit/" +unitToBuy+")";
     s << Lang::tr(name) << std::endl << L" - " << game.prototype(unitToBuy).data.gold;
     inf.ledit->setText( s.str() );
     }
@@ -404,9 +405,56 @@ void DesertStrikeScenario::Minimap::sell(){
   game.message( data );
   }
 
+struct DesertStrikeScenario::SpellPanel::SpellButton: public GradeButton {
+  SpellButton( Resource & r,
+               DPlayer & p,
+               //Player &pl,
+               Game &g,
+               const std::string& obj,
+               const int t ):GradeButton(r,p,obj,t) {
+    //tagetID = g.prototypes().spell( btn->taget ).id;
+    }
+
+  int coolDown;
+  size_t tagetID;
+
+  void paintEvent(Tempest::PaintEvent &e){
+    GradeButton::paintEvent(e);
+
+    Tempest::Painter p(e);
+    p.setTexture( texture );
+    p.setBlendMode( Tempest::alphaBlend );
+
+    p.drawRect( 0, h()-coolDown, w(), coolDown,
+                2,        4, 1, 1 );
+    }
+
+  void customEvent( Tempest::CustomEvent & ){/*
+    //assert(u0);
+    int maxT = u0->game().prototypes().spell(taget).coolDown;
+
+    int mcoolDown = maxT;
+
+    auto s = u0->player().selected();
+    for( auto i=s.begin(); i!=s.end(); ++i ){
+      GameObject & obj = **i;
+      int t = obj.coolDown( tagetID );
+      if( t>=0 )
+        mcoolDown = std::min(t,mcoolDown);
+      }
+
+    mcoolDown = mcoolDown*h()/maxT;
+    if( mcoolDown!=coolDown ){
+      coolDown = mcoolDown;
+      update();
+      }*/
+    }
+
+  };
+
 DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
             Game & game,
-            PlInfo & pl ):TranscurentPanel(res), game(game){
+            DPlayer & pl ):TranscurentPanel(res), game(game){
   using namespace Tempest;
 
   setMinimumSize(75, 200);
@@ -416,12 +464,18 @@ DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
   setSizePolicy( FixedMin );
   setLayout( Vertical );
 
-  DesertStrikeScenario::GradeButton * u = 0;
-  u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/fire_strike", 0 );
+  Button * c = new Button(res);
+  c->setMinimumSize( 50, 50 );
+  c->setMaximumSize( 50, 50 );
+  c->clicked.bind( toogleCameraMode );
+  layout().add( c );
+
+  SpellButton * u = 0;
+  u = new SpellButton(res, pl, game, "gui/icon/fire_strike", 0 );
   u->onClick.bind( this, &SpellPanel::spell );
   layout().add( u );
 
-  u = new DesertStrikeScenario::GradeButton(res, pl, "gui/icon/blink", 1 );
+  u = new SpellButton(res, pl, game, "gui/icon/blink", 1 );
   u->onClick.bind( this, &SpellPanel::spell );
   layout().add( u );
   }
@@ -438,7 +492,7 @@ void DesertStrikeScenario::SpellPanel::spell( int i ){
 
 DesertStrikeScenario::BuyUnitPanel::BuyUnitPanel( Resource & res,
               Game & game,
-              PlInfo & pl,
+              DPlayer & pl,
               Minimap * mmap): TranscurentPanel(res), game(game), mmap(mmap) {
   using namespace Tempest;
   setMinimumSize(250, 200);
@@ -466,7 +520,7 @@ DesertStrikeScenario::BuyUnitPanel::BuyUnitPanel( Resource & res,
   layout().add( layers[0] );
   layout().add( layers[1] );
 
-  setTab(0);
+  setTab(1);
   }
 
 void DesertStrikeScenario::BuyUnitPanel::onUnit( const ProtoObject & p ){
@@ -477,34 +531,6 @@ void DesertStrikeScenario::BuyUnitPanel::setupBuyPanel( const std::string & s ){
   mmap->setupUnit(s);
   }
 
-/*
-template< int w, int h >
-Tempest::Widget* DesertStrikeScenario::BuyUnitPanel::mkPanel( PlInfo & pl,
-                                                              const char * pr[w][h] ){
-  using namespace Tempest;
-
-  Widget *w = new Widget();
-  w->setLayout(Vertical);
-
-  for( int i=0; i<3; ++i ){
-    Widget* l = new Widget();
-    l->setLayout( Horizontal );
-
-    for( int r=0; r<4; ++r ){
-      if( pr[i][r] ){
-        const ProtoObject & obj = game.prototype(pr[i][r]);
-
-        DesertStrikeScenario::BuyButton * u =
-            new DesertStrikeScenario::BuyButton(res, obj, pl, i);
-        u->onClick.bind( *this, &BuyUnitPanel::onUnit );
-        l->layout().add( u );
-        }
-      }
-    w->layout().add(l);
-    }
-
-  return w;
-  }*/
 
 void DesertStrikeScenario::BuyUnitPanel::setTab( int id ){
   for( int i=0; i<4; ++i )
@@ -514,7 +540,7 @@ void DesertStrikeScenario::BuyUnitPanel::setTab( int id ){
 
 DesertStrikeScenario::UpgradePanel::UpgradePanel( Resource & res,
               Game & game,
-              PlInfo & pl,
+              DPlayer & pl,
               DesertStrikeScenario::BuyUnitPanel *mmap )
   :TranscurentPanel(res), game(game), mmap(mmap){
   using namespace Tempest;
@@ -545,4 +571,62 @@ void DesertStrikeScenario::UpgradePanel::buy( const int grade ){
   mmap->setTab(grade);
   }
 
+DesertStrikeScenario::CentralPanel::CentralPanel( DesertStrikeScenario &ds,
+                                                  Resource &res ):res(res), ds(ds) {
+  bg.data    = res.pixmap("gui/spark");
+  cride.data = res.pixmap("gui/cride");
 
+  time = 0;
+  cl.set(0,0,0,1);
+  }
+
+void DesertStrikeScenario::CentralPanel::setRemTime(int t) {
+  if( time!=t ){
+    time = t;
+    update();
+    }
+  }
+
+void DesertStrikeScenario::CentralPanel::setColor(const Tempest::Color &c) {
+  if( cl!=c ){
+    cl = c;
+    update();
+    }
+  }
+
+void DesertStrikeScenario::CentralPanel::paintEvent(Tempest::PaintEvent &e) {
+  paintNested(e);
+
+  Tempest::Painter p(e);
+
+  float k = 0.5;
+
+  PainterGUI& pt = (PainterGUI&)p.device();
+  pt.setColor( k*cl.r(), k*cl.g(), k*cl.b(), 1 );
+  p.setBlendMode( Tempest::addBlend );
+  p.setScissor( Tempest::Rect(0,0,w(),h()) );
+
+  p.setTexture( bg );
+  int h0 = 3*bg.data.rect.h/4;
+  p.drawRect( w()/2-bg.data.rect.w/2, -h0/2,
+              bg.data.rect.w, h0,
+              0,0, bg.data.rect.w, bg.data.rect.h);
+  pt.setColor(1,1,1,0.5);
+
+  p.setBlendMode( Tempest::alphaBlend );
+  p.setTexture(cride);
+  float sz = 0.5;
+  p.drawRect( w()/2-sz*cride.data.rect.w/2, -sz*cride.data.rect.h/2,
+              sz*cride.data.rect.w, sz*cride.data.rect.h,
+              0, 0, cride.data.rect.w, cride.data.rect.h);
+  pt.setColor(1,1,1,1);
+
+  Font font;
+  p.setFont(font);
+
+  std::stringstream ss;
+  ss << time;
+  const std::string s = ss.str();//ds.tNum/40);
+  Tempest::Size r = font.textSize(res, s);
+  p.drawText( w()/2-r.w/2, 0, s );
+  }

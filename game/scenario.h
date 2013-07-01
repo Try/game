@@ -5,6 +5,8 @@ class GameObject;
 
 #include <string>
 #include <vector>
+#include <memory>
+
 #include <Tempest/Event>
 #include <Tempest/Shortcut>
 
@@ -32,6 +34,7 @@ namespace Tempest{
   }
 
 class InGameControls;
+class Player;
 
 struct Scenario {
     Scenario(Game& game, MainGui & ui, BehaviorMSGQueue &msg);
@@ -80,6 +83,13 @@ struct Scenario {
     virtual void updateSelectUnits( const std::vector<GameObject *> &u );
 
     std::string name() const;
+
+    virtual void addPlayer();
+    virtual size_t plCount() const;
+    virtual void setPlaylersCount( int c );
+
+    virtual Player &player(int i);
+    virtual Player &player();
   protected:
     Game    & game;
     MainGui & gui;
@@ -117,9 +127,12 @@ struct Scenario {
 
     InGameControls * mainWidget;
     MiniMapView    * minimap;
+
+    virtual Player* createPlayer();
   private:
     CommandsPanel  * commands;
     UnitList       * units;
+    std::vector< std::shared_ptr<Player> > players;
 
     int currPl;
 

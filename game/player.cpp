@@ -8,7 +8,7 @@
 #include "util/gameserializer.h"
 #include "world.h"
 
-Player::Player(int num) {
+Player::Player( int num ) {
   editObj  = 0;
 
   m.gold   = 100500;
@@ -31,12 +31,18 @@ Player::Player(int num) {
     Tempest::Color(0, 0, 0 ),
     };
 
+  m.objects.reserve(2048);
+  m.selected.reserve(256);
   m.color = cl[ std::min(7, m.num) ];
   /*
   m.color = Tempest::Color( 255*m.color.r(),
                          255*m.color.g(),
                          255*m.color.b() );*/
-  //setSyncFlag(0);
+  //setSyncFlag(0);  
+  }
+
+Player::~Player() {
+
   }
 
 void Player::addUnit(GameObject *u) {

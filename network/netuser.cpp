@@ -1,5 +1,16 @@
 #include "netuser.h"
 
+#ifdef _WIN32
+    #include "winsock.h"
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+
+    #include <string.h>
+    #include <sys/types.h>
+    #include <arpa/inet.h>
+#endif
+
 NetUser::NetUser()
 {
 }

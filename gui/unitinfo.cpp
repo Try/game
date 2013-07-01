@@ -55,7 +55,7 @@ struct UnitInfo::Stats : public PanelBase {
     Widget *w = new Widget();
     w->setLayout(Tempest::Horizontal);
     LineEdit *le = new LineEdit(res);
-    std::string name = "$(" +obj.getClass().name+")";
+    std::string name = "$(unit/" +obj.getClass().name+")";
     le->setText( Lang::tr( name ) );
     le->setEditable( false );
 
@@ -75,8 +75,8 @@ struct UnitInfo::Stats : public PanelBase {
       };
 
     const wchar_t* hint[2] = {
-      L"$(weapon0)",
-      L"$(armor0)"
+      L"$(equipment/weapon0)",
+      L"$(equipment/armor0)"
       };
 
     for( size_t i=0; i<2; ++i ){

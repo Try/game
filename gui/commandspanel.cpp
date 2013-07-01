@@ -337,11 +337,11 @@ void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
     };
 
   const wchar_t* hint[] = {
-    L"$(move)",
-    L"$(stop)",
-    L"$(hold)",
-    L"$(patrul)",
-    L"$(atack)"
+    L"$(commands/move)",
+    L"$(commands/stop)",
+    L"$(commands/hold)",
+    L"$(commands/patrul)",
+    L"$(commands/atack)"
     };
 
   BtnBase* btn[5] = {};

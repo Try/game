@@ -3,11 +3,32 @@
 #include <string>
 #include "threads/time.h"
 
+#ifdef _WIN32
+    #include "winsock.h"
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+
+    #include <string.h>
+    #include <sys/types.h>
+    #include <arpa/inet.h>
+
+    typedef int SOCKET;
+#endif
+
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET    (~(0))
 #endif
 
+#include "netuserclient.h"
+
+struct LocalServer::Data{
+  SOCKET listenSocket;
+  sockaddr_in listenAddress;
+  };
+
 LocalServer::LocalServer() {
+  data.reset( new Data() );
   isRunning = false;
   }
 
@@ -26,18 +47,18 @@ void LocalServer::start() {
   WSAStartup(MAKEWORD(2,0), &wsaData);
 #endif
 
-  listenSocket = socket(PF_INET, SOCK_STREAM, 0);
-  listenAddress.sin_family = AF_INET;
-  listenAddress.sin_port = htons(1313);
+  data->listenSocket = socket(PF_INET, SOCK_STREAM, 0);
+  data->listenAddress.sin_family = AF_INET;
+  data->listenAddress.sin_port = htons(1313);
 
 #ifdef _WIN32
-    listenAddress.sin_addr.S_un.S_addr = INADDR_ANY;
+    data->listenAddress.sin_addr.S_un.S_addr = INADDR_ANY;
 #else
-    listenAddress.sin_addr.s_addr = INADDR_ANY;
+    data->listenAddress.sin_addr.s_addr = INADDR_ANY;
 #endif
 
-  if (bind( listenSocket,
-            (sockaddr*)(&listenAddress),
+  if (bind( data->listenSocket,
+            (sockaddr*)(&data->listenAddress),
             sizeof(sockaddr_in)) != 0){
     onError("Binding Error");
     }
@@ -70,20 +91,20 @@ int LocalServer::serverListen( void * ){
   int addrSize = sizeof(struct sockaddr_in);
   onError("Server listening for connections..");
 
-  if( listen(listenSocket, SOMAXCONN) != 0 ){
+  if( listen(data->listenSocket, SOMAXCONN) != 0 ){
     onError("Listen error");
     }
 
   while ( isRunning ){
     fd_set readSet;
     FD_ZERO(&readSet);
-    FD_SET(listenSocket, &readSet);
+    FD_SET(data->listenSocket, &readSet);
     timeval timeout;
     timeout.tv_sec  = 0;  // Zero timeout (poll)
     timeout.tv_usec = 0;
 
-    if( select(listenSocket, &readSet, NULL, NULL, &timeout) == 1 ) {
-      newSocket = accept(listenSocket, (sockaddr*)&newAddress, &addrSize);
+    if( select(data->listenSocket, &readSet, NULL, NULL, &timeout) == 1 ) {
+      newSocket = accept(data->listenSocket, (sockaddr*)&newAddress, &addrSize);
 
       if (newSocket == INVALID_SOCKET){
         onError("Accept Error!");

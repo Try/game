@@ -7,10 +7,17 @@
 class Scene : public Tempest::AbstractScene< AbstractGraphicObject > {
   public:
     Scene( int sz );
-    typedef OcTree<const AbstractGraphicObject*> Objects;
+
+    struct Cmp{
+      bool operator () ( const AbstractGraphicObject*a, const AbstractGraphicObject* b ) const {
+        return a->vboHandle() < b->vboHandle();
+        }
+      };
+    typedef OcTree<const AbstractGraphicObject*, Cmp> Objects;
 
     const Objects& shadowCasters() const;
     const Objects& shadowCastersAtst() const;
+    const Objects& shadowCastersTransp() const;
     const Objects& mainObjects() const;
     const Objects& mainObjectsAtest() const;
 
@@ -30,8 +37,9 @@ class Scene : public Tempest::AbstractScene< AbstractGraphicObject > {
     const Objects& omni() const;
 
   private:
-    Objects shCast, shCastAtst,
-            mainObj, mainObjAtst, glowObj, terrainMinor, terrain,
+    Objects shCast, shCastAtst, shCastTransp,
+            mainObj, mainObjAtst, glowObj,
+            terrainMinor, terrain,
             displaceObj, waterObj, addObj, transpObj,
             transpObjZW, fogOfWarObj,
             omniObj, grassObj;

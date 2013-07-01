@@ -26,7 +26,8 @@ class Material {
     static Tempest::Color nullColor;
 
     struct Usage{
-      bool mainPass, mainPassAtst, shadowCast, terrainMinor, terrainMain,
+      bool mainPass, mainPassAtst, shadowCast, shadowCastTransp,
+           terrainMinor, terrainMain,
            atest,
            displace, water, blush, add,
            transparent, fogOfWar,
@@ -62,6 +63,16 @@ class Material {
                         const Tempest::Matrix4x4 & /*object*/,
                         const Tempest::AbstractCamera&,
                         Tempest::UniformTable &) const;
+
+    void transparentSh( Tempest::RenderState& /*d*/,
+                        const Tempest::Matrix4x4 & /*object*/,
+                        const Tempest::AbstractCamera&,
+                        Tempest::UniformTable & ) const;
+
+    void transparentShZ( Tempest::RenderState& /*d*/,
+                         const Tempest::Matrix4x4 & /*object*/,
+                         const Tempest::AbstractCamera&,
+                         Tempest::UniformTable & ) const;
 
     void transparent( Tempest::RenderState& /*d*/,
                       const Tempest::Matrix4x4 & /*object*/,
@@ -118,7 +129,46 @@ class Material {
     static GraphicsSettingsWidget::Settings settings;
   };
 
-typedef Tempest::AbstractGraphicObject<Material> AbstractGraphicObject;
-typedef Tempest::GraphicObject<Material>         GraphicObject;
+struct GraphicObjectUserState{
+  GraphicObjectUserState();
+  GraphicObjectUserState( const GraphicObjectUserState& );
+  GraphicObjectUserState& operator = ( const GraphicObjectUserState& );
+
+  static const int idCount = 32;
+  mutable void * treeNode[idCount];
+  mutable void * treeId  [idCount];
+  mutable int realCount;
+
+  void insert( void* t, void*id ) const {
+    treeId[realCount]   = id;
+    treeNode[realCount] = t;
+    ++realCount;
+    }
+
+  void* at( void*id ) const {
+    for( int i=0; i<realCount; ++i )
+      if( treeId[i]==id ){
+        return treeNode[i];
+        }
+
+    return 0;
+    }
+
+  void* erase( void*id ) const {
+    for( int i=0; i<realCount; ++i )
+      if( treeId[i]==id ){
+        --realCount;
+        void *v = treeNode[i];
+        treeId[i]   = treeId[realCount];
+        treeNode[i] = treeNode[realCount];
+        return v;
+        }
+
+    return 0;
+    }
+  };
+
+typedef Tempest::AbstractGraphicObject<Material,GraphicObjectUserState> AbstractGraphicObject;
+typedef Tempest::GraphicObject<Material,GraphicObjectUserState>         GraphicObject;
 
 #endif // MATERIAL_H

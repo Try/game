@@ -2,7 +2,29 @@
 
 #include <string>
 
+#ifdef _WIN32
+    #include "winsock.h"
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+
+    #include <string.h>
+    #include <sys/types.h>
+    #include <arpa/inet.h>
+
+    typedef int SOCKET;
+#endif
+
+struct Client::Data{
+  #ifdef _WIN32
+  WSADATA wsaData;
+  #endif
+  SOCKET serverSocket;
+  sockaddr_in serverAddress;
+  };
+
 Client::Client() {
+  data.reset( new Data() );
   connected = false;
   }
 
@@ -25,7 +47,7 @@ void Client::connect(const std::string &addr) {
   }
 
 void Client::sendMsg(const std::vector<char> &str) {
-  sendStr(serverSocket, str);
+  sendStr(data->serverSocket, str);
   }
 
 bool Client::isServer() const {
@@ -36,10 +58,10 @@ void Client::startClient(){
   //consolePrintInput = 1;
 
   #ifdef _WIN32
-  WSAStartup(MAKEWORD(2,0), &wsaData);
+  WSAStartup(MAKEWORD(2,0), &data->wsaData);
   #endif
 
-  serverSocket = socket(PF_INET, SOCK_STREAM, 0);
+  data->serverSocket = socket(PF_INET, SOCK_STREAM, 0);
   }
 
 void Client::clientConnect( const char* in ){
@@ -53,16 +75,16 @@ void Client::clientConnect( const char* in ){
     strcat(str, in);
     onError(str);
 
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(1313);
+    data->serverAddress.sin_family = AF_INET;
+    data->serverAddress.sin_port = htons(1313);
 #ifdef _WIN32
-    serverAddress.sin_addr.S_un.S_addr = ip;
+    data->serverAddress.sin_addr.S_un.S_addr = ip;
 #else
-    serverAddress.sin_addr.s_addr = ip;
+    data->serverAddress.sin_addr.s_addr = ip;
 #endif
 
-    if( ::connect( serverSocket,
-                   (sockaddr*)(&serverAddress),
+    if( ::connect( data->serverSocket,
+                   (sockaddr*)(&data->serverAddress),
                    sizeof(sockaddr_in) ) != 0){
       onError("Error connecting");
       }else{
@@ -82,7 +104,7 @@ int Client::reciever(void *){
   int recieved;
 
   while( connected ){
-    recieved = recvStr( serverSocket, buffer );
+    recieved = recvStr( data->serverSocket, buffer );
 
     if (recieved == 0){
       onError("Server closed");
@@ -98,9 +120,9 @@ int Client::reciever(void *){
     }
 
 #ifdef _WIN32
-  closesocket(serverSocket);
+  closesocket(data->serverSocket);
 #else
-  close(serverSocket);
+  close(data->serverSocket);
 #endif
 
   //removeConsoleListener(sender);

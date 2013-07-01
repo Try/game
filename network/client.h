@@ -23,12 +23,8 @@ class Client : public NetUser {
     void clientConnect( const char* in );
     int  reciever(void *);
 
-    #ifdef _WIN32
-    WSADATA wsaData;
-    #endif
-    SOCKET serverSocket;
-    sockaddr_in serverAddress;
-
+    struct Data;
+    std::unique_ptr<Data> data;
     Future connection;
     bool   connected;
   };

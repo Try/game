@@ -259,15 +259,18 @@ void GUIPass::setBlendMode( Tempest::BlendMode m ) {
 
   GeometryBlock b;
   b.texture.tex = 0;
-
   if( lay.geometryBlocks.size() ){
-    b = lay.geometryBlocks.back();
+    b.texture = lay.geometryBlocks.back().texture;
     }
 
   bool e = false;
   while( lay.geometryBlocks.size() && lay.geometryBlocks.back().size==0 ){
     lay.geometryBlocks.pop_back();
     e = lay.geometryBlocks.size()==0;
+    }
+
+  if( lay.geometryBlocks.size() ){
+    b = lay.geometryBlocks.back();
     }
 
   Tempest::RenderState rs = makeRS( m );
@@ -339,7 +342,7 @@ Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
 
   if( m==Tempest::addBlend ){
     rs.setBlend(1);
-    rs.setZWriting(trasparentZW);
+    rs.setZWriting(false);
     rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
                      Tempest::RenderState::AlphaBlendMode::one );
     }
@@ -357,5 +360,6 @@ Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {
                      Tempest::RenderState::AlphaBlendMode::dst_color );
     }
 
+  //rs.setZWriting(1);
   return rs;
   }
