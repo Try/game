@@ -23,6 +23,7 @@ class EditTerrainPanel : public Tempest::Widget {
     void setupCombo();
     void setupAlign();
     void setupSmooth();
+    void setupRm();
 
     void setTexture( const std::string& str );
 

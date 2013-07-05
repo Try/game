@@ -164,7 +164,7 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
       for( size_t i=0; i<pl.selected().size(); ++i ){
         GameObject & obj = *pl.selected()[i];
 
-        if( obj.isSelected() && obj.playerNum() ){
+        if( obj.playerNum() ){
           bool a = 0;
 
           if( m.msg==Buy ){
@@ -473,6 +473,7 @@ void BehaviorMSGQueue::onNewClient( NetUser &usr,
 
     if( freedSlot ){
       c.pl = i;
+      game.player(i).setAsAI(false);
       break;
       }
     }

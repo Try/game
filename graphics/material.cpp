@@ -220,8 +220,8 @@ void Material::transparentSh(Tempest::RenderState &rs,
   rs.setBlend(1);
   rs.setAlphaTestRef(0.01);
   rs.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
-  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
-                   Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
+  rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::dst_color,
+                   Tempest::RenderState::AlphaBlendMode::src_color );
   rs.setZWriting( zWrighting );
   }
 

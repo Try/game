@@ -90,7 +90,7 @@ void Terrain::buildGeometry(){
   for( int i=0; i<3; ++i ){
     const std::vector<size_t> & ids = texIDS[ i==2? 0:1 ];
     for( size_t r=0; r<ids.size(); ++r ){
-      buildGeometry( vboHolder, iboHolder, i, ids[r] );
+      buildGeometry( vboHolder, iboHolder, i, ids[r], (r==0 && i==0) );
       }
     }
 
@@ -152,6 +152,75 @@ MVertex Terrain::mkVertex(int ix, int iy, int plane) {
   vx.bz = bnormal[2];
 
   return vx;
+  }
+
+void Terrain::buildShadowVBO( int lx, int rx, int ly, int ry,
+                              std::vector<MVertex>& land,
+                              std::vector<uint16_t> & ibo ) {
+  land.clear();
+  quads.clear();
+  ibo.clear();
+
+  static const int dx[] = {0, 1, 1, 0},
+                   dy[] = {0, 0, 1, 1};
+  static int dcount = 4;
+
+  for( int i=lx; i+1<rx; ++i )
+    for( int r=ly; r+1<ry; ++r ){
+      quads.push_back( Tempest::Point(i,r) );
+      }
+
+  squads.clear();
+  Tempest::Point p;
+  while( quads.size() ){
+    Tempest::Point px = quads[0];
+    int dp = abs(px.x-p.x) + abs(px.y-p.y), id = 0;
+
+    for( size_t i=1; i<quads.size(); ++i ){
+      int ndp = abs(quads[i].x-p.x) + abs(quads[i].y-p.y);
+      if( ndp<dp ){
+        id = i;
+        px = quads[i];
+        dp = ndp;
+        }
+      }
+
+    squads.push_back(px);
+    quads[id] = quads.back();
+    quads.pop_back();
+    }
+
+  int di[] = {0,1,2, 0,2,3};
+
+  ibo.clear();
+  for( size_t id=0; id<squads.size(); ++id ){
+    int i= squads[id].x, r = squads[id].y;
+    size_t r0 = std::max<size_t>( 0, land.size()-1024 );
+
+    MVertex vx[dcount];
+    for( int q=0; q<dcount; ++q ){
+      vx[q] = mkVertex(i+dx[q], r+dy[q], 0);
+      }
+
+    for( int r=0; r<6; ++r ){
+      const MVertex& v = vx[ di[r] ];
+      size_t id = size_t(-1);
+      for( size_t q=r0; q<land.size(); ++q ){
+        if( land[q]==v ){
+          id = q;
+          }
+        }
+
+      if( id==size_t(-1) ){
+        ibo.push_back( land.size() );
+        land.push_back(v);
+        } else {
+        ibo.push_back(id);
+        }
+      //ibo.push_back(r1+di[r]);
+      }
+    }
+
   }
 
 void Terrain::buildVBO( int lx, int rx, int ly, int ry,
@@ -239,7 +308,8 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                              Tempest::IndexBufferHolder  & iboHolder,
                              int plane,
                              size_t texture,
-                             int cX, int cY ) {
+                             int cX, int cY,
+                             bool firstPass ) {
   TerrainChunk & chunk = chunks[cX][cY];
   if( !chunk.needToUpdate )
     return;
@@ -312,6 +382,8 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
         if( obj.view[i].materials[r]=="phong" )
           obj.view[i].materials[r] = "terrain.main";
         }
+
+      remove(obj.view[i].materials, "shadow_cast");
       }
 
     view.view.reset( new GameObjectView( scene,
@@ -334,6 +406,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
         if( obj.view[i].materials[r]=="phong" )
           obj.view[i].materials[r] = "terrain.minor";
         }
+      remove(obj.view[i].materials, "shadow_cast");
       }
 
     view.view.reset( new GameObjectView( scene,
@@ -345,7 +418,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     chunk.landView.push_back( view );
     }
 
-  if( plane==0 ){
+  if( firstPass ){
     chunk.waterView.view.reset( new GameObjectView( scene,
                                                     world,
                                                     prototype.get( "water" ),
@@ -361,17 +434,39 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     vf.materials.push_back("fog_of_war");
 
     chunk.fogView.view->loadView( fogGeometry(cX, cY), vf );
+
+    buildShadowVBO(lx, rx, ly, ry, land, ibo );
+    if( land.size() ){
+      model.load( vboHolder, iboHolder, land, ibo, MVertex::decl() );
+
+      TerrainChunk::View view;
+
+      ProtoObject obj;
+      obj.view.resize(1);
+      obj.view[0].materials.clear();
+      obj.view[0].materials.push_back("shadow_cast");
+
+      view.view.reset( new GameObjectView( scene,
+                                           world,
+                                           obj,
+                                           prototype) );
+      view.view->loadView( model, obj.view[0] );
+
+      chunk.landView.push_back( view );
+      }
     }
   }
 
 void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                              Tempest::IndexBufferHolder  & iboHolder,
                              int plane,
-                             size_t texture  ) {
+                             size_t texture,
+                             bool firstPass ) {
   for( int i=0; i<chunks.width(); ++i )
     for( int r=0; r<chunks.height(); ++r ){
       buildGeometry( vboHolder, iboHolder, plane, texture,
-                     i, r );
+                     i, r,
+                     firstPass );
       }
   }
 
@@ -552,6 +647,28 @@ Model Terrain::fogGeometry(int cX, int cY ) const {
   model.load( vboHolder, iboHolder, land, decl );
 
   return model;
+  }
+
+const ProtoObject::View *Terrain::viewAt(float fx, float fy) {
+  int x = World::coordCastD(fx)/quadSizef;
+  int y = World::coordCastD(fy)/quadSizef;
+
+  x = std::max(0, std::min(x, width()-1) );
+  y = std::max(0, std::min(y, height()-1) );
+
+  int v = tileset[x][y].textureID[0];
+
+  if( int(aviableDecalViews.size())<=v ){
+    aviableDecalViews.resize(v+1);
+    }
+
+  if( !aviableDecalViews[v] ){
+    const ProtoObject::View &vx = prototype.get( aviableTiles[v] ).view[0];
+    aviableDecalViews[v].reset( new ProtoObject::View(vx) );
+    remove(aviableDecalViews[v]->materials, "shadow_cast");
+    }
+
+  return aviableDecalViews[v].get();
   }
 
 int Terrain::width() const {

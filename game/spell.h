@@ -10,6 +10,8 @@ struct Spell {
     int coolDown;
     int manaCost;
 
+    int bulletSpeed;
+
     std::string name;
 
     size_t id;

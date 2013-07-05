@@ -30,6 +30,7 @@ struct DesertStrikeScenario::BuyButton: public NumButton {
 
   const ProtoObject& p;
   DPlayer & pl;
+  Texture texture;
   int tier;
   };
 
@@ -51,6 +52,8 @@ struct DesertStrikeScenario::TranscurentPanel: public Tempest::Widget {
   TranscurentPanel( Resource & res );
   void paintEvent(Tempest::PaintEvent &e);
 
+  void mouseDownEvent(Tempest::MouseEvent &e);
+
   Resource  & res;
   Tempest::Bind::UserTexture frame;
   };
@@ -61,7 +64,7 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
 
   struct Inf{
     Widget * widget;
-    RichText * ledit, *info[2];
+    RichText * ledit, *info[2][2];
 
     GradeButton * grade;
     };
@@ -72,6 +75,9 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
 
   void buildBase( Resource &res, Inf & inf );
   void buildCas( Resource &res, Inf & inf );
+
+  void mkInfoPanel(Resource &res, Inf &inf, Widget* owner );
+
   void paintEvent(Tempest::PaintEvent &e);
   void mouseDownEvent(Tempest::MouseEvent &);
   void setupUnit( const std::string & unit );
@@ -102,6 +108,22 @@ struct DesertStrikeScenario::SpellPanel: public TranscurentPanel {
   Game & game;
 
   class SpellButton;
+
+  void setupHook ( const std::string& unit );
+  void setupHookU( const std::string& unit );
+
+  void mouseDown( Tempest::MouseEvent& e );
+  void mouseUp  ( Tempest::MouseEvent& e );
+  void onRemoveHook();
+
+  InputHook hook;
+  bool  instaled;
+  std::string spellToCast;
+
+  enum Mode{
+    CastToCoord,
+    CastToUnit
+    } mode;
   };
 
 struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
@@ -113,24 +135,30 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
   void setupBuyPanel( const std::string & s );
 
   template< int w, int h >
-  Widget* mkPanel( DPlayer & pl, const char * pr[w][h] ){
+  Widget* mkPanel( DPlayer & pl, const char * pr[w][h],
+                   Button* (BuyUnitPanel::*f)( Resource & ,
+                                               const char* ,
+                                               DPlayer &,
+                                               int ) ){
     using namespace Tempest;
 
     Widget *w = new Widget();
     w->setLayout(Vertical);
+    w->layout().setSpacing(0);
 
     for( int i=0; i<3; ++i ){
       Widget* l = new Widget();
+      l->layout().setSpacing(0);
       l->setLayout( Horizontal );
 
       for( int r=0; r<4; ++r ){
         if( pr[i][r] ){
-          const ProtoObject & obj = game.prototype(pr[i][r]);
+          l->layout().add( (this->*f)(res, pr[i][r], pl, i) );
+          //const ProtoObject & obj = game.prototype(pr[i][r]);
 
-          DesertStrikeScenario::BuyButton * u =
-              new DesertStrikeScenario::BuyButton(res, obj, pl, i);
-          u->onClick.bind( *this, &BuyUnitPanel::onUnit );
-          l->layout().add( u );
+          //T * u = new T(res, obj, pl, i);
+          //u->onClick.bind( *this, &BuyUnitPanel::onUnit );
+          //l->layout().add( u );
           }
         }
       w->layout().add(l);
@@ -138,6 +166,19 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
 
     return w;
     }
+
+  Button* mkBuyCasBtn( Resource & r,
+                        const char* obj,
+                        DPlayer & pl,
+                        int tier );
+  Button* mkBuyUnitBtn( Resource & r,
+                        const char* obj,
+                        DPlayer & pl,
+                        int tier );
+  Button* mkBuyGradeBtn( Resource & r,
+                         const char* obj,
+                         DPlayer & pl,
+                         int tier );
 
   void setTab( int id );
 

@@ -3,6 +3,7 @@
 
 #include "util/array2d.h"
 #include "algo/algo.h"
+#include "algo/a_star.h"
 #include <memory>
 
 class Terrain;

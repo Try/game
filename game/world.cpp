@@ -780,7 +780,8 @@ void World::clickEvent(int x, int y, const Tempest::MouseEvent &e) {
     ty = y;
     }
 
-  if( editLandMode.isEnable ){
+  if( editLandMode.isEnable &&
+      editLandMode.map  != Terrain::EditMode::RemoveObj){
     if( e.button==Tempest::MouseEvent::ButtonRight )
       terrain().brushHeight( x, y, editLandMode, true );//-200, 5 );
 
@@ -797,6 +798,20 @@ void World::clickEvent(int x, int y, const Tempest::MouseEvent &e) {
 
     terr->buildGeometry();
     physics.setTerrain( *terr );
+    }
+
+  if( editLandMode.isEnable &&
+      editLandMode.map  == Terrain::EditMode::RemoveObj){
+    for( size_t i=0; i<gameObjects.size(); ){
+      int dx = abs(gameObjects[i]->x() - x)/Terrain::quadSize,
+          dy = abs(gameObjects[i]->y() - y)/Terrain::quadSize;
+
+      if( dx*dx + dy*dy <= editLandMode.R ){
+        deleteObject( gameObjects[i].get() );
+        } else {
+        ++i;
+        }
+      }
     }
   }
 

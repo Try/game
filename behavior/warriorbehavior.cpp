@@ -80,7 +80,7 @@ void WarriorBehavior::tick( const Terrain & ) {
       !mvTaget &&
       MoveBehavior::isCloseEnough( obj.x(), obj.y(),
                                    acX, acY, obj.getClass().data.size ) ){
-    isAClick = false;
+    unsetAClick();
     }
 
   dRqTime = std::max( dRqTime, 10 );
@@ -186,7 +186,7 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
     mvTaget = WeakWorldPtr();
 
     isAtk    = false;
-    isAClick = false;
+    unsetAClick();
 
     unlockGround();
     }
@@ -197,7 +197,7 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
     mvTaget = WeakWorldPtr();
 
     isAtk    = false;
-    isAClick = false;
+    unsetAClick();
 
     unlockGround();
     }
@@ -206,7 +206,7 @@ bool WarriorBehavior::message( AbstractBehavior::Message msg,
       msg==AtackMoveGroup ){
     mvTaget = WeakWorldPtr();
 
-    isAClick = true;
+    setAClick();
     acX = x;
     acY = y;
     }
@@ -221,7 +221,7 @@ bool WarriorBehavior::message( Message msg, size_t id,
     if( (ptr.value().team()!=obj.team() || msg==AtackToUnit) &&
         !ptr.value().getClass().data.invincible ){
       mvTaget = ptr;
-      isAClick = true;
+      setAClick();
       acX = mvTaget.value().x();
       acY = mvTaget.value().y();
       return 1;
@@ -230,7 +230,7 @@ bool WarriorBehavior::message( Message msg, size_t id,
     mvTaget = WeakWorldPtr();
 
     isAtk    = false;
-    isAClick = false;
+    unsetAClick();
 
     unlockGround();
     }
@@ -335,13 +335,15 @@ void WarriorBehavior::mkDamage( GameObject &dobj,
                                 int plOwner,
                                 int x, int y,
                                 const ProtoObject::GameSpecific::Atack &atk) {
-  int absDmg = std::max( atk.damage - dobj.getClass().data.armor, 1 );
+  int ag = dobj.game().player(plOwner).atackGrade( atk.type );
+
+  int absDmg = std::max( atk.damage+ag - dobj.getClass().data.armor, 1 );
   dobj.setHP( dobj.hp() - absDmg );
 
   if( atk.splashSize ){
     dobj.world().spatial().visit( dobj.x(),
                                   dobj.y(),
-                                  atk.splashSize,
+                                  atk.splashSize+ag,
                                   &damageSplash,
                                   plOwner,
                                   x, y,
@@ -394,6 +396,16 @@ bool WarriorBehavior::canShoot( GameObject &taget ) {
       return true;
 
   return false;
+  }
+
+void WarriorBehavior::setAClick() {
+  if( !isAClick )
+    isAClick = true;
+  }
+
+void WarriorBehavior::unsetAClick() {
+  if( isAClick )
+    isAClick = false;
   }
 
 bool WarriorBehavior::canShoot( GameObject &taget,

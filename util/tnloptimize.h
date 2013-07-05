@@ -38,7 +38,7 @@ class TnlOptimize {
         v[i->second] = i->first;
       }
 
-    static void optimizeTerrain( std::vector<MVertex>& v );
+    //static void optimizeTerrain( std::vector<MVertex>& v );
   };
 
 #endif // TNLOPTIMIZE_H

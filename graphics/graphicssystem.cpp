@@ -108,9 +108,7 @@ GraphicsSystem::GraphicsSystem( void *hwnd,
     iboHolder ( device ),
     liboHolder( device ),
     vsHolder  ( device ),
-    fsHolder  ( device ),
-
-    ppHelper( vboHolder, iboHolder ){
+    fsHolder  ( device ) {
   widget    = 0;
   time      = -1;
   particles = 0;
@@ -514,7 +512,7 @@ bool GraphicsSystem::render( Scene &scene,
     if( settings.glow )
       device.setUniform( finalData.fs, finalData.glow  );
 
-    ppHelper.drawFullScreenQuad( device, finalData.vs, finalData.fs );    
+    device.drawFullScreenQuad( finalData.vs, finalData.fs );
     }
 
   //blt( gbuffer[2] );
@@ -641,7 +639,9 @@ void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
                           sm, depthSm,
                           transparentData.vsSh,
                           transparentData.fsSh );
-  render.clear( light.color(), 1 );
+  Tempest::Color cl = light.color();
+  cl.set( cl.r(), cl.g(), cl.b(), 1 );
+  render.clear( cl, 1 );
   }
 
   RSMCamera c;
@@ -650,8 +650,8 @@ void GraphicsSystem::fillTranscurentMap( Tempest::Texture2d &sm,
                0,-1, 0, 0,
                0, 0, 1, 0,
                0, 0, 0, 1 );
-  setupLight( scene, transparentData.vsSh, transparentData.fsSh, 0, 0, 0, true, false);
-  setupLight( scene, transparentData.vsSh, transparentData.fsSh, 0, 0, 0, true, false);
+  setupLight( scene, transparentData.vsSh, transparentData.fsSh,
+              0, 0, 0, false, false );
 
   drawObjects( transparentData.vsSh, transparentData.fsSh,
                &sm,
@@ -915,7 +915,7 @@ void GraphicsSystem::renderVolumeLight( const Scene &scene,
     if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
       device.setUniform( volumetricData.vs, cpyOffset );
 
-    ppHelper.drawFullScreenQuad( device, volumetricData.vs, volumetricData.fs );
+    device.drawFullScreenQuad( volumetricData.vs, volumetricData.fs );
     }
 
   { Tempest::Texture2d depth = this->depth( mainDepth.width(),
@@ -941,7 +941,7 @@ void GraphicsSystem::renderVolumeLight( const Scene &scene,
     device.setUniform( bltData.vs, cpyOffset );
     device.setUniform( bltData.fs, bltData.texture );
 
-    ppHelper.drawFullScreenQuad( device, bltData.vs, bltData.fs );
+    device.drawFullScreenQuad( bltData.vs, bltData.fs );
     }
   }
 
@@ -1317,7 +1317,7 @@ void GraphicsSystem::blt( const Tempest::Texture2d & tex ) {
 
   device.setUniform( bltData.fs, bltData.texture );
 
-  ppHelper.drawFullScreenQuad( device, bltData.vs, bltData.fs );
+  device.drawFullScreenQuad( bltData.vs, bltData.fs );
   }
 
 void GraphicsSystem::copy( Tempest::Texture2d &out,
@@ -1349,7 +1349,7 @@ void GraphicsSystem::copy( Tempest::Texture2d &out,
     device.setUniform( bltData.vs, cpyOffset );
   device.setUniform( bltData.fs, bltData.texture );
 
-  ppHelper.drawFullScreenQuad( device, bltData.vs, bltData.fs );
+  device.drawFullScreenQuad( bltData.vs, bltData.fs );
   }
 
 void GraphicsSystem::copyDepth( Tempest::Texture2d &out,
@@ -1372,7 +1372,7 @@ void GraphicsSystem::copyDepth( Tempest::Texture2d &out,
     device.setUniform( bltData.vs, cpyOffset );
   device.setUniform( bltData.fs, bltData.texture );
 
-  ppHelper.drawFullScreenQuad( device, bltData.vs, bltData.fs );
+  device.drawFullScreenQuad( bltData.vs, bltData.fs );
   }
 
 void GraphicsSystem::gauss( Tempest::Texture2d &out,
@@ -1399,7 +1399,7 @@ void GraphicsSystem::gauss( Tempest::Texture2d &out,
   device.setUniform( gaussData.fs, blurCoord, 2, "blurCoord" );
   device.setUniform( gaussData.fs, bltData.texture );
 
-  ppHelper.drawFullScreenQuad( device, gaussData.vs, gaussData.fs );
+  device.drawFullScreenQuad( gaussData.vs, gaussData.fs );
   }
 
 void GraphicsSystem::gauss_ao( Tempest::Texture2d &out,
@@ -1423,7 +1423,7 @@ void GraphicsSystem::gauss_ao( Tempest::Texture2d &out,
   device.setUniform( gaussData.fsAO, blurCoord, 2, "blurCoord" );
   device.setUniform( gaussData.fsAO, bltData.texture );
 
-  ppHelper.drawFullScreenQuad( device, gaussData.vsAO, gaussData.fsAO );
+  device.drawFullScreenQuad( gaussData.vsAO, gaussData.fsAO );
   }
 
 void GraphicsSystem::gauss_gb( Tempest::Texture2d &out,
@@ -1448,7 +1448,7 @@ void GraphicsSystem::gauss_gb( Tempest::Texture2d &out,
   device.setUniform( gaussData.fsGB, blurCoord, 2, "blurCoord" );
   device.setUniform( gaussData.fsGB, bltData.texture );
 
-  ppHelper.drawFullScreenQuad( device, gaussData.vsGB, gaussData.fsGB );
+  device.drawFullScreenQuad( gaussData.vsGB, gaussData.fsGB );
   }
 
 void GraphicsSystem::gauss_b( Tempest::Texture2d &out,
@@ -1473,7 +1473,7 @@ void GraphicsSystem::gauss_b( Tempest::Texture2d &out,
   device.setUniform( gaussData.fsB, blurCoord, 2, "blurCoord" );
   device.setUniform( gaussData.fsB, bltData.texture );
 
-  ppHelper.drawFullScreenQuad( device, gaussData.vsB, gaussData.fsB );
+  device.drawFullScreenQuad( gaussData.vsB, gaussData.fsB );
   }
 
 void GraphicsSystem::bloom( Tempest::Texture2d &result,
@@ -1522,7 +1522,8 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
 
     device.setUniform( bloomData.brightPass, bltData.texture );
 
-    ppHelper.drawFullScreenQuad( device, bloomData.vs, bloomData.brightPass );
+    //ppHelper.drawFullScreenQuad( device, bloomData.vs, bloomData.brightPass );
+    device.drawFullScreenQuad(bloomData.vs, bloomData.brightPass);
     }
 
   if( settings.bloom==GraphicsSettingsWidget::Settings::Low ){
@@ -1564,7 +1565,7 @@ void GraphicsSystem::bloom( Tempest::Texture2d &result,
       device.setUniform( bloomData.combine, bloomData.b[i] );
       }
 
-    ppHelper.drawFullScreenQuad( device, bloomData.vs, bloomData.combine );
+    device.drawFullScreenQuad( bloomData.vs, bloomData.combine );
     }
   }
 
@@ -1632,7 +1633,7 @@ void GraphicsSystem::aceptFog( Tempest::Texture2d &in_out,
   device.setUniform( fogOfWar.fsAcept, tmp, "scene" );
   device.setUniform( fogOfWar.fsAcept, fog, "fog"   );
 
-  ppHelper.drawFullScreenQuad( device, fogOfWar.vsAcept, fogOfWar.fsAcept );
+  device.drawFullScreenQuad( fogOfWar.vsAcept, fogOfWar.fsAcept );
   }
 
 void GraphicsSystem::waves( Tempest::Texture2d &out,
@@ -1664,7 +1665,7 @@ void GraphicsSystem::waves( Tempest::Texture2d &out,
 
   device.setUniform ( water.fs, &t, 1, "time" );
 
-  ppHelper.drawFullScreenQuad( device, water.vs, water.fs );
+  device.drawFullScreenQuad( water.vs, water.fs );
   }
 
 void GraphicsSystem::aceptGI(   const Scene & s,
@@ -1726,7 +1727,7 @@ void GraphicsSystem::aceptGI(   const Scene & s,
   device.setUniform( ssaoData.acceptGI, ssaoData.ssao  );
   device.setUniform( ssaoData.acceptGI, ssaoData.lightAblimient  );
 
-  ppHelper.drawFullScreenQuad( device, ssaoData.vs, ssaoData.acceptGI );
+  device.drawFullScreenQuad( ssaoData.vs, ssaoData.acceptGI );
   }
 
 void GraphicsSystem::ssaoGMap( const Scene &scene,
@@ -1806,8 +1807,7 @@ Tempest::Texture2d GraphicsSystem::colorBuf(int w, int h) {
   }
 
 void GraphicsSystem::blurSm( Tempest::Texture2d &sm,
-                             Tempest::Texture2d & out,
-                             const Scene & scene ) {
+                             Tempest::Texture2d & out ) {
   Tempest::AbstractTexture::Format::Type frm = Tempest::AbstractTexture::Format::RGB10_A2;
 #ifdef __ANDROID__
   frm = Tempest::AbstractTexture::Format::RGB;
@@ -2077,7 +2077,7 @@ void GraphicsSystem::renderScene( const Scene &scene,
     ssaoGMap( scene, topSm, clrSm );
     Tempest::Texture2d tmp;
     copy(tmp, topSm, 256, 256);
-    blurSm(tmp, aoBlured, scene);
+    blurSm(tmp, aoBlured);
 
     //blt(aoBlured);
     //return;
@@ -2201,7 +2201,7 @@ void GraphicsSystem::renderSubScene( const Scene &scene,
     if( settings.glow )
       device.setUniform( finalData.avatar, finalData.glow );
 
-    ppHelper.drawFullScreenQuad( device, finalData.vs, finalData.avatar );
+    device.drawFullScreenQuad( finalData.vs, finalData.avatar );
     }
 
   //copy( out, glow );

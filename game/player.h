@@ -31,8 +31,11 @@ class Player {
     bool hasHostControl() const;
     void setHostCtrl( bool c );
 
-    void select( GameObject *obj, bool s );
-    std::vector<GameObject*>& selected();
+    bool isAi() const;
+    void setAsAI( bool a );
+
+    virtual void select( GameObject *obj, bool s );
+    virtual std::vector<GameObject*>& selected();
 
     Tempest::signal< std::vector<GameObject*>&, Player& > onUnitSelected;
     Tempest::signal< GameObject&, Player& > onUnitDied;
@@ -60,11 +63,15 @@ class Player {
     void computeFog( void* curW );
 
     const Tempest::Pixmap& fog() const;
-  private:
+
+    int  atackGrade( size_t atype ) const;
+    void incGrade( size_t atype );
+  protected:
     struct {
       int num;
       int team;
       bool htCtrl;
+      bool isAi;
 
       int gold, lim, limMax;
       std::vector<GameObject*> objects, selected;
@@ -72,6 +79,8 @@ class Player {
       Tempest::Color color;
 
       Tempest::Pixmap fog;
+
+      std::vector<int> atkGrade;
       } m;
 
     void fillFog( Tempest::Pixmap &p,

@@ -121,7 +121,7 @@ void Game::loadData() {
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
 #else
   loadMission("save/td2.sav");
-  setScenario( new DesertStrikeScenario(*this, gui, msg) );
+  setScenario( new DeatmachScenario(*this, gui, msg) );
 #endif
   //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );
 
@@ -559,6 +559,10 @@ void Game::onUnitDied( GameObject& u, Player & pl ) {
   }
 
 void Game::setCameraPos(GameObject &obj) {
+  setCameraPosSmooth(obj, 1);
+  }
+
+void Game::setCameraPosSmooth( GameObject &obj, float maxK ) {
   float x1 = World::coordCast(obj.x()),
         y1 = World::coordCast(obj.y()),
         z1 = World::coordCast(obj.z());
@@ -569,9 +573,10 @@ void Game::setCameraPos(GameObject &obj) {
         z = world->camera.z();
 
   float l0 = sqrt( pow(x-x1,2) + pow(y-y1,2) + pow(z-z1,2) );
-  l0 = std::max(0.0f, l0-1);
+  l0 = std::max( 0.0f, l0-2.0f );
 
-  k = std::min(0.3+l0, 1.0);
+  maxK = std::min(maxK, 1.0f);
+  k = std::min(0.3f+l0, maxK);
 
   world->camera.setPosition( x+(x1-x)*k, y+(y1-y)*k, z+(z1-z)*k );
   world->moveCamera(0,0);
@@ -672,7 +677,7 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
 
   if( contains( src.materials, "terrain.main" ) ){
     material.usage.terrainMain = true;
-    material.usage.shadowCast  = true;
+    //material.usage.shadowCast  = true;
     }
 
   if( contains( src.materials, "displace" ) ){

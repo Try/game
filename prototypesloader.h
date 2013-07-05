@@ -45,7 +45,7 @@ class PrototypesLoader : public AbstractXMLReader {
       std::unordered_map<std::string, PParticle>    dataParticles;
       std::vector<PSpell> spells;
 
-      std::vector< std::string > unitTypes;
+      std::vector< std::string > unitTypes, atackTypes;
       };
 
     std::vector<Defs> defs;

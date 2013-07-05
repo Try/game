@@ -200,7 +200,8 @@ void PrototypesLoader::readClassMember( ProtoObject &obj, TiXmlNode *node) {
         v.isParticle = "";
         }
 
-      readIf( e, "isLandDecal", v.isLandDecal );
+      readIf( e, "isLandDecal",  v.isLandDecal  );
+      readIf( e, "hasOverDecal", v.hasOverDecal );
 
       if( find( e, "specular", tmp) ){
         v.specularFactor = Lexical::cast<double>(tmp);
@@ -487,11 +488,22 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &b,
     b.splashDamage  = Lexical::cast<int>(str);
     }
 
-  if( find(e, "type", str ) ){
+  if( find(e, "taget", str ) ){
     auto i = std::find( defs.back().unitTypes.begin(),
                         defs.back().unitTypes.end(), str );
     if( i!=defs.back().unitTypes.end() )
       b.uDestType  = i-defs.back().unitTypes.begin();
+    }
+
+  if( find(e, "type", str ) ){
+    auto i = std::find( defs.back().atackTypes.begin(),
+                        defs.back().atackTypes.end(), str );
+    if( i!=defs.back().atackTypes.end() ){
+      b.type  = i-defs.back().atackTypes.begin() + 1;
+      } else {
+      b.type = defs.back().atackTypes.size() + 1;
+      defs.back().atackTypes.push_back(str);
+      }
     }
 
   if( find(e, "bullet", str ) ){
@@ -514,6 +526,9 @@ void PrototypesLoader::readSpellMember( Spell &obj, TiXmlNode *node) {
       }
     if( find(e, "manaCost",  str ) ){
       obj.manaCost  = Lexical::cast<int>(str);
+      }
+    if( find(e, "bulletSpeed",  str ) ){
+      obj.bulletSpeed  = Lexical::cast<int>(str);
       }
     }
 

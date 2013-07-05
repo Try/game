@@ -338,6 +338,8 @@ void MoveBehavior::tick(const Terrain &terrain) {
       clos.isOnMove = true;
       clos.isReposMove = true;
 
+      //clos.;
+
       if( curentSpeed < obj.getClass().data.speed*Terrain::quadSize )
         curentSpeed = obj.getClass().data.speed*Terrain::quadSize;
       }
@@ -433,6 +435,8 @@ void MoveBehavior::step(const Terrain &terrain ) {
         calcWayAndMove( this->tx, this->ty, terrain );
         return;
         }
+
+      clos.isReposMove = false;
       }
 
     } else {

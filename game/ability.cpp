@@ -7,6 +7,7 @@
 #include "game.h"
 
 #include "bullet.h"
+#include "behavior/buildingbehavior.h"
 
 Ability::Ability() {
   }
@@ -15,6 +16,10 @@ bool Ability::spell( Game &g,
                      World &w,
                      GameObject &obj,
                      const BehaviorMSGQueue::MSG &m ) {
+  if( m.str=="heal" ){
+    return heal(g,w,obj,m);
+    }
+
   if( m.str=="blink" ){
     return blink(g,w,obj,m);
     }
@@ -97,7 +102,7 @@ bool Ability::fireStrike( Game &g,
     GameObject & u = *objs[i];
 
     int cd = u.coolDown( s.id );
-    if( cd==0 ){
+    if( cd==0 && tg.behavior.find<BuildingBehavior>() ){
       u.setCoolDown( s.id, s.coolDown );
 
       w.emitHudAnim( "hud/blink",
@@ -125,7 +130,7 @@ bool Ability::fireStrike( Game &g,
       b.z   = u.viewHeight()/2  + World::coordCast(u.z());
       b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
 
-      b.speed  = 250;
+      b.speed        = s.bulletSpeed;
       b.atack.damage = 150;
       b.tick();
       return 1;

@@ -58,6 +58,17 @@ EditTerrainPanel::EditTerrainPanel( Resource &res,
   w->setSizePolicy( Tempest::Preferred, Tempest::FixedMax );
   layout().add( w );
 
+  w = new Widget();
+  w->setLayout( Tempest::Horizontal );
+  btn = new Button(res);
+  btn->clicked.bind( *this, &EditTerrainPanel::setupRm );
+  btn->setText("rm objects");
+  w->layout().add( btn );
+
+  w->setMaximumSize( w->sizePolicy().maxSize.w, 27 );
+  w->setSizePolicy( Tempest::Preferred, Tempest::FixedMax );
+  layout().add( w );
+
   ScroolBar *sb = new ScroolBar(res);
   sb->setOrientation( Tempest::Horizontal );
   sb->valueChanged.bind( *this, &EditTerrainPanel::setR );
@@ -151,6 +162,17 @@ void EditTerrainPanel::setupSmooth() {
   m.R = r;
   m.map  = Terrain::EditMode::Smooth;
   m.wmap = Terrain::EditMode::Smooth;
+
+  m.isEnable = true;
+  toogleEditLandMode(m);
+  }
+
+void EditTerrainPanel::setupRm() {
+  int  r  = m.R;
+  m = Terrain::EditMode();
+  m.R = r;
+  m.map  = Terrain::EditMode::RemoveObj;
+  m.wmap = Terrain::EditMode::RemoveObj;
 
   m.isEnable = true;
   toogleEditLandMode(m);

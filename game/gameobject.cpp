@@ -241,10 +241,14 @@ void GameObject::setPositionSmooth(int x, int y, int z) {
 
 void GameObject::syncView( double dt ) {
   //return;
-  setViewPosition( World::coordCast(m.x),
-                   World::coordCast(m.y),
-                   World::coordCast(m.z),
-                   std::max(0.004, std::min(1.0, 0.006*dt) ) );
+  float x = World::coordCast(m.x),
+        y = World::coordCast(m.y),
+        z = World::coordCast(m.z);
+  setViewPosition( x, y, z,
+                   std::max(0.002, std::min(1.0, 0.003*dt) ) );
+  /*
+  setViewPosition( x, y, z,
+                   std::max(0.004, std::min(1.0, 0.006*dt) ) );*/
   }
 
 void GameObject::setViewSize(float s) {

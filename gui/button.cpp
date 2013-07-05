@@ -117,6 +117,7 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
 
     float k = std::min( sz/float(icon.data.rect.w),
                         sz/float(icon.data.rect.h) );
+    k = std::min(k,1.f);
 
     int icW = icon.data.rect.w*k,
         icH = icon.data.rect.h*k;

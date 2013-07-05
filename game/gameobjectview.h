@@ -8,9 +8,6 @@
 #include "graphics/particlesystem.h"
 #include "graphics/scene.h"
 #include "graphics/graphicssystem.h"
-
-class SmallGraphicsObject;
-
 #include <memory>
 
 class Resource;
@@ -18,6 +15,7 @@ class World;
 class PrototypesLoader;
 class GameObject;
 class GameSerializer;
+class PacketObject;
 
 class WaterVertex;
 
@@ -118,6 +116,12 @@ class GameObjectView {
                       const ProtoObject::View & v,
                       float x, float y, float z );
 
+    template< class Obj, class ... CArgs >
+    void addPacketObject( const Model &m,
+                          const ProtoObject::View &src,
+                          int rot,
+                          CArgs...a );
+
     struct M{
       int x, y, z;
       double selectionSize[3], radius;
@@ -138,7 +142,7 @@ class GameObjectView {
 
     std::vector< EnvObject > env;
     std::vector< GraphicObject > view;
-    std::vector< std::shared_ptr<SmallGraphicsObject> > smallViews;
+    std::vector< std::shared_ptr<PacketObject> > smallViews;
     std::vector< ParticleSystem >      particles;
 
     Physics * physic;

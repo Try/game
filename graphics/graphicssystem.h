@@ -20,7 +20,6 @@
 
 #include <Tempest/GraphicObject>
 #include <Tempest/AbstractScene>
-#include <Tempest/PostProcessHelper>
 
 #include "graphics/guipass.h"
 #include "graphics/scene.h"
@@ -74,7 +73,6 @@ class GraphicsSystem {
     Tempest::VertexShaderHolder   vsHolder;
     Tempest::FragmentShaderHolder fsHolder;
 
-    Tempest::PostProcessHelper    ppHelper;
     Tempest::Texture2d    fogView;
     Resource * resource;
 
@@ -126,9 +124,8 @@ class GraphicsSystem {
     Tempest::Texture2d::Sampler reflect, bufSampler;
 
     void makeRenderAlgo(int w, int h );
-    void blurSm( Tempest::Texture2d &sm,
-                 Tempest::Texture2d &out,
-                 const Scene &scene );
+    void blurSm(Tempest::Texture2d &sm,
+                 Tempest::Texture2d &out);
 
     struct Sm{
       Tempest::VertexShader   vs, vsA;

@@ -182,7 +182,10 @@ HEADERS += \
     game/missions/desertstrikescenariowidgets.h \
     gui/checkbox.h \
     gui/gamemessages.h \
-    network/netuserclient.h
+    network/netuserclient.h \
+    algo/a_star.h \
+    graphics/decalobject.h \
+    graphics/packetobject.h
 
 SOURCES += \
     main.cpp \
@@ -295,7 +298,9 @@ SOURCES += \
     game/missions/desertstrikescenariowidgets.cpp \
     gui/checkbox.cpp \
     gui/gamemessages.cpp \
-    network/netuserclient.cpp
+    network/netuserclient.cpp \
+    graphics/decalobject.cpp \
+    graphics/packetobject.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
@@ -310,9 +315,12 @@ OTHER_FILES += \
     ../game-build-desktop/data/pixmaps.xml \
     ../game-build-desktop/data/icons.xml \
     gui/gen/ui_loaddialog.xml \
-    ../game-build-desktop/data/land.xml \
+    ../game-build-desktop/data/game_objects/land.xml \
     ../game-build-desktop/data/spell.xml \
     ../game-build-desktop/data/hud.xml \
     ../game-build-desktop/data/particle.xml \
-    Android.mk
+    Android.mk \
+    ../game-build-desktop/data/game_objects/rocks.xml \
+    ../game-build-desktop/data/game_objects/bush.xml \
+    ../game-build-desktop/data/game_objects/tree.xml
 

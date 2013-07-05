@@ -2,7 +2,6 @@
 
 #include <Tempest/Render>
 #include <Tempest/VertexBufferHolder>
-#include <Tempest/PostProcessHelper>
 
 #include "resource.h"
 #include "gui/maingui.h"

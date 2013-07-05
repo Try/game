@@ -59,7 +59,9 @@ class DesertStrikeScenario  : public Scenario {
     struct Minimap;
     Minimap        *mmap;
     BuyUnitPanel   *buyUnitPanel;
-    CentralPanel   *cen;
+    CentralPanel   *cen;    
+
+    static const char * units[3][4];
 
     struct DPlayer:Player{
       DPlayer( int num ):Player(num),
@@ -67,54 +69,40 @@ class DesertStrikeScenario  : public Scenario {
         armorGrade(0),
         castleGrade(0),
         economyGrade(0),
-        btime(0),
-        maxBTime(0){}
+        aiTick(0){}
 
       std::map<std::string, int> units, realCount;
       int atkGrade,    armorGrade;
       int castleGrade, economyGrade;
 
       int getParam( const std::string& p ) const;
+      std::vector<GameObject*>& selected();
 
-      std::vector<std::string> queue;
-      int btime, maxBTime;
+      struct QElement{
+        int btime, maxBTime;
+        std::string    name;
+        };
+      std::vector<QElement> queue;
+
+      int aiTick;
+      bool isInQueue( const char* ch );
       };
 
-    /*
-    struct PlInfo{
-      PlInfo():atkGrade(0),
-               armorGrade(0),
-               castleGrade(0),
-               economyGrade(0),
-               btime(0),
-               maxBTime(0){}
-
-      std::map<std::string, int> units, realCount;
-      int atkGrade,    armorGrade;
-      int castleGrade, economyGrade;
-
-      int getParam( const std::string& p ) const;
-
-      std::vector<std::string> queue;
-      int btime, maxBTime;
-      };
-
-    PlInfo plC[2];*/
     int   plCenter;
     float moveZ;
-
-    std::string spellToCast;
 
     void mkUnits(int pl, int x, int y, int tgX, int tgY, bool rev);
     void aiTick(int pl);
     void updateCenterOwner();
 
-    void grade( DPlayer &pl, const std::string &g );
+    void grade(DPlayer &pl, DPlayer::QElement &e);
     bool isTestRun;
 
     virtual Player* createPlayer();
     DPlayer& player(int i);
     DPlayer& player();
+
+    int tierOf( const char* u );
   };
 
 #endif // DESERTSTRIKESCENARIO_H

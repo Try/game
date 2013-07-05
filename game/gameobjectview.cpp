@@ -7,6 +7,7 @@
 
 #include "util/gameserializer.h"
 #include "graphics/smallobjectsview.h"
+#include "graphics/decalobject.h"
 
 #include <cmath>
 
@@ -226,7 +227,8 @@ void GameObjectView::loadView( const Resource & r,
       if( (model.size() > GraphicsSystem::dipOptimizeRef() ||
            !getClass().data.isBackground ||
             getClass().data.isDynamic) &&
-          !src.isLandDecal ){
+          !src.hasOverDecal  &&
+          !src.isLandDecal){
         GraphicObject object( scene );
         object.setModel( model );
 
@@ -237,15 +239,12 @@ void GameObjectView::loadView( const Resource & r,
 
         obj = &view.back();
         } else {
-        SmallGraphicsObject* object = new SmallGraphicsObject( scene,
-                                                               wrld.game,
-                                                               wrld.terrain(),
-                                                               src );
-        object->setModel( model, src.name+"/model" );
+        int rot = rand()%360;
+        addPacketObject<SmallGraphicsObject>(model, src, rot);
 
-        smallViews.push_back( std::shared_ptr<SmallGraphicsObject>(object) );
-        if( src.randRotate ){
-          smallViews.back()->setRotation(0, rand()%360 );
+        if( src.hasOverDecal ){
+          const ProtoObject::View &v = wrld.game.prototype("land.snow").view[0];
+          addPacketObject<DecalObject>(model, src, rot, &v);
           }
         }
 
@@ -260,14 +259,14 @@ void GameObjectView::loadView( const Resource & r,
     setupMaterials(*obj, src );
     }
 
-  bool pcrt = false;
+  bool pCrt = false;
 #ifdef __ANDROID__
-   pcrt = this->getClass().data.isBackground;
+   pCrt = this->getClass().data.isBackground;
 #endif
 
    m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
 
-  if( pcrt ){
+  if( pCrt ){
     if( src.physModel==ProtoObject::View::Sphere ){
       if( !isEnv ){
         setForm( p.createAnimatedSphere
@@ -281,6 +280,25 @@ void GameObjectView::loadView( const Resource & r,
         setForm( p.createAnimatedBox( x(), y(), 0, bs[0], bs[1], bs[2] ));
         }
       }
+    }
+  }
+
+template< class Obj, class ... CArgs >
+void GameObjectView::addPacketObject( const Model &model,
+                                      const ProtoObject::View &src,
+                                      int rot,
+                                      CArgs ... args ) {
+
+  PacketObject* object = new Obj( scene,
+                                  wrld.game,
+                                  wrld.terrain(),
+                                  src,
+                                  args... );
+  object->setModel( model, src.name+"/model" );
+
+  smallViews.push_back( std::shared_ptr<PacketObject>(object) );
+  if( src.randRotate ){
+    smallViews.back()->setRotation(0, rot );
     }
   }
 

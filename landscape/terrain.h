@@ -43,7 +43,8 @@ class Terrain {
         Up,
         Down,
         Align,
-        Smooth
+        Smooth,
+        RemoveObj
         };
       EHeight map, wmap;
       double R;
@@ -57,6 +58,9 @@ class Terrain {
     Tempest::Model<WaterVertex> waterGeometry( int cX, int cY ) const;
 
     Model fogGeometry( int cX, int cY ) const;
+
+
+    const ProtoObject::View *viewAt( float x, float y );
 
     int width() const;
     int height() const;
@@ -100,6 +104,8 @@ class Terrain {
     Tempest::signal<> onTerrainChanged;
 
     //const array2d<int>& wayCorrMap() const;
+    MVertex mkVertex( int x, int y, int plane );
+    static void mkTexCoord( float &u, float &v, float x, float y );
   private:
     Scene                  & scene;
     World                  & world;
@@ -108,8 +114,9 @@ class Terrain {
     Tempest::VertexBufferHolder & vboHolder;
     Tempest::IndexBufferHolder  & iboHolder;
 
-    std::vector< std::string >    aviableTiles;
-    std::vector< Tempest::Color > aviableColors;
+    std::vector< std::string >       aviableTiles;
+    std::vector< std::shared_ptr<ProtoObject::View> > aviableDecalViews;
+    std::vector< Tempest::Color >    aviableColors;
 
     struct Tile {
       int plane;
@@ -145,21 +152,21 @@ class Terrain {
     void buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                         Tempest::IndexBufferHolder  & iboHolder,
                         int plane,
-                        size_t texture );
+                        size_t texture,
+                        bool firstPass );
 
     void buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                         Tempest::IndexBufferHolder  & iboHolder,
                         int plane,
                         size_t texture,
-                        int cX, int cy );
+                        int cX, int cy,
+                        bool firstPass);
 
     void computePlanes();
     Resource & res;
 
     friend class SmallGraphicsObject;
-
-    MVertex mkVertex( int x, int y, int plane );
-    static void mkTexCoord( float &u, float &v, float x, float y );
+    friend class PacketObject;
 
     static bool isSame( const MVertex& a, const MVertex& b );
 
@@ -169,6 +176,9 @@ class Terrain {
                    std::vector<MVertex>& land,
                    std::vector<uint16_t> & ibo,
                    bool isLand , int plane);
+    void buildShadowVBO( int lx, int rx, int ly, int ry,
+                         std::vector<MVertex>& land,
+                         std::vector<uint16_t> & ibo );
   };
 
 #endif // TERRAIN_H

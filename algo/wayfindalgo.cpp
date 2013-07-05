@@ -3,7 +3,9 @@
 #include "landscape/terrain.h"
 #include "game/gameobject.h"
 #include "behavior/movebehavior.h"
+
 #include "algo/algo.h"
+#include "algo/a_star.h"
 
 #include <Tempest/signal>
 

@@ -19,6 +19,7 @@ Player::Player( int num ) {
   m.team   = num;
   m.num    = num;
   m.htCtrl = 0;
+  m.isAi   = 1;
 
   static Tempest::Color cl[8] = {
     Tempest::Color(1, 1, 1 ),
@@ -78,6 +79,15 @@ bool Player::hasHostControl() const {
 
 void Player::setHostCtrl(bool c) {
   m.htCtrl = c;
+  m.isAi   = false;
+  }
+
+bool Player::isAi() const {
+  return m.isAi;
+  }
+
+void Player::setAsAI(bool a) {
+  m.isAi = a;
   }
 
 void Player::select(GameObject *obj, bool s ) {
@@ -153,6 +163,20 @@ int Player::number() const {
 
 const Tempest::Pixmap &Player::fog() const {
   return m.fog;
+  }
+
+int Player::atackGrade(size_t atype) const {
+  if( atype < m.atkGrade.size() )
+    return m.atkGrade[atype];
+
+  return 0;
+  }
+
+void Player::incGrade(size_t atype) {
+  if( atype < m.atkGrade.size() )
+    m.atkGrade.resize(atype+1);
+
+  ++m.atkGrade[atype];
   }
 
 bool Player::compare(const GameObject *a, const GameObject *b) {

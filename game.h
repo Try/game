@@ -119,7 +119,8 @@ class Game : public Tempest::Window {
     void unsetPause();
     bool isPaused() const;
 
-    void setCameraPos( GameObject& obj );
+    void setCameraPos(GameObject& obj);
+    void setCameraPosSmooth(GameObject& obj, float maxK);
     void minimapEvent( float x, float y,
                        Tempest::Event::MouseButton b,
                        MiniMapView::Mode m);
@@ -134,7 +135,8 @@ class Game : public Tempest::Window {
     bool isReplayMode() const;
 
     static const int ticksPerSecond;
-  private:
+    void f();
+private:
     bool  paused, needToUpdate;
     //bool isFullScreen;
 

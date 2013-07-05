@@ -15,6 +15,12 @@
 #include "util/math.h"
 #include "algo/algo.h"
 
+const char * DesertStrikeScenario::units[3][4] = {
+  {"gelion", "pikeman", "incvisitor", "water_mage"},
+  {"fire_mage", "balista"},
+  {"fire_element", "golem"}
+  };
+
 DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueue &msg)
   :Scenario(g,ui, msg){
   tNum      = 0;
@@ -55,16 +61,6 @@ void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
   F3 v = unProject( e.x, e.y );
   isMouseTracking = false;
 
-  if( spellToCast.size() ){
-    World  &w  = game.curWorld();
-    w.emitHudAnim( "hud/blink",
-                   (v.data[0]),
-                   (v.data[1]),
-                   0.01 );
-    spellToCast.clear();
-    return;
-    }
-
   World  &world  = game.curWorld();
   Player &player = game.player();
 
@@ -84,13 +80,12 @@ void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
   }
 
 void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
-  if( spellToCast.size() )
-    return;
-
   if( !isMouseTracking && gui.mouseMoveEvent(e) ){
     acceptMouseObj = false;
     return;
     }
+
+  acceptMouseObj = true;
 
   if( isMouseTracking ){
     F3 m = unProject( e.x, e.y, moveZ );
@@ -114,21 +109,26 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
   s.read(ch);
 
   if( ch=='b' ){
-    int g = game.prototype(name).data.gold;
-    if( player(pl+1).gold() >= g ){
-      ++player(pl+1).units[name];
-      player(pl+1).setGold( player(pl+1).gold() -
-                            game.prototype(name).data.gold );
+    if( tierOf(name.c_str()) <= player().castleGrade ){
+      int g = game.prototype(name).data.gold;
+      if( player(pl+1).gold() >= g ){
+        ++player(pl+1).units[name];
+        player(pl+1).setGold( player(pl+1).gold() -
+                              game.prototype(name).data.gold );
 
-      //debug
-      if( isTestRun )
-        ++player(2).units[name];
+        //debug
+        if( isTestRun )
+          ++player(2).units[name];
 
-      GameMessages::message( L"$(message/new_unit)",
-                             res.pixmap("gui/icon/"+name) );
+        GameMessages::message( L"$(message/new_unit)",
+                               res.pixmap("gui/icon/"+name) );
+        } else {
+        GameMessages::message( L"$(message/no_gold)",
+                               res.pixmap("gui/icon/gold") );
+        }
       } else {
-      GameMessages::message( L"$(message/no_gold)",
-                             res.pixmap("gui/icon/gold") );
+      GameMessages::message( L"$(desertstrike/need_castle_grade)",
+                             res.pixmap("gui/icon/castle") );
       }
     } else
   if( ch=='s' && player( pl+1 ).units[name]>0 ){
@@ -137,37 +137,53 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
 
     --player(pl+1).units[name];
     player(pl+1).setGold( player(pl+1).gold() +
-                               (75*game.prototype(name).data.gold)/100 );
+                          (75*game.prototype(name).data.gold)/100 );
 
     //debug    
     if( isTestRun )
       --player(2).units[name];
     } else
-  if( ch=='g' && player(pl+1).queue.size()==0 ){
+  if( ch=='g' && !player(pl+1).isInQueue(name.data()) ){
     if( name=="house" && player(pl+1).economyGrade>=4 ){
       GameMessages::message( L"$(desertstrike/house_cap)",
                              res.pixmap("gui/icon/cancel") );
       } else
-    if( player(pl+1).gold() < game.prototype("house").data.gold ){
+    if( name=="castle" && player(pl+1).castleGrade>=2 ){
+      GameMessages::message( L"$(desertstrike/house_cap)",
+                             res.pixmap("gui/icon/cancel") );
+      } else
+    if( player(pl+1).gold() < game.prototype(name).data.gold ){
       GameMessages::message( L"$(message/no_gold)",
                              res.pixmap("gui/icon/gold") );
       } else {
-      player(pl+1).addGold( -game.prototype("house").data.gold );
-      player(pl+1).queue.push_back(name);
-      grade( player(pl+1), name );
+      player(pl+1).addGold( -game.prototype(name).data.gold );
+
+      DPlayer::QElement m;
+      m.name = name;
+      player(pl+1).queue.push_back(m);
+      grade( player(pl+1), player(pl+1).queue.back() );
       }
     }else
   if( ch=='m' ){
-    spellToCast = "spellToCast";
+    //spellToCast = "spellToCast";
     //game.curWorld().emitHudAnim();
     }
 
   mmap->updateValues();
   }
 
-void DesertStrikeScenario::grade(DPlayer &pl, const std::string &/*grade*/ ){
-  pl.maxBTime = 500 + pl.economyGrade*100 + pl.economyGrade*pl.economyGrade*100;
-  pl.btime    = pl.maxBTime;
+void DesertStrikeScenario::grade( DPlayer &pl,
+                                  DPlayer::QElement &e ){
+  const std::string & grade = e.name;
+
+  if( grade=="house" )
+    e.maxBTime = 500 + pl.economyGrade*100 +
+                       pl.economyGrade*pl.economyGrade*100;
+
+  if( grade=="castle" )
+    e.maxBTime = 500 + pl.castleGrade*250;
+
+  e.btime    = e.maxBTime;
   }
 
 Player *DesertStrikeScenario::createPlayer() {
@@ -182,6 +198,14 @@ DesertStrikeScenario::DPlayer &DesertStrikeScenario::player() {
   return (DesertStrikeScenario::DPlayer&)Scenario::player();
   }
 
+int DesertStrikeScenario::tierOf(const char *u) {
+  for( int i=0; i<3; ++i )
+    for( int r=0; r<4; ++r )
+      if( units[i][r] && strcmp(units[i][r], u)==0 )
+        return i;
+  return 0;
+  }
+
 void DesertStrikeScenario::onUnitDied(GameObject &obj) {
   if( unitToView==&obj ){
     for( size_t i=0; i<obj.player().unitsCount(); ++i )
@@ -191,6 +215,15 @@ void DesertStrikeScenario::onUnitDied(GameObject &obj) {
     }
   if( obj.playerNum()>=1 && obj.playerNum()<=2 )
     --player(obj.playerNum()).realCount[ obj.getClass().name ];
+
+  if( obj.getClass().name=="tower" ){
+    if( obj.player().team()==game.player().team() )
+      GameMessages::message( L"$(desertstrike/tower_lose)",
+                             res.pixmap("gui/icon/tower") );
+    else
+      GameMessages::message( L"$(desertstrike/tower_kill)",
+                             res.pixmap("gui/icon/tower") );
+    }
   }
 
 void DesertStrikeScenario::tick() {
@@ -214,30 +247,41 @@ void DesertStrikeScenario::tick() {
     }
 
   if( hasVTracking ){
-    if( !unitToView ){
-      for( size_t i=0; !unitToView && i<game.player(1).unitsCount(); ++i )
-        if( game.player(1).unit(i).getClass().data.speed>0 &&
-            !game.player(1).unit(i).isOnMove() )
-          unitToView = &player().unit(i);
+    unitToView = 0;
 
-      for( size_t i=0; !unitToView && i<game.player(1).unitsCount(); ++i )
-        if( game.player(1).unit(i).getClass().data.speed>0 )
-          unitToView = &player().unit(i);
+    if( !unitToView ){
+      int l = 0;
+      for( size_t i=0; i<player().unitsCount(); ++i )
+        if( player().unit(i).getClass().data.speed>0 ){
+          GameObject &u = player().unit(i);
+          int x = u.x()/Terrain::quadSize,
+              y = u.y()/Terrain::quadSize;
+
+          int l2 = x*x + y*y;
+
+          if( unitToView==0 || l2>l ){
+            unitToView = &player().unit(i);
+            l = l2;
+            }
+          }
       }
 
     if( unitToView )
-      game.setCameraPos( *unitToView );
+      game.setCameraPosSmooth( *unitToView, 0.1 );
     }
 
   if( tNum%interval==0 ){
-    if( !isTestRun )
-      aiTick(1);
+    if( !isTestRun ){
+      for( int i=1; i<game.plCount(); ++i )
+        if( game.player(i).isAi() )
+          aiTick(i);
+      }
     }
 
   ++tNum;
   if( tNum/interval>=1 ){
     tNum -= interval;
-    //aiTick(1);
+    //aiTick(2);
     }
 
   cen->setRemTime( (interval-tNum+Game::ticksPerSecond/2)/Game::ticksPerSecond );
@@ -247,41 +291,55 @@ void DesertStrikeScenario::tick() {
     cen->setColor( game.player(plCenter).color() ); else
     cen->setColor( Tempest::Color(0,0,0,0) );
 
-  for( int i=1; i<3; ++i ){
-    if( player(i).btime>0 ){
-      mmap->update();
-      --player(i).btime;
-      } else
-    if( player(i).btime==0 ){
-      if( player(i).maxBTime ){
-        player(i).maxBTime = 0;
+  for( int i=1; i<game.plCount(); ++i ){
+    DPlayer &pl = player(i);
+
+    for( size_t r=0; r<pl.queue.size();  ){
+      DPlayer::QElement &e = pl.queue[r];
+
+      if( e.btime>0 ){
         mmap->update();
+        --e.btime;
         }
 
-      if( player(i).queue.size() ){
-        grade( player(i), player(i).queue.front() );
+      if( e.btime==0 ){
+        if( e.maxBTime ){
+          e.maxBTime = 0;
+          mmap->update();
+          }
 
-        if( player(i).queue.front()=="house" ){
-          ++player(i).economyGrade;
+        if( e.name=="house" ){
+          ++pl.economyGrade;
 
-          if( player(i).hasHostControl() )
+          if( pl.hasHostControl() )
             GameMessages::message( L"$(message/upgrade_complete)",
                                    res.pixmap("gui/icon/house") );
           }
 
-        for( size_t r=0; r+1<player(i).queue.size(); ++r ){
-          player(i).queue[r] = player(i).queue[r+1];
+        if( e.name=="castle" ){
+          ++pl.castleGrade;
+
+          if( player(i).hasHostControl() )
+            GameMessages::message( L"$(message/upgrade_complete)",
+                                   res.pixmap("gui/icon/castle") );
           }
-        player(i).queue.pop_back();
+
+        pl.queue[r] = pl.queue.back();
+        pl.queue.pop_back();
+        } else {
+        ++r;
         }
       }
 
     if( tNum%20==0 ){
-      int inc = player(i).team()==player(plCenter).team() ? 7:2;
+      int inc = player(i).team()==player(plCenter).team() ? 5:2;
 
-      if( !( player(i).btime &&
-             player(i).queue.size() &&
-             player(i).queue[0]=="house") )
+      bool incH = true;
+      for( size_t r=0; r<player(i).queue.size(); ++r )
+        if( player(i).queue[r].name=="house" )
+          incH = false;
+
+      if( incH )
         player(i).addGold( inc+2*player(i).economyGrade );
       }
     }
@@ -294,14 +352,16 @@ void DesertStrikeScenario::cancelTracking( float, float,
   hasVTracking = 0;
   }
 
-void DesertStrikeScenario::mkUnits( int pl,
+void DesertStrikeScenario::mkUnits( int p,
                                     int   x, int   y,
                                     int tgX, int tgY,
                                     bool rev ){
-  std::map<std::string, int>::iterator u, e = player(pl).units.end();
+  DPlayer &pl = player(p);
+
+  std::map<std::string, int>::iterator u, e = pl.units.end();
   int count = 0;
 
-  for( u = player(pl).units.begin(); u!=e; ++u )
+  for( u = pl.units.begin(); u!=e; ++u )
     count += u->second;
 
   int qc = 1;
@@ -310,11 +370,12 @@ void DesertStrikeScenario::mkUnits( int pl,
     ++qc;
 
   int id = 0;
-  for( u = player(pl).units.begin(); u!=e; ++u ){
-    int& c = player(pl).realCount[u->first];
+
+  for( u = pl.units.begin(); u!=e; ++u ){
+    int& c = pl.realCount[u->first];
     for( int i=0; i<u->second; ++i ){
       if( 1 || c < 3*u->second ){
-        GameObject& obj = game.curWorld().addObject(u->first, pl);
+        GameObject& obj = game.curWorld().addObject(u->first, pl.number());
         ++c;
         ++id;
 
@@ -328,10 +389,6 @@ void DesertStrikeScenario::mkUnits( int pl,
 
         obj.behavior.message( Behavior::MoveSingle, tgX, tgY );
         obj.behavior.message( Behavior::AtackMove,  tgX, tgY );
-
-        if( hasVTracking && unitToView==0 && player(pl).hasHostControl() ){
-          unitToView = &obj;
-          }
         }
       }
     }
@@ -540,6 +597,7 @@ Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget
 
 void DesertStrikeScenario::toogleCameraMode() {
   hasVTracking = !hasVTracking;
+  unitToView   = 0;
   }
 
 int DesertStrikeScenario::DPlayer::getParam(const std::string &p) const {
@@ -552,6 +610,9 @@ int DesertStrikeScenario::DPlayer::getParam(const std::string &p) const {
   if( p=="house" )
     return economyGrade;
 
+  if( p=="castle" )
+    return castleGrade;
+
   std::map<std::string, int>::const_iterator i = units.find(p);
   if( i==units.end() )
     return 0;
@@ -559,19 +620,49 @@ int DesertStrikeScenario::DPlayer::getParam(const std::string &p) const {
   return units.at(p);
   }
 
+std::vector<GameObject *> &DesertStrikeScenario::DPlayer::selected() {
+  return m.objects;
+  }
+
+bool DesertStrikeScenario::DPlayer::isInQueue(const char *ch) {
+  for( size_t i=0; i<queue.size(); ++i )
+    if( queue[i].name==ch )
+      return 1;
+
+  return 0;
+  }
+
 void DesertStrikeScenario::aiTick( int npl ) {
   int c = 0;
-  DPlayer pl = player(npl+1);
+  DPlayer& pl = player(npl);
+  ++pl.aiTick;
 
   for( auto i=pl.units.begin(); i!=pl.units.end(); ++i )
     c += (i->second);
 
-  if( std::min(4, c/5) > pl.economyGrade ){
-    if( pl.queue.size()==0 &&
+  if( std::min(4, pl.aiTick/4 + pl.aiTick?1:0 ) > pl.economyGrade ){
+    if( !pl.isInQueue("house") &&
         pl.gold() >= game.prototype("house").data.gold ){
       pl.addGold( -game.prototype("house").data.gold );
-      pl.queue.push_back("house");
-      grade( pl, "house" );
+
+      DPlayer::QElement el;
+      el.name = "house";
+      pl.queue.push_back(el);
+      grade( pl, el );
+      }
+    }
+
+  if( !pl.isInQueue("castle") &&
+      pl.economyGrade>pl.castleGrade && pl.castleGrade<2  ){
+    if( pl.gold() >= game.prototype("castle").data.gold ){
+      pl.addGold( -game.prototype("castle").data.gold );
+
+      DPlayer::QElement el;
+      el.name = "castle";
+      pl.queue.push_back(el);
+      grade( pl, el );
+      } else {
+      return;
       }
     }
 
@@ -605,21 +696,25 @@ void DesertStrikeScenario::aiTick( int npl ) {
     ;
 
   for( int pass=1; pass<4; ++pass ){
-    for( int i=0; i<2; ++i )
+    for( int i=1; i<3; ++i )
       if( npl!=i ){
         for( int r=count-1; r>=0; --r ){
           const BuildElement& e = b[r];
 
-          int c = pl.units[e.src];
+          int c = player(i).units[e.src];
           c*=e.dcount;
           c*=pass;
           c/=e.scount;
 
-          for( int q=pl.units[e.dst]; q<c; ++q ){
-            int gold = game.prototype(e.dst).data.gold;
-            if( pl.gold() >= gold ){
-              ++pl.units[e.dst];
-              pl.setGold( pl.gold() - gold );
+          int tr = tierOf(e.dst.c_str());
+          if( tr <= pl.castleGrade &&
+              !(pl.castleGrade==2 && tr==0)){
+            for( int q=pl.units[e.dst]; q<c; ++q ){
+              int gold = game.prototype(e.dst).data.gold;
+              if( pl.gold() >= gold ){
+                ++pl.units[e.dst];
+                pl.setGold( pl.gold() - gold );
+                }
               }
             }
           }

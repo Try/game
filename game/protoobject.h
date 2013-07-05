@@ -24,7 +24,8 @@ struct ProtoObject {
       int armor;
 
       struct Atack{
-        Atack():range(0), damage(0), delay(0), uDestType(-1), splashSize(0), splashDamage(0){}
+        Atack():range(0), damage(0), delay(0), uDestType(-1),
+                splashSize(0), splashDamage(0), type(0){}
 
         int range;
         int damage, delay;
@@ -33,6 +34,7 @@ struct ProtoObject {
         int splashSize, splashDamage;
 
         std::string bullet;
+        size_t type;
         };
 
       std::vector<Atack> atk;
@@ -60,7 +62,7 @@ struct ProtoObject {
       double boxSize[3];
 
       bool randRotate;
-      bool isLandDecal;
+      bool isLandDecal, hasOverDecal;
       std::string isParticle;
       };
 

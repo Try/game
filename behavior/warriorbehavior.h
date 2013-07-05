@@ -70,6 +70,9 @@ class WarriorBehavior : public AbstractBehavior  {
 
     bool canShoot(GameObject & obj, const ProtoObject::GameSpecific::Atack &atk);
     bool canShoot(GameObject & obj );
+
+    void setAClick();
+    void unsetAClick();
   };
 
 #endif // WARRIORBEHAVIOR_H

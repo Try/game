@@ -60,4 +60,4 @@ int main( int, char** ){
   game.show();
 
   return app.exec();
-  }
+  } 

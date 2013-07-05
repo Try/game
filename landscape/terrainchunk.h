@@ -3,16 +3,17 @@
 
 #include <vector>
 #include <memory>
-
 #include "game/gameobjectview.h"
 #include "graphics/scene.h"
+
+class PacketObject;
 
 struct TerrainChunk {
   public:
     TerrainChunk();
 
     struct View{
-      std::shared_ptr<GameObjectView> view;
+      std::shared_ptr<GameObjectView> view, shadow;
       };
     std::vector<View> landView;
     View waterView, fogView;
@@ -21,7 +22,8 @@ struct TerrainChunk {
 
     struct PolishView {
       PolishView( Scene& s,
-                  const ProtoObject::View *v ):obj(s), baseView(v){}
+                  const ProtoObject::View *v ):obj(s),
+        baseView(v) {}
 
       GraphicObject obj;
       Model::Raw          geometry;
@@ -35,7 +37,7 @@ struct TerrainChunk {
 
     bool needToUpdate;
     std::vector< std::shared_ptr<PolishView> > polish;
-    std::vector< SmallGraphicsObject* > polishObj;
+    std::vector< PacketObject* > polishObj;
 
     void update(Resource &res);
   };
