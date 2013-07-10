@@ -125,7 +125,7 @@ void Game::loadData() {
 #endif
   //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );
 
-  setScenario( new DesertStrikeScenario(*this, gui, msg) );
+  //setScenario( new DesertStrikeScenario(*this, gui, msg) );
   //setScenario( new DeatmachScenario(*this, gui, msg) );
 
   //for( size_t i=0; i<world->activeObjects().size(); ++i )
@@ -489,6 +489,10 @@ void Game::removeHook(InputHookBase *b) {
 
 const ProtoObject &Game::prototype(const std::string &s) const {
   return proto.get(s);
+  }
+
+const Upgrade &Game::upgrade(const std::string &s) const {
+  return proto.upgrade(s);
   }
 
 Resource &Game::resources() {

@@ -46,6 +46,18 @@ const Spell &PrototypesLoader::spell(const std::string &obj) const {
   return *defs.back().dataSpells.begin()->second.get();
   }
 
+const Upgrade &PrototypesLoader::upgrade(const std::string &obj) const {
+  auto i = defs.back().dataUpgrades.find(obj);
+
+  if( i!=defs.back().dataUpgrades.end() ){
+    return *i->second.get();
+    } else {
+    assert(0);
+    }
+
+  return *defs.back().dataUpgrades.begin()->second.get();
+  }
+
 const ParticleSystemDeclaration &PrototypesLoader::particle(const std::string &obj) const {
   auto i = defs.back().dataParticles.find(obj);
 
@@ -119,6 +131,22 @@ void PrototypesLoader::readElement(TiXmlNode *node) {
 
         for ( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
           readSpellMember( *p.get(), n );
+          }
+
+        }
+      } else
+    if( type=="upgrade"){
+      std::string name;
+
+      if( find(node->ToElement(), "name", name) ){
+        PUpgrade p = PUpgrade( new Upgrade() );
+        p->name = name;
+        defs.back().dataUpgrades[ name ] = p;
+        p->id = defs.back().grades.size();
+        defs.back().grades.push_back( p );
+
+        for ( TiXmlNode* n = node->FirstChild(); n != 0; n = n->NextSibling() ){
+          readGradeMember( *p.get(), n );
           }
 
         }
@@ -445,6 +473,8 @@ void PrototypesLoader::readButton(ProtoObject::CmdButton &b, TiXmlNode *node) {
       b.action = ProtoObject::CmdButton::Build; else
     if( str=="page" )
       b.action = ProtoObject::CmdButton::Page; else
+    if( str=="upgrade" )
+      b.action = ProtoObject::CmdButton::Upgrade; else
     if( str=="castToGround" )
       b.action = ProtoObject::CmdButton::CastToGround;
     }
@@ -541,6 +571,30 @@ void PrototypesLoader::readSpellMember( Spell &obj, TiXmlNode *node) {
         obj.mode = Spell::CastToUnit;
       if( str=="castToCoord")
         obj.mode = Spell::CastToCoord;
+      }
+    }
+  }
+
+void PrototypesLoader::readGradeMember(Upgrade &obj, TiXmlNode *node) {
+  if ( node->Type()!=TiXmlNode::TINYXML_ELEMENT )
+    return;
+
+  std::string type = node->Value();
+
+  if( type=="property" ){
+    std::string str;
+    TiXmlElement * e = node->ToElement();
+
+    if( find(e, "gold", str ) ){
+      obj.data[0].gold = Lexical::cast<int>(str);
+      }
+    if( find(e, "buildTime", str ) ){
+      obj.data[0].buildTime = Lexical::cast<int>(str);
+      }
+
+    if( find(e, "lvCount",  str ) ){
+      obj.lvCount  = Lexical::cast<int>(str);
+      obj.data.resize( obj.lvCount, obj.data[0] );
       }
     }
   }

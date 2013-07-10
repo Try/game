@@ -111,19 +111,6 @@ struct DesertStrikeScenario::SpellPanel: public TranscurentPanel {
 
   void setupHook ( const std::string& unit );
   void setupHookU( const std::string& unit );
-
-  void mouseDown( Tempest::MouseEvent& e );
-  void mouseUp  ( Tempest::MouseEvent& e );
-  void onRemoveHook();
-
-  InputHook hook;
-  bool  instaled;
-  std::string spellToCast;
-
-  enum Mode{
-    CastToCoord,
-    CastToUnit
-    } mode;
   };
 
 struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {

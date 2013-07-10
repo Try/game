@@ -40,6 +40,7 @@ class DesertStrikeScenario  : public Scenario {
 
     Tempest::Point mpos;
     F3             mpos3d;
+    Tempest::Point mpressPos;
     bool           isMouseTracking;
 
     using Scenario::showMenu;
@@ -90,6 +91,9 @@ class DesertStrikeScenario  : public Scenario {
 
     int   plCenter;
     float moveZ;
+
+    std::string spellToCast;
+    Spell::Mode spellMode;
 
     void mkUnits(int pl, int x, int y, int tgX, int tgY, bool rev);
     void aiTick(int pl);

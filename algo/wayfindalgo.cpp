@@ -349,6 +349,7 @@ void WayFindAlgo::optimizeWay() {
       way.pop_back();
     }
 
+
   wayBuf.clear();
   if( way.size() )
     wayBuf.push_back(way[0]);

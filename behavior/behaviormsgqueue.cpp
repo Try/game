@@ -167,7 +167,7 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
         if( obj.playerNum() ){
           bool a = 0;
 
-          if( m.msg==Buy ){
+          if( m.msg==Buy || m.msg==Upgrade ){
             a = buyMsgRecv( game, w, obj, m );
             }
             else

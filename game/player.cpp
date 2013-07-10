@@ -137,7 +137,13 @@ void Player::setGold(int g) {
 
 bool Player::canBuild( const ProtoObject &p ) const {
   return (  m.gold>= p.data.gold &&
-           (m.lim >= p.data.lim || p.data.lim<=0));
+            (m.lim >= p.data.lim || p.data.lim<=0));
+  }
+
+bool Player::canBuild(const Upgrade &p) const {
+  int lv = gradeLv(p);
+  return ( lv < p.lvCount &&
+           m.gold>= p.data[lv].gold );
   }
 
 int Player::limMax() const {
@@ -166,17 +172,21 @@ const Tempest::Pixmap &Player::fog() const {
   }
 
 int Player::atackGrade(size_t atype) const {
-  if( atype < m.atkGrade.size() )
-    return m.atkGrade[atype];
+  return 0;
+  }
+
+int Player::gradeLv( const Upgrade &atype ) const {
+  if( atype.id <= m.gradeLv.size() )
+    return m.gradeLv[atype.id];
 
   return 0;
   }
 
-void Player::incGrade(size_t atype) {
-  if( atype < m.atkGrade.size() )
-    m.atkGrade.resize(atype+1);
+void Player::mkGrade( const Upgrade &atype ) {
+  if( atype.id <= m.gradeLv.size() )
+    m.gradeLv.resize(atype.id+1);
 
-  ++m.atkGrade[atype];
+  ++m.gradeLv[atype.id];
   }
 
 bool Player::compare(const GameObject *a, const GameObject *b) {

@@ -102,7 +102,7 @@ bool Ability::fireStrike( Game &g,
     GameObject & u = *objs[i];
 
     int cd = u.coolDown( s.id );
-    if( cd==0 && tg.behavior.find<BuildingBehavior>() ){
+    if( cd==0 && !tg.behavior.find<BuildingBehavior>() ){
       u.setCoolDown( s.id, s.coolDown );
 
       w.emitHudAnim( "hud/blink",

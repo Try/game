@@ -9,6 +9,7 @@
 #include "gui/missiontargets.h"
 #include "gui/unitview.h"
 #include "gui/gamemessages.h"
+#include "util/weakworldptr.h"
 
 #include "util/bytearrayserialize.h"
 
@@ -53,8 +54,7 @@ void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
   mpos3d          = unProjectRz( e.x, e.y, moveZ );
   isMouseTracking = true;
 
-  unitToView   = 0;
-  hasVTracking = 0;
+  mpressPos = e.pos();
   }
 
 void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
@@ -74,9 +74,32 @@ void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
     msg.message( player.number(), Behavior::EditDel );
     }
 
-  world.clickEvent( World::coordCastD(v.data[0]),
-                    World::coordCastD(v.data[1]),
-                    e );
+  if( spellToCast.size() ){
+    if( e.button==Tempest::MouseEvent::ButtonLeft ){
+      if( spellMode==Spell::CastToCoord ){
+        game.message( game.player().number(),
+                      BehaviorMSGQueue::SpellCast,
+                      game.curWorld().mouseX(),
+                      game.curWorld().mouseY(),
+                      spellToCast
+                      );
+        }
+
+      if( spellMode==Spell::CastToUnit && game.curWorld().mouseObj() ){
+        WeakWorldPtr p = game.curWorld().objectWPtr( game.curWorld().mouseObj() );
+
+        game.message( game.player().number(),
+                      BehaviorMSGQueue::SpellCast,
+                      p.id(),
+                      spellToCast
+                      );
+        }
+      }
+    } else {
+    world.clickEvent( World::coordCastD(v.data[0]),
+                      World::coordCastD(v.data[1]),
+                      e );
+    }
   }
 
 void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
@@ -92,6 +115,12 @@ void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
     game.curWorld().moveCamera( mpos3d.data[0]-m.data[0],
                                 mpos3d.data[1]-m.data[1]);
     mpos3d = unProject( e.x, e.y, moveZ );
+
+    Tempest::Point p = (e.pos()-mpressPos);
+    if( p.x*p.x + p.y*p.y > 5*5 ){
+      unitToView   = 0;
+      hasVTracking = 0;
+      }
     }
 
   updateMousePos(e);
@@ -165,7 +194,12 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
       }
     }else
   if( ch=='m' ){
-    //spellToCast = "spellToCast";
+    if( spellToCast==name ){
+      spellToCast = "";
+      } else {
+      spellToCast = name;
+      spellMode   = game.prototypes().spell( name ).mode;
+      }
     //game.curWorld().emitHudAnim();
     }
 
@@ -443,11 +477,13 @@ void DesertStrikeScenario::updateCenterOwner() {
         x = w*Terrain::quadSize-obj.x(),
         y = obj.y();
 
-    if( obj.player().number()==1 || obj.player().number()==2 ){
-      if( x*h > y*w ){
+    if( obj.player().number()>=1 ){
+      if( x*h >= y*w ){
         //obj.setPlayer(1);
         plCnt[0][ obj.player().number()-1 ] = true;
-        } else {
+        }
+
+      if( x*h <= y*w ) {
         //obj.setPlayer(2);
         plCnt[1][ obj.player().number()-1 ] = true;
         }
@@ -479,6 +515,7 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
   mainWidget->setLayout( Tempest::Vertical );
   mainWidget->layout().setMargin( Tempest::Margin(4) );
   mainWidget->useScissor( false );
+  mainWidget->layout().setSpacing(0);
 
   Widget * top = new Widget();
   cen = new CentralPanel(*this, res);
@@ -640,15 +677,15 @@ void DesertStrikeScenario::aiTick( int npl ) {
   for( auto i=pl.units.begin(); i!=pl.units.end(); ++i )
     c += (i->second);
 
-  if( std::min(4, pl.aiTick/4 + pl.aiTick?1:0 ) > pl.economyGrade ){
+  if( std::min(4, pl.aiTick/5 + (pl.aiTick>1?1:0) ) > pl.economyGrade ){
     if( !pl.isInQueue("house") &&
         pl.gold() >= game.prototype("house").data.gold ){
       pl.addGold( -game.prototype("house").data.gold );
 
       DPlayer::QElement el;
       el.name = "house";
-      pl.queue.push_back(el);
       grade( pl, el );
+      pl.queue.push_back(el);
       }
     }
 
@@ -659,8 +696,8 @@ void DesertStrikeScenario::aiTick( int npl ) {
 
       DPlayer::QElement el;
       el.name = "castle";
-      pl.queue.push_back(el);
       grade( pl, el );
+      pl.queue.push_back(el);
       } else {
       return;
       }

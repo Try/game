@@ -373,7 +373,7 @@ Tempest::Device::Options GraphicsSystem::makeOpt(bool isFullScreen) {
   opt.vSync    = !opt.windowed;
 
   return opt;
-}
+  }
 
 void GraphicsSystem::load(Resource &res, MainGui &gui, int w, int h ) {
   widget   = &gui;
@@ -2060,6 +2060,7 @@ void GraphicsSystem::renderScene( const Scene &scene,
     shadowMap = this->shadowMap( shadowMapSize, shadowMapSize );
     fillShadowMap( shadowMap, scene, clrSm );
     //blt(shadowMap);
+    //return;
     }
 
   if( settings.shadowMapRes>0 &&

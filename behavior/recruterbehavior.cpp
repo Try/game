@@ -2,6 +2,7 @@
 
 #include "game/gameobject.h"
 #include "game/world.h"
+#include "game/upgrade.h"
 
 #include "algo/algo.h"
 #include "game.h"
@@ -13,10 +14,12 @@ RecruterBehavior::RecruterBehavior( GameObject & o,
                  :obj(o),
                    light( obj, obj.game().prototype("ycube") ),
                    flag ( obj, obj.game().prototype("flag" ) )  {
-  time     = 0;
   queueLim = 0;
-
   flag.setRotation( 180 );
+
+  queue.resize(1);
+  queue[0].time     = 0;
+  queue[0].orders.reserve(6);
   }
 
 RecruterBehavior::~RecruterBehavior() {
@@ -51,60 +54,101 @@ void RecruterBehavior::tick( const Terrain &terrain ) {
                    (!(rallyX==obj.x() && rallyY==obj.y() ) || taget ) );
   flag.tick();
 
-  if( queue.size()==0 )
+  if( maxQueueSize()==0 )
     return;
 
-  if( queueLim || time==0 ){
-    if( queueLim || create( queue[0], terrain ) ){
-      if( !queueLim ){
-        for( size_t i=1; i<queue.size(); ++i )
-          queue[i-1] = queue[i];
-        queue.pop_back();
-        }
+  for( size_t r=0; r<queue.size(); ++r ){
+    Queue &q = queue[r];
 
-      if( queue.size() ){
-        const ProtoObject& p = obj.world().game.prototype( queue[0] );
-        time = p.data.buildTime;
-
-        if( p.data.lim <= obj.player().lim() ){
-          obj.player().addLim( -p.data.lim );
-          queueLim = false;
-          } else {
-          queueLim = true;
+    if( queueLim || q.time==0 ){
+      if( queueLim || create( q.orders[0], terrain ) ){
+        if( !queueLim ){
+          for( size_t i=1; i<q.orders.size(); ++i )
+            q.orders[i-1] = q.orders[i];
+          q.orders.pop_back();
           }
+
+        if( q.orders.size() ){
+          //const ProtoObject& p = obj.world().game.prototype( q.orders[0] );
+          int lim = limOf( q.orders[0] );
+          q.time  = q.orders[0].time;//p.data.buildTime;
+
+          if( lim <= obj.player().lim() ){
+            obj.player().addLim( -lim );
+            queueLim = false;
+            } else {
+            queueLim = true;
+            }
+          }
+        } else {
+        std::cout << "can't find placement for object" << std::endl;
         }
       } else {
-      std::cout << "can't find placement for object" << std::endl;
+      --q.time;
       }
-    } else {
-    --time;
     }
   }
 
 bool RecruterBehavior::message( AbstractBehavior::Message msg,
                                 const std::string& cls,
                                 AbstractBehavior::Modifers  ) {
-  if( msg!=Buy )
+  if( msg!=Upgrade && msg!=Buy )
     return 0;
 
-  if( queue.size()>=6 )
+  if( minQueueSize()>=6 )
     return 0;
 
-  const ProtoObject& p = obj.world().game.prototype( cls );
+  if( msg==Buy ){
+    const ProtoObject& p = obj.world().game.prototype( cls );
 
-  if( obj.player().canBuild( p ) ){
-    obj.player().addGold( -p.data.gold );
-    } else {
-    return 0;
+    if( obj.player().canBuild( p ) ){
+      obj.player().addGold( -p.data.gold );
+      } else {
+      return 0;
+      }
+
+    int t = minQtime();
+
+    for( size_t i=0; i<queue.size(); ++i ){
+      Queue &q = queue[i];
+      if( qtime(q)==t ){
+        q.addUnit( cls, p.data.buildTime );
+        if( q.orders.size()==1 ){
+          q.time = p.data.buildTime;
+          obj.player().addLim( -p.data.lim );
+          }
+
+        return 1;
+        }
+      }
     }
 
-  queue.push_back( cls );
-  if( queue.size()==1 ){
-    time = p.data.buildTime;
-    obj.player().addLim( -p.data.lim );
+  if( msg==Upgrade ){
+    const ::Upgrade& u = obj.world().game.upgrade( cls );
+    int lv = obj.player().gradeLv(u);
+
+    if( obj.player().canBuild( u ) ){
+      obj.player().addGold( -u.data[lv].gold );
+      } else {
+      return 0;
+      }
+
+    int t = minQtime();
+
+    for( size_t i=0; i<queue.size(); ++i ){
+      Queue &q = queue[i];
+      if( qtime(q)==t ){
+        q.addUpgrade( cls, u.data[lv].buildTime );
+        if( q.orders.size()==1 ){
+          q.time = u.data[lv].buildTime;
+          }
+
+        return 1;
+        }
+      }
     }
 
-  return 1;
+  return 0;
   }
 
 bool RecruterBehavior::message( AbstractBehavior::Message msg,
@@ -117,6 +161,14 @@ bool RecruterBehavior::message( AbstractBehavior::Message msg,
     }
 
   return 0;
+  }
+
+int RecruterBehavior::qtime() {
+  int m = qtime(queue[0]);
+  for( size_t i=1; i<queue.size(); ++i )
+    m = std::max(m, qtime(queue[i]));
+
+  return m;
   }
 
 bool RecruterBehavior::message( AbstractBehavior::Message msg,
@@ -133,25 +185,57 @@ bool RecruterBehavior::message( AbstractBehavior::Message msg,
   return 0;
   }
 
-int RecruterBehavior::qtime() {
-  int r = time;
-  for( size_t i=1; i<queue.size(); ++i ){
-    const ProtoObject& p = obj.world().game.prototype( queue[i] );
-    r += p.data.buildTime;
+int RecruterBehavior::qtime( const Queue & q ) const {
+  int r = q.time;
+  for( size_t i=1; i<q.orders.size(); ++i ){
+    //const ProtoObject& p = obj.world().game.prototype( q.orders[i] );
+    //r += p.data.buildTime;
+    r += q.orders[i].time;
     }
 
   return r;
   }
 
 int RecruterBehavior::ctime() const {
-  return time;
+  int m = queue[0].time;
+  for( size_t i=1; i<queue.size(); ++i )
+    m = std::max(m, queue[i].time );
+
+  return m;
   }
 
-const std::vector<std::string> &RecruterBehavior::orders() const {
+const std::vector<RecruterBehavior::Queue> &RecruterBehavior::orders() const {
   return queue;
   }
 
-bool RecruterBehavior::create(const std::string &s, const Terrain &terrain) {
+int RecruterBehavior::minQtime() {
+  int m = qtime(queue[0]);
+  for( size_t i=1; i<queue.size(); ++i )
+    m = std::min(m, qtime(queue[i]));
+
+  return m;
+  }
+
+bool RecruterBehavior::create( const Queue::Order &ord,
+                               const Terrain &terrain ) {
+  if( ord.type==Queue::Unit )
+    return createUnit( ord.name, terrain );
+
+  if( ord.type==Queue::Upgrade )
+    return createUpgrade( ord.name );
+
+  return 0;
+  }
+
+bool RecruterBehavior::createUpgrade( const std::string &s ) {
+  Player &pl = obj.player();
+  pl.mkGrade( obj.game().upgrade(s) );
+
+  return 1;
+  }
+
+bool RecruterBehavior::createUnit( const std::string &s,
+                                   const Terrain &terrain ) {
   int size = obj.getClass().data.size;
   int sq = Terrain::quadSize,
       x = obj.x()/sq,
@@ -226,4 +310,35 @@ bool RecruterBehavior::create(const std::string &s, const Terrain &terrain) {
     tg.behavior.message( MoveSingle, rallyX, rallyY );
 
   return true;
+  }
+
+size_t RecruterBehavior::minQueueSize() const {
+  if( queue.size()==0 )
+    return 0;
+
+  size_t sz = queue[0].orders.size();
+  for( size_t i=0; i<queue.size(); ++i )
+    sz = std::min<size_t>( queue[i].orders.size(), sz );
+
+  return sz;
+  }
+
+size_t RecruterBehavior::maxQueueSize() const {
+  if( queue.size()==0 )
+    return 0;
+
+  size_t sz = queue[0].orders.size();
+  for( size_t i=0; i<queue.size(); ++i )
+    sz = std::max<size_t>( queue[i].orders.size(), sz );
+
+  return sz;
+  }
+
+int RecruterBehavior::limOf(const RecruterBehavior::Queue::Order &ord) {
+  if( ord.type==Queue::Unit ){
+    const ProtoObject& p = obj.world().game.prototype( ord.name );
+    return p.data.lim;
+    }
+
+  return 0;
   }

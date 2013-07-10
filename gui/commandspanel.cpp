@@ -221,6 +221,14 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       b = btn;
       }
 
+    if( p.btn[i].action == ProtoObject::CmdButton::Upgrade ){
+      BuyBtn * btn   = new BuyBtn(res);
+      btn->taget     = p.btn[i].taget;
+      btn->icon.data = res.pixmap( "gui/icon/"+p.btn[i].taget );
+      btn->clicked.bind( this, &CommandsPanel::gradeEvent );
+      b = btn;
+      }
+
     if( p.btn[i].action == ProtoObject::CmdButton::CastToGround ){
       SpellBtn * btn   = new SpellBtn(res);
       btn->taget       = p.btn[i].taget;
@@ -267,6 +275,13 @@ void CommandsPanel::buyEvent(const std::string &unit) {
   msg.message( pl, Behavior::Buy,
                u0->x(), u0->y(),
                unit,
+               pl );
+  }
+
+void CommandsPanel::gradeEvent(const std::string &grade) {
+  msg.message( pl, Behavior::Upgrade,
+               u0->x(), u0->y(),
+               grade,
                pl );
   }
 

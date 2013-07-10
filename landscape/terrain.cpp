@@ -163,64 +163,23 @@ void Terrain::buildShadowVBO( int lx, int rx, int ly, int ry,
 
   static const int dx[] = {0, 1, 1, 0},
                    dy[] = {0, 0, 1, 1};
-  static int dcount = 4;
+  //static int dcount = 4;
+  int di[] = {0,1,2, 0,2,3};
+
+  int w = ry-ly;
+  for( int i=lx; i<rx; ++i )
+    for( int r=ly; r<ry; ++r ){
+      land.push_back( mkVertex(i, r, 0) );
+      }
 
   for( int i=lx; i+1<rx; ++i )
     for( int r=ly; r+1<ry; ++r ){
-      quads.push_back( Tempest::Point(i,r) );
-      }
-
-  squads.clear();
-  Tempest::Point p;
-  while( quads.size() ){
-    Tempest::Point px = quads[0];
-    int dp = abs(px.x-p.x) + abs(px.y-p.y), id = 0;
-
-    for( size_t i=1; i<quads.size(); ++i ){
-      int ndp = abs(quads[i].x-p.x) + abs(quads[i].y-p.y);
-      if( ndp<dp ){
-        id = i;
-        px = quads[i];
-        dp = ndp;
+      for( int q=0; q<6; ++q ){
+        int ti = i+dx[di[q]]-lx,
+            tr = r+dy[di[q]]-ly;
+        ibo.push_back( ti*w+tr );
         }
       }
-
-    squads.push_back(px);
-    quads[id] = quads.back();
-    quads.pop_back();
-    }
-
-  int di[] = {0,1,2, 0,2,3};
-
-  ibo.clear();
-  for( size_t id=0; id<squads.size(); ++id ){
-    int i= squads[id].x, r = squads[id].y;
-    size_t r0 = std::max<size_t>( 0, land.size()-1024 );
-
-    MVertex vx[dcount];
-    for( int q=0; q<dcount; ++q ){
-      vx[q] = mkVertex(i+dx[q], r+dy[q], 0);
-      }
-
-    for( int r=0; r<6; ++r ){
-      const MVertex& v = vx[ di[r] ];
-      size_t id = size_t(-1);
-      for( size_t q=r0; q<land.size(); ++q ){
-        if( land[q]==v ){
-          id = q;
-          }
-        }
-
-      if( id==size_t(-1) ){
-        ibo.push_back( land.size() );
-        land.push_back(v);
-        } else {
-        ibo.push_back(id);
-        }
-      //ibo.push_back(r1+di[r]);
-      }
-    }
-
   }
 
 void Terrain::buildVBO( int lx, int rx, int ly, int ry,

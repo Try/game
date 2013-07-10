@@ -185,7 +185,8 @@ HEADERS += \
     network/netuserclient.h \
     algo/a_star.h \
     graphics/decalobject.h \
-    graphics/packetobject.h
+    graphics/packetobject.h \
+    game/upgrade.h
 
 SOURCES += \
     main.cpp \
@@ -300,7 +301,8 @@ SOURCES += \
     gui/gamemessages.cpp \
     network/netuserclient.cpp \
     graphics/decalobject.cpp \
-    graphics/packetobject.cpp
+    graphics/packetobject.cpp \
+    game/upgrade.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
@@ -322,5 +324,6 @@ OTHER_FILES += \
     Android.mk \
     ../game-build-desktop/data/game_objects/rocks.xml \
     ../game-build-desktop/data/game_objects/bush.xml \
-    ../game-build-desktop/data/game_objects/tree.xml
+    ../game-build-desktop/data/game_objects/tree.xml \
+    ../game-build-desktop/data/upgrades.xml
 

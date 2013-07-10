@@ -125,19 +125,20 @@ struct UnitInfo::Production : public PanelBase {
 
   void customEvent( Tempest::CustomEvent & ){
     if( RecruterBehavior *b = obj.behavior.find<RecruterBehavior>() ){
-      const std::vector<std::string>& q = b->orders();
+      const std::vector<RecruterBehavior::Queue::Order>& q =
+          b->orders()[0].orders;
 
       le->setVisible( q.size()>0 );
 
       if( q.size() ){
-        int r = obj.game().prototype( q[0] ).data.buildTime;
+        int r = q[0].time;//obj.game().prototype( q[0] ).data.buildTime;
         le->setRange( 0, r );
         le->setValue( r - b->ctime() );
         }
 
       for( size_t i=0; i<q.size(); ++i ){
         if( i<btns.size() ){
-          btns[i]->icon.data = res.pixmap("gui/icon/"+q[i]);
+          btns[i]->icon.data = res.pixmap(q[i].icon);
           btns[i]->setVisible(true);
           }
         }

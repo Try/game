@@ -96,8 +96,8 @@ DesertStrikeScenario::GradeButton::GradeButton( Resource & r,
   texture.data = r.pixmap("gui/colors");
   //setText( obj.name );
 
-  setMinimumSize( 50, 50 );
-  setMaximumSize( 50, 50 );
+  setMinimumSize( 55, 55 );
+  setMaximumSize( 55, 55 );
   font = Font(15);
 
   clicked.bind( this, &GradeButton::emitClick);
@@ -130,8 +130,8 @@ void DesertStrikeScenario::TranscurentPanel::mouseDownEvent(Tempest::MouseEvent 
 
 struct DesertStrikeScenario::Minimap::BuyButton: public Button {
   BuyButton( Resource & r ):Button(r) {
-    setMinimumSize( 50, 50 );
-    setMaximumSize( 50, 50 );
+    setMinimumSize( 55, 55 );
+    setMaximumSize( 55, 55 );
 
     Texture t;
     t.data = res.pixmap("gui/icon/gold");
@@ -143,8 +143,8 @@ struct DesertStrikeScenario::Minimap::BuyButton: public Button {
 
 struct DesertStrikeScenario::Minimap::GradeButton: public Button {
   GradeButton( Resource & r, DPlayer& pl ):Button(r), pl(pl) {
-    setMinimumSize( 50, 50 );
-    setMaximumSize( 50, 50 );
+    setMinimumSize( 55, 55 );
+    setMaximumSize( 55, 55 );
 
     Texture t;
     t.data       = res.pixmap("gui/icon/gold");
@@ -484,11 +484,6 @@ DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
   :TranscurentPanel(res), game(game){
   using namespace Tempest;
 
-  instaled = false;
-  hook.mouseDown.bind( *this, &SpellPanel::mouseDown    );
-  hook.mouseUp  .bind( *this, &SpellPanel::mouseUp      );
-  hook.onRemove .bind( *this, &SpellPanel::onRemoveHook );
-
   setMinimumSize(75, 200);
   setMaximumSize(75, 200);
   layout().setMargin(15);
@@ -497,8 +492,8 @@ DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
   setLayout( Vertical );
 
   Button * c = new Button(res);
-  c->setMinimumSize( 50, 50 );
-  c->setMaximumSize( 50, 50 );
+  c->setMinimumSize( 55, 55 );
+  c->setMaximumSize( 55, 55 );
   c->icon.data = res.pixmap("gui/icon/camera");
   c->clicked.bind( toogleCameraMode );
   layout().add( c );
@@ -527,55 +522,26 @@ DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
     }
   }
 
-void DesertStrikeScenario::SpellPanel::setupHook(const std::string &s) {
-  if( !instaled ){
-    instaled    = game.instalHook( &hook );
-    spellToCast = s;
+void DesertStrikeScenario::SpellPanel::setupHook(const std::string &spell) {
+  std::vector<char> data;
+  ByteArraySerialize s(data, ByteArraySerialize::Write);
 
-    mode        = CastToCoord;
-    }
+  s.write( game.player().number()-1 );
+  s.write( spell );
+  s.write( 'm' );
+  //s.write( int(CastToCoord) );
+  game.message( data );
   }
 
-void DesertStrikeScenario::SpellPanel::setupHookU(const std::string &s) {
-  if( !instaled ){
-    instaled    = game.instalHook( &hook );
-    spellToCast = s;
+void DesertStrikeScenario::SpellPanel::setupHookU(const std::string &spell) {
+  std::vector<char> data;
+  ByteArraySerialize s(data, ByteArraySerialize::Write);
 
-    mode        = CastToUnit;
-    }
-  }
-
-void DesertStrikeScenario::SpellPanel::mouseDown(Tempest::MouseEvent &e) {
-  e.accept();
-  }
-
-void DesertStrikeScenario::SpellPanel::mouseUp(Tempest::MouseEvent &e) {
-  if( e.button==Tempest::MouseEvent::ButtonLeft ){
-    if( mode==CastToCoord ){
-      game.message( game.player().number(),
-                    BehaviorMSGQueue::SpellCast,
-                    game.curWorld().mouseX(),
-                    game.curWorld().mouseY(),
-                    spellToCast
-                    );
-      }
-
-    if( mode==CastToUnit && game.curWorld().mouseObj() ){
-      WeakWorldPtr p = game.curWorld().objectWPtr( game.curWorld().mouseObj() );
-
-      game.message( game.player().number(),
-                    BehaviorMSGQueue::SpellCast,
-                    p.id(),
-                    spellToCast
-                    );
-      }
-    }
-
-  game.removeHook( &hook );
-  }
-
-void DesertStrikeScenario::SpellPanel::onRemoveHook() {
-  instaled = false;
+  s.write( game.player().number()-1 );
+  s.write( spell );
+  s.write( 'm' );
+  //s.write( int(CastToUnit) );
+  game.message( data );
   }
 
 void DesertStrikeScenario::SpellPanel::spell( int i ){
@@ -604,13 +570,13 @@ DesertStrikeScenario::BuyUnitPanel::BuyUnitPanel( Resource & res,
   auto pr = DesertStrikeScenario::units;
 
   const char * cas[3][4] = {
-    {"castle", "house", "tower"},
+    {"castle", "house" },
     { },
     { }
     };
 
   const char * gr[3][4] = {
-    {"melee atack", "range atack", "magic atack" },
+    {"atack.melee", "atack.range", "atack.magic" },
     { },
     {}
     };
@@ -657,7 +623,7 @@ Button *DesertStrikeScenario::BuyUnitPanel::mkBuyGradeBtn( Resource &res,
   //const ProtoObject & obj = game.prototype(sobj);
 
   NumButton * u = new NumButton(res);
-  u->icon.data = res.pixmap( std::string("gui/icons/") + sobj);
+  u->icon.data = res.pixmap( std::string("gui/icon/") + sobj);
 
   //u->onClick.bind( *this, &BuyUnitPanel::onUnit );
 
@@ -687,7 +653,7 @@ DesertStrikeScenario::UpgradePanel::UpgradePanel( Resource & res,
 
   setMinimumSize(75, 200);
   setMaximumSize(75, 200);
-  layout().setMargin(15);
+  layout().setMargin(10);
 
   setSizePolicy( FixedMin );
   setLayout( Vertical );

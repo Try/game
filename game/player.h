@@ -11,6 +11,7 @@
 
 class GameObject;
 class ProtoObject;
+class Upgrade;
 class World;
 
 class GameSerializer;
@@ -51,6 +52,7 @@ class Player {
     void setGold( int g );
 
     bool canBuild(const ProtoObject &p) const;
+    bool canBuild(const Upgrade &p) const;
 
     int  limMax()  const;    
 
@@ -65,7 +67,8 @@ class Player {
     const Tempest::Pixmap& fog() const;
 
     int  atackGrade( size_t atype ) const;
-    void incGrade( size_t atype );
+    int  gradeLv( const Upgrade &atype ) const;
+    void mkGrade( const Upgrade& atype );
   protected:
     struct {
       int num;
@@ -80,7 +83,7 @@ class Player {
 
       Tempest::Pixmap fog;
 
-      std::vector<int> atkGrade;
+      std::vector<int> gradeLv;
       } m;
 
     void fillFog( Tempest::Pixmap &p,

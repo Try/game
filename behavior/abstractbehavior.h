@@ -85,6 +85,7 @@ class AbstractBehavior {
       AtackMoveGroup,
       Atack,
       Buy,
+      Upgrade,
       BuildAt,
 
       Patrul,

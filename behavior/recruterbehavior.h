@@ -23,18 +23,65 @@ class RecruterBehavior : public AbstractBehavior  {
 
     int  qtime();
     int  ctime() const;
-    const std::vector<std::string>& orders() const;
+
+    struct Queue{
+      int time;
+      enum OrderType{
+        Unit,
+        Upgrade
+        };
+
+      struct Order{
+        OrderType   type;
+        std::string name;
+        int         time;
+
+        std::string icon;
+        };
+
+      void addUnit( const std::string & s,
+                    int time ){
+        orders.resize( orders.size()+1 );
+        orders.back().name = s;
+        orders.back().type = Unit;
+        orders.back().time = time;
+        orders.back().icon = "gui/icon/"+s;
+        }
+
+      void addUpgrade( const std::string & s,
+                       int time ){
+        orders.resize( orders.size()+1 );
+        orders.back().name = s;
+        orders.back().type = Upgrade;
+        orders.back().time = time;
+        orders.back().icon = "gui/icon/"+s;
+        }
+
+      std::vector<Order> orders;
+      };
+    const std::vector<Queue>& orders() const;
   private:
     GameObject & obj;
     WeakWorldPtr taget;
 
-    int time, rallyX, rallyY;
-    std::vector<std::string> queue;
+    int rallyX, rallyY;
+
+    std::vector<Queue> queue;
+
+    int  minQtime();
+    int  qtime(const Queue &q) const;
 
     bool queueLim;
-    bool create( const std::string& s, const Terrain & terrain );
+    bool create(const Queue::Order &ord, const Terrain & terrain );
+    bool createUpgrade(const std::string& s);
+    bool createUnit( const std::string& s, const Terrain & terrain );
 
     GameObjectView light, flag;
+
+    size_t minQueueSize() const;
+    size_t maxQueueSize() const;
+
+    int limOf( const Queue::Order &o );
   };
 
 #endif // RECRUTERBEHAVIOR_H

@@ -95,6 +95,8 @@ class Game : public Tempest::Window {
     void removeHook( InputHookBase* b );
 
     const ProtoObject& prototype( const std::string& s ) const;
+    const Upgrade&     upgrade  ( const std::string& s ) const;
+
     Resource &resources();
     const PrototypesLoader & prototypes() const;
     PrototypesLoader & prototypes();

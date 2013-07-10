@@ -45,6 +45,7 @@ class CommandsPanel : public Panel {
 
     void bind( const ProtoObject::Commans::Page &u );
     void buyEvent( const std::string& unit );
+    void gradeEvent( const std::string& unit );
     void moveClick();
     void stopClick();
     void holdClick();

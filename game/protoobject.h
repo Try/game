@@ -88,6 +88,7 @@ struct ProtoObject {
         NoAction,
         Buy,
         Build,
+        Upgrade,
         Page,
         CastToGround,
         Count
