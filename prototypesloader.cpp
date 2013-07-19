@@ -93,7 +93,7 @@ void PrototypesLoader::readElement(TiXmlNode *node) {
       std::string file;
 
       if( find(node->ToElement(), "file", file) ){
-        load(file);
+        AbstractXMLReader::load(file);
         } else {
         error("file not specified");
         }

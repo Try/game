@@ -19,20 +19,6 @@ CONFIG += sound
 CONFIG += physic
 
 ogl:{
-  LIBS += -L"$$(CG_LIB_PATH)" -l"opengl32" -l"cg" -l"cgGL"
-  LIBS += -L"$$(GLEW_PATH)/lib"  -l"glew32" -l"glew32"
-
-  DEFINES += TEMPEST_OPENGL
-  }
-
-directx:{
-  LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
-  LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
-
-  DEFINES += TEMPEST_DIRECTX
-  }
-
-ogl:{
   directx:{
     LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest"
     } else {
@@ -56,12 +42,10 @@ sound:{
   DEFINES += NO_SOUND
   }
 
-INCLUDEPATH += "$$(DXSDK_DIR)/include"\
-               "$$(CG_INC_PATH)" \
-               "$$(FREETYPE_INCLUDE_PATH)" \
+INCLUDEPATH += "$$(FREETYPE_INCLUDE_PATH)" \
                "$$(FREETYPE_INCLUDE_PATH)/freetype2"
 
-LIBS += -l"gdi32" -l"ws2_32" -l"comdlg32" -l"pthread"
+LIBS += -l"gdi32" -l"ws2_32" -l"comdlg32" -l"pthread" -lz
 
 LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
 LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
