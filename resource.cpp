@@ -13,6 +13,8 @@
 #include <fstream>
 #include <cmath>
 
+#include <rapidjson/document.h>
+
 struct Resource::XML{
   template< class Box, class ... Args >
   static void loadFile( Box & b, Resource &, TiXmlElement* pElement ){
@@ -81,6 +83,11 @@ struct Resource::XML{
         name = pAttrib->Value();
       }
 
+    std::cout << "{" << std::endl;
+    std::cout << "vs:\""   << file  <<"\"," << std::endl;
+    std::cout << "fs:\""   << file1 <<"\"," << std::endl;
+    std::cout << "name:\"" << name  <<"\"," << std::endl;
+    std::cout << "define:[" << std::endl;
     std::string def;
 
     for ( TiXmlNode* tg = pElement->FirstChild(); bool(tg);
@@ -98,11 +105,16 @@ struct Resource::XML{
             def += " ";
             def += pAttrib->Value();
             def += "\n";
+            std::cout << "{ \"" << pAttrib->Name()
+                      << "\": \"" << pAttrib->Value()
+                      << "\"}," << std::endl;
             }
           }
         }
       }
     def += "#line 0\n";
+    std::cout << "]," << std::endl;
+    std::cout << "}," << std::endl;
 
     //std::cout << def << std::endl;
     r.load(b,  name, file,  def, false );
@@ -344,13 +356,6 @@ void Resource::load( Box<  std::shared_ptr<Model::Raw>  > &,
   assert(0);
   }
 
-/*
-void Resource::load( Box< Tempest::Color  > &,
-                     const std::string &,
-                     const std::string & ){
-  assert(0);
-  }*/
-
 void Resource::load( Box<VShader> &,
                      const std::string &,
                      const std::string &,
@@ -512,4 +517,141 @@ void Resource::readElement( TiXmlNode *node ) {
 
 std::string Resource::loadSrc(const std::string &f) {
   return Tempest::SystemAPI::loadText( f.data() );
+  }
+
+void Resource::load(const std::string &s) {
+  using namespace rapidjson;
+  std::string jsonstr = Tempest::SystemAPI::loadText(s.data());
+
+  Document d;
+  d.Parse<0>(jsonstr.data());
+
+  if( d.HasParseError() ){
+    size_t pe = d.GetErrorOffset(), pl = 1, pch = 0;
+    for( size_t i=0; i<pe && i<jsonstr.size(); ++i ){
+      pch++;
+      if( jsonstr[i]=='\n' ){
+        pch = 0;
+        ++pl;
+        }
+      }
+
+    std::cout << "[" << s <<", " << pl <<":" <<pch <<"]: ";
+    std::cout << d.GetParseError() << std::endl;
+    return;
+    }
+
+  const Value &data = d["data"];
+
+  if( data.IsObject() ){
+    const Value& model = data["model"];
+    if( model.IsArray() ){
+      for( size_t i=0; i<model.Size(); ++i ){
+        const Value& v = model[i];
+        if( v.IsObject() &&
+            v["file"].IsString() &&
+            v["name"].IsString() ){
+          models.preload( v["name"].GetString(), v["file"].GetString() );
+          }
+        }
+      }
+
+    const Value& texture = data["texture"];
+    if( texture.IsArray() ){
+      for( size_t i=0; i<texture.Size(); ++i ){
+        const Value& v = texture[i];
+        if( v.IsObject() &&
+            v["file"].IsString() &&
+            v["name"].IsString() ){
+          textures.preload( v["name"].GetString(), v["file"].GetString(), false );
+          }
+        }
+      }
+
+    const Value& texture_with_avg = data["texture_with_avg"];
+    if( texture_with_avg.IsArray() ){
+      for( size_t i=0; i<texture_with_avg.Size(); ++i ){
+        const Value& v = texture_with_avg[i];
+        if( v.IsObject() &&
+            v["file"].IsString() &&
+            v["name"].IsString() ){
+          textures.preload( v["name"].GetString(), v["file"].GetString(), true );
+          }
+        }
+      }
+
+    const Value& pixmap = data["pixmap"];
+    if( pixmap.IsArray() ){
+      for( size_t i=0; i<pixmap.Size(); ++i ){
+        const Value& v = pixmap[i];
+        if( v.IsObject() &&
+            v["src"].IsString() &&
+            v["name"].IsString() ){
+          std::string file = v["src"].GetString();
+          load( pixmaps.add( Tempest::Pixmap(file) ), v["name"].GetString() );
+          }
+        }
+      }
+
+    const Value& sound = data["sound"];
+    if( sound.IsArray() ){
+      for( size_t i=0; i<sound.Size(); ++i ){
+        const Value& v = sound[i];
+        if( v.IsObject() &&
+            v["file"].IsString() &&
+            v["name"].IsString() ){
+          sounds.preload( v["name"].GetString(), v["file"].GetString() );
+          }
+        }
+      }
+
+    const Value& module = data["module"];
+    if( module.IsArray() ){
+      for( size_t i=0; i<module.Size(); ++i ){
+        const Value& v = module[i];
+        if( v.IsObject() &&
+            v["file"].IsString() ){
+          load( v["file"].GetString() );
+          }
+        }
+      }
+
+    const Value& shaders = data["shaders"];
+    if( shaders.IsArray() ){
+      for( size_t i=0; i<shaders.Size(); ++i ){
+        const Value& v = shaders[i];
+        std::string def;
+        if( v["define"].IsArray() ){
+          const Value& d = v["define"];
+
+          for( size_t i=0; i<d.Size(); ++i ){
+            if( d[i].IsObject() &&
+                d[i].MemberBegin()+1==d[i].MemberEnd() ){
+              const Value& n = d[i].MemberBegin()->name,
+                         & v = d[i].MemberBegin()->value;
+              def += "#define ";
+              def += n.GetString();
+
+              if( v.IsString() ){
+                def += " ";
+                def += v.GetString();
+                }
+              def += "\n";
+              }
+            }
+          }
+        def += "#line 0\n";
+
+        if( v["name"].IsString() &&
+            v["vs"].IsString()   &&
+            v["fs"].IsString() ){
+          const char* name = v["name"].GetString();
+
+          load(vs, name, v["vs"].GetString(), def, false );
+          load(fs, name, v["fs"].GetString(), def, false );
+          }
+        }
+      }
+
+    }
   }

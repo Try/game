@@ -14,6 +14,8 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
 LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
 
+INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/rapidjson-0.11/rapidjson/include"
+
 CONFIG += directx ogl
 CONFIG += sound
 CONFIG += physic
@@ -309,5 +311,9 @@ OTHER_FILES += \
     ../game-build-desktop/data/game_objects/rocks.xml \
     ../game-build-desktop/data/game_objects/bush.xml \
     ../game-build-desktop/data/game_objects/tree.xml \
-    ../game-build-desktop/data/upgrades.xml
+    ../game-build-desktop/data/upgrades.xml \
+    ../game-build-desktop/data/data.json \
+    ../game-build-desktop/data/pixmaps.json \
+    ../game-build-desktop/data/icons.json \
+    ../game-build-desktop/data/shaders.json
 

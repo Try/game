@@ -67,7 +67,8 @@ class Resource : public AbstractXMLReader,
     PixmapsPool::TexturePtr pixmap( const Tempest::Pixmap& pm, bool flush );
 
     void flushPixmaps();
-    using AbstractXMLReader::load;
+    //using AbstractXMLReader::load;
+    void load( const std::string & s );
 
     Tempest::TextureHolder       &  texHolder;
     Tempest::LocalTexturesHolder &  ltexHolder;

@@ -72,7 +72,7 @@ Game::~Game() {
   }
 
 void Game::loadData() {
-  resource.load("data/data.xml");
+  resource.load("data/data.json");
   proto   .load("data/game.xml");
   world = 0;
 

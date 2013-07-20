@@ -56,7 +56,7 @@ int main( int, char** ){
   Lang::load("lang/ru.lang");
   Tempest::Application app;
   setupTh();
-  Game game( Tempest::Window::FullScreen );
+  Game game( Tempest::Window::Maximized );
   game.show();
 
   return app.exec();
