@@ -27,7 +27,7 @@ class Behavior : public AbstractBehavior {
 
     void bind( GameObject & gameObj,
                Closure & c );
-    //void _addMoveBeavior();
+    //void _addMoveBehavior();
 
     void add( const std::string & n );
     void del( AbstractBehavior* ptr );

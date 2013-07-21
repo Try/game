@@ -95,7 +95,7 @@ struct GraphicsSystem::MaterialSort{
     }
   };
 
-const float GraphicsSystem::oclusionMSz = 1.1;
+const float GraphicsSystem::oclusionMSz = 0.6;
 
 GraphicsSystem::GraphicsSystem( void *hwnd,
                                 bool isFullScreen )

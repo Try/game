@@ -315,5 +315,16 @@ OTHER_FILES += \
     ../game-build-desktop/data/data.json \
     ../game-build-desktop/data/pixmaps.json \
     ../game-build-desktop/data/icons.json \
-    ../game-build-desktop/data/shaders.json
+    ../game-build-desktop/data/shaders.json \
+    ../game-build-desktop/data/game.json \
+    ../game-build-desktop/data/game_objects/bush.json \
+    ../game-build-desktop/data/game_objects/land.json \
+    ../game-build-desktop/data/game_objects/rocks.json \
+    ../game-build-desktop/data/hud.json \
+    ../game-build-desktop/campagin/td.xml \
+    ../game-build-desktop/campagin/td.json \
+    ../game-build-desktop/data/particle.json \
+    ../game-build-desktop/data/spell.json \
+    ../game-build-desktop/data/upgrades.json \
+    ../game-build-desktop/data/game_objects/tree.json
 

@@ -73,7 +73,7 @@ Game::~Game() {
 
 void Game::loadData() {
   resource.load("data/data.json");
-  proto   .load("data/game.xml");
+  proto   .load("data/game.json");
   world = 0;
 
   setScenario( new DesertStrikeScenario(*this, gui, msg) );

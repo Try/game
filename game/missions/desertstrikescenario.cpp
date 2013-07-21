@@ -43,7 +43,7 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
     }
 
   gui.update();
-  g.prototypes().load("campagin/td.xml");
+  g.prototypes().load("campagin/td.json");
   }
 
 DesertStrikeScenario::~DesertStrikeScenario() {

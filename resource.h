@@ -11,7 +11,6 @@
 #include <Tempest/FragmentShader>
 #include <Tempest/ResourceContext>
 
-#include "xml/abstractxmlreader.h"
 #include "pixmapspool.h"
 #include "model_mx.h"
 
@@ -34,8 +33,7 @@ namespace Tempest{
 
 class Sound;
 
-class Resource : public AbstractXMLReader,
-                 public Tempest::ResourceContext {
+class Resource : public Tempest::ResourceContext {
   public:
     Resource(
         Tempest::TextureHolder       &  texHolder,
@@ -74,7 +72,7 @@ class Resource : public AbstractXMLReader,
     Tempest::LocalTexturesHolder &  ltexHolder;
 
     void setupSettings( const GraphicsSettingsWidget::Settings& settings );
-private:
+  private:
     GraphicsSettingsWidget::Settings settings;
 
     template< class T >
@@ -248,7 +246,7 @@ private:
     //void load( Box<Tempest::Color>& m,
     //           const std::string &k, const std::string & f );
 
-    void load(Box< VShader >& vs,
+    void load( Box< VShader >& vs,
                const std::string &k, const std::string & f , bool);
 
     void load( Box< FShader >& fs,
@@ -276,9 +274,6 @@ private:
     Tempest::VertexShaderHolder &  vsHolder;
     Tempest::FragmentShaderHolder& fsHolder;
 
-    void readElement( TiXmlNode *node );
-
-    struct XML;
     PixmapsPool pixmaps;
     std::string settingsStr;
     std::string loadSrc( const std::string & f );
