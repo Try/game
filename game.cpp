@@ -94,7 +94,7 @@ void Game::loadData() {
   graphics.load( resource, gui, w(), h() );
   graphics.onRender.bind( *this, &Game::onRender );
 
-  gui.renderScene.bind( graphics, &GraphicsSystem::renderSubScene );
+  gui.renderScene.bind( graphics, &Graphics::renderSubScene );
 
   worlds.push_back( std::shared_ptr<World>( new World(*this,
                                                       128, 128) ) );
@@ -120,7 +120,7 @@ void Game::loadData() {
   loadMission("campagin/td2.sav");
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
 #else
-  loadMission("save/td2.sav");
+  //loadMission("save/td2.sav");
   setScenario( new DeatmachScenario(*this, gui, msg) );
 #endif
   //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );
@@ -727,11 +727,6 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
 
   obj.setMaterial( material );
   }
-
-Tempest::Matrix4x4 &Game::shadowMat() {
-  return graphics.closure.shadow.matrix;
-  }
-
 
 void Game::save( const std::wstring& f ) {
   GameSerializer s( f, Serialize::Write );

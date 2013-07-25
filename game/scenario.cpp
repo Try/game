@@ -24,6 +24,8 @@
 #include "gui/unitview.h"
 #include "gui/unitlist.h"
 
+#include "util/lexicalcast.h"
+
 struct Scenario::AddUnitButton: public Button{
   AddUnitButton( Resource & res, ProtoObject& obj )
       :Button(res), prototype(obj) {

@@ -105,8 +105,6 @@ class Game : public Tempest::Window {
                          const ProtoObject::View &src,
                          const Tempest::Color &teamColor );
 
-    Tempest::Matrix4x4& shadowMat();
-
     void save(const std::wstring &str);
     void load(const std::wstring &str);
     void loadMission(const std::string  &str);
@@ -144,7 +142,7 @@ private:
 
     //bool acceptMouseObj;
 
-    GraphicsSystem graphics;
+    Graphics graphics;
     SoundDevice    soundDev;
 
     Resource         resource;

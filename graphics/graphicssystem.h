@@ -27,6 +27,9 @@
 
 #include <Tempest/signal>
 
+#include "graphics.h"
+#include "frustum.h"
+
 namespace Tempest{
   class Camera;
   }
@@ -84,13 +87,6 @@ class GraphicsSystem {
 
       } closure;
 
-    struct Frustum{
-      float f[6][4];
-      };
-
-    static void mkFrustum( const Tempest::AbstractCamera& c, Frustum& out );
-    static void mkFrustum( const Tempest::Matrix4x4& c, Frustum& out );
-
     enum VisibleRet{
       NotVisible = 0,
       PartialVisible,
@@ -142,8 +138,8 @@ class GraphicsSystem {
       Tempest::VertexShader   terrainMinorVs;
       Tempest::FragmentShader terrainMinorFs;
 
-      Tempest::Uniform<float[3]> lightDirection, lightColor, lightAblimient,
-                              view;
+      //Tempest::Uniform<float[3]> lightDirection, lightColor, lightAblimient,
+      //                        view;
       } gbuf;
 
     struct Transparent{
@@ -175,52 +171,52 @@ class GraphicsSystem {
       } fogOfWar;
 
     struct Bloom{
-      Tempest::Uniform< Tempest::Texture2d > b[3];
+      //Tempest::Uniform< Tempest::Texture2d > b[3];
 
       Tempest::VertexShader   vs;
       Tempest::FragmentShader brightPass, combine;
       } bloomData;
 
     struct Blt{
-      Tempest::Uniform< Tempest::Texture2d > texture;
+      //Tempest::Uniform< Tempest::Texture2d > texture;
       Tempest::VertexShader   vs;
       Tempest::FragmentShader fs;
       } bltData;
 
     struct Gauss{
-      Tempest::Uniform< Tempest::Texture2d > texture;
+      //Tempest::Uniform< Tempest::Texture2d > texture;
       Tempest::VertexShader   vs, vsAO, vsGB, vsB;
       Tempest::FragmentShader fs, fsAO, fsGB, fsB;
       } gaussData;
 
     struct Omni{
-      Tempest::Uniform< Tempest::Texture2d > texture;
+      //Tempest::Uniform< Tempest::Texture2d > texture;
       Tempest::VertexShader   vs;
       Tempest::FragmentShader fs;
       } omniData;
 
     struct Volumetric{
-      Tempest::Uniform< Tempest::Texture2d > scene;
+      //Tempest::Uniform< Tempest::Texture2d > scene;
       Tempest::VertexShader   vs;
       Tempest::FragmentShader fs;
       } volumetricData;
 
     struct Final{
-      Tempest::Uniform< Tempest::Texture2d > scene, bloom, glow;
+      //Tempest::Uniform< Tempest::Texture2d > scene, bloom, glow;
       Tempest::VertexShader   vs;
       Tempest::FragmentShader fs, avatar;
       } finalData;
 
     struct SSAO{
-      Tempest::Uniform< Tempest::Texture2d > texture, blured, macro;
-      Tempest::Uniform< Tempest::Texture2d > scene, diff, ssao;
-      Tempest::Uniform<float[3]> lightAblimient;
+      //Tempest::Uniform< Tempest::Texture2d > texture, blured, macro;
+      //Tempest::Uniform< Tempest::Texture2d > scene, diff, ssao;
+      //Tempest::Uniform<float[3]> lightAblimient;
 
       Tempest::VertexShader   vs;
       Tempest::FragmentShader acceptGI;
       } ssaoData;
 
-    Tempest::Uniform<float[2]> scrOffset, cpyOffset;
+    //Tempest::Uniform<float[2]> scrOffset, cpyOffset;
 
     void fillGBuf( Tempest::Texture2d *gbuffer,
                    Tempest::Texture2d &mainDepth,

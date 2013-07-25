@@ -68,6 +68,8 @@ Terrain::Terrain( int w, int h,
   }
 
 void Terrain::buildGeometry(){
+  //return;
+
   computePlanes();
 
   for( int i=0; i<chunks.width(); ++i )
@@ -353,6 +355,8 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
 
     chunk.landView.push_back( view );
     }
+
+  return;
 
   buildVBO(lx, rx, ly, ry, minor, ibo, false, plane );
   if( minor.size() ){

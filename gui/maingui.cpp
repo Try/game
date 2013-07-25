@@ -28,6 +28,7 @@
 
 #include "graphics/paintergui.h"
 #include "game.h"
+#include "util/lexicalcast.h"
 
 MainGui::MainGui( Tempest::Device &,
                   int w, int h,

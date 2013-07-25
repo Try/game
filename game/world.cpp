@@ -451,8 +451,8 @@ void World::updateSelectionClick( BehaviorMSGQueue &msg,
 size_t World::unitUnderMouse( int mx, int my, int w, int h ) const {
   Tempest::Matrix4x4 gmMat = camera.projective();
   gmMat.mul( camera.view() );
-  GraphicsSystem::Frustum frustum;
-  GraphicsSystem::mkFrustum( camera, frustum );
+
+  Frustum frustum( camera );
 
   int dist = -1, mdist = -1;
   size_t ret = -1;
@@ -568,8 +568,7 @@ void World::paintHUD( Tempest::Painter & p,
 
   //double data1[4], data2[4];
 
-  GraphicsSystem::Frustum frustum;
-  GraphicsSystem::mkFrustum( camera, frustum );
+  Frustum frustum( camera );
 
   p.setBlendMode( Tempest::alphaBlend );
   for( int plN = 1; plN<game.plCount(); ++plN ){

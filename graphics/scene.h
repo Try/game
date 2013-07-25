@@ -36,13 +36,15 @@ class Scene : public Tempest::AbstractScene< AbstractGraphicObject > {
     const Objects& fogOfWar() const;
     const Objects& omni() const;
 
+    const Objects& all() const;
   private:
     Objects shCast, shCastAtst, shCastTransp,
             mainObj, mainObjAtst, glowObj,
             terrainMinor, terrain,
             displaceObj, waterObj, addObj, transpObj,
             transpObjZW, fogOfWarObj,
-            omniObj, grassObj;
+            omniObj, grassObj,
+            allObj;
 
     std::vector<Objects*> objPtrs;
 

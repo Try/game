@@ -127,7 +127,7 @@ class GameObject {
     void incColisionDisp( int dx, int dy );
 
     void higlight(int time, GameObjectView::Selection type );
-    bool isVisible( const  GraphicsSystem::Frustum & f ) const;
+    bool isVisible( const Frustum & f ) const;
 
     void setCoolDown( size_t spellID, int v );
     int  coolDown   ( size_t spellID ) const;

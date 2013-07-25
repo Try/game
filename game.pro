@@ -11,9 +11,6 @@ win32:RC_FILE = game.rc
 INCLUDEPATH += include
 INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 
-INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/tinyxml"
-LIBS        += -L"C:/Users/Try/Home/Programming/SharedLibs/tinyxml-build/debug" -l"tinyxml"
-
 INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/rapidjson-0.11/rapidjson/include"
 
 CONFIG += directx ogl
@@ -172,7 +169,17 @@ HEADERS += \
     algo/a_star.h \
     graphics/decalobject.h \
     graphics/packetobject.h \
-    game/upgrade.h
+    game/upgrade.h \
+    graphics/graphics.h \
+    graphics/translate/vertexinputassembly.h \
+    graphics/translate/shadersource.h \
+    graphics/translate/objectcode.h \
+    graphics/translate/buildinfunction.h \
+    graphics/frustum.h \
+    graphics/translate/mxassembly.h \
+    graphics/translate/shadermaterial.h \
+    graphics/translate/guiassembly.h \
+    graphics/guirender.h
 
 SOURCES += \
     main.cpp \
@@ -185,7 +192,6 @@ SOURCES += \
     landscape/terrain.cpp \
     util/array2d.cpp \
     game/world.cpp \
-    xml/abstractxmlreader.cpp \
     prototypesloader.cpp \
     util/lexicalcast.cpp \
     graphics/guipass.cpp \
@@ -288,7 +294,17 @@ SOURCES += \
     network/netuserclient.cpp \
     graphics/decalobject.cpp \
     graphics/packetobject.cpp \
-    game/upgrade.cpp
+    game/upgrade.cpp \
+    graphics/graphics.cpp \
+    graphics/translate/vertexinputassembly.cpp \
+    graphics/translate/shadersource.cpp \
+    graphics/translate/objectcode.cpp \
+    graphics/translate/buildinfunction.cpp \
+    graphics/frustum.cpp \
+    graphics/translate/mxassembly.cpp \
+    graphics/translate/shadermaterial.cpp \
+    graphics/translate/guiassembly.cpp \
+    graphics/guirender.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

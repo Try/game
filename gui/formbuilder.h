@@ -10,7 +10,7 @@ class ScroolWidget;
 class Button;
 class LineEdit;
 
-class TiXmlNode;
+//class TiXmlNode;
 
 class FormBuilder : public ModalWindow  {
   public:
@@ -91,11 +91,13 @@ class FormBuilder : public ModalWindow  {
                std::ostream &xml,
                bool root );
 
+    /*
     void loadXML();
     void loadWidget( Widget* w, TiXmlNode * node );
     void loadWidget( Button* w, TiXmlNode * node );
     void loadWidget( LineEdit* w, TiXmlNode * node );
     void loadWidget( ScroolWidget* w, TiXmlNode * node );
+    */
 
     std::wstring removeEscapeSym( const std::string& str );
     };

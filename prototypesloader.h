@@ -1,8 +1,6 @@
 #ifndef PROTOTYPESLOADER_H
 #define PROTOTYPESLOADER_H
 
-#include "xml/abstractxmlreader.h"
-
 #include <unordered_map>
 #include <memory>
 #include "game/protoobject.h"
@@ -12,7 +10,7 @@
 
 #include <rapidjson/document.h>
 
-class PrototypesLoader : public AbstractXMLReader {
+class PrototypesLoader {
   public:
     PrototypesLoader();
     typedef std::shared_ptr<ProtoObject> PProtoObject;
@@ -31,20 +29,8 @@ class PrototypesLoader : public AbstractXMLReader {
 
     void load(const std::string &s);
     void unload();
+
   protected:
-    void readElement(TiXmlNode *node);
-    void readClassMember(ProtoObject &obj, TiXmlNode *node);
-    void readCommands(ProtoObject &obj, TiXmlNode *node);
-    void readCommandsPage(ProtoObject &obj, TiXmlNode *node);
-    void readButton(ProtoObject::CmdButton &obj, TiXmlNode *node);
-    void readAtack( ProtoObject::GameSpecific::Atack &b,
-                    TiXmlNode *node );
-
-    void readSpellMember(Spell &obj, TiXmlNode *node);
-    void readGradeMember(Upgrade &obj, TiXmlNode *node);
-    void readParticleMember(ParticleSystemDeclaration &obj, TiXmlNode *node);
-    void readParticleMember(ParticleSystemDeclaration::D &obj, TiXmlNode *node);
-
     struct Defs{
       std::unordered_map<std::string, PProtoObject> data;
       std::unordered_map<std::string, PSpell>       dataSpells;
@@ -69,11 +55,17 @@ class PrototypesLoader : public AbstractXMLReader {
     }
 
     void readIf( const rapidjson::Value & v, int &val,  int def );
+    void readIf( const rapidjson::Value & v, float &val, float def );
     void readIf( const rapidjson::Value & v, double &val, double def );
     void readIf( const rapidjson::Value & v, bool &val, bool def );
     void readIf( const rapidjson::Value & v, std::string &val,
                  const std::string& def );
-    using AbstractXMLReader::readIf;
+    //using AbstractXMLReader::readIf;
+
+    void readCommandsPage( ProtoObject &obj,
+                           const rapidjson::Value &v );
+    void readButton(ProtoObject::CmdButton &obj,
+                    const rapidjson::Value &v );
 
     void readBehavior( ProtoObject &p,
                        const rapidjson::Value &v );
@@ -89,6 +81,13 @@ class PrototypesLoader : public AbstractXMLReader {
                        const rapidjson::Value &v );
     void readSpell(Spell &v,
                     const rapidjson::Value& e );
+    void readGrade( Upgrade &v,
+                    const rapidjson::Value& e );
+
+    void readParticle( ParticleSystemDeclaration &obj,
+                       const rapidjson::Value& );
+    void readParticle( ParticleSystemDeclaration::D &obj,
+                       const rapidjson::Value& );
   };
 
 #endif // PROTOTYPESLOADER_H

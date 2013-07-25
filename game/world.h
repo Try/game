@@ -180,7 +180,7 @@ class World {
 
     // PGameObject terrainView, waterView;
 
-    GraphicsSystem& graphics;
+    Graphics      & graphics;
     Resource      & resource;
     const PrototypesLoader &prototypes;
 

@@ -8,7 +8,6 @@
 
 #include "sound/sound.h"
 
-#include <tinyxml.h>
 #include <iostream>
 #include <fstream>
 #include <cmath>

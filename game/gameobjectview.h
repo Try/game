@@ -94,7 +94,7 @@ class GameObjectView {
     void applyForce( float x, float y, float z );
     void applyBulletForce( float x, float y, float z );
 
-    bool isVisible( const  GraphicsSystem::Frustum & f ) const;
+    bool isVisible( const Frustum & f ) const;
   private:
     void setForm( EnvObject &obj, const Physics::Sphere &f );
     void setForm( EnvObject &obj, const Physics::Box &f    );

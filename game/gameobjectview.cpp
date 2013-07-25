@@ -1002,7 +1002,7 @@ void GameObjectView::applyBulletForce(float x, float y, float z) {
     }
   }
 
-bool GameObjectView::isVisible(const GraphicsSystem::Frustum &f) const {
+bool GameObjectView::isVisible(const Frustum &f) const {
   if( view.size() )
     return GraphicsSystem::isVisible( view[0], f);
 

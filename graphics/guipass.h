@@ -59,7 +59,11 @@ class GUIPass {
     void setNullState();
     void pushState();
     void popState();
+
+    static const Tempest::VertexDeclaration::Declarator& decl();
+    std::string utextureName;
   private:
+    static const Tempest::VertexDeclaration::Declarator declImpl();
     struct Vertex{
       float x,y;
       float u,v;

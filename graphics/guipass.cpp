@@ -14,14 +14,10 @@ GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
                   Tempest::IndexBufferHolder  &ibo,
                   Tempest::Size &s  )
   : vs(vsh), fs(fsh), vbHolder(vbo), ibHolder(ibo), size(s) {
-  Tempest::VertexDeclaration::Declarator decl;
-  decl.add( Tempest::Decl::float2, Tempest::Usage::Position )
-      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 0 )
-      .add( Tempest::Decl::float4, Tempest::Usage::TexCoord, 1 );
-
-  vdecl = Tempest::VertexDeclaration( vbo.device(), decl );
+  vdecl = Tempest::VertexDeclaration( vbo.device(), decl() );
 
   texSize = Tempest::Size(2048);
+  utextureName = "texture";
 
   //noTexture = res.texture("gui/noTexture");
   //testTex   = res.texture("gui/frame");
@@ -84,8 +80,8 @@ void GUIPass::exec( MainGui &,
 
   device.setRenderState(rs);
 
-  dTexCoord[0] = 1.0f/size.w;
-  dTexCoord[1] = 1.0f/size.h;
+  dTexCoord[0] = -1.0/size.w;
+  dTexCoord[1] =  1.0/size.h;
 
   Tempest::RenderState currntRS = rs;
 
@@ -96,7 +92,7 @@ void GUIPass::exec( MainGui &,
   //device.clear( Tempest::Color(0,0,0,1) );//FOR DROD TESTS
 
   if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
-    device.setUniform( vs, dTexCoord, 2, "dTexCoord" );
+    device.setUniform( vs, dTexCoord, 2, "dxScreenOffset" );
 
   for( size_t r=0; r<layers.size(); ++r ){
     Layer& lay = layers[r];
@@ -106,8 +102,8 @@ void GUIPass::exec( MainGui &,
 
       if( b.size && (b.texture.tex || b.texture.nonPool) ){
         if( b.texture.nonPool )
-          device.setUniform( fs, *b.texture.nonPool,       "texture" ); else
-          device.setUniform( fs, b.texture.pageRawData(),  "texture" );
+          device.setUniform( fs, *b.texture.nonPool,      utextureName ); else
+          device.setUniform( fs, b.texture.pageRawData(), utextureName );
 
         if( currntRS!=b.state ){
           currntRS = b.state;
@@ -318,6 +314,20 @@ void GUIPass::popState() {
             state.color[2],
             state.color[3] );
   setBlendMode( state.blend );
+  }
+
+const Tempest::VertexDeclaration::Declarator &GUIPass::decl() {
+  static Tempest::VertexDeclaration::Declarator vdecl = declImpl();
+  return vdecl;
+  }
+
+const Tempest::VertexDeclaration::Declarator GUIPass::declImpl() {
+  Tempest::VertexDeclaration::Declarator decl;
+  decl.add( Tempest::Decl::float2, Tempest::Usage::Position )
+      .add( Tempest::Decl::float2, Tempest::Usage::TexCoord, 0 )
+      .add( Tempest::Decl::float4, Tempest::Usage::TexCoord, 1 );
+
+  return decl;
   }
 
 Tempest::RenderState GUIPass::makeRS(Tempest::BlendMode m) {

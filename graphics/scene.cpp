@@ -31,6 +31,7 @@ Scene::Scene(int sz)
   objPtrs.push_back( &fogOfWarObj );
   objPtrs.push_back( &omniObj );
   objPtrs.push_back( &grassObj );
+  objPtrs.push_back( &allObj );
 
   assert( int(objPtrs.size()) < GraphicObjectUserState::idCount );
   }
@@ -99,17 +100,24 @@ const Scene::Objects &Scene::omni() const {
   return omniObj;
   }
 
+const Scene::Objects &Scene::all() const {
+  return allObj;
+  }
+
 void Scene::onObjectAdded( const AbstractGraphicObject *t ) {
   onObjectOp( t, Add, t->transform() );
+  onObjectOp( allObj, t, Add, t->transform() );
   }
 
 void Scene::onObjectRemoved( const AbstractGraphicObject *t ) {
+  onObjectOp( allObj, t, Del, t->transform() );
   onObjectOp( t, Del, t->transform() );
   }
 
 void Scene::onObjectTransform( const AbstractGraphicObject *t,
                                const Tempest::Matrix4x4 &mat ) {
   onObjectOp( t, RePos, mat );
+  onObjectOp( allObj, t, RePos, mat );
   //onObjectAdded(t);
   }
 

@@ -504,7 +504,7 @@ void GameObject::higlight(int time, GameObjectView::Selection type) {
   view.higlight(time, type);
   }
 
-bool GameObject::isVisible( const  GraphicsSystem::Frustum & f ) const {
+bool GameObject::isVisible( const Frustum & f ) const {
   return view.isVisible(f);
   }
 

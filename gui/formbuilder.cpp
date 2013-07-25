@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <Tempest/Layout>
-#include <tinyxml.h>
 
 #include "button.h"
 #include "scroolwidget.h"
@@ -286,7 +285,7 @@ FormBuilder:: FormBuilder(Resource & res , Widget *ow)
   w->layout().add( b );
 
   b = new Button(res);
-  b->clicked.bind( *this, (void (FormBuilder::*)() )&FormBuilder::loadXML );
+  //b->clicked.bind( *this, (void (FormBuilder::*)() )&FormBuilder::loadXML );
   b->setText(L"Load");
   w->layout().add( b );
 
@@ -874,7 +873,7 @@ void FormBuilder::save( ScroolWidget &w,
     xml << tab << "</ScroolWidget>" << std::endl << std::endl;
     }
   }
-
+/*
 void FormBuilder::loadXML() {
   NativeSaveDialog dlg;
 
@@ -1086,7 +1085,7 @@ void FormBuilder::loadWidget(LineEdit *w, TiXmlNode *root ) {
 
 void FormBuilder::loadWidget(ScroolWidget *w, TiXmlNode *root ) {
   loadWidget( (Widget*)w, root );
-  }
+  }*/
 
 std::wstring FormBuilder::removeEscapeSym(const std::string &v) {
   std::wstring ws;
