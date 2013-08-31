@@ -310,57 +310,57 @@ Tempest::Matrix4x4 GraphicsSystem::makeShadowMatrix( const Scene & scene,
                                                      float * dir,
                                                      float sv,
                                                      bool aspect ){
-    Tempest::Matrix4x4 mat;
+  Tempest::Matrix4x4 mat;
 
-    float dist = 0.4, x = 2, y = 2, z = 0, s = 0.3, cs = 0.3;
+  float dist = 0.4, x = 2, y = 2, z = 0, s = 0.3, cs = 0.3;
 
-    const Tempest::Camera &view =
-        reinterpret_cast<const Tempest::Camera&>( scene.camera() );
+  const Tempest::Camera &view =
+      reinterpret_cast<const Tempest::Camera&>( scene.camera() );
 
-    x = view.x();
-    y = view.y();
-    z = view.z();
+  x = view.x();
+  y = view.y();
+  z = view.z();
 
-    s = smMatSize(scene, 0, 0);
+  s = smMatSize(scene, 0, 0);
 
-    float l = sqrt( dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] );
+  float l = sqrt( dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] );
 
-    for( int i=0; i<3; ++i )
-      dir[i] = (dir[i]/l);
+  for( int i=0; i<3; ++i )
+    dir[i] = (dir[i]/l);
 
-    float m[4*4] = {
-       s, 0,  0, 0,
-       0, s,  0, 0,
-       s*dir[0], s*dir[1], cs*dir[2], 0,
-       -s*x+s*z, -s*y, s*z+dist, 1,
-       };
+  float m[4*4] = {
+     s, 0,  0, 0,
+     0, s,  0, 0,
+     s*dir[0], s*dir[1], cs*dir[2], 0,
+     -s*x+s*z, -s*y, s*z+dist, 1,
+     };
 
-    mat.setData( m );
+  mat.setData( m );
 
-    Tempest::Matrix4x4 proj;
+  Tempest::Matrix4x4 proj;
 
-    if( aspect ){
-      float a = screenSize.h/float(screenSize.w);
-      proj.scale(a,1,1);
-      }
+  if( aspect ){
+    float a = screenSize.h/float(screenSize.w);
+    proj.scale(a,1,1);
+    }
 
 #ifdef __ANDROID__
-    proj.scale(1.3, 1.3, 1);
+  proj.scale(1.3, 1.3, 1);
 #else
-    proj.scale(1.15, 1.15, 1);
+  proj.scale(1.15, 1.15, 1);
 #endif
 
-    proj.rotateOZ( view.spinX() );
-    proj.translate(0,0.1,0);
+  proj.rotateOZ( view.spinX() );
+  proj.translate(0,0.1,0);
 
-    if( sv ){
-      proj.scale(sv,sv,1);
-      }
-
-    proj.mul( mat );
-    //proj.set( 3, 1, proj.at(3,1)+0.1 );
-    return proj;
+  if( sv ){
+    proj.scale(sv,sv,1);
     }
+
+  proj.mul( mat );
+  //proj.set( 3, 1, proj.at(3,1)+0.1 );
+  return proj;
+  }
 
 void GraphicsSystem::resizeEvent( int w, int h, bool isFullScreen ){
   setupScreenSize(w,h);

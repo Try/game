@@ -56,6 +56,15 @@ std::string MxAssembly::vComponent( int ts,
     return s;
     }
 
+  if( vcomponent==Tempest::Usage::Depth ){
+    std::string s =
+        ShaderSource::floatN(lang, 1)+"(" +
+        VertexInputAssembly::vComponent(1, Tempest::Usage::BiNormal, index, d) +
+        ".y)";
+    vsize = 1;
+    return s;
+    }
+
   return VertexInputAssembly::vComponent(ts, vcomponent, index, vsize);
   }
 
@@ -68,5 +77,12 @@ int MxAssembly::componentSize(Tempest::Usage::UsageType t) {
   if( t==Tempest::Usage::TexCoord )
     return 2;
 
-  return VertexInputAssembly::componentSize(t);
+  if( t==Tempest::Usage::Depth )
+    return 1;
+
+  return 0;//VertexInputAssembly::componentSize(t);
+  }
+
+bool MxAssembly::contains(Tempest::Usage::UsageType t, int /*index*/) {
+  return componentSize(t)>0;
   }

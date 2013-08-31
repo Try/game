@@ -9,9 +9,8 @@ QMAKE_CXXFLAGS += -std=gnu++0x -Wall
 win32:RC_FILE = game.rc
 
 INCLUDEPATH += include
-INCLUDEPATH += "C:/Users/Try/Home/Programming/Tempest/Tempest/include"
 
-INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/rapidjson-0.11/rapidjson/include"
+include(game_libs_dir.pri)
 
 CONFIG += directx ogl
 CONFIG += sound
@@ -19,38 +18,31 @@ CONFIG += physic
 
 ogl:{
   directx:{
-    LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest"
+    LIBS += -l"Tempest"
     } else {
-    LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_gl"
+    LIBS += -l"Tempest_gl"
     }
   } else {
-  LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib" -l"Tempest_dx"
+  LIBS += -l"Tempest_dx"
   }
 
 physic:{
-  INCLUDEPATH += "$$(BULLET_INCLUDE_PATH)"
-  LIBS += -L"$$(BULLET_LIB_PATH)" -lbullet
+  LIBS += -lbullet
   } else {
   DEFINES += NO_PHYSIC
   }
 
 sound:{
-  INCLUDEPATH += "$$(BASS_INCLUDE_PATH)"
-  LIBS += -L"$$(BASS_LIB_PATH)" -lbass
+  LIBS += -lbass
   } else {
   DEFINES += NO_SOUND
   }
 
-INCLUDEPATH += "$$(FREETYPE_INCLUDE_PATH)" \
-               "$$(FREETYPE_INCLUDE_PATH)/freetype2"
-
 LIBS += -l"gdi32" -l"ws2_32" -l"comdlg32" -l"pthread" -lz
-
-LIBS += -L"$$(DXSDK_DIR)Lib/x86" -l"d3d9" -l"d3dx9"
-LIBS += -L"$$(CG_LIB_PATH)" -l"cg" -l"cgD3D9"
-LIBS += -L"$$(DEVIL_LIB_PATH)" -l"DevIL"
-
-LIBS += -L"$$(FREETYPE_LIB_PATH)" -l"freetype"
+LIBS += -l"d3d9" -l"d3dx9"
+LIBS += -l"cg" -l"cgD3D9"
+LIBS += -l"DevIL"
+LIBS += -l"freetype"
 
 HEADERS += \
     graphics/graphicssystem.h \
@@ -179,7 +171,11 @@ HEADERS += \
     graphics/translate/mxassembly.h \
     graphics/translate/shadermaterial.h \
     graphics/translate/guiassembly.h \
-    graphics/guirender.h
+    graphics/guirender.h \
+    graphics/materialserver.h \
+    graphics/gbufffer.h \
+    graphics/translate/compileoptions.h \
+    graphics/translate/operationdef.h
 
 SOURCES += \
     main.cpp \
@@ -282,7 +278,6 @@ SOURCES += \
     graphics/material.cpp \
     graphics/scene.cpp \
     threads/time.cpp \
-    jniBind.cpp \
     util/ifstream.cpp \
     util/tnloptimize.cpp \
     gui/graphicssettingswidget.cpp \
@@ -304,7 +299,12 @@ SOURCES += \
     graphics/translate/mxassembly.cpp \
     graphics/translate/shadermaterial.cpp \
     graphics/translate/guiassembly.cpp \
-    graphics/guirender.cpp
+    graphics/guirender.cpp \
+    graphics/materialserver.cpp \
+    graphics/gbufffer.cpp \
+    graphics/translate/compileoptions.cpp \
+    graphics/translate/operationdef.cpp \
+    android_dummy.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \
@@ -342,5 +342,6 @@ OTHER_FILES += \
     ../game-build-desktop/data/particle.json \
     ../game-build-desktop/data/spell.json \
     ../game-build-desktop/data/upgrades.json \
-    ../game-build-desktop/data/game_objects/tree.json
+    ../game-build-desktop/data/game_objects/tree.json \
+    game_libs_dir.pri
 

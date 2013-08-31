@@ -356,7 +356,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     chunk.landView.push_back( view );
     }
 
-  return;
+  //return;
 
   buildVBO(lx, rx, ly, ry, minor, ibo, false, plane );
   if( minor.size() ){
@@ -365,10 +365,11 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
     for( size_t i=0; i<obj.view.size(); ++i ){
+      /*
       for( size_t r=0; r<obj.view[i].materials.size(); ++r ){
         if( obj.view[i].materials[r]=="phong" )
           obj.view[i].materials[r] = "terrain.minor";
-        }
+        }*/
       remove(obj.view[i].materials, "shadow_cast");
       }
 
@@ -387,6 +388,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                                                     prototype.get( "water" ),
                                                     prototype) );
     chunk.waterView.view->loadView( waterGeometry(cX, cY) );
+    return;//TODO
 
     chunk.fogView.view.reset( new GameObjectView( scene,
                                                   world,
@@ -517,8 +519,8 @@ Tempest::Model<WaterVertex>
           //int dz = waterMap[ i+dx[q] ][ r+dy[q] ];
           v.z = World::coordCast( heightMap[ i+dx[q] ][ r+dy[q] ] )-0.2;
 
-          v.u = x*texCoordScale;
-          v.v = y*texCoordScale;
+          v.u = 2*x*texCoordScale;
+          v.v = 2*y*texCoordScale;
 
           float normal[3];
           normal[0] = ( heightAtNoDepth(i+dx[q]-1,r+dy[q])
@@ -534,6 +536,17 @@ Tempest::Model<WaterVertex>
           v.nx = normal[0]/l;
           v.ny = normal[1]/l;
           v.nz = normal[2]/l;
+
+          float  bnormal[3] = {-1, 0, 0};
+          bnormal[2] = heightAtNoDepth(i+dx[q],r+dy[q]+1) -
+                       heightAtNoDepth(i+dx[q],r+dy[q]);
+          l = sqrt( bnormal[0]*bnormal[0] +
+                    bnormal[1]*bnormal[1] +
+                    bnormal[2]*bnormal[2]) ;
+
+          v.bx = bnormal[0]/l;
+          v.by = bnormal[1]/l;
+          v.bz = bnormal[2]/l;
 
           v.h = World::coordCast( depthAt(i+dx[q], r+dy[q]) )-0.2;
           v.h = v.h*3;

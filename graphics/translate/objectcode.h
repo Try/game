@@ -11,6 +11,9 @@
 class ObjectCode {
   public:
     ObjectCode();
+    ObjectCode( const ObjectCode & obj );
+
+    ObjectCode& operator = ( const ObjectCode& obj );
 
     std::shared_ptr< std::wstring > wrkFolder;
     std::vector< std::shared_ptr<ShaderSource> > units;
@@ -22,6 +25,7 @@ class ObjectCode {
       };
     std::vector< Connect >     connect;
 
+    void loadFromFile(const char *f );
     void loadFromFile(const wchar_t *f );
     void load( const char* data );
 

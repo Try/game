@@ -29,6 +29,7 @@
 
 #include "frustum.h"
 #include "translate/shadermaterial.h"
+#include "materialserver.h"
 
 class ParticleSystemEngine;
 
@@ -36,7 +37,7 @@ class Graphics {
   public:
     Graphics(void *hwnd, bool isFullScreen);
 
-    bool render(Scene &scene,
+    bool render( Scene &scene,
                  ParticleSystemEngine &e,
                  const Tempest::Camera &camera,
                  size_t dt );
@@ -63,6 +64,7 @@ class Graphics {
     static VisibleRet isVisible( const AbstractGraphicObject& c, const Frustum& f );
     static VisibleRet isVisible( float x, float y, float z, float r, const Frustum& f );
 
+    size_t idOfMaterial( const std::string& m );
   private:
     std::unique_ptr<Tempest::AbstractAPI> api;
     ShaderSource::Lang lang() const;
@@ -92,23 +94,42 @@ class Graphics {
                     const Tempest::Camera &camera,
                     size_t dt );
 
-    std::vector<const AbstractGraphicObject*> toDraw;
-    int draw( const Frustum &frustum,
-              bool deepVTest,
-              const Tempest::AbstractCamera & camera,
+    int draw(const Frustum &frustum,
+              bool deepVTest, bool shadowPass,
               const Scene::Objects & v );
-    void completeDraw( Scene &scene);
 
-    ShaderMaterial mat;
-    ShaderMaterial::UniformsContext context;
+    Tempest::Texture2d fillShadowMap(Tempest::Device &device, const Scene &scene , const Tempest::Size &sm);
 
-    void setupSceneConstants( Scene& scene,
+    MaterialServer msrv;
+    ShaderMaterial::UniformsContext context, cefects;
+
+    void setupSceneConstants(const Scene &scene,
                               ShaderMaterial::UniformsContext& context );
-    void setupObjectConstants(Scene& scene, const AbstractGraphicObject &obj,
-                               ShaderMaterial::UniformsContext& context );
+    void setupSceneConstants(const Scene &scene,
+                              ShaderMaterial::UniformsContext& context,
+                              const Tempest::Matrix4x4& view,
+                              const Tempest::Matrix4x4& proj );
 
+
+    void initGB(GBuffer &b ,     const Tempest::Size &size);
+    void initGB(ShadowBuffer& b, const Tempest::Size &size );
+    Tempest::Texture2d colorBuf(int w, int h);
+
+    Tempest::Texture2d depth(int w, int h);
+    Tempest::Texture2d depth( const Tempest::Size & sz );
+    Tempest::Texture2d shadowMap(int w, int h);
+
+    Tempest::Matrix4x4 makeShadowMatrix( const Scene & scene,
+                                         float * dir,
+                                         float sv,
+                                         bool aspect = true );
+    static float smMatSize(const Scene & s, float sv = 0, float maxSv = 0);
+
+    bool useHDR;
     Tempest::Size wndSize;
     size_t time;
+
+    GraphicsSettingsWidget::Settings settings;
   };
 
 #endif // GRAPHICS_H

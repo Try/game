@@ -7,13 +7,15 @@
 #include "shadersource.h"
 #include <Tempest/VertexShader>
 #include <Tempest/FragmentShader>
+#include <Tempest/DirectionLight>
+
 
 class ShaderMaterial {
   public:
     ShaderMaterial( Tempest::VertexShaderHolder&   vsHolder,
                     Tempest::FragmentShaderHolder& fsHolder );
 
-    void install(ShaderSource &s , VertexInputAssembly &asemb);
+    void install(ShaderSource &s , const CompileOptions &opt, VertexInputAssembly &asemb);
 
     const ShaderSource::Code::Uniform& texUniform( size_t n ) const;
     size_t texUniformCount() const;
@@ -21,25 +23,33 @@ class ShaderMaterial {
     void setTexture( int slot, const Tempest::Texture2d & t );
 
     struct UniformsContext{
-      Tempest::Matrix4x4 mWorld, object, mvp;
+      Tempest::Matrix4x4 proj, mWorld, object, mvp;
+      Tempest::Matrix4x4 shView, shMatrix;
       size_t texID;
       float view[3];
 
       int tick;
 
       float invW, invH;
-      Tempest::Texture2d texture[ ShaderSource::tsCount ];
+      Tempest::Texture2d texture[ ShaderSource::tsCount ][32];
+
+      float lightDir[3], lightColor[3], sceneAblimient[3];
       };
 
     void setupShaderConst(UniformsContext& context );
 
     Tempest::VertexShader        vs;
     Tempest::FragmentShader      fs;
+
+    const Tempest::RenderState& renderState() const;
+    void setRenderState( const Tempest::RenderState& s );
   private:
     struct Uniform{
       enum Usage{
         MVP,
         Obj,
+        WorldMat,
+        ShadowMat,
         Texture,
         Time,
         dxScreenOffset,
@@ -55,6 +65,7 @@ class ShaderMaterial {
         } sh;
 
       ShaderSource::TextureSemantic tex;
+      int slot;
       std::string name;
       };
     std::vector<Uniform> uniforms;

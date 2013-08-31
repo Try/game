@@ -264,7 +264,7 @@ void DesertStrikeScenario::tick() {
   int w = game.curWorld().terrain().width() *Terrain::quadSize;
   int h = game.curWorld().terrain().height()*Terrain::quadSize;
 
-  int p1 = 10,
+  int p1 = 15,
       p2 = 80-p1;
   if( tNum%interval==0 ){
     mkUnits( 1,
@@ -581,7 +581,7 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
   cen->useScissor( false );
   box->useScissor( false );
 
-  editPanel->setVisible(0);
+  //editPanel->setVisible(0);
   //settingsPanel->setVisible(0);
 
   showEditPanel.activated.bind( *this, &DesertStrikeScenario::toogleEditPanel );

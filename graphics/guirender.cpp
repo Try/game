@@ -2,6 +2,7 @@
 
 #include "translate/guiassembly.h"
 #include "translate/objectcode.h"
+#include "translate/compileoptions.h"
 
 GuiRender::GuiRender(Tempest::VertexShaderHolder &vs,
                       Tempest::FragmentShaderHolder &fs,
@@ -30,5 +31,7 @@ GuiRender::Mat::Mat( Tempest::VertexShaderHolder &vs,
   co.loadFromFile( L"data/sh/material/gui.json" );
 
   GuiAssembly assemb( GUIPass::decl(), lang );
-  install( *co.codeOf(), assemb );
+  CompileOptions opt;
+  opt.lang = lang;
+  install( *co.codeOf(), opt, assemb );
   }

@@ -40,6 +40,7 @@ class PainterGUI: public Tempest::PainterDevice {
     Tempest::PaintTextEngine& textEngine();
 
     void setColor(float r, float g, float b, float a );
+    void setFlip( bool h, bool v );
 
     void setNullState();
     void pushState();

@@ -12,6 +12,7 @@
 #include <Tempest/Assert>
 
 PrototypesLoader::PrototypesLoader() {
+  defs.reserve(4);
   }
 
 const ProtoObject &PrototypesLoader::get(const std::string &obj) const {
@@ -76,6 +77,10 @@ const ParticleSystemDeclaration &PrototypesLoader::particle(const std::string &o
 
 void PrototypesLoader::unload() {
   defs.pop_back();
+  }
+
+const std::string &PrototypesLoader::material(int i) {
+  return defs.back().materials[i];
   }
 
 void PrototypesLoader::readCommandsPage( ProtoObject &obj,
@@ -158,6 +163,10 @@ void PrototypesLoader::loadClass(const rapidjson::Value &v) {
   std::string name = v["name"].GetString();
 
   PProtoObject p = PProtoObject( new ProtoObject() );
+  if( v["extends"].IsString() ){
+    *p = get( v["extends"].GetString() );
+    }
+
   p->name = name;
   defs.back().data[ name ] = p;
 
@@ -185,10 +194,12 @@ void PrototypesLoader::loadClass(const rapidjson::Value &v) {
 
   const Value& behavior = v["behavior"];
   if( behavior.IsObject() ){
+    p->behaviors.clear();
     readBehavior( *p, behavior );
     }
 
   if( behavior.IsArray() ){
+    p->behaviors.clear();
     for( size_t i=0; i<behavior.Size(); ++i ){
       readBehavior( *p, behavior[i] );
       }
@@ -230,11 +241,13 @@ void PrototypesLoader::loadClass(const rapidjson::Value &v) {
     }
 
   if( v["atack"].IsObject() ){
+    p->data.atk.clear();
     ProtoObject::GameSpecific::Atack a;
     readAtack(a, v["atack"]);
     p->data.atk.push_back( a );
     } else
   if( v["atack"].IsArray() ){
+    p->data.atk.clear();
     const Value& atk = v["atack"];
     for( size_t i=0; i<atk.Size(); ++i )
       if( atk[i].IsObject() ){
@@ -312,6 +325,18 @@ void PrototypesLoader::readView( ProtoObject::View &v,
   readIf( e["specular"], v.specularFactor, 0.5 );
   readIf( e["randRotate"], v.randRotate, false );
 
+  std::string shadowT = "basic";
+  readIf( e["shadowType"], shadowT );
+
+  if( shadowT=="basic" )
+    v.shadowType = ProtoObject::View::BasicShadow;
+
+  if( shadowT=="noShadow" )
+    v.shadowType = ProtoObject::View::NoShadow;
+
+  if( shadowT=="bias" )
+    v.shadowType = ProtoObject::View::BiasShadow;
+
   if( e["size"].IsNumber() ){
     double tmp = e["size"].GetDouble();
     std::fill( v.size, v.size+3, tmp );
@@ -352,8 +377,19 @@ void PrototypesLoader::readView( ProtoObject::View &v,
     const Value& m = e["material"];
     for( size_t i=0; i<m.Size(); ++i )
         readMaterial( v, m[i] );
+    }
+
+  if( e["shadedMaterial"].IsString() ){
+    const char* c = e["shadedMaterial"].GetString();
+
+    size_t id = find( defs.back().materials, c )-defs.back().materials.begin();
+
+    if( id==defs.back().materials.size() )
+      defs.back().materials.push_back(c);
+
+    v.shadedMaterial = id;
+    }
   }
-}
 
 void PrototypesLoader::readProperty( ProtoObject &p,
                                      const rapidjson::Value &e){
@@ -449,13 +485,13 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &a,
 
   if( e["damage"].IsInt() ){
     a.damage       = e["damage"].GetInt();
-    a.splashDamage = a.splashDamage;
+    a.splashDamage = a.damage;
     }
-  readIf( e["range"].IsInt(),  a.range      );
-  readIf( e["delay"].IsInt(),  a.delay      );
-  readIf( e["splash"].IsInt(), a.splashSize );
+  readIf( e["range"],  a.range      );
+  readIf( e["delay"],  a.delay      );
+  readIf( e["splash"], a.splashSize );
 
-  readIf( e["slpashDamage"].IsInt(), a.splashDamage );
+  readIf( e["slpashDamage"], a.splashDamage );
 
   if( e["taget"].IsString() ){
     std::string str = e["taget"].GetString();
@@ -603,7 +639,10 @@ void PrototypesLoader::load(const std::string &s) {
     defs.push_back( defs.back() ); else
     defs.push_back( Defs() );
 
-  //AbstractXMLReader::load(s);
+  loadImpl(s);
+  }
+
+void PrototypesLoader::loadImpl(const std::string &s) {
   using namespace rapidjson;
   std::string jsonstr = Tempest::SystemAPI::loadText(s.data());
 
@@ -630,7 +669,7 @@ void PrototypesLoader::load(const std::string &s) {
     for( size_t i=0; i<m.Size(); ++i )
       if( m[i].IsObject() &&
           m[i]["file"].IsString() ){
-        load( m[i]["file"].GetString() );
+        loadImpl( m[i]["file"].GetString() );
         }
     }
 

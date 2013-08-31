@@ -49,6 +49,8 @@ ProtoObject::View::View() {
     boxSize[i] = 0;
     }
 
+  shadedMaterial = -1;
+
   randRotate = 0;
   sphereDiameter = 0;
   specularFactor = 0;
@@ -56,6 +58,8 @@ ProtoObject::View::View() {
 
   isLandDecal  = 0;
   hasOverDecal = 0;
+
+  shadowType = BasicShadow;
 
   //isParticle = 0;
   }

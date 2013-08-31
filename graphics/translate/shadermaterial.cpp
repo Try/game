@@ -1,5 +1,6 @@
 #include "shadermaterial.h"
 #include "mxassembly.h"
+#include <Tempest/Device>
 
 #include <iostream>
 
@@ -10,17 +11,21 @@ ShaderMaterial::ShaderMaterial( Tempest::VertexShaderHolder   &vs,
   }
 
 void ShaderMaterial::install( ShaderSource &s,
+                              const CompileOptions & opt,
                               VertexInputAssembly & asemb ) {
   uniforms.clear();
+  utextures.clear();
 
   //MxAssembly asemb( MVertex::decl() );
-  compiled = s.code( asemb, asemb.getLang() );
-
-  std::cout << compiled.vs << std::endl;
-  std::cout << compiled.fs << std::endl;
+  compiled = s.code( asemb, opt );
 
   vs = vsHolder.loadFromSource( compiled.vs );
   fs = fsHolder.loadFromSource( compiled.fs );
+
+  if( !(vs.isValid() && fs.isValid()) ){
+    std::cout << vs.log() << std::endl;
+    std::cout << fs.log() << std::endl;
+    }
 
   for( size_t i=0; i<compiled.uniformVs.size(); ++i ){
     const ShaderSource::Code::Uniform &u = compiled.uniformVs[i];
@@ -41,8 +46,9 @@ void ShaderMaterial::install( ShaderSource &s,
     {
       Uniform ux;
       mkUniform(u, ux);
-      ux.sh = Uniform::Fragment;
-      ux.tex = u.texSemantic;
+      ux.sh   = Uniform::Fragment;
+      ux.tex  = u.texSemantic;
+      ux.slot = u.slot;
       uniforms.push_back(ux);
       }
     }
@@ -68,6 +74,12 @@ void ShaderMaterial::mkUniform( const ShaderSource::Code::Uniform &u,
   if( u.name=="objMatrix" ){
     ux.usage = Uniform::Obj;
     }
+  if( u.name=="worldMatrix" ){
+    ux.usage = Uniform::WorldMat;
+    }
+  if( u.name=="shMatrix" ){
+    ux.usage = Uniform::ShadowMat;
+    }
   if( u.name=="time" ){
     ux.usage = Uniform::Time;
     }
@@ -90,6 +102,7 @@ void ShaderMaterial::mkUniform( const ShaderSource::Code::Uniform &u,
     ux.usage = Uniform::Texture;
     }
 
+  ux.tex  = ShaderSource::tsDiffuse;
   ux.name = u.name;
   }
 
@@ -102,15 +115,19 @@ void ShaderMaterial::setupShaderConst( UniformsContext& context ) {
     }
   }
 
+const Tempest::RenderState &ShaderMaterial::renderState() const {
+  return compiled.rs;
+  }
+
+void ShaderMaterial::setRenderState(const Tempest::RenderState &s) {
+  compiled.rs = s;
+  }
+
 template< class T >
 void ShaderMaterial::installUniform( T& vs,
                                      const Uniform& u ,
                                      UniformsContext &c ){
   float t = float( c.tick%1024 );
-  float ldir[3] = {0.301511, 0.301511, 0.904534};
-
-  float lcl[3] = {0.7f, 0.7f, 0.7f};
-  float lab[3] = {0.3f, 0.3f, 0.3f};
 
   switch ( u.usage ) {
     case Uniform::MVP:
@@ -119,17 +136,28 @@ void ShaderMaterial::installUniform( T& vs,
     case Uniform::Obj:
       vs.setUniform( u.name.data(), c.object );
       break;
+    case Uniform::WorldMat:
+      vs.setUniform( u.name.data(), c.mWorld);
+      break;
+    case Uniform::ShadowMat:
+      vs.setUniform( u.name.data(), c.shMatrix);
+      break;
     case Uniform::Time:
       vs.setUniform( u.name.data(), t );
       break;
-    case Uniform::LightDir:
-      vs.setUniform( u.name.data(), ldir, 3 );
+    case Uniform::LightDir:{
+      float d[3];
+      d[0] = -c.lightDir[0];
+      d[1] = -c.lightDir[1];
+      d[2] = -c.lightDir[2];
+      vs.setUniform( u.name.data(), d, 3 );
+      }
       break;
     case Uniform::LightColor:
-      vs.setUniform( u.name.data(), lcl, 3 );
+      vs.setUniform( u.name.data(), c.lightColor, 3 );
       break;
     case Uniform::LightAblimient:
-      vs.setUniform( u.name.data(), lab, 3 );
+      vs.setUniform( u.name.data(), c.sceneAblimient, 3 );
       break;
     case Uniform::dxScreenOffset:{
       float w[2] = { -c.invW, c.invH };
@@ -137,8 +165,8 @@ void ShaderMaterial::installUniform( T& vs,
       }
       break;
     case Uniform::Texture:{
-      if( !c.texture[u.tex].isEmpty() )
-        vs.setUniform( u.name.data(), c.texture[u.tex] );else
+      if( !c.texture[u.tex][u.slot].isEmpty() )
+        vs.setUniform( u.name.data(), c.texture[u.tex][u.slot] );else
       if( c.texID < utextures.size() )
         vs.setUniform( u.name.data(), utextures[c.texID].tex );
       ++c.texID;
@@ -146,7 +174,10 @@ void ShaderMaterial::installUniform( T& vs,
       break;
 
     case Uniform::ViewVec :
-      vs.setUniform( u.name.data(), c.view, 3 );
+      float v[3] = { -c.view[0],
+                     -c.view[1],
+                     -c.view[2] };
+      vs.setUniform( u.name.data(), v, 3 );
       break;
     }
   }

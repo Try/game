@@ -14,8 +14,12 @@ namespace Tempest{
 class Material {
   public:
     Material();
+    size_t matID, shMatID;
 
-    Tempest::Texture2d diffuse, normal, glow;
+    Tempest::Texture2d diffuse, normal, glow, emission;
+    struct TextureExtendedData{
+      Tempest::Texture2d diffuse, normal, glow, emission;
+      } tdata[1];
     float specular;
 
     bool  useAlphaTest;

@@ -14,6 +14,7 @@
 #include <sstream>
 
 #include <rapidjson/document.h>
+#include "graphics/translate/objectcode.h"
 
 Resource::Resource( Tempest::TextureHolder       & tx,
                     Tempest::LocalTexturesHolder & ltx,
@@ -37,6 +38,8 @@ Resource::Resource( Tempest::TextureHolder       & tx,
   vs.owner = this;
   fs.owner = this;
   px.owner = this;
+
+  materials.owner = this;
 
   setupSettings(settings);
 
@@ -136,6 +139,14 @@ Sound &Resource::sound(const std::string &key) const {
   return *sounds.get(key);
   }
 
+const ObjectCode &Resource::material(const std::string &key) const {
+  return *materials.get(key);
+  }
+
+const std::vector<std::string> &Resource::unitsMaterials() const {
+  return umaterials;
+  }
+
 Tempest::VertexShader &Resource::vshader(const std::string &key) {
   VShader &s = vs.get(key);
 
@@ -228,6 +239,33 @@ void Resource::load( Box<  std::shared_ptr<Model::Raw>  > &,
   assert(0);
   }
 
+void Resource::load(const Box<std::shared_ptr<ObjectCode> > & ,
+                    const std::string &k,
+                    const Box< std::shared_ptr<ObjectCode> >::ToLoadPromision &p ){
+  auto it = materials.loaded.find(p.fname);
+
+  if( it!=materials.loaded.end() ){
+    materials.add(k, materials.get( it->second ) );
+    } else {
+    std::shared_ptr<ObjectCode> s;
+    s.reset( new ObjectCode() );
+    static const std::shared_ptr<std::wstring> wrk =
+        std::make_shared<std::wstring>(L"data/sh/material");
+
+    s->wrkFolder = wrk;
+    {
+    s->loadFromFile( p.fname.data() );
+
+    //MxAssembly assemb( MVertex::decl(), lang() );
+    //mat.install( *co.codeOf(), assemb );
+    }
+    //s->load(f);
+
+    materials.add(k,  s );
+    materials.loaded[k] = p.fname;
+    }
+  }
+
 void Resource::load( Box<VShader> &,
                      const std::string &,
                      const std::string &,
@@ -269,6 +307,13 @@ void Resource::load( Box< std::shared_ptr<Sound> >& sounds,
     sounds.add(k,  s );
     sounds.loaded[f] = k;
     }
+  }
+
+void Resource::load( Box<std::shared_ptr<ObjectCode> > &,
+                     const std::string &,
+                     const std::string &,
+                     bool ) {
+  assert(0);
   }
 
 void Resource::load( Box<Texture> &textures,
@@ -427,6 +472,27 @@ void Resource::load(const std::string &s) {
             v["file"].IsString() &&
             v["name"].IsString() ){
           sounds.preload( v["name"].GetString(), v["file"].GetString() );
+          }
+        }
+      }
+
+    const Value& material = data["material"];
+    if( material.IsArray() ){
+      for( size_t i=0; i<material.Size(); ++i ){
+        const Value& v = material[i];
+        if( v.IsObject() && v["file"].IsString() ){
+          if( v["name"].IsString() ){
+            materials.preload( v["name"].GetString(), v["file"].GetString() );
+            }
+
+          if( v["usage"].IsString() ){
+            static const std::string
+                pefect   = "efect",
+                material = "material";
+            const char* u = v["usage"].GetString();
+            if( u==material )
+              umaterials.push_back( v["name"].GetString() );
+            }
           }
         }
       }

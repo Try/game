@@ -135,7 +135,7 @@ class Game : public Tempest::Window {
     bool isReplayMode() const;
 
     static const int ticksPerSecond;
-    void f();
+
 private:
     bool  paused, needToUpdate;
     //bool isFullScreen;

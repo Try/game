@@ -12,6 +12,8 @@ Material::Material():specular(0), useAlphaTest(1), alphaTrestRef(0.5) {
   memset( &usage, 0, sizeof(usage) );
   zWrighting = true;
   teamColor  = &nullColor;
+  matID      = -1;
+  shMatID    = -1;
   }
 
 Tempest::Matrix4x4 Material::animateObjMatrix( const Tempest::Matrix4x4 &object,

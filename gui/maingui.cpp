@@ -222,48 +222,46 @@ void MainGui::resizeEvent(int w, int h) {
   }
 
 int MainGui::mouseDownEvent( Tempest::MouseEvent &e ) {
-  central.mouseDownEvent(e);
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::MouseDown );
+  //central.mouseDownEvent(e);
   return e.isAccepted();
   }
 
 int MainGui::mouseUpEvent( Tempest::MouseEvent &e) {
-  central.mouseUpEvent(e);
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::MouseUp );
+  //central.mouseUpEvent(e);
   return e.isAccepted();
   }
 
 int MainGui::mouseMoveEvent( Tempest::MouseEvent &e) {
   mousePos = e.pos();
 
-  central.mouseDragEvent(e);
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::MouseDrag);
 
   if( e.isAccepted() )
     return 1;
 
-  central.mouseMoveEvent(e);
-
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::MouseMove);
   return e.isAccepted();
   }
 
 int MainGui::mouseWheelEvent(Tempest::MouseEvent &e) {
-  central.mouseWheelEvent(e);
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::MouseWheel);
   return e.isAccepted();
   }
 
 int MainGui::scutEvent(Tempest::KeyEvent &e) {
-  e.ignore();
-  central.shortcutEvent(e);
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::Shortcut);
   return 1;
   }
 
 int MainGui::keyDownEvent(Tempest::KeyEvent &e) {
-  e.ignore();
-  central.keyDownEvent(e);
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::KeyDown);
   return e.isAccepted();
   }
 
 int MainGui::keyUpEvent(Tempest::KeyEvent &e) {
-  e.ignore();
-  central.keyUpEvent(e);
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::KeyUp);
   return e.isAccepted();
   }
 

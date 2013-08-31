@@ -16,7 +16,7 @@ GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
   : vs(vsh), fs(fsh), vbHolder(vbo), ibHolder(ibo), size(s) {
   vdecl = Tempest::VertexDeclaration( vbo.device(), decl() );
 
-  texSize = Tempest::Size(2048);
+  texSize = Tempest::Size(1);
   utextureName = "texture";
 
   //noTexture = res.texture("gui/noTexture");
@@ -25,6 +25,7 @@ GUIPass::GUIPass( const Tempest::VertexShader   & vsh,
   setCurrentBuffer(0);
 
   setColor(1,1,1,1);
+  setFlip(false, false);
   iboTmp.reserve( 8096 );
   stateStk.reserve(64);
   }
@@ -91,7 +92,8 @@ void GUIPass::exec( MainGui &,
 
   //device.clear( Tempest::Color(0,0,0,1) );//FOR DROD TESTS
 
-  if( GraphicsSettingsWidget::Settings::api!=GraphicsSettingsWidget::Settings::openGL )
+  if( GraphicsSettingsWidget::Settings::api==
+      GraphicsSettingsWidget::Settings::directX )
     device.setUniform( vs, dTexCoord, 2, "dxScreenOffset" );
 
   for( size_t r=0; r<layers.size(); ++r ){
@@ -160,7 +162,22 @@ void GUIPass::rect( int x0, int y0, int x1, int y1,
     std::copy( state.color, state.color+4, v[i].color );
     }
 
+  if( state.flipH )
+    for( int i=0; i<4; ++i )
+      v[i].u = 1-v[i].u;
+
+  if( state.flipV )
+    for( int i=0; i<4; ++i )
+      v[i].v = 1-v[i].v;
+
   Layer& lay = layers[curLay];
+
+  /*
+  if( lay.geometryBlocks.back().texture.nonPool )
+    for( int i=0; i<4; ++i )
+      v[i].v = 1- v[i].v;
+  */
+
   lay.needToUpdate = true;
 
   lay.guiRawData.push_back( v[0] );
@@ -296,8 +313,14 @@ void GUIPass::setColor(float r, float g, float b, float a) {
   state.color[3] = a;
   }
 
+void GUIPass::setFlip(bool h, bool v) {
+  state.flipH = h;
+  state.flipV = v;
+  }
+
 void GUIPass::setNullState(){
   setColor( 1,1,1,1 );
+  setFlip(false, false);
   setBlendMode( Tempest::noBlend );
   }
 
@@ -313,6 +336,7 @@ void GUIPass::popState() {
             state.color[1],
             state.color[2],
             state.color[3] );
+  setFlip( state.flipH, state.flipV );
   setBlendMode( state.blend );
   }
 

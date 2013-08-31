@@ -22,8 +22,10 @@ static void stype( ShaderSource & sh,
     {ShaderSource::Math,         "math"},
     {ShaderSource::Math,         "func1arg"},
     {ShaderSource::Math,         "func2arg"},
+    {ShaderSource::Math,         "func3arg"},
     {ShaderSource::ExternLib,    "func"},
     {ShaderSource::ShaderOutput, "output"},
+    {ShaderSource::Option,       "option"},
     {ShaderSource::Unknown, ""}
   };
 
@@ -46,6 +48,7 @@ static void stype( ShaderSource & sh,
     sh.csize1 = 4;
 
     sh.uniformName = "mvpMatrix";
+    sh.type = ShaderSource::Unknown;
     }
 
   if( s=="object" ){
@@ -54,6 +57,16 @@ static void stype( ShaderSource & sh,
     sh.csize1 = 4;
 
     sh.uniformName = "objMatrix";
+    sh.type = ShaderSource::Unknown;
+    }
+
+  if( s=="matrix" ){
+    sh.isUniform = true;
+    sh.csize  = 4;
+    sh.csize1 = 4;
+
+    sh.uniformName = "worldMatrix";
+    sh.type = ShaderSource::Unknown;
     }
 
   if( s=="time" ){
@@ -73,10 +86,33 @@ const std::string ObjectCode::texSemantic[] = {
   "Envi",
   "AblimientOclusion",
   "AlphaMask",
+  "ScreenData",
+  "ShadowMap",
   ""
   };
 
 ObjectCode::ObjectCode() {
+  }
+
+ObjectCode::ObjectCode(const ObjectCode &obj) {
+  *this = obj;
+  }
+
+ObjectCode &ObjectCode::operator =(const ObjectCode &obj) {
+  wrkFolder = obj.wrkFolder;
+  units.resize( obj.units.size() );
+  for( size_t i=0; i<obj.units.size(); ++i )
+    units[i].reset( new ShaderSource(*obj.units[i]) );
+
+  input   = obj.input;
+  output  = obj.output;
+  connect = obj.connect;
+
+  return *this;
+  }
+
+void ObjectCode::loadFromFile(const char *f) {
+  load( Tempest::SystemAPI::loadText(f).data() );
   }
 
 void ObjectCode::loadFromFile(const wchar_t *f) {
@@ -190,6 +226,11 @@ void ObjectCode::load(const char *data) {
           b->textureSemantic = tsFromString( vy.GetString() );
           }
 
+        const Value &vz = obj["texture"]["textureId"];
+        if( vz.IsNumber() ){
+          b->vcomponentIndex = vz.GetInt();
+          }
+
         b->isTexture = true;
         }
 
@@ -202,6 +243,11 @@ void ObjectCode::load(const char *data) {
         const Value &vy = obj["texture_rect"]["textureSemantic"];
         if( vy.IsString() ){
           b->textureSemantic = tsFromString( vy.GetString() );
+          }
+
+        const Value &vz = obj["texture_rect"]["textureId"];
+        if( vz.IsNumber() ){
+          b->vcomponentIndex = vz.GetInt();
           }
 
         b->isTexture = true;
@@ -221,6 +267,13 @@ void ObjectCode::load(const char *data) {
           b->csize1 = obj["uniform"]["size1"].GetInt();
 
         b->isUniform = true;
+        }
+
+      if( obj["option"].IsObject() ){
+        const Value& vx = obj["option"];
+
+        if( vx["name"].IsString() )
+          b->name = vx["name"].GetString();
         }
 
       //b->load(obj);
@@ -259,22 +312,31 @@ std::shared_ptr<ShaderSource>
   std::vector< std::shared_ptr<ShaderSource> > src;
   src.resize( units.size() );
 
+  std::set<int> sId;
+
   for( size_t i=0; i<units.size(); ++i ){
     int inId = units[i]->inputConnect;
 
-    if( inId>=0 && inId<int(in.size()) ){
+    if( inId>=0 && inId<int(in.size()) && in[inId] ){
       src[i] = in[ inId ];
+      sId.insert(i);
       } else {
-      src[i].reset( new ShaderSource( *units[i] ) );
+      if( units[i]->nodes.size() )
+        src[i].reset( new ShaderSource( *units[i]->nodes[0] ) ); else
+        src[i].reset( new ShaderSource( *units[i] ) );
       }
     }
 
   for( size_t i=0; i<connect.size(); ++i ){
     const Connect& c = connect[i];
-    if( src[ c.port1 ]->nodes.size()<=c.port1Id-1 )
-      src[ c.port1 ]->nodes.resize( c.port1Id );
+    bool rep = std::find( input.begin(), input.end(), c.port1 )==input.end();
 
-    src[ c.port1 ]->nodes[c.port1Id-1] = src[c.port2];
+    if( rep || (sId.find(c.port1)==sId.end()) ){
+      if( src[ c.port1 ]->nodes.size()<=c.port1Id-1 )
+        src[ c.port1 ]->nodes.resize( c.port1Id );
+
+      src[ c.port1 ]->nodes[c.port1Id-1] = src[c.port2];
+      }
     }
 
   for( size_t i=0; i<src.size(); ++i )
@@ -285,7 +347,7 @@ std::shared_ptr<ShaderSource>
         };
 
       for( size_t r=0; r<src[i]->nodes.size(); ++r )
-        if( r<2 )
+        if( r<2 && src[i]->nodes[r] )
           src[i]->nodes[r]->shOutType = t[r];
       }
 
@@ -311,7 +373,8 @@ Tempest::Usage::UsageType ObjectCode::vcomponent(int v) {
     Tempest::Usage::TexCoord,
     Tempest::Usage::Normal,
     Tempest::Usage::BiNormal,
-    Tempest::Usage::Color
+    Tempest::Usage::Color,
+    Tempest::Usage::Depth
     };
 
   return t[v];

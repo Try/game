@@ -9,6 +9,8 @@ class MxAssembly : public VertexInputAssembly {
 
     virtual std::string vComponent(int tagetSize , Tempest::Usage::UsageType vcomponent, int index, int &vsize);
     virtual int componentSize(Tempest::Usage::UsageType t);
+
+    virtual bool contains(Tempest::Usage::UsageType t, int index);
   };
 
 #endif // MXASSEMBLY_H

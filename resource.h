@@ -15,6 +15,7 @@
 #include "model_mx.h"
 
 #include "gui/graphicssettingswidget.h"
+#include "graphics/translate/objectcode.h"
 
 #include <memory>
 
@@ -56,7 +57,8 @@ class Resource : public Tempest::ResourceContext {
           bool findTexture( const std::string & key );
 
     Sound &sound( const std::string & key ) const;
-
+    const ObjectCode& material( const std::string& key ) const;
+    const std::vector<std::string>& unitsMaterials() const;
 
     Tempest::VertexShader   & vshader( const std::string & key );
     Tempest::FragmentShader & fshader( const std::string & key );
@@ -144,7 +146,7 @@ class Resource : public Tempest::ResourceContext {
 
       const T& get( const std::string & s ) const {
         {
-        typename std::unordered_map< std::string, std::string >::const_iterator i;
+        typename std::unordered_map< std::string, ToLoadPromision >::const_iterator i;
         i = toLoad.find(s);
 
         if( i!=toLoad.end() ){
@@ -229,6 +231,9 @@ class Resource : public Tempest::ResourceContext {
     void load(Box< std::shared_ptr<Sound> >& sounds,
                const std::string &k, const std::string & f , bool);
 
+    void load(Box< std::shared_ptr<ObjectCode> >& sounds,
+               const std::string &k, const std::string & f , bool);
+
     void load( Box<VShader>& vs,
                const std::string &k, const std::string & f,
                const std::string &def, bool );
@@ -242,6 +247,10 @@ class Resource : public Tempest::ResourceContext {
 
     void load(Box< std::shared_ptr<Model::Raw> >& m,
                const std::string &k, const std::string & f , bool);
+
+    void load( const Box< std::shared_ptr<ObjectCode> >& m,
+               const std::string &k,
+               const Box< std::shared_ptr<ObjectCode> >::ToLoadPromision &);
 
     //void load( Box<Tempest::Color>& m,
     //           const std::string &k, const std::string & f );
@@ -266,6 +275,8 @@ class Resource : public Tempest::ResourceContext {
     Box<PixmapsPool::TexturePtr> px;
 
     mutable Box< std::shared_ptr<Sound> > sounds;
+    Box< std::shared_ptr<ObjectCode> > materials;
+    std::vector<std::string> umaterials;
 
     Tempest::VertexBufferHolder      & vboHolder;
     Tempest::LocalVertexBufferHolder & lvboHolder;

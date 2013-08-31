@@ -21,6 +21,8 @@ void TextureView::paintEvent(Tempest::PaintEvent &e) {
 
   u.data.nonPool = &texture;
 
+  PainterGUI& g = (PainterGUI&)p.device();
+  g.setFlip(false, true);
   p.setTexture( u );
   p.drawRect( 0, 0, w(), h(),
               0, 0, texture.width(), texture.height() );

@@ -48,6 +48,14 @@ struct ProtoObject {
 
       std::string name;
       std::vector< std::string > materials;
+      size_t shadedMaterial;
+      enum ShadowType{
+        NoShadow,
+        BasicShadow,
+        BiasShadow
+        };
+
+      ShadowType shadowType;
 
       int   align[3];
       double size[3], alignSize;

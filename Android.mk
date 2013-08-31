@@ -2,13 +2,15 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := main
-Tempest_PATH := C:/Users/Try/Home/Programming/Tempest/Tempest
-Tinyxml_PATH := C:/Users/Try/Home/Programming/SharedLibs/tinyxml
-Bullet_PATH  := C:/Users/Try/Home/Programming/SharedLibs/bullet-2.80-rev2531/bullet-2.80-rev2531/src
+LOCAL_MODULE   := main
+Tempest_PATH   := C:/Users/Try/Home/Programming/Tempest/Tempest
+Tinyxml_PATH   := C:/Users/Try/Home/Programming/SharedLibs/tinyxml
+Rapidjson_PATH := C:/Users/Try/Home/Programming/SharedLibs/rapidjson-0.11/rapidjson
+Bullet_PATH    := C:/Users/Try/Home/Programming/SharedLibs/bullet-2.80-rev2531/bullet-2.80-rev2531/src
 
 LOCAL_C_INCLUDES := $(Tempest_PATH)/include\
                     $(Tempest_PATH)/math \
+                    $(Rapidjson_PATH)/include \
                     $(Tinyxml_PATH)/ \
                     $(Bullet_PATH)/
 LOCAL_C_INCLUDES += C:/Users/Try/Home/Programming/android/game_ndk/game/jni/freetype/include
@@ -24,6 +26,7 @@ LOCAL_SRC_FILES := \
   $(wildcard $(LOCAL_PATH)/behavior/*.cpp) \
   $(wildcard $(LOCAL_PATH)/game/*.cpp) \
   $(wildcard $(LOCAL_PATH)/game/missions/*.cpp) \
+  $(wildcard $(LOCAL_PATH)/graphics/translate/*.cpp) \
   $(wildcard $(LOCAL_PATH)/graphics/*.cpp) \
   $(wildcard $(LOCAL_PATH)/gui/*.cpp) \
   $(wildcard $(LOCAL_PATH)/gui/gen/*.cpp) \
@@ -37,7 +40,7 @@ LOCAL_SRC_FILES := \
   $(wildcard $(LOCAL_PATH)/xml/*.cpp) \
   $(wildcard $(LOCAL_PATH)/*.cpp) )
 
-LOCAL_STATIC_LIBRARIES := freetype2 tinyxml bullet
+LOCAL_STATIC_LIBRARIES := freetype2 rapidjson bullet
 LOCAL_SHARED_LIBRARIES := Tempest
 
 LOCAL_LDLIBS    := -llog -landroid -lEGL -lGLESv1_CM -lGLESv2 -ljnigraphics

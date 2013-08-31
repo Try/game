@@ -67,6 +67,10 @@ Scenario::Scenario( Game &game, MainGui &ui, BehaviorMSGQueue & msg )
   currPl = 0;
   }
 
+Scenario::~Scenario() {
+  setupMinimap(0);
+  }
+
 void Scenario::tick() {
   }
 

@@ -4,6 +4,8 @@
 #include <Tempest/Matrix4x4>
 #include <Tempest/AbstractCamera>
 
+#include <cmath>
+
 Frustum::Frustum(const Tempest::AbstractCamera &c) {
   Tempest::Matrix4x4 cl = c.projective();
   cl.mul( c.view() );

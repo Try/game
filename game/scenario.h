@@ -38,7 +38,7 @@ class Player;
 
 struct Scenario {
     Scenario(Game& game, MainGui & ui, BehaviorMSGQueue &msg);
-    virtual ~Scenario(){}
+    virtual ~Scenario();
 
     virtual void onStartGame() {}
     virtual void tick();

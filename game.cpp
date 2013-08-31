@@ -117,16 +117,18 @@ void Game::loadData() {
   setPlaylersCount(1);
 
 #ifdef __ANDROID__
-  loadMission("campagin/td2.sav");
+  loadMission("campagin/td1_1.sav");
+  //loadMission("save/map5.sav");
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
+  //setScenario( new DeatmachScenario(*this, gui, msg) );
 #else
-  //loadMission("save/td2.sav");
+  loadMission("save/td1_1.sav");
   setScenario( new DeatmachScenario(*this, gui, msg) );
 #endif
-  //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );
+  //loadPngWorld( Tempest::Pixmap("./terrImg/h1.png") );
 
-  //setScenario( new DesertStrikeScenario(*this, gui, msg) );
   //setScenario( new DeatmachScenario(*this, gui, msg) );
+  setScenario( new DesertStrikeScenario(*this, gui, msg) );
 
   //for( size_t i=0; i<world->activeObjects().size(); ++i )
     //world->activeObjects()[i]->setHP(0);
@@ -644,8 +646,15 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
 
   Material material;
 
+  if( src.shadedMaterial==size_t(-1) )
+    material.matID = -1; else
+    material.matID = graphics.idOfMaterial( proto.material(src.shadedMaterial) );
+
+  material.shMatID = src.shadowType;
+
   material.diffuse   = r.texture( src.name+"/diff" );
   material.normal    = r.texture( src.name+"/norm" );
+  material.emission  = r.texture( src.name+"/emis" );
   material.specular  = src.specularFactor;
 
   if( contains( src.materials, "phong" ) ||

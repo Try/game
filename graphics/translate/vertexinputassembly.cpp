@@ -39,21 +39,21 @@ std::string VertexInputAssembly::vComponent( int /*tagetSize*/,
                                              Tempest::Usage::UsageType vcomponent,
                                              int index,
                                              int& vsize ) {
-  std::string v;
-  if( lang==ShaderSource::Cg )
-    v = "vs_in." + toString(vcomponent).name; else
-    v = toString(vcomponent).name;
+  std::stringstream v;
+  if( lang==CompileOptions::Cg )
+    v << "vs_in." << toString(vcomponent).name; else
+    v << toString(vcomponent).name;
 
   vsize = componentSize(vcomponent);
 
   if( vcomponent==Tempest::Usage::TexCoord )
-    v += std::to_string(index);
+    v << (index);
   /*
     for( int i=0; i<decl.size(); ++i )
       if( decl[i].usage==vcomponent )
         v += std::to_string( decl[i].index );*/
 
-  return v;
+  return v.str();
   }
 
 
@@ -61,31 +61,39 @@ std::string VertexInputAssembly::vsInput() {
   static const int sz[] = {0,1,2,3,4, 4,2,4, 2,4};
 
   std::stringstream ss;
-  if( lang==ShaderSource::Cg )
+  if( lang==CompileOptions::Cg )
     ss << "struct VS_Input{\n";
   for( int i=0; i<decl.size(); ++i ){
-    if( lang==ShaderSource::Cg )
-      ss << "  ";
-    if( lang==ShaderSource::GLSL )
-      ss << "attribute ";
-
     Tempest::VertexDeclaration::Declarator::Element e = decl[i];
+
+    if( lang==CompileOptions::Cg )
+      ss << "  ";
+    if( lang==CompileOptions::GLSL )
+      ss << "attribute ";
+    if( lang==CompileOptions::GLSLES ){
+      if( e.component==Tempest::Decl::half2 ||
+          e.component==Tempest::Decl::half4 ||
+          e.component==Tempest::Decl::color )
+        ss << "attribute lowp "; else
+        ss << "attribute      ";
+      }
+
     ss << ShaderSource::floatN(lang, sz[e.component]) << " ";
     ss << toString(e.usage).name;//usage[e.usage].name;
     if( e.usage==Tempest::Usage::TexCoord )
-      ss << std::to_string(e.index);
+      ss << e.index;
 
-    if( lang==ShaderSource::Cg ){
+    if( lang==CompileOptions::Cg ){
       ss << " : ";
       ss << toString(e.usage).reg;//usage[e.usage].reg;
       if( e.usage==Tempest::Usage::TexCoord )
-        ss << std::to_string(e.index);
+        ss << e.index;
       }
 
     ss << ";" << std::endl;
     }
 
-  if( lang==ShaderSource::Cg )
+  if( lang==CompileOptions::Cg )
     ss << "  };\n";
 
   return ss.str();

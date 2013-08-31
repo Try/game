@@ -328,7 +328,7 @@ void WayFindAlgo::optimizeWay() {
   int s = 0;
   int e = 2, wr = 1;
   while( e < int(way.size()) ){
-    if( !optimizeWay( way[s], way[e] )/* || e-s>20*/ ){
+    if( !optimizeWay( way[s], way[e] ) || e-s>20 ){
       way[wr] = way[e-1];
       ++wr;
       s  = e-1;

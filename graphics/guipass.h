@@ -55,6 +55,7 @@ class GUIPass {
     void setCurrentBuffer( int i );
 
     void setColor( float r, float g, float b, float a );
+    void setFlip( bool h, bool v );
 
     void setNullState();
     void pushState();
@@ -116,6 +117,8 @@ class GUIPass {
       Tempest::Texture2d tex;
       float color[4];
       Tempest::BlendMode blend;
+
+      bool flipH, flipV;
       } state;
 
     std::vector<State> stateStk;

@@ -30,6 +30,7 @@ class PrototypesLoader {
     void load(const std::string &s);
     void unload();
 
+    const std::string& material(int i);
   protected:
     struct Defs{
       std::unordered_map<std::string, PProtoObject> data;
@@ -40,6 +41,7 @@ class PrototypesLoader {
       std::vector<PUpgrade> grades;
 
       std::vector< std::string > unitTypes, atackTypes;
+      std::vector< std::string > materials;
       };
 
     std::vector<Defs> defs;
@@ -88,6 +90,8 @@ class PrototypesLoader {
                        const rapidjson::Value& );
     void readParticle( ParticleSystemDeclaration::D &obj,
                        const rapidjson::Value& );
+
+    void loadImpl(const std::string &s);
   };
 
 #endif // PROTOTYPESLOADER_H
