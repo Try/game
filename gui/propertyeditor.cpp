@@ -13,8 +13,8 @@ using namespace Tempest;
 
 PropertyEditor::PropertyEditor( Resource & res ):Widget(), res(res), editor(0){
   setSizePolicy( Expanding, FixedMin );
-  frame.data = res.pixmap("gui/colors");
-  back.data  = res.pixmap("gui/buttonBack");
+  frame = res.pixmap("gui/colors");
+  back  = res.pixmap("gui/buttonBack");
 
   mupIntent = false;
 
@@ -30,7 +30,7 @@ void PropertyEditor::paintEvent(Tempest::PaintEvent &pe) {
 
   p.setTexture( back );
   p.drawRectTailed( 0,0, w(), h(),
-                    0,0, back.data.rect.w, back.data.rect.h );
+                    0,0, back.width(), back.height() );
 
   p.setTexture( frame );
 
@@ -104,9 +104,9 @@ void PropertyEditor::setup(const std::vector<Property> &p) {
 
   prop = p;
 
-  Font f;
+  Font f( res.sprites() );
   for( size_t i=0; i<prop.size(); ++i )
-    f.fetch( res, prop[i].name );
+    f.fetch( prop[i].name );
 
   updateSize();
   }

@@ -17,7 +17,7 @@ using namespace Tempest;
 class FormBuilder::FrmWidget : public Widget {
   public:
     FrmWidget( Resource & res ) {
-      this->frame.data = res.pixmap("gui/colors");
+      this->frame = res.pixmap("gui/colors");
       }
 
     void paintEvent( Tempest::PaintEvent &e ){
@@ -47,7 +47,7 @@ class FormBuilder::FrmWidget : public Widget {
       paintNested(e);
       }
 
-  Tempest::Bind::UserTexture frame;
+  Tempest::Sprite frame;
   };
 
 
@@ -70,7 +70,7 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
   public:
     FormWidget( FormBuilder &owner ):Base(owner.res), owner(owner){
       setMargin(this,8);
-      frame.data = owner.res.pixmap("gui/colors");
+      frame = owner.res.pixmap("gui/colors");
 
       SizePolicy p = this->sizePolicy();
       p.minSize.w = std::max( p.minSize.w, 20 );
@@ -256,7 +256,7 @@ class FormBuilder::FormWidget:public Base, public Seriaziable {
       //w->layout().setMargin(m);
       }
 
-    Tempest::Bind::UserTexture frame;
+    Tempest::Sprite frame;
   };
 
 class FormBuilder::Central:public FormWidget<Panel>{
@@ -297,7 +297,7 @@ FormBuilder:: FormBuilder(Resource & res , Widget *ow)
   b = new Button(res);
   b->setMaximumSize(27, 27);
   b->clicked.bind( (Widget&)*this, &FormBuilder::deleteLater );
-  b->icon.data = res.pixmap("gui/ckBox");
+  b->icon = res.pixmap("gui/ckBox");
   w->layout().add( b );
 
   w->setMaximumSize( w->sizePolicy().maxSize.w, 27 );

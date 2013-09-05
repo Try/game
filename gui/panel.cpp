@@ -3,10 +3,10 @@
 #include "resource.h"
 
 Panel::Panel( Resource &res ) {
-  back[0].data = res.pixmap("gui/background512");
-  back[1].data = res.pixmap("gui/background");
+  back[0] = res.pixmap("gui/background512");
+  back[1] = res.pixmap("gui/background");
 
-  frame.data = res.pixmap("gui/frame2");
+  frame   = res.pixmap("gui/frame2");
 
   resize(200, 400);
   mouseTracking = false;

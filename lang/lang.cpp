@@ -92,6 +92,6 @@ std::wstring Lang::tr(const std::string &text) {
   return tr_impl(text);
   }
 
-void Lang::fetch(Font &f, Resource &res) {
-  f.fetch(res, leters);
+void Lang::fetch( Tempest::Font &f ) {
+  f.fetch(leters);
   }

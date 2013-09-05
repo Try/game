@@ -4,7 +4,7 @@
 
 CheckBox::CheckBox(Resource &res):Button(res) {
   state = false;
-  imgCheck.data = res.pixmap("gui/ckBox");
+  imgCheck = res.pixmap("gui/ckBox");
   }
 
 void CheckBox::setChecked( bool c ) {
@@ -32,17 +32,17 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
   p.setBlendMode( Tempest::alphaBlend );
 
-  int y = (h()-imgCheck.data.rect.h)/2;
+  int y = (h()-imgCheck.height())/2;
 
-  Button::drawBack( p, Tempest::Rect{0,y, imgCheck.data.rect.w, imgCheck.data.rect.h} );
-  Button::drawFrame(p, Tempest::Rect{0,y, imgCheck.data.rect.w, imgCheck.data.rect.h} );
+  Button::drawBack( p, Tempest::Rect{0,y, imgCheck.width(), imgCheck.height()} );
+  Button::drawFrame(p, Tempest::Rect{0,y, imgCheck.width(), imgCheck.height()} );
 
   if( state ){
     p.setTexture( imgCheck );
     if( presAnim )
-      p.drawRect( 2, y+2, imgCheck.data.rect.w-4, imgCheck.data.rect.h-4,
-                  0, 0, imgCheck.data.rect.w, imgCheck.data.rect.h ); else
-      p.drawRect( 0, y, imgCheck.data.rect.w, imgCheck.data.rect.h );
+      p.drawRect( 2, y+2, imgCheck.width()-4, imgCheck.height()-4,
+                  0, 0, imgCheck.width(), imgCheck.height() ); else
+      p.drawRect( 0, y, imgCheck.width(), imgCheck.height() );
     }
 
   Button::paintEvent(e);

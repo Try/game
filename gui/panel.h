@@ -2,16 +2,16 @@
 #define PANEL_H
 
 #include <Tempest/Widget>
+#include <Tempest/Sprite>
 #include "graphics/paintergui.h"
 
 class Resource;
 
 class Panel : public Tempest::Widget {
   public:
-    typedef Tempest::Bind::UserTexture Texture;
     Panel(Resource &res );
 
-    Texture frame, back[2];
+    Tempest::Sprite frame, back[2];
 
     void setDragable( bool d );
     bool isDragable();

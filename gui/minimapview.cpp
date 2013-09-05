@@ -342,28 +342,21 @@ void MiniMapView::onTerrainCanged() {
 
 void MiniMapView::paintEvent(Tempest::PaintEvent &e) {
   Tempest::Painter p(e);
-  Tempest::Bind::UserTexture u;
-
-  u.data.nonPool = &terr;
 
   p.setBlendMode( Tempest::alphaBlend );
-  p.setTexture( u );
+  p.setTexture( terr );
   p.drawRect( 0, 0, w(), h(),
               0, 0, terr.width(), terr.height() );
 
-  u.data.nonPool = &units;
-
-  p.setTexture( u );
+  p.setTexture( units );
   p.drawRect( 0, 0, w(), h(),
               0, 0, units.width(), units.height() );
 
-  u.data.nonPool = &fog;
-  p.setTexture( u );
+  p.setTexture( fog );
   p.drawRect( 0, 0, w(), h(),
               0, 0, fog.width(), fog.height() );
 
-  u.data.nonPool = &hud;
-  p.setTexture( u );
+  p.setTexture( hud );
   p.drawRect( 0, 0, w(), h(),
               0, 0, fog.width(), fog.height() );
   }

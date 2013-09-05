@@ -47,9 +47,10 @@ Game::Game( ShowMode sm )
       msg(*this),
       serializator(L"./serialize_tmp.obj", Serialize::Write ){
   paused       = false;
-  needToUpdate = false;
+  //needToUpdate = false;
 
   currentPlayer = 1;
+  isLoading = false;
 
   //size_t s = sizeof(MVertex);
 
@@ -62,6 +63,10 @@ Game::Game( ShowMode sm )
   physicStarted    = false;
 
   physicCompute = async( this, &Game::computePhysic, 0 );
+
+  timer.timeout.bind(this, &Game::update);
+  timer.start(1000/ticksPerSecond);
+  timer.setRepeatCount(1);
   }
 
 Game::~Game() {
@@ -261,9 +266,12 @@ void Game::onRender( double dt ){
   }
 
 void Game::update(){
-  if( !needToUpdate )
+  if( isLoading )
     return;
-  needToUpdate = false;
+
+  //if( !needToUpdate )
+    //return;
+  //needToUpdate = false;
 
   static const size_t updateDT = 1000/ticksPerSecond;
   size_t tnow = Time::tickCount();
@@ -293,7 +301,12 @@ void Game::update(){
   }
 
 void Game::render() {
-  needToUpdate = true;
+  if( isLoading ){
+    std::cout << "loading..." << std::endl;
+    return;
+    }
+
+  //needToUpdate = true;
 
   size_t time = Time::tickCount();
   if( graphics.render( world->getScene(),
@@ -302,7 +315,7 @@ void Game::render() {
                        Time::tickCount() )){
 
     }
-  update();
+  //update();
 
   ++fps.n;
   fps.time += int(Time::tickCount() - time);
@@ -765,6 +778,7 @@ void Game::serialize( GameSerializer &s ) {
   if( magic!="SAV")
     return;
 
+  isLoading = true;
   if( s.isReader() ){
     world = 0;
     gui.setupMinimap(0);
@@ -772,7 +786,7 @@ void Game::serialize( GameSerializer &s ) {
     setScenario( new DeatmachScenario(*this, gui, msg) );
     }
 
-  //Tempest::Application::processEvents();
+  Tempest::Application::processEvents();
 
   int plCount = this->plCount()-1;
   s + plCount;
@@ -780,10 +794,13 @@ void Game::serialize( GameSerializer &s ) {
 
   if( s.isReader() ){
     setPlaylersCount( plCount );
+    Tempest::Application::processEvents();
     }
 
-  for( int i=0; i<this->plCount(); ++i )
+  for( int i=0; i<this->plCount(); ++i ){
     player(i).serialize(s);
+    Tempest::Application::processEvents();
+    }
 
   int wCount = worlds.size(), curWorld = 0;
   s + wCount;
@@ -818,8 +835,10 @@ void Game::serialize( GameSerializer &s ) {
     serializeScenario(s);
     }
 
-  for( size_t i=0; i<worlds.size(); ++i )
+  for( size_t i=0; i<worlds.size(); ++i ){
     worlds[i]->serialize(s);
+    Tempest::Application::processEvents();
+    }
 
   for( int i=0; i<this->plCount(); ++i )
     player(i).computeFog(world);
@@ -834,6 +853,7 @@ void Game::serialize( GameSerializer &s ) {
     }
 
   updateMissionTargets();
+  isLoading = false;
   }
 
 void Game::serializeScenario( GameSerializer &s ) {

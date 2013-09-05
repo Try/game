@@ -30,8 +30,8 @@ struct Scenario::AddUnitButton: public Button{
   AddUnitButton( Resource & res, ProtoObject& obj )
       :Button(res), prototype(obj) {
     clicked.bind( *this, &AddUnitButton::click );
-    Texture t;
-    t.data = res.pixmap("gui/icon/"+obj.name);
+    Tempest::Sprite t;
+    t = res.pixmap("gui/icon/"+obj.name);
     setText( obj.name );
 
     icon = t;
@@ -427,8 +427,8 @@ void Scenario::setupUI( InGameControls *mw,
     gold = p.gold;
     lim  = p.lim;
 
-    gold->icon.data = res.pixmap("gui/icon/gold");
-    lim-> icon.data = res.pixmap("gui/icon/house");
+    gold->icon = res.pixmap("gui/icon/gold");
+    lim-> icon = res.pixmap("gui/icon/house");
 
     gold->setHint(L"$(gold)");
     lim ->setHint(L"$(units_limit)");

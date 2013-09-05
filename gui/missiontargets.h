@@ -2,6 +2,7 @@
 #define MISSIONTARGETS_H
 
 #include <Tempest/Widget>
+#include <Tempest/Sprite>
 #include "graphics/paintergui.h"
 
 class Resource;
@@ -15,7 +16,7 @@ class MissionTargets : public Tempest::Widget {
     void paintEvent(Tempest::PaintEvent &e);
 
   private:
-    Tempest::Bind::UserTexture frame, ckFrame, ck;
+    Tempest::Sprite frame, ckFrame, ck;
     Tempest::Widget * box;
 
     Game & game;

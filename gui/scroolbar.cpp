@@ -27,10 +27,10 @@ ScroolBar::ScroolBar( Resource & res ) {
     b[i]->setSizePolicy(p);
     }
 
-  b[0]->back[0].data = res.pixmap("gui/scroolUp");
-  b[0]->back[1].data = b[0]->back[0].data;
-  b[1]->back[0].data = res.pixmap("gui/scroolDown");
-  b[1]->back[1].data = b[1]->back[0].data;
+  b[0]->back[0] = res.pixmap("gui/scroolUp");
+  b[0]->back[1] = b[0]->back[0];
+  b[1]->back[0] = res.pixmap("gui/scroolDown");
+  b[1]->back[1] = b[1]->back[0];
 
   b[0]->clicked.bind( *this, &ScroolBar::dec );
   b[1]->clicked.bind( *this, &ScroolBar::inc );

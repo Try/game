@@ -28,7 +28,7 @@ class PropertyEditor : public Tempest::Widget {
 
   private:
     Resource & res;
-    Tempest::Bind::UserTexture frame, back;
+    Tempest::Sprite frame, back;
 
     std::vector<Property> prop;
 

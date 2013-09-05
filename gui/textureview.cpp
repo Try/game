@@ -17,13 +17,10 @@ void TextureView::setTexture(const Tempest::Texture2d &t) {
 
 void TextureView::paintEvent(Tempest::PaintEvent &e) {
   Tempest::Painter p(e);
-  Tempest::Bind::UserTexture u;
 
-  u.data.nonPool = &texture;
-
-  PainterGUI& g = (PainterGUI&)p.device();
-  g.setFlip(false, true);
-  p.setTexture( u );
+  p.setFlip(false, true);
+  p.setTexture( texture );
+  //p.setTexture( u );
   p.drawRect( 0, 0, w(), h(),
               0, 0, texture.width(), texture.height() );
 

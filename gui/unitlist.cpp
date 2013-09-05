@@ -31,23 +31,23 @@ struct UnitList::Btn : public Button {
 
     Tempest::Painter p(e);
 
-    PainterGUI& pt = (PainterGUI&)p.device();
-    pt.setColor( 1, 1-std::max(1-oldHp/200.0, 0.0), 1-std::max(1-oldHp/128.0, 0.0), 1 );
+    //PainterGUI& pt = (PainterGUI&)p.device();
+    p.setColor( 1, 1-std::max(1-oldHp/200.0, 0.0), 1-std::max(1-oldHp/128.0, 0.0), 1 );
 
     p.setBlendMode( Tempest::alphaBlend );
     p.setTexture( icon );
 
     int sz = std::min(w(), h());
-    float k = std::min( sz/float(icon.data.rect.w),
-                        sz/float(icon.data.rect.h) );
+    float k = std::min( sz/float(icon.width()),
+                        sz/float(icon.height()) );
 
-    int icW = icon.data.rect.w*k,
-        icH = icon.data.rect.h*k;
+    int icW = icon.width() *k,
+        icH = icon.height()*k;
 
     Tempest::Rect s = p.scissor();
     p.setScissor( s.intersected(viewRect()) );
     p.drawRect( (w()-icW)/2, (h()-icH)/2, icW, icH,
-                0, 0, icon.data.rect.w, icon.data.rect.h );
+                0, 0, icon.width(), icon.height() );
     p.setScissor(s);
 
     drawFrame(p);
@@ -67,7 +67,7 @@ struct UnitList::Btn : public Button {
   GameObject * owner;
   Tempest::signal<GameObject*> clicked;
 
-  Texture icon;
+  Tempest::Sprite icon;
   int oldHp;
   };
 
@@ -128,7 +128,7 @@ void UnitList::setup(const std::vector<GameObject*> &ux ) {
   for( size_t i=0; i<units.size(); ++i ){
     Btn *b = new Btn(res);
     b->clicked.bind( this, &UnitList::onBtn );
-    b->icon.data = res.pixmap("gui/icon/"+units[i]->getClass().name);
+    b->icon = res.pixmap("gui/icon/"+units[i]->getClass().name);
     b->owner = units[i];
     int x = sz*(i%10);
     if( i%10>=5 )

@@ -11,6 +11,9 @@
 #include <Tempest/FragmentShader>
 #include <Tempest/ResourceContext>
 
+#include <Tempest/SpritesHolder>
+#include <Tempest/Sprite>
+
 #include "pixmapspool.h"
 #include "model_mx.h"
 
@@ -63,8 +66,9 @@ class Resource : public Tempest::ResourceContext {
     Tempest::VertexShader   & vshader( const std::string & key );
     Tempest::FragmentShader & fshader( const std::string & key );
 
-    PixmapsPool::TexturePtr pixmap( const std::string & key );
-    PixmapsPool::TexturePtr pixmap( const Tempest::Pixmap& pm, bool flush );
+    Tempest::Sprite pixmap( const std::string & key );
+    Tempest::Sprite pixmap( const Tempest::Pixmap& pm, bool flush );
+    Tempest::SpritesHolder& sprites();
 
     void flushPixmaps();
     //using AbstractXMLReader::load;
@@ -261,10 +265,10 @@ class Resource : public Tempest::ResourceContext {
     void load( Box< FShader >& fs,
                const std::string &k, const std::string & f, bool );
 
-    void load(Box<PixmapsPool::TexturePtr>& fs,
+    void load( Box<Tempest::Sprite>& fs,
                const std::string &k, const std::string & f , bool);
 
-    void load( PixmapsPool::TexturePtr p, const std::string & f );
+    void load(const Tempest::Sprite &p, const std::string & f );
 
     mutable Box< Model > models;
     mutable Box< std::shared_ptr<Model::Raw> > rawModels;
@@ -272,7 +276,7 @@ class Resource : public Tempest::ResourceContext {
     //mutable Box<Tempest::Color>     texturesAvg;
     Box< VShader > vs;
     Box< FShader > fs;
-    Box<PixmapsPool::TexturePtr> px;
+    Box< Tempest::Sprite > px;
 
     mutable Box< std::shared_ptr<Sound> > sounds;
     Box< std::shared_ptr<ObjectCode> > materials;
@@ -285,7 +289,7 @@ class Resource : public Tempest::ResourceContext {
     Tempest::VertexShaderHolder &  vsHolder;
     Tempest::FragmentShaderHolder& fsHolder;
 
-    PixmapsPool pixmaps;
+    Tempest::SpritesHolder pixmaps;
     std::string settingsStr;
     std::string loadSrc( const std::string & f );
   };

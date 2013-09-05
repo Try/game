@@ -34,9 +34,9 @@ World::World( Game & gm,
   tx = ty = 0;
   mouseObject = 0;
 
-  green.data = resource.pixmap("gui/hp");
-  bar.data   = resource.pixmap("gui/bar");
-  gray.data  = resource.pixmap("gui/gray");
+  green = resource.pixmap("gui/hp");
+  bar   = resource.pixmap("gui/bar");
+  gray  = resource.pixmap("gui/gray");
 
   isRunning = true;
 

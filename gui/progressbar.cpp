@@ -3,12 +3,14 @@
 #include "resource.h"
 #include "font.h"
 
+#include <Tempest/Font>
+
 ProgressBar::ProgressBar(Resource &res)
             :hotKey(this, Tempest::KeyEvent::K_NoKey), res(res) {
- back[0].data = res.pixmap("gui/hp");
- back[1].data = res.pixmap("gui/gray");
+ back[0] = res.pixmap("gui/hp");
+ back[1] = res.pixmap("gui/gray");
 
- frame.data = res.pixmap("gui/frame");
+ frame   = res.pixmap("gui/frame");
 
  setFocusPolicy( Tempest::ClickFocus );
 
@@ -27,7 +29,7 @@ ProgressBar::ProgressBar(Resource &res)
  maxV = 100;
  }
 
-void ProgressBar::setBackTexture(const ProgressBar::Texture &t) {
+void ProgressBar::setBackTexture(const Tempest::Sprite &t) {
  back[0] = t;
  back[1] = t;
  }
@@ -44,8 +46,8 @@ const std::wstring ProgressBar::text() const {
 void ProgressBar::setText(const std::wstring &t) {
  if( txt!=t ){
    txt = t;
-   Font f;
-   f.fetch(res, txt);
+   Tempest::Font f(res.sprites());
+   f.fetch(txt);
    update();
    }
  }
@@ -121,11 +123,11 @@ void ProgressBar::paintEvent( Tempest::PaintEvent &e ) {
  if( pw2==27 )
    pw2 = 27;
 
- Texture bk = back[1];
+ Tempest::Sprite bk = back[1];
  p.setTexture( bk );
  p.drawRect( px, py, pw2, ph2,
              0, 0,
-             bk.data.rect.w, bk.data.rect.h );
+             bk.width(), bk.height() );
 
  bk = back[0];
  p.setTexture( bk );
@@ -133,7 +135,7 @@ void ProgressBar::paintEvent( Tempest::PaintEvent &e ) {
  if( maxV>minV )
    p.drawRect( px, py, pw2*val/(maxV-minV), ph2,
                0, 0,
-               bk.data.rect.w, bk.data.rect.h );
+               bk.width(), bk.height() );
 
  p.setTexture( frame );
 
@@ -164,18 +166,18 @@ void ProgressBar::paintEvent( Tempest::PaintEvent &e ) {
 
  p.setBlendMode( Tempest::alphaBlend );
  p.setTexture( icon );
- Font f;
+ Tempest::Font f(res.sprites());
 
  int sz = std::min(w(), h());
 
- float k = std::min( sz/float(icon.data.rect.w),
-                     sz/float(icon.data.rect.h) );
+ float k = std::min( sz/float(icon.width()),
+                     sz/float(icon.height()) );
 
- int icW = icon.data.rect.w*k,
-     icH = icon.data.rect.h*k;
+ int icW = icon.width() *k,
+     icH = icon.height()*k;
 
  p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
-             0, 0, icon.data.rect.w, icon.data.rect.h );
+             0, 0, icon.width(), icon.height() );
 
  p.setFont(f);
  p.drawText( 0,0,w(),h(), txt,

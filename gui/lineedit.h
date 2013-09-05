@@ -2,6 +2,7 @@
 #define LINEEDIT_H
 
 #include <Tempest/Widget>
+#include <Tempest/Font>
 #include <string>
 
 #include "font.h"
@@ -44,8 +45,8 @@ class LineEdit : public Tempest::Widget {
     Tempest::Point sp, ep;
     int scrool;
 
-    Font font;
-    Tempest::Bind::UserTexture frame;
+    Tempest::Font   font;
+    Tempest::Sprite frame;
 
     bool isEdited;
     void updateSel();

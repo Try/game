@@ -41,8 +41,8 @@ struct InGameControls::AddUnitButton: public Button{
   AddUnitButton( Resource & res, ProtoObject& obj )
       :Button(res), prototype(obj) {
     clicked.bind( *this, &AddUnitButton::click );
-    Texture t;
-    t.data = res.pixmap("gui/icon/"+obj.name);
+    Tempest::Sprite t;
+    t = res.pixmap("gui/icon/"+obj.name);
     setText( obj.name );
 
     icon = t;
@@ -58,12 +58,12 @@ struct InGameControls::AddUnitButton: public Button{
 
 InGameControls::InGameControls( Resource &res,
                                 BehaviorMSGQueue &,
-                                PrototypesLoader &prototypes, Game &game)
-               : res(res),
+                                PrototypesLoader &prototypes,
+                                Game &game)
+                : //Surface( ),
+                 res(res),
                  game(game),
                  prototypes(prototypes)
-                 //showEditPanel(this, Tempest::KeyEvent::K_F9),
-                 //showSettings (this, Tempest::KeyEvent::K_F8)
   {
   isHooksEnabled = true;
   setFocusPolicy( Tempest::ClickFocus );

@@ -10,10 +10,10 @@ void mCall( T m ){
   mx(1, &args);
   }
 
-extern "C" JNIEXPORT void JNICALL invokeMainImpl(){
+static void invokeMainImpl(){
   int main( int, char** );
 
-  Tempest::Application::sleep(5);// Eclipse sucks
+  Tempest::Application::sleep(1);// Eclipse sucks
   mCall(main);
   }
 

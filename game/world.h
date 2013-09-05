@@ -194,7 +194,7 @@ class World {
     void computePhysic(void *);
     Future physicCompute;
 
-    Tempest::Bind::UserTexture green, bar, gray;
+    Tempest::Sprite green, bar, gray;
 
     void createResp( int pl, int x, int y, int minX, int minY );
 

@@ -18,10 +18,11 @@
 #include <Tempest/VertexShaderHolder>
 #include <Tempest/FragmentShaderHolder>
 
+#include <Tempest/SurfaceRender>
+
 #include <Tempest/GraphicObject>
 #include <Tempest/AbstractScene>
 
-#include "graphics/guirender.h"
 #include "graphics/scene.h"
 #include "gui/graphicssettingswidget.h"
 
@@ -32,6 +33,7 @@
 #include "materialserver.h"
 
 class ParticleSystemEngine;
+class MainGui;
 
 class Graphics {
   public:
@@ -86,7 +88,7 @@ class Graphics {
 
   private:
     Resource * resource;
-    GuiRender gui;
+    Tempest::SurfaceRender r0, uiRender, hintRender;
     MainGui * widget;
 
     void renderImpl(Scene &scene,

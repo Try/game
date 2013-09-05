@@ -26,15 +26,18 @@ Graphics::Graphics( void *hwnd, bool isFullScreen )
     liboHolder( device ),
     vsHolder  ( device ),
     fsHolder  ( device ),
-    gui( vsHolder, fsHolder, vboHolder, iboHolder, wndSize, lang() ),
+    //gui( vsHolder, fsHolder, vboHolder, iboHolder, wndSize, lang() ),
+    r0( vsHolder, fsHolder ),
+    uiRender( vsHolder, fsHolder ),
+    hintRender( vsHolder, fsHolder ),
     msrv( vsHolder, fsHolder, localTex, lang() ){
   time   = 0;
   useHDR = 0;
 
   //Tempest::DisplaySettings s( Tempest::SystemAPI::screenSize(), 32, true );
-  Tempest::DisplaySettings s( 1280, 768, 32, true );
+  //Tempest::DisplaySettings s( 1280, 768, 32, true );
 
-  device.setDisplaySettings(s);
+  //device.setDisplaySettings(s);
   }
 
 bool Graphics::render( Scene &scene,
@@ -45,7 +48,12 @@ bool Graphics::render( Scene &scene,
     return false;
 
   onRender( std::max<size_t>(dt-time, 0) );
-  gui.update( *widget, device );
+  //gui.update( *widget, device );
+  widget->buildVBO( r0,
+                    uiRender,
+                    hintRender,
+                    lvboHolder,
+                    liboHolder);
 
   time = dt;//(time+dt);
   renderImpl(scene, e, camera, dt);
@@ -135,7 +143,11 @@ void Graphics::renderImpl( Scene &scene,
   setupSceneConstants( scene, context );
   msrv.completeDraw(device, scene, g, 0, 0, context, cefects);
 
-  gui.exec( *widget, 0, 0, device );
+  //gui.exec( *widget, 0, 0, device );
+  //surfRender.renderTo( device );
+  r0.renderTo(device);
+  uiRender.renderTo(device);
+  hintRender.renderTo(device);
 
   for( int i=0; i<ShaderSource::tsCount; ++i )
     for( int r=0; r<32; ++r ){

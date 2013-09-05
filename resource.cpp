@@ -3,6 +3,7 @@
 #include <Tempest/VertexShaderHolder>
 #include <Tempest/LocalVertexBufferHolder>
 #include <Tempest/LocalTexturesHolder>
+#include <Tempest/Sprite>
 
 #include <Tempest/SystemAPI>
 
@@ -169,19 +170,23 @@ Tempest::FragmentShader &Resource::fshader(const std::string &key){
   return s.sh;
   }
 
-PixmapsPool::TexturePtr Resource::pixmap(const std::string &key) {
+Tempest::Sprite Resource::pixmap(const std::string &key) {
   //pixmaps.flush();
   return px.get(key);
   }
 
-PixmapsPool::TexturePtr Resource::pixmap( const Tempest::Pixmap &px,
-                                          bool flush ) {
-  PixmapsPool::TexturePtr tmp = pixmaps.add(px);
+Tempest::Sprite Resource::pixmap( const Tempest::Pixmap &px,
+                                  bool flush ) {
+  Tempest::Sprite tmp = pixmaps.load(px);
 
   if( flush )
     pixmaps.flush();
 
   return tmp;
+  }
+
+Tempest::SpritesHolder &Resource::sprites() {
+  return pixmaps;
   }
 
 void Resource::flushPixmaps() {
@@ -280,14 +285,14 @@ void Resource::load( Box<FShader> &,
   assert(0);
   }
 
-void Resource::load(Box<PixmapsPool::TexturePtr> &,
+void Resource::load(Box<Tempest::Sprite> &,
                     const std::string &,
                     const std::string &,
                     bool ) {
   assert(0);
   }
 
-void Resource::load(PixmapsPool::TexturePtr p, const std::string &f) {
+void Resource::load( const Tempest::Sprite& p, const std::string &f) {
   px.add( f, p );
   }
 
@@ -459,7 +464,7 @@ void Resource::load(const std::string &s) {
             v["src"].IsString() &&
             v["name"].IsString() ){
           std::string file = v["src"].GetString();
-          load( pixmaps.add( Tempest::Pixmap(file) ), v["name"].GetString() );
+          load( pixmaps.load( Tempest::Pixmap(file) ), v["name"].GetString() );
           }
         }
       }

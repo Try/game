@@ -57,7 +57,6 @@ HEADERS += \
     xml/abstractxmlreader.h \
     prototypesloader.h \
     util/lexicalcast.h \
-    graphics/guipass.h \
     gui/maingui.h \
     graphics/paintergui.h \
     util/math.h \
@@ -171,7 +170,6 @@ HEADERS += \
     graphics/translate/mxassembly.h \
     graphics/translate/shadermaterial.h \
     graphics/translate/guiassembly.h \
-    graphics/guirender.h \
     graphics/materialserver.h \
     graphics/gbufffer.h \
     graphics/translate/compileoptions.h \
@@ -190,9 +188,7 @@ SOURCES += \
     game/world.cpp \
     prototypesloader.cpp \
     util/lexicalcast.cpp \
-    graphics/guipass.cpp \
     gui/maingui.cpp \
-    graphics/paintergui.cpp \
     util/math.cpp \
     gui/scroolbar.cpp \
     gui/button.cpp \
@@ -299,7 +295,6 @@ SOURCES += \
     graphics/translate/mxassembly.cpp \
     graphics/translate/shadermaterial.cpp \
     graphics/translate/guiassembly.cpp \
-    graphics/guirender.cpp \
     graphics/materialserver.cpp \
     graphics/gbufffer.cpp \
     graphics/translate/compileoptions.cpp \

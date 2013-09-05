@@ -3,6 +3,9 @@
 
 #include <Tempest/Widget>
 #include <Tempest/Shortcut>
+#include <Tempest/Sprite>
+#include <Tempest/Font>
+
 #include "graphics/paintergui.h"
 #include "font.h"
 
@@ -12,14 +15,13 @@ class Resource;
 
 class Button : public Tempest::Widget {
   public:
-    typedef Tempest::Bind::UserTexture Texture;
     Button( Resource & res );
 
     Tempest::signal<> clicked;
 
-    Texture frame, back[2], icon;
+    Tempest::Sprite frame, back[2], icon;
 
-    void setBackTexture( const Texture & t );
+    void setBackTexture( const Tempest::Sprite & t );
     void setShortcut( const Tempest::Shortcut & sc );
 
     const std::wstring text() const;
@@ -51,7 +53,7 @@ class Button : public Tempest::Widget {
     Tempest::Shortcut hotKey;
     Resource & res;
 
-    Font font;
+    Tempest::Font font;
 
     void onShortcut();
     virtual void emitClick();

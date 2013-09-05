@@ -1,7 +1,8 @@
 #include "richtext.h"
 
 #include <Tempest/Painter>
-#include "font.h"
+#include <Tempest/Font>
+#include "resource.h"
 
 RichText::RichText( Resource & res ):res(res) {
   txt = L"";
@@ -33,7 +34,7 @@ void RichText::rText( int dx, int dy,
                       Tempest::Painter *p,
                       const std::wstring &txt,
                       Tempest::Size & rect ) {
-  Font font(15);
+  Tempest::Font font(15, res.sprites());
 
   if( p ){
     p->setFont(font);
@@ -52,7 +53,7 @@ void RichText::rText( int dx, int dy,
     if( txt[i]=='\n' ){
       x = 0;
       y += ddy;
-      Font::Leter l = font.leter(res, txt[i]);
+      Tempest::Font::Leter l = font.leter(txt[i]);
 
       ddy = l.dpos.y + l.size.h;
       }
@@ -135,8 +136,8 @@ void RichText::rText( int dx, int dy,
         b = cToInt(color[4], color[5])/255.0;
         a = cToInt(color[6], color[7])/255.0;
 
-        PainterGUI &pg = (PainterGUI&)p->device();
-        pg.setColor(r,g,b,a);
+        //PainterGUI &pg = (PainterGUI&)p->device();
+        p->setColor(r,g,b,a);
         }
 
       i = pr;
@@ -145,14 +146,14 @@ void RichText::rText( int dx, int dy,
         i = pr2;
       }
     else {
-      Font::Leter l = font.leter(res, txt[i]);
+      Tempest::Font::Leter l = font.leter(txt[i]);
 
       if( p ){
         p->setTexture( l.surf );
-        PainterGUI &pg = (PainterGUI&)p->device();
+        //PainterGUI &pg = (PainterGUI&)p->device();
 
         if( sh ){
-          pg.setColor(0,0,0, 0.15);
+          p->setColor(0,0,0, 0.15);
           int dpos[2] = {-2, 2};
 
           for( int i=0; i<2; ++i )
@@ -163,7 +164,7 @@ void RichText::rText( int dx, int dy,
                            0, 0, l.size.w, l.size.h );
           }
 
-        pg.setColor(r,g,b,a);
+        p->setColor(r,g,b,a);
         p->drawRect( x+l.dpos.x+dx,
                      y+l.dpos.y+dy,
                      l.size.w, l.size.h,

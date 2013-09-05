@@ -4,7 +4,7 @@
 #include "graphics/paintergui.h"
 #include "landscape/terrain.h"
 
-#include <Tempest/Widget>
+#include <Tempest/Surface>
 #include <Tempest/Image>
 
 #include "resource.h"
@@ -77,7 +77,6 @@ class MainGui {
 
     Tempest::signal<> updateView;
 
-    bool draw( GUIPass & pass );
     void resizeEvent( int w, int h );
 
     int mouseDownEvent  (Tempest::MouseEvent &e);
@@ -105,17 +104,23 @@ class MainGui {
 
     bool isCutsceneMode();
 
-    static void drawFrame( Tempest::Painter & p,
-                           const Tempest::Bind::UserTexture & tex ,
+    static void drawFrame(Tempest::Painter & p,
+                           const Tempest::Sprite &tex ,
                            const Tempest::Point &pos,
                            const Tempest::Size &size );
 
-    Tempest::Widget* centralWidget();
+    Tempest::Surface* centralWidget();
 
     void setCutsceneMode( bool cs );
     void setFPS( float f );
 
     Resource & res;
+
+    void buildVBO( Tempest::SurfaceRender & r0,
+                   Tempest::SurfaceRender & ui,
+                   Tempest::SurfaceRender & hint,
+                   Tempest::LocalVertexBufferHolder &lvbo,
+                   Tempest::LocalIndexBufferHolder  &libo);
   private:
     typedef Tempest::PainterDevice Painter;
     typedef Tempest::Widget  Widget;
@@ -134,8 +139,12 @@ class MainGui {
 
     Tempest::Point mousePos;
 
-    Tempest::Bind::UserTexture frame, hintFrame;
+    Tempest::Sprite frame, hintFrame;
     Tempest::Rect selRect;
+
+    void paintHUD( Tempest::PaintEvent &e );
+    void paintHint( Tempest::PaintEvent &e );
+
   };
 
 #endif // MAINGUI_H

@@ -1,7 +1,7 @@
 #ifndef INGAMECONTROLS_H
 #define INGAMECONTROLS_H
 
-#include <Tempest/Widget>
+#include <Tempest/Surface>
 #include "graphics/paintergui.h"
 #include "inputhook.h"
 
@@ -28,7 +28,7 @@ namespace Tempest{
   class Scene;
   }
 
-class InGameControls : public Tempest::Widget {
+class InGameControls : public Tempest::Surface {
   public:
     InGameControls( Resource & res,
                     BehaviorMSGQueue & q,

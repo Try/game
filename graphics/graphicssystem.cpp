@@ -138,11 +138,6 @@ GraphicsSystem::GraphicsSystem( void *hwnd,
 
 void GraphicsSystem::makeRenderAlgo( int w, int h ) {
   Resource &res = *resource;
-  gui.reset( new GUIPass( res.vshader("gui"),
-                          res.fshader("gui"),
-                          lvboHolder,
-                          liboHolder,
-                          guiSize ) );
   setupScreenSize(w,h);
 
   gbuf.vs     = res.vshader("unit_main_material");
@@ -401,7 +396,7 @@ bool GraphicsSystem::render( Scene &scene,
   ++nFrame;
 
   onRender( std::max<size_t>(dt-time, 0) );
-  gui->update( *widget, device );
+  //gui->update( *widget, device );
 
   time = dt;//(time+dt);
   unsigned tx = time%(16*1024);
@@ -465,9 +460,11 @@ bool GraphicsSystem::render( Scene &scene,
 
   static bool renderUI = true;
   if( widget && renderUI ){
+    /*
     if( useDirectRender )
       gui->exec( *widget, 0, 0, device ); else
       gui->exec( *widget, gbuffer, &mainDepth, device );
+      */
     }
 
 

@@ -6,7 +6,7 @@
 #include "resource.h"
 
 ModalWindow::ModalWindow( Resource &res, Widget *owner ) {
-  frame.data = res.pixmap("gui/colors");
+  frame = res.pixmap("gui/colors");
 
   CentralWidget* r = (CentralWidget*)owner->findRoot();
 /*

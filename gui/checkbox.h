@@ -9,7 +9,7 @@ class CheckBox: public Button {
 
     Tempest::signal<bool> checked;
 
-    Texture imgCheck;
+    Tempest::Sprite imgCheck;
 
     void setChecked(bool c = true);
     bool isClicked() const;

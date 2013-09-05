@@ -3,6 +3,7 @@
 
 #include <Tempest/Widget>
 #include <Tempest/Shortcut>
+#include <Tempest/Sprite>
 #include "graphics/paintergui.h"
 
 #include <ctime>
@@ -11,14 +12,13 @@ class Resource;
 
 class ProgressBar : public Tempest::Widget {
   public:
-    typedef Tempest::Bind::UserTexture Texture;
     ProgressBar( Resource & res );
 
     Tempest::signal<> clicked;
 
-    Texture frame, back[2], icon;
+    Tempest::Sprite frame, back[2], icon;
 
-    void setBackTexture( const Texture & t );
+    void setBackTexture( const Tempest::Sprite & t );
     void setShortcut( const Tempest::Shortcut & sc );
 
     const std::wstring text() const;

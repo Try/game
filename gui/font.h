@@ -1,8 +1,11 @@
+/*
 #ifndef FONT_H
 #define FONT_H
 
 #include <string>
 #include "graphics/paintergui.h"
+
+#include <Tempest/Sprite>
 
 #include <unordered_map>
 #include <map>
@@ -20,9 +23,9 @@ namespace Bind{
       UserFont();
 
       struct Leter{
-        Tempest::Bind::UserTexture surf;
-        Tempest::Size  size;
-        Tempest::Point dpos, advance;
+        Tempest::Sprite surf;
+        Tempest::Size    size;
+        Tempest::Point   dpos, advance;
         };
 
       const Leter& leter( Resource &res, wchar_t ch ) const;
@@ -66,9 +69,6 @@ namespace Bind{
           mutable LMap*  n[256];
         };
 
-      /*
-      typedef std::unordered_map< wchar_t, Leter,
-                                  std::hash<size_t> > Leters;*/
       typedef LMap Leters;
       Leters * lt;
 
@@ -102,3 +102,4 @@ namespace Bind{
 typedef Tempest::Bind::UserFont Font;
 
 #endif // FONT_H
+*/

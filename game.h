@@ -24,6 +24,7 @@
 #include "game/scenario.h"
 
 #include <Tempest/Window>
+#include <Tempest/Timer>
 
 class GameSerializer;
 class Scenario;
@@ -137,7 +138,7 @@ class Game : public Tempest::Window {
     static const int ticksPerSecond;
 
 private:
-    bool  paused, needToUpdate;
+    bool  paused;//, needToUpdate;
     //bool isFullScreen;
 
     //bool acceptMouseObj;
@@ -151,6 +152,8 @@ private:
     MainGui  gui;
     BehaviorMSGQueue msg;
     FileSerialize serializator;
+
+    Tempest::Timer timer;
 
     void addPlayer();
     void cancelEdit( int );
@@ -173,6 +176,7 @@ private:
     std::unique_ptr<NetUser>  netUser;
     std::unique_ptr<Scenario> mscenario;
 
+    bool isLoading;
     void serialize( GameSerializer &s);
     void serializeScenario( GameSerializer &s );
 

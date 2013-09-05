@@ -33,6 +33,8 @@ class PainterGUI: public Tempest::PainterDevice {
     void quad( int x0, int y0, int w, int h,
                int tx, int ty, int tw, int th );
 
+    using PainterDevice::setTexture;
+    void setTexture(const Tempest::Sprite &t);
     void setTexture(const Texture &t);
     void unsetTexture();
 
@@ -50,14 +52,14 @@ class PainterGUI: public Tempest::PainterDevice {
     struct TextEngine:public Tempest::PaintTextEngine{
       TextEngine( PainterGUI & p, Resource& res );
 
-      void setFont( const Tempest::Bind::UserFont &f );
+      void setFont(const Tempest::Font &f );
       void drawText( int x, int y, int w, int h, const std::wstring &,
                      int align = Tempest::NoAlign );
       void drawText( int x, int y, int w, int h, const std::string &,
                      int align = Tempest::NoAlign );
       PainterGUI & p;
       Resource   & res;
-      const Tempest::Bind::UserFont * font;
+      const Tempest::Font * font;
 
       template< class T >
       void dText( int x, int y, int w, int h, const T &,

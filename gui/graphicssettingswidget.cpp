@@ -11,7 +11,7 @@ GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
   = GraphicsSettingsWidget::Settings::openGL;
 #else
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
-  = GraphicsSettingsWidget::Settings::directX;
+  = GraphicsSettingsWidget::Settings::openGL;
 #endif
 
 GraphicsSettingsWidget::Settings::Settings() {

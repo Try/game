@@ -1,5 +1,5 @@
 #include "font.h"
-
+/*
 #include <Tempest/Pixmap>
 #include "resource.h"
 
@@ -117,7 +117,7 @@ const Tempest::Bind::UserFont::Leter&
   if( FT_Load_Char( face, ch, FT_LOAD_RENDER ) ){
     Leter &ref = leters[ch];
     ref = letter;
-    ref.surf.data.tex = 0;
+    //ref.surf.data.tex = 0;
     return ref;
     }
 
@@ -137,7 +137,7 @@ const Tempest::Bind::UserFont::Leter&
       }
 
   //pixmap.save("./l.png");
-  letter.surf.data = res.pixmap( pixmap, false );
+  letter.surf      = res.pixmap( pixmap, false );
   letter.size      = Tempest::Size( pixmap.width(), pixmap.height() );
   letter.advance   = Tempest::Point( slot->advance.x >> 6,
                                      slot->advance.y >> 6 );
@@ -156,7 +156,7 @@ const Tempest::Bind::UserFont::Leter &
 
   Leter &ref = leters[ch];
   ref = letter;
-  ref.surf.data.tex = 0;
+  //ref.surf.data.tex = 0;
   return ref;
   }
 
@@ -315,3 +315,4 @@ Tempest::Bind::UserFont::Leter &Tempest::Bind::UserFont::LMap::operator [](wchar
   l->e[cp[0]] = 1;
   return *(l->l+cp[0]);
   }
+*/

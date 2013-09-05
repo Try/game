@@ -14,8 +14,8 @@ struct DesertStrikeScenario::NumButton: public Button {
   void paintEvent(Tempest::PaintEvent &e);
 
   int  num;
-  Font font;
-  Texture numFrame;
+  Tempest::Font font;
+  Tempest::Sprite numFrame;
   };
 
 struct DesertStrikeScenario::BuyButton: public NumButton {
@@ -30,7 +30,7 @@ struct DesertStrikeScenario::BuyButton: public NumButton {
 
   const ProtoObject& p;
   DPlayer & pl;
-  Texture texture;
+  Tempest::Sprite texture;
   int tier;
   };
 
@@ -45,7 +45,7 @@ struct DesertStrikeScenario::GradeButton: public Button {
   Tempest::signal<int> onClick;
   int type;
   DPlayer & pl;
-  Texture texture;
+  Tempest::Sprite texture;
   };
 
 struct DesertStrikeScenario::TranscurentPanel: public Tempest::Widget {
@@ -55,7 +55,7 @@ struct DesertStrikeScenario::TranscurentPanel: public Tempest::Widget {
   void mouseDownEvent(Tempest::MouseEvent &e);
 
   Resource  & res;
-  Tempest::Bind::UserTexture frame;
+  Tempest::Sprite frame;
   };
 
 struct DesertStrikeScenario::Minimap: MiniMapView{
@@ -199,7 +199,7 @@ class DesertStrikeScenario::CentralPanel: public Tempest::Widget {
   private:
     Resource & res;
     DesertStrikeScenario &ds;
-    Tempest::Bind::UserTexture bg, cride;
+    Tempest::Sprite bg, cride;
 
     int time;
     Tempest::Color cl;

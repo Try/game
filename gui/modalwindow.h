@@ -2,6 +2,7 @@
 #define MODALWINDOW_H
 
 #include <Tempest/Widget>
+#include <Tempest/Sprite>
 #include "graphics/paintergui.h"
 
 class Resource;
@@ -21,7 +22,7 @@ class ModalWindow : public Tempest::Widget {
 
     void shortcutEvent(Tempest::KeyEvent &e);
   private:
-    Tempest::Bind::UserTexture frame;
+    Tempest::Sprite frame;
   };
 
 #endif // MODALWINDOW_H

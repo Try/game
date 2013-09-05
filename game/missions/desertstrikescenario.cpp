@@ -547,8 +547,8 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
     gold = p.gold;
     lim  = p.lim;
 
-    gold->icon.data = res.pixmap("gui/icon/gold");
-    lim-> icon.data = res.pixmap("gui/icon/house");
+    gold->icon = res.pixmap("gui/icon/gold");
+    lim-> icon = res.pixmap("gui/icon/house");
 
     gold->setHint(L"$(gold)");
     lim ->setHint(L"$(units_limit)");

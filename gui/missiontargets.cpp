@@ -10,10 +10,10 @@
 
 MissionTargets::MissionTargets( Game & game, Resource &res )
                :game(game), res(res) {
-  frame.data = res.pixmap("gui/hintFrame");
+  frame = res.pixmap("gui/hintFrame");
 
-  ckFrame.data = res.pixmap("gui/ckBoxFrame");
-  ck.data      = res.pixmap("gui/ckBox");
+  ckFrame = res.pixmap("gui/ckBoxFrame");
+  ck      = res.pixmap("gui/ckBox");
 
   game.updateMissionTargets.bind( this, &MissionTargets::setupTagets);
 
@@ -31,12 +31,12 @@ void MissionTargets::paintEvent(Tempest::PaintEvent &e) {
     int sz = wx->h();
     p.setTexture( ckFrame );
     p.drawRect( 7, wx->pos().y, sz, sz,
-                 0, 0, ckFrame.data.rect.w, ckFrame.data.rect.h );
+                 0, 0, ckFrame.width(), ckFrame.height() );
 
     if( game.scenario().tagets()[i].done ){
       p.setTexture( ck );
       p.drawRect( 7, wx->pos().y, sz, sz,
-                   0, 0, ck.data.rect.w, ck.data.rect.h );
+                  0, 0, ck.width(), ck.height() );
       }
     }
 

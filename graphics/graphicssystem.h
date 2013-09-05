@@ -21,7 +21,6 @@
 #include <Tempest/GraphicObject>
 #include <Tempest/AbstractScene>
 
-#include "graphics/guipass.h"
 #include "graphics/scene.h"
 #include "gui/graphicssettingswidget.h"
 
@@ -100,7 +99,7 @@ class GraphicsSystem {
     Tempest::signal<> drawCallFinished, drawOpWindow;
   private:
     GraphicsSettingsWidget::Settings settings;
-    std::unique_ptr<GUIPass> gui;
+
     MainGui * widget;
     ParticleSystemEngine * particles;
 

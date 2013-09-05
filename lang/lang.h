@@ -3,6 +3,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <Tempest/Font>
 #include "gui/font.h"
 
 class Resource;
@@ -19,7 +20,7 @@ class Lang {
     static std::wstring tr( const std::wstring& text );
     static std::wstring tr( const std::string& text );
 
-    static void fetch( Font& f, Resource& res );
+    static void fetch(Tempest::Font& f);
   };
 
 #endif // LANG_H

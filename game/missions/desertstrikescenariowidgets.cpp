@@ -22,7 +22,7 @@ DesertStrikeScenario::NumButton::NumButton( Resource & r ):Button(r) {
   setMinimumSize( 55, 55 );
   setMaximumSize( 55, 55 );
 
-  numFrame.data = res.pixmap("gui/hintFrame");
+  numFrame = res.pixmap("gui/hintFrame");
   num = 0;
   }
 
@@ -39,8 +39,8 @@ void DesertStrikeScenario::NumButton::paintEvent(Tempest::PaintEvent &e){
   s << num;
 
   p.setTexture(numFrame);
-  Size tsz = font.textSize(res, s.str());
-  int nw = numFrame.data.rect.w,
+  Size tsz = font.textSize(s.str());
+  int nw = numFrame.width(),
       th  = tsz.h+10,
       th2 = tsz.h+6;
 
@@ -60,11 +60,11 @@ DesertStrikeScenario::BuyButton::BuyButton(Resource & r,
            const ProtoObject& obj,
            DPlayer &pl,
            int tier ):NumButton(r), p(obj), pl(pl), tier(tier){
-  icon.data        = res.pixmap("gui/icon/"+obj.name);
-  texture.data     = res.pixmap("gui/colors");
+  icon        = res.pixmap("gui/icon/"+obj.name);
+  texture     = res.pixmap("gui/colors");
   //setText( obj.name );
 
-  font = Font(15);
+  font = Tempest::Font(15, res.sprites());
 
   clicked.bind( this, &BuyButton::emitClick);
   }
@@ -92,13 +92,13 @@ DesertStrikeScenario::GradeButton::GradeButton( Resource & r,
              DPlayer & p,
              const std::string& obj,
              const int t ):Button(r), type(t), pl(p){
-  icon.data = res.pixmap(obj);
-  texture.data = r.pixmap("gui/colors");
+  icon    = res.pixmap(obj);
+  texture = res.pixmap("gui/colors");
   //setText( obj.name );
 
   setMinimumSize( 55, 55 );
   setMaximumSize( 55, 55 );
-  font = Font(15);
+  font = Tempest::Font(15, res.sprites());
 
   clicked.bind( this, &GradeButton::emitClick);
   }
@@ -113,7 +113,7 @@ void DesertStrikeScenario::GradeButton::paintEvent(Tempest::PaintEvent &e){
   }
 
 DesertStrikeScenario::TranscurentPanel::TranscurentPanel( Resource & res ):res(res){
-  frame.data = res.pixmap("gui/hintFrame");
+  frame = res.pixmap("gui/hintFrame");
   }
 
 void DesertStrikeScenario::TranscurentPanel::paintEvent(Tempest::PaintEvent &e){
@@ -133,8 +133,8 @@ struct DesertStrikeScenario::Minimap::BuyButton: public Button {
     setMinimumSize( 55, 55 );
     setMaximumSize( 55, 55 );
 
-    Texture t;
-    t.data = res.pixmap("gui/icon/gold");
+    Tempest::Sprite t;
+    t = res.pixmap("gui/icon/gold");
     //setText( obj.name );
 
     icon = t;
@@ -146,9 +146,9 @@ struct DesertStrikeScenario::Minimap::GradeButton: public Button {
     setMinimumSize( 55, 55 );
     setMaximumSize( 55, 55 );
 
-    Texture t;
-    t.data       = res.pixmap("gui/icon/gold");
-    texture.data = res.pixmap("gui/colors");
+    Tempest::Sprite t;
+    t       = res.pixmap("gui/icon/gold");
+    texture = res.pixmap("gui/colors");
     //setText( obj.name );
 
     type = "castle";
@@ -175,7 +175,7 @@ struct DesertStrikeScenario::Minimap::GradeButton: public Button {
 
   DPlayer& pl;
   std::string type;
-  Texture texture;
+  Tempest::Sprite texture;
   };
 
 DesertStrikeScenario::Minimap::Minimap( Resource &res,
@@ -217,7 +217,7 @@ void DesertStrikeScenario::Minimap::buildBase( Resource &res, Inf & inf ){
 
   btn = new BuyButton(res);
   btn->clicked.bind( this, &Minimap::buy );
-  btn->icon.data = res.pixmap("gui/icon/atack");
+  btn->icon = res.pixmap("gui/icon/atack");
   w->layout().add( btn );
 
   w->setMaximumSize( w->sizePolicy().maxSize.w, 50 );
@@ -259,7 +259,7 @@ void DesertStrikeScenario::Minimap::buildCas( Resource &res, Inf & inf ){
   GradeButton *btn = 0;
   btn = new GradeButton(res, pl);
   btn->clicked.bind( this, &Minimap::grade );
-  btn->icon.data = res.pixmap("gui/icon/build");
+  btn->icon = res.pixmap("gui/icon/build");
   w->layout().add( btn );
   inf.grade = btn;
 
@@ -305,7 +305,7 @@ void DesertStrikeScenario::Minimap::mkInfoPanel( Resource &res,
 
       BuyButton * btn = new BuyButton(res);
       btn->setMaximumSize(25);
-      btn->icon.data = res.pixmap(icon[i][r]);
+      btn->icon = res.pixmap(icon[i][r]);
 
       w->layout().add( btn );
       w->layout().add( cost );
@@ -494,7 +494,7 @@ DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
   Button * c = new Button(res);
   c->setMinimumSize( 55, 55 );
   c->setMaximumSize( 55, 55 );
-  c->icon.data = res.pixmap("gui/icon/camera");
+  c->icon = res.pixmap("gui/icon/camera");
   c->clicked.bind( toogleCameraMode );
   layout().add( c );
 
@@ -623,7 +623,7 @@ Button *DesertStrikeScenario::BuyUnitPanel::mkBuyGradeBtn( Resource &res,
   //const ProtoObject & obj = game.prototype(sobj);
 
   NumButton * u = new NumButton(res);
-  u->icon.data = res.pixmap( std::string("gui/icon/") + sobj);
+  u->icon = res.pixmap( std::string("gui/icon/") + sobj);
 
   //u->onClick.bind( *this, &BuyUnitPanel::onUnit );
 
@@ -679,8 +679,8 @@ void DesertStrikeScenario::UpgradePanel::buy( const int grade ){
 
 DesertStrikeScenario::CentralPanel::CentralPanel( DesertStrikeScenario &ds,
                                                   Resource &res ):res(res), ds(ds) {
-  bg.data    = res.pixmap("gui/spark");
-  cride.data = res.pixmap("gui/cride");
+  bg    = res.pixmap("gui/spark");
+  cride = res.pixmap("gui/cride");
 
   time = 0;
   cl.set(0,0,0,1);
@@ -707,32 +707,32 @@ void DesertStrikeScenario::CentralPanel::paintEvent(Tempest::PaintEvent &e) {
 
   float k = 0.5;
 
-  PainterGUI& pt = (PainterGUI&)p.device();
-  pt.setColor( k*cl.r(), k*cl.g(), k*cl.b(), 1 );
+  //PainterGUI& pt = (PainterGUI&)p.device();
+  p.setColor( k*cl.r(), k*cl.g(), k*cl.b(), 1 );
   p.setBlendMode( Tempest::addBlend );
   p.setScissor( Tempest::Rect(0,0,w(),h()) );
 
   p.setTexture( bg );
-  int h0 = 3*bg.data.rect.h/4;
-  p.drawRect( w()/2-bg.data.rect.w/2, -h0/2,
-              bg.data.rect.w, h0,
-              0,0, bg.data.rect.w, bg.data.rect.h);
-  pt.setColor(1,1,1,0.5);
+  int h0 = 3*bg.height()/4;
+  p.drawRect( w()/2-bg.width()/2, -h0/2,
+              bg.width(), h0,
+              0,0, bg.width(), bg.height());
+  p.setColor(1,1,1,0.5);
 
   p.setBlendMode( Tempest::alphaBlend );
   p.setTexture(cride);
   float sz = 0.5;
-  p.drawRect( w()/2-sz*cride.data.rect.w/2, -sz*cride.data.rect.h/2,
-              sz*cride.data.rect.w, sz*cride.data.rect.h,
-              0, 0, cride.data.rect.w, cride.data.rect.h);
-  pt.setColor(1,1,1,1);
+  p.drawRect( w()/2-sz*cride.width()/2, -sz*cride.height()/2,
+              sz*cride.width(), sz*cride.height(),
+              0, 0, cride.width(), cride.height() );
+  p.setColor(1,1,1,1);
 
-  Font font;
+  Tempest::Font font(res.sprites());
   p.setFont(font);
 
   std::stringstream ss;
   ss << time;
   const std::string s = ss.str();//ds.tNum/40);
-  Tempest::Size r = font.textSize(res, s);
+  Tempest::Size r = font.textSize(s);
   p.drawText( w()/2-r.w/2, 0, s );
   }

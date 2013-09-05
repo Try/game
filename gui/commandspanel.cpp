@@ -55,7 +55,7 @@ class CommandsPanel::SpellBtn: public BtnBase{
   public:
     SpellBtn( Resource& r ):BtnBase(r){
       this->Button::clicked.bind( *this, &SpellBtn::proxyClick );
-      texture.data = r.pixmap("gui/colors");
+      texture = r.pixmap("gui/colors");
 
       coolDown = 0;
       }
@@ -99,7 +99,7 @@ class CommandsPanel::SpellBtn: public BtnBase{
     std::string taget;
     size_t      tagetID;
     GameObject  *  u0;
-    Tempest::Bind::UserTexture texture;
+    Tempest::Sprite texture;
     int coolDown;
 
     Tempest::signal< const std::string& > clicked;
@@ -198,7 +198,7 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
     if( p.btn[i].action == ProtoObject::CmdButton::Buy ){
       BuyBtn * btn   = new BuyBtn(res);
       btn->taget     = p.btn[i].taget;
-      btn->icon.data = res.pixmap( "gui/icon/"+p.btn[i].taget );
+      btn->icon      = res.pixmap( "gui/icon/"+p.btn[i].taget );
       btn->clicked.bind( this, &CommandsPanel::buyEvent );
       b = btn;
       }
@@ -207,8 +207,8 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       PageBtn * btn   = new PageBtn(res, Lexical::cast<int>(p.btn[i].taget) );
       btn->taget     = p.btn[i].taget;
       if( p.btn[i].icon.size() )
-        btn->icon.data = res.pixmap( p.btn[i].icon ); else
-        btn->icon.data = res.pixmap( "gui/icon/build" );
+        btn->icon = res.pixmap( p.btn[i].icon ); else
+        btn->icon = res.pixmap( "gui/icon/build" );
       btn->clicked.bind( this, &CommandsPanel::setPage );
       b = btn;
       }
@@ -216,7 +216,7 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
     if( p.btn[i].action == ProtoObject::CmdButton::Build ){
       BuyBtn * btn   = new BuyBtn(res);
       btn->taget     = p.btn[i].taget;
-      btn->icon.data = res.pixmap( "gui/icon/"+p.btn[i].taget );
+      btn->icon      = res.pixmap( "gui/icon/"+p.btn[i].taget );
       btn->clicked.bind( this, &CommandsPanel::buyEvent );
       b = btn;
       }
@@ -224,7 +224,7 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
     if( p.btn[i].action == ProtoObject::CmdButton::Upgrade ){
       BuyBtn * btn   = new BuyBtn(res);
       btn->taget     = p.btn[i].taget;
-      btn->icon.data = res.pixmap( "gui/icon/"+p.btn[i].taget );
+      btn->icon      = res.pixmap( "gui/icon/"+p.btn[i].taget );
       btn->clicked.bind( this, &CommandsPanel::gradeEvent );
       b = btn;
       }
@@ -236,8 +236,8 @@ void CommandsPanel::bindPage( const ProtoObject::Commans::Page &p ) {
       btn->u0          = u0;
 
       if( p.btn[i].icon.size() )
-        btn->icon.data = res.pixmap( p.btn[i].icon ); else
-        btn->icon.data = res.pixmap( "gui/icon/castle" );
+        btn->icon = res.pixmap( p.btn[i].icon ); else
+        btn->icon = res.pixmap( "gui/icon/castle" );
 
       Spell::Mode m = msg.game.prototypes().spell( btn->taget ).mode;
 
@@ -367,7 +367,7 @@ void CommandsPanel::bindStartPage(const ProtoObject::Commans::Page *p) {
 
     b->x = i;
     b->y = 0;
-    b->icon.data = res.pixmap( icon[i] );
+    b->icon = res.pixmap( icon[i] );
     b->setHint( hint[i] );
 
     Tempest::KeyEvent::KeyType t = Tempest::Event::K_A;

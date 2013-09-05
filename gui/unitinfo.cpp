@@ -30,7 +30,7 @@ struct UnitInfo::Btn : public Button{
 
 struct UnitInfo::PanelBase : public Tempest::Widget {
   PanelBase( Resource & res ): res(res) {
-    frame.data = res.pixmap("gui/hintFrame");
+    frame = res.pixmap("gui/hintFrame");
     layout().setMargin(15);
     }
 
@@ -45,7 +45,7 @@ struct UnitInfo::PanelBase : public Tempest::Widget {
     }
 
   Resource  & res;
-  Tempest::Bind::UserTexture frame;
+  Tempest::Sprite frame;
   };
 
 struct UnitInfo::Stats : public PanelBase {
@@ -81,7 +81,7 @@ struct UnitInfo::Stats : public PanelBase {
 
     for( size_t i=0; i<2; ++i ){
       btns.push_back( std::shared_ptr<Btn>(new Btn(res)) );
-      btns.back()->icon.data = res.pixmap(icon[i]);
+      btns.back()->icon = res.pixmap(icon[i]);
       btns.back()->setHint( hint[i] );
 
       w->layout().add( btns.back().get() );
@@ -138,7 +138,7 @@ struct UnitInfo::Production : public PanelBase {
 
       for( size_t i=0; i<q.size(); ++i ){
         if( i<btns.size() ){
-          btns[i]->icon.data = res.pixmap(q[i].icon);
+          btns[i]->icon = res.pixmap(q[i].icon);
           btns[i]->setVisible(true);
           }
         }

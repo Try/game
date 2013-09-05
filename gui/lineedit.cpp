@@ -5,7 +5,7 @@
 using namespace Tempest;
 
 LineEdit::LineEdit(Resource &res):res(res) {
-  frame.data = res.pixmap("gui/colors");
+  frame = res.pixmap("gui/colors");
   sedit = 0;
   eedit = 0;
 
@@ -30,7 +30,7 @@ LineEdit::LineEdit(Resource &res):res(res) {
 
 void LineEdit::setText(const std::wstring &t) {
   if( txt!=t ){
-    font.fetch(res, t);
+    font.fetch(t);
     txt = t;
 
     sedit = std::max<size_t>(0, std::min(sedit, txt.size() ));
@@ -109,7 +109,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   size_t e = std::max( sedit, eedit );
 
   for( size_t i=0; i<s && i<txt.size(); ++i ){
-    Font::Leter l = font.leter(res, txt[i]);
+    Font::Leter l = font.leter(txt[i]);
     x+= l.advance.x;
     y+= l.advance.y;
     }
@@ -117,7 +117,7 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
   int sx = x;
 
   for( size_t i=s; i<e && i<txt.size(); ++i ){
-    Font::Leter l = font.leter(res, txt[i]);
+    Font::Leter l = font.leter(txt[i]);
     x+= l.advance.x;
     y+= l.advance.y;
     }
@@ -229,7 +229,7 @@ void LineEdit::updateSel() {
 
   int x = scrool, y = 0;
   for( size_t i=0; i<txt.size(); ++i ){
-    Font::Leter l = font.leter(res, txt[i]);
+    Font::Leter l = font.leter(txt[i]);
 
     if( Tempest::Rect( l.dpos.x+x, 0,
                         w(), h() ).contains(a) ){
@@ -260,7 +260,7 @@ void LineEdit::updateSel() {
 
   eedit = sedit;
   for( size_t i=0; i<txt.size(); ++i ){
-    Font::Leter l = font.leter(res, txt[i]);
+    Font::Leter l = font.leter(txt[i]);
 
     if( Rect( l.dpos.x+x, 0,
               w(), h() ).contains(b) ){

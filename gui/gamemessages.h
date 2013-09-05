@@ -2,6 +2,7 @@
 #define GAMEMESSAGES_H
 
 #include <Tempest/Widget>
+#include <Tempest/Sprite>
 #include "graphics/paintergui.h"
 
 #include <unordered_set>
@@ -15,7 +16,7 @@ class GameMessages:public Tempest::Widget {
 
     static void message( const std::wstring &txt );
     static void message(const std::wstring& txt,
-                         PixmapsPool::TexturePtr icon );
+                         const Tempest::Sprite &icon );
     static void tickAll();
   protected:
     void paintEvent(Tempest::PaintEvent &e);
@@ -26,7 +27,7 @@ class GameMessages:public Tempest::Widget {
 
     struct MSG{
       std::wstring str;
-      Tempest::Bind::UserTexture icon;
+      Tempest::Sprite icon;
       int tPrint;
       };
 
@@ -36,7 +37,7 @@ class GameMessages:public Tempest::Widget {
     static void updateAll();
     static unsigned int ticksCount;
 
-    Tempest::Bind::UserTexture cride;
+    Tempest::Sprite cride;
   };
 
 #endif // GAMEMESSAGES_H

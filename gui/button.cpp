@@ -9,12 +9,12 @@
 
 Button::Button(Resource &res)
        :hotKey(this, Tempest::KeyEvent::K_NoKey), res(res) {
-  font = Font(15);
+  font = Tempest::Font(15, res.sprites());
 
-  back[0].data = res.pixmap("gui/buttonBack");
-  back[1].data = res.pixmap("gui/buttonBackD");
+  back[0] = res.pixmap("gui/buttonBack");
+  back[1] = res.pixmap("gui/buttonBackD");
 
-  frame.data = res.pixmap("gui/frame");
+  frame = res.pixmap("gui/frame");
 
   setFocusPolicy( Tempest::ClickFocus );
 
@@ -38,7 +38,7 @@ Button::Button(Resource &res)
   timePressed = clock();
   }
 
-void Button::setBackTexture(const Button::Texture &t) {
+void Button::setBackTexture(const Tempest::Sprite &t) {
   back[0] = t;
   back[1] = t;
   }
@@ -56,7 +56,7 @@ const std::wstring Button::text() const {
 void Button::setText(const std::wstring &t) {
   if( txt!=t ){
     txt = t;
-    font.fetch(res, txt);
+    font.fetch(txt);
     update();
     }
   }
@@ -110,20 +110,20 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
 
   drawBack(p);
 
-  if( !icon.data.rect.isEmpty() ){
+  if( !icon.size().isEmpty() ){
     p.setTexture( icon );
 
     int sz = std::min(w(), h());
 
-    float k = std::min( sz/float(icon.data.rect.w),
-                        sz/float(icon.data.rect.h) );
+    float k = std::min( sz/float(icon.width()),
+                        sz/float(icon.height()) );
     k = std::min(k,1.f);
 
-    int icW = icon.data.rect.w*k,
-        icH = icon.data.rect.h*k;
+    int icW = icon.width()*k,
+        icH = icon.height()*k;
 
     p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
-                0, 0, icon.data.rect.w, icon.data.rect.h );
+                0, 0, icon.width(), icon.height() );
     }
 
   p.setScissor(r);
@@ -150,11 +150,11 @@ void Button::drawBack(Tempest::Painter &p, const Tempest::Rect& r ){
   const int px = r.x, py = r.y,
             pw = r.w, ph = r.h;
 
-  Texture bk = back[ (hasFocus() || presAnim) ? 1:0 ];
+  Tempest::Sprite bk = back[ (hasFocus() || presAnim) ? 1:0 ];
   p.setTexture( bk );
   p.drawRectTailed( px, py, pw, ph,
                     0, 0,
-                    bk.data.rect.w, bk.data.rect.h );
+                    bk.width(), bk.height() );
   }
 
 void Button::drawFrame( Tempest::Painter &p ) {
