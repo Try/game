@@ -5,8 +5,6 @@
 #include <Tempest/Font>
 #include <string>
 
-#include "font.h"
-
 class Resource;
 
 class LineEdit : public Tempest::Widget {

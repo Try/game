@@ -26,7 +26,7 @@ class ScroolWidget : public Tempest::Widget {
       ScroolBar *scrool;
       Tempest::Size sizeHint( const Widget *w );
       };
-    ProxyLayout *lay;
+    ProxyLayout *mlay;
 
     void scrool( int v );
     void resizeEv(int w, int h);

@@ -24,6 +24,8 @@
 #include "gui/unitview.h"
 #include "gui/unitlist.h"
 
+#include "gui/mainmenu.h"
+
 #include "util/lexicalcast.h"
 
 struct Scenario::AddUnitButton: public Button{
@@ -659,6 +661,13 @@ void Scenario::showMenu() {
   m->load.bind( mainWidget->load );
   m->onClosed.bind( game, &Game::unsetPause );
   m->quit.bind( game.exitGame );
+  }
+
+void Scenario::showMainMenu() {
+  game.pause(1);
+
+  MainMenu *m = new MainMenu(res, mainWidget);
+  m->onClosed.bind( game, &Game::unsetPause );
   }
 
 Player *Scenario::createPlayer() {

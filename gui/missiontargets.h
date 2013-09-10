@@ -3,7 +3,6 @@
 
 #include <Tempest/Widget>
 #include <Tempest/Sprite>
-#include "graphics/paintergui.h"
 
 class Resource;
 class Game;

@@ -119,6 +119,7 @@ struct Scenario {
 
     void showFormBuilder();
     void showMenu();
+    void showMainMenu();
 
     Tempest::Shortcut showEditPanel, showSettings;
 

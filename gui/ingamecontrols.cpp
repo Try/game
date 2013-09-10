@@ -12,7 +12,6 @@
 
 #include "prototypesloader.h"
 #include "listbox.h"
-#include "font.h"
 #include "algo/algo.h"
 #include "game.h"
 
@@ -28,6 +27,7 @@
 #include "gui/lineedit.h"
 
 #include "gui/tabwidget.h"
+#include "gui/mainmenu.h"
 #include "editterrainpanel.h"
 #include "missiontargets.h"
 
@@ -87,6 +87,13 @@ void InGameControls::showMenu() {
   m->load.bind( load );
   m->onClosed.bind( game, &Game::unsetPause );
   m->quit.bind( game.exitGame );
+  }
+
+void InGameControls::showMainMenu() {
+  game.pause(1);
+
+  MainMenu *m = new MainMenu(res, this);
+  m->onClosed.bind( game, &Game::unsetPause );
   }
 
 void InGameControls::setupMinimap(World *w) {

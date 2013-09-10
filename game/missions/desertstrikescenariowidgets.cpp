@@ -64,7 +64,7 @@ DesertStrikeScenario::BuyButton::BuyButton(Resource & r,
   texture     = res.pixmap("gui/colors");
   //setText( obj.name );
 
-  font = Tempest::Font(15, res.sprites());
+  font = Tempest::Font(15);
 
   clicked.bind( this, &BuyButton::emitClick);
   }
@@ -98,7 +98,7 @@ DesertStrikeScenario::GradeButton::GradeButton( Resource & r,
 
   setMinimumSize( 55, 55 );
   setMaximumSize( 55, 55 );
-  font = Tempest::Font(15, res.sprites());
+  setFont( Tempest::Font(15) );
 
   clicked.bind( this, &GradeButton::emitClick);
   }
@@ -727,7 +727,7 @@ void DesertStrikeScenario::CentralPanel::paintEvent(Tempest::PaintEvent &e) {
               0, 0, cride.width(), cride.height() );
   p.setColor(1,1,1,1);
 
-  Tempest::Font font(res.sprites());
+  Tempest::Font font;
   p.setFont(font);
 
   std::stringstream ss;

@@ -61,7 +61,8 @@ struct Physics::Data{
     return out;
     }
 
-  int animCount, rigidCount;
+  size_t animCount, rigidCount;
+  size_t maxRigid;
 
   enum PoolException {
     OutOfRigidPool,
@@ -184,6 +185,11 @@ struct Physics::TerrainBody{
 
 Physics::Physics(int /*tw*/, int /*th*/) {
   data = new Data();
+  data->maxRigid = -1;
+
+#ifdef __ANDROID__
+  data->maxRigid = 16;
+#endif
 
 #ifndef NO_PHYSIC
   Lock lock(data->physicMutex);
@@ -276,12 +282,36 @@ Physics::Sphere Physics::createSphere( float x, float y, float z, float d ) {
   Physics::Sphere s;
 
 #ifndef NO_PHYSIC
+  if( data->rigidCount> data->maxRigid )
+    return s;
+
   Lock lock(data->physicMutex);
   (void)lock;
 
   s.data = new RigidBody( x, y, z, d, 0.1 );
   data->dynamicsWorld->addRigidBody( &s.data->body );
+  ++data->rigidCount;
 #endif
+  return s;
+  }
+
+Physics::Box Physics::createBox(float x, float y, float z,
+                                float sx, float sy, float sz) {
+  Physics::Box s;
+
+#ifndef NO_PHYSIC
+  if( data->rigidCount> data->maxRigid )
+    return s;
+
+  Lock lock(data->physicMutex);
+  (void)lock;
+
+  s.data = new RigidBody( x, y, z, sx, sy, sz, 0.1 );
+  s.engine = data;
+  data->dynamicsWorld->addRigidBody( &s.data->body );
+  ++data->rigidCount;
+#endif
+
   return s;
   }
 
@@ -296,22 +326,6 @@ void Physics::free( Physics::Rigid &s) {
     s.data = 0;
     }
 #endif
-  }
-
-Physics::Box Physics::createBox(float x, float y, float z,
-                                float sx, float sy, float sz) {
-  Physics::Box s;
-
-#ifndef NO_PHYSIC
-  Lock lock(data->physicMutex);
-  (void)lock;
-
-  s.data = new RigidBody( x, y, z, sx, sy, sz, 0.1 );
-  s.engine = data;
-  data->dynamicsWorld->addRigidBody( &s.data->body );
-#endif
-
-  return s;
   }
 
 Physics::AnimatedSphere Physics::createAnimatedSphere( float x, float y,
@@ -382,6 +396,10 @@ void Physics::endUpdate() {
 #ifndef NO_PHYSIC
   data->physicMutex.unlock();
 #endif
+  }
+
+size_t Physics::aviableRigids() const {
+  return data->maxRigid - data->rigidCount;
   }
 
 Physics::Rigid::Rigid() {

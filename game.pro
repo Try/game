@@ -58,7 +58,6 @@ HEADERS += \
     prototypesloader.h \
     util/lexicalcast.h \
     gui/maingui.h \
-    graphics/paintergui.h \
     util/math.h \
     gui/scroolbar.h \
     gui/button.h \
@@ -90,7 +89,6 @@ HEADERS += \
     gui/overlaywidget.h \
     gui/centralwidget.h \
     gui/listbox.h \
-    gui/font.h \
     gui/formbuilder.h \
     gui/propertyeditor.h \
     gui/lineedit.h \
@@ -173,7 +171,10 @@ HEADERS += \
     graphics/materialserver.h \
     graphics/gbufffer.h \
     graphics/translate/compileoptions.h \
-    graphics/translate/operationdef.h
+    graphics/translate/operationdef.h \
+    gui/loadscreen.h \
+    gui/mainmenu.h \
+    gui/optionswidget.h
 
 SOURCES += \
     main.cpp \
@@ -219,7 +220,6 @@ SOURCES += \
     gui/overlaywidget.cpp \
     gui/centralwidget.cpp \
     gui/listbox.cpp \
-    gui/font.cpp \
     gui/formbuilder.cpp \
     gui/propertyeditor.cpp \
     gui/lineedit.cpp \
@@ -299,7 +299,10 @@ SOURCES += \
     graphics/gbufffer.cpp \
     graphics/translate/compileoptions.cpp \
     graphics/translate/operationdef.cpp \
-    android_dummy.cpp
+    android_dummy.cpp \
+    gui/loadscreen.cpp \
+    gui/mainmenu.cpp \
+    gui/optionswidget.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

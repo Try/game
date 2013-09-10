@@ -1,7 +1,6 @@
 #include "progressbar.h"
 
 #include "resource.h"
-#include "font.h"
 
 #include <Tempest/Font>
 
@@ -46,8 +45,8 @@ const std::wstring ProgressBar::text() const {
 void ProgressBar::setText(const std::wstring &t) {
  if( txt!=t ){
    txt = t;
-   Tempest::Font f(res.sprites());
-   f.fetch(txt);
+   //Tempest::Font f;
+   //f.fetch(txt);
    update();
    }
  }
@@ -166,7 +165,7 @@ void ProgressBar::paintEvent( Tempest::PaintEvent &e ) {
 
  p.setBlendMode( Tempest::alphaBlend );
  p.setTexture( icon );
- Tempest::Font f(res.sprites());
+ Tempest::Font f;
 
  int sz = std::min(w(), h());
 

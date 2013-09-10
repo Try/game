@@ -1,7 +1,6 @@
 #ifndef MAINGUI_H
 #define MAINGUI_H
 
-#include "graphics/paintergui.h"
 #include "landscape/terrain.h"
 
 #include <Tempest/Surface>
@@ -15,7 +14,6 @@
 #include "gui/centralwidget.h"
 #include "gui/inputhook.h"
 
-#include "gui/font.h"
 #include "gui/graphicssettingswidget.h"
 
 #include <memory>

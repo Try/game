@@ -13,7 +13,7 @@ void mCall( T m ){
 static void invokeMainImpl(){
   int main( int, char** );
 
-  Tempest::Application::sleep(1);// Eclipse sucks
+  Tempest::Application::sleep(0);// Eclipse sucks
   mCall(main);
   }
 

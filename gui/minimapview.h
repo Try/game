@@ -29,7 +29,7 @@ class MiniMapView : public TextureView {
     void paintEvent(Tempest::PaintEvent &e);
 
   private:
-    Tempest::Texture2d terr, units, fog, hud;
+    Tempest::Texture2d terr, units, fog;
 
     Resource &res;
 
@@ -48,7 +48,7 @@ class MiniMapView : public TextureView {
 
     void drawUnits(Tempest::Pixmap &renderTo, World &wx);
 
-    Tempest::Pixmap hudPx, tmpPix;
+    Tempest::Pixmap tmpPix;
 
     World * world;
     bool    needToUpdateTerrain, needToUpdateTerrainV;

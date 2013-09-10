@@ -6,9 +6,6 @@
 #include <Tempest/Sprite>
 #include <Tempest/Font>
 
-#include "graphics/paintergui.h"
-#include "font.h"
-
 #include <ctime>
 
 class Resource;
@@ -30,6 +27,10 @@ class Button : public Tempest::Widget {
 
     void setHint( const std::wstring & str );
     const std::wstring &hint() const;
+
+    void setFont( const Tempest::Font& f );
+    const Tempest::Font& font() const;
+
   protected:
     virtual void drawFrame(Tempest::Painter &p, const Tempest::Rect& r );
     virtual void drawFrame(Tempest::Painter &p);
@@ -47,18 +48,20 @@ class Button : public Tempest::Widget {
     void keyPressEvent(Tempest::KeyEvent &e);
 
     void focusChange(bool);
-    bool pressed, presAnim;
-    std::wstring txt, hnt;
-
-    Tempest::Shortcut hotKey;
-    Resource & res;
-
-    Tempest::Font font;
 
     void onShortcut();
     virtual void emitClick();
 
+    Resource & res;
+    bool isPressed() const;
+  private:
     clock_t timePressed;
+    bool pressed, presAnim;
+    std::wstring txt, hnt;
+
+    Tempest::Shortcut hotKey;
+
+    Tempest::Font fnt;
   };
 
 #endif // BUTTON_H

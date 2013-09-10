@@ -2,7 +2,6 @@
 #define INGAMECONTROLS_H
 
 #include <Tempest/Surface>
-#include "graphics/paintergui.h"
 #include "inputhook.h"
 
 #include "landscape/terrain.h"
@@ -114,6 +113,7 @@ class InGameControls : public Tempest::Surface {
     struct AddUnitButton;
 
     void showMenu();
+    void showMainMenu();
     void showFormBuilder();
     //void addEditorObject( const ProtoObject& );
 

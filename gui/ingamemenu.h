@@ -2,7 +2,6 @@
 #define INGAMEMENU_H
 
 #include "modalwindow.h"
-#include "graphics/paintergui.h"
 
 class InGameMenu : public ModalWindow {
   public:

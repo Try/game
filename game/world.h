@@ -133,6 +133,9 @@ class World {
     struct CameraViewBounds{
       int x[4];
       int y[4];
+
+      bool operator == ( const CameraViewBounds& b ) const;
+      bool operator != ( const CameraViewBounds& b ) const;
       };
 
     const CameraViewBounds& cameraBounds() const;

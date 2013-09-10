@@ -1,6 +1,5 @@
 #include "gamemessages.h"
 
-#include "font.h"
 #include "lang/lang.h"
 #include <Tempest/Painter>
 #include "game.h"
@@ -13,9 +12,8 @@ unsigned int GameMessages::ticksCount = 0;
 GameMessages::GameMessages( Resource & res ):res(res) {
   msg.reserve(64);
   msg.clear();
-  cride = res.pixmap("gui/cride");
 
-  //message(L"msg");
+  cride = res.pixmap("gui/cride");
   views.insert(this);
   }
 
@@ -61,10 +59,10 @@ void GameMessages::paintEvent(Tempest::PaintEvent &e) {
     p.setScissor(r);
     }
 
-  Tempest::Font f( res.sprites() );
+  Tempest::Font f;
 
   int h1 = h()-30;
-  p.setFont( Tempest::Font(res.sprites()) );
+  p.setFont( Tempest::Font() );
   p.setBlendMode( Tempest::alphaBlend );
 
   for( size_t id=0; id<msg.size(); ++id ){

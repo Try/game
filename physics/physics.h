@@ -1,6 +1,7 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
+#include <cstddef>
 #include <Tempest/Matrix4x4>
 //#include "landscape/terrain.h"
 
@@ -98,6 +99,8 @@ class Physics {
 
      void beginUpdate();
      void endUpdate();
+
+     size_t aviableRigids() const;
   private:
     Physics( const Physics &){}
 

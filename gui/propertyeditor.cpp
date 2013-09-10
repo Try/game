@@ -7,8 +7,6 @@
 
 #include <Tempest/Layout>
 
-#include "font.h"
-
 using namespace Tempest;
 
 PropertyEditor::PropertyEditor( Resource & res ):Widget(), res(res), editor(0){
@@ -104,9 +102,9 @@ void PropertyEditor::setup(const std::vector<Property> &p) {
 
   prop = p;
 
-  Font f( res.sprites() );
+  Font f;
   for( size_t i=0; i<prop.size(); ++i )
-    f.fetch( prop[i].name );
+    f.fetch( prop[i].name, res.sprites() );
 
   updateSize();
   }

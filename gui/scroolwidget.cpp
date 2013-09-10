@@ -13,9 +13,9 @@ ScroolWidget::ScroolWidget(Resource &res)
   cen = new Widget();
   box.layout().add(cen);
 
-  lay = new ProxyLayout();
-  lay->scrool = &sb;
-  cen->setLayout( lay );
+  mlay = new ProxyLayout();
+  mlay->scrool = &sb;
+  cen->setLayout( mlay );
   box.setLayout( Tempest::Vertical );
 
   onResize.bind( this, &ScroolWidget::resizeEv);
@@ -44,7 +44,7 @@ void ScroolWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
   }
 
 void ScroolWidget::scrool(int ) {
-  lay->applyLayout();
+  mlay->applyLayout();
   }
 
 void ScroolWidget::resizeEv(int , int ) {

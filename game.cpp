@@ -45,17 +45,20 @@ Game::Game( ShowMode sm )
                 graphics.fsHolder ),
       gui( graphics.device, w(), h(), resource, proto ),
       msg(*this),
-      serializator(L"./serialize_tmp.obj", Serialize::Write ){
+      serializator(L"./serialize_tmp.obj", Serialize::Write ) {
   paused       = false;
   //needToUpdate = false;
 
   currentPlayer = 1;
-  isLoading = false;
+  isLoading     = true;
 
   //size_t s = sizeof(MVertex);
 
+  sload.reset( new LoadScreen(resource, graphics.localTex) );
+
   initFactorys();
   loadData();
+  loadGame();
 
   //graphics.drawOpWindow.bind( this, &Game::update);
 
@@ -77,6 +80,8 @@ Game::~Game() {
   }
 
 void Game::loadData() {
+  Tempest::Application::processEvents();
+
   resource.load("data/data.json");
   proto   .load("data/game.json");
   world = 0;
@@ -120,7 +125,10 @@ void Game::loadData() {
   //resource.sound("hammer0").play();
 
   setPlaylersCount(1);
+  }
 
+void Game::loadGame() {
+  Tempest::Application::processEvents();
 #ifdef __ANDROID__
   loadMission("campagin/td1_1.sav");
   //loadMission("save/map5.sav");
@@ -130,7 +138,7 @@ void Game::loadData() {
   loadMission("save/td1_1.sav");
   setScenario( new DeatmachScenario(*this, gui, msg) );
 #endif
-  //loadPngWorld( Tempest::Pixmap("./terrImg/h1.png") );
+  //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );
 
   //setScenario( new DeatmachScenario(*this, gui, msg) );
   setScenario( new DesertStrikeScenario(*this, gui, msg) );
@@ -269,10 +277,6 @@ void Game::update(){
   if( isLoading )
     return;
 
-  //if( !needToUpdate )
-    //return;
-  //needToUpdate = false;
-
   static const size_t updateDT = 1000/ticksPerSecond;
   size_t tnow = Time::tickCount();
   if( (tnow-updateTime)/updateDT>0 ){
@@ -302,7 +306,9 @@ void Game::update(){
 
 void Game::render() {
   if( isLoading ){
-    std::cout << "loading..." << std::endl;
+    sload->resize( size() );
+    graphics.render( *sload, resource.sprites() );
+    //std::cout << "loading..." << std::endl;
     return;
     }
 
@@ -332,18 +338,17 @@ void Game::render() {
   }
 
 void Game::resizeEvent( Tempest::SizeEvent &e ){
-  //w = e.w;
-  //h = e.h;
-
-  // std::cout << w << " " << h << std::endl;
-
-  world->camera.setPerespective(true, w(), h() );
+  if( !isLoading )
+    world->camera.setPerespective(true, w(), h() );
 
   graphics.resizeEvent( e.w, e.h, isFullScreenMode() );
   gui.resizeEvent( e.w, e.h );
   }
 
 void Game::mouseDownEvent( Tempest::MouseEvent &e) {
+  if( isLoading )
+    return;
+
   if( gui.mouseDownEvent(e) )
     return;
   gui.setFocus();
@@ -352,6 +357,9 @@ void Game::mouseDownEvent( Tempest::MouseEvent &e) {
   }
 
 void Game::mouseUpEvent( Tempest::MouseEvent &e) {
+  if( isLoading )
+    return;
+
   if( !scenario().isSelectionRectTracking() && gui.mouseUpEvent(e) )
     return;
 
@@ -361,10 +369,16 @@ void Game::mouseUpEvent( Tempest::MouseEvent &e) {
   }
 
 void Game::mouseMoveEvent( Tempest::MouseEvent &e ) {
+  if( isLoading )
+    return;
+
   scenario().mouseMoveEvent(e);
   }
 
 void Game::mouseWheelEvent( Tempest::MouseEvent &e ) {
+  if( isLoading )
+    return;
+
   if( gui.mouseWheelEvent(e) ){
     return;
     }
@@ -373,10 +387,16 @@ void Game::mouseWheelEvent( Tempest::MouseEvent &e ) {
   }
 
 void Game::shortcutEvent(Tempest::KeyEvent &e) {
+  if( isLoading )
+    return;
+
   gui.scutEvent(e);
   }
 
 void Game::keyDownEvent( Tempest::KeyEvent &e ) {
+  if( isLoading )
+    return;
+
   if( gui.keyDownEvent(e) )
     return;
 
@@ -384,6 +404,9 @@ void Game::keyDownEvent( Tempest::KeyEvent &e ) {
   }
 
 void Game::keyUpEvent( Tempest::KeyEvent & e ) {
+  if( isLoading )
+    return;
+
   if( gui.keyUpEvent(e) )
     return;
 

@@ -17,6 +17,7 @@
 #include <Tempest/Event>
 #include "util/fileserialize.h"
 #include "gui/inputhook.h"
+#include "gui/loadscreen.h"
 
 #include "network/netuser.h"
 #include "sound/sound.h"
@@ -137,11 +138,12 @@ class Game : public Tempest::Window {
 
     static const int ticksPerSecond;
 
-private:
+  private:
     bool  paused;//, needToUpdate;
     //bool isFullScreen;
 
     //bool acceptMouseObj;
+    void loadGame();
 
     Graphics graphics;
     SoundDevice    soundDev;
@@ -154,6 +156,8 @@ private:
     FileSerialize serializator;
 
     Tempest::Timer timer;
+
+    std::unique_ptr<LoadScreen>  sload;
 
     void addPlayer();
     void cancelEdit( int );

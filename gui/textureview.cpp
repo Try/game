@@ -1,7 +1,6 @@
 #include "textureview.h"
 
 #include <Tempest/Painter>
-#include "graphics/paintergui.h"
 
 #include <iostream>
 
@@ -20,7 +19,6 @@ void TextureView::paintEvent(Tempest::PaintEvent &e) {
 
   p.setFlip(false, true);
   p.setTexture( texture );
-  //p.setTexture( u );
   p.drawRect( 0, 0, w(), h(),
               0, 0, texture.width(), texture.height() );
 

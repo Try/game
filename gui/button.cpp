@@ -1,15 +1,14 @@
 #include "button.h"
 
 #include "resource.h"
-#include "font.h"
 #include "hintsys.h"
 
 #include "sound/sound.h"
 #include <Tempest/Utility>
 
 Button::Button(Resource &res)
-       :hotKey(this, Tempest::KeyEvent::K_NoKey), res(res) {
-  font = Tempest::Font(15, res.sprites());
+       : res(res), hotKey(this, Tempest::KeyEvent::K_NoKey) {
+  fnt = Tempest::Font(15);
 
   back[0] = res.pixmap("gui/buttonBack");
   back[1] = res.pixmap("gui/buttonBackD");
@@ -56,7 +55,7 @@ const std::wstring Button::text() const {
 void Button::setText(const std::wstring &t) {
   if( txt!=t ){
     txt = t;
-    font.fetch(txt);
+    //font.fetch(txt);
     update();
     }
   }
@@ -74,6 +73,14 @@ void Button::setHint(const std::wstring &str) {
 
 const std::wstring &Button::hint() const {
   return hnt;
+  }
+
+void Button::setFont(const Tempest::Font &f) {
+  fnt = f;
+  }
+
+const Tempest::Font &Button::font() const {
+  return fnt;
   }
 
 void Button::mouseDownEvent(Tempest::MouseEvent &) {
@@ -130,7 +137,7 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
 
   drawFrame( p );
 
-  p.setFont(font);
+  p.setFont(fnt);
   p.drawText( 0,0,w(),h(), txt,
               Tempest::AlignHCenter | Tempest::AlignVCenter );
 
@@ -235,4 +242,8 @@ void Button::onShortcut() {
 
 void Button::emitClick() {
   clicked();
+  }
+
+bool Button::isPressed() const {
+  return presAnim;
   }

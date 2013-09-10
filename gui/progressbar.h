@@ -4,7 +4,6 @@
 #include <Tempest/Widget>
 #include <Tempest/Shortcut>
 #include <Tempest/Sprite>
-#include "graphics/paintergui.h"
 
 #include <ctime>
 

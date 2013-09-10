@@ -34,10 +34,38 @@ Graphics::Graphics( void *hwnd, bool isFullScreen )
   time   = 0;
   useHDR = 0;
 
+#ifdef __ANDROID__
+  lvboHolder.setReserveSize( 8092 );
+  lvboHolder.setMaxReservedCount( 1 );
+  liboHolder.setReserveSize( 8092 );
+  liboHolder.setMaxReservedCount( 1 );
+  localTex.setMaxCollectIterations(-1);
+#else
+  lvboHolder.setReserveSize( 64*8092 );
+  lvboHolder.setMaxReservedCount( -1 );
+  liboHolder.setReserveSize( 64*8092 );
+  liboHolder.setMaxReservedCount( -1 );
+#endif
   //Tempest::DisplaySettings s( Tempest::SystemAPI::screenSize(), 32, true );
   //Tempest::DisplaySettings s( 1280, 768, 32, true );
 
   //device.setDisplaySettings(s);
+  }
+
+bool Graphics::render( Tempest::Surface &scene,
+                       Tempest::SpritesHolder & sp ) {
+  if( !device.startRender() )
+    return false;
+
+  device.clear( Tempest::Color(1,0,0), 1 );
+  uiRender.buildVbo(scene, vboHolder, iboHolder, sp );
+
+  device.beginPaint();
+  uiRender.renderTo(device);
+  device.endPaint();
+
+  device.present();
+  return true;
   }
 
 bool Graphics::render( Scene &scene,
@@ -145,9 +173,11 @@ void Graphics::renderImpl( Scene &scene,
 
   //gui.exec( *widget, 0, 0, device );
   //surfRender.renderTo( device );
+  device.beginPaint();
   r0.renderTo(device);
   uiRender.renderTo(device);
   hintRender.renderTo(device);
+  device.endPaint();
 
   for( int i=0; i<ShaderSource::tsCount; ++i )
     for( int r=0; r<32; ++r ){

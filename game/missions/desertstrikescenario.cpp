@@ -428,7 +428,9 @@ void DesertStrikeScenario::mkUnits( int p,
     }
   }
 
-void DesertStrikeScenario::onStartGame() {  
+void DesertStrikeScenario::onStartGame() {
+  showMainMenu();
+
   unitToView   = 0;
   hasVTracking = 1;
 

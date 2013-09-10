@@ -50,11 +50,7 @@ void MiniMapView::render() {
 
   if( terr.width() != w() || terr.height()!= h() ){
     rtime = tcount - mk*200;
-
-    hudPx  = Tempest::Pixmap(w(), h(), true);
-    tmpPix = Tempest::Pixmap(w(), h(), true);;
-    Tempest::Pixmap::Pixel px = {0,0,0,0};
-    hudPx.fill(px);
+    tmpPix = Tempest::Pixmap(w(), h(), true);
 
     update();
     }
@@ -129,28 +125,20 @@ void MiniMapView::render() {
     fog   = res.ltexHolder.create(fogTex, false, false);
     }
 
-  Tempest::Pixmap::Pixel px[2] = {{0,0,0,0}, {255,255,255,255}};
-  //hudPx.fill(px[0]);
-
-  for( int i=0; i<2; ++i ){
-    World::CameraViewBounds b = camBounds;
+  if( camBounds != wx.cameraBounds() ){
     camBounds = wx.cameraBounds();
-    //World::CameraViewBounds b = wx.cameraBounds();
     int sx = wx.terrain().width()*Terrain::quadSize,
         sy = wx.terrain().height()*Terrain::quadSize;
 
     for( int r=0; r<4; ++r ){
-      b.x[r] = (b.x[r]*hudPx.width()) /sx;
-      b.y[r] = (b.y[r]*hudPx.height())/sy;
+      camBounds.x[r] = (camBounds.x[r]*w())/sx;
+      camBounds.y[r] = (camBounds.y[r]*h())/sy;
       }
 
-    lineTo( hudPx, b.x[0], b.y[0], b.x[1], b.y[1], px[i] );
-    lineTo( hudPx, b.x[0], b.y[0], b.x[2], b.y[2], px[i] );
-    lineTo( hudPx, b.x[1], b.y[1], b.x[3], b.y[3], px[i] );
-    lineTo( hudPx, b.x[3], b.y[3], b.x[2], b.y[2], px[i] );
+    update();
     }
 
-  hud   = res.ltexHolder.create(hudPx, false, false);
+  //hud   = res.ltexHolder.create(hudPx, false, false);
   needToUpdateTerrain = false;
   ++tcount;
   }
@@ -337,7 +325,7 @@ void MiniMapView::drawUnits( Tempest::Pixmap & renderTo, World & wx ) {
 void MiniMapView::onTerrainCanged() {
   needToUpdateTerrain  = true;
   needToUpdateTerrainV = true;
-  hudPx.fill( {0,0,0,0} );
+  //hudPx.fill( {0,0,0,0} );
   }
 
 void MiniMapView::paintEvent(Tempest::PaintEvent &e) {
@@ -356,7 +344,19 @@ void MiniMapView::paintEvent(Tempest::PaintEvent &e) {
   p.drawRect( 0, 0, w(), h(),
               0, 0, fog.width(), fog.height() );
 
+  /*
   p.setTexture( hud );
   p.drawRect( 0, 0, w(), h(),
               0, 0, fog.width(), fog.height() );
+              */
+
+  p.unsetTexture();
+  p.drawLine( camBounds.x[0], camBounds.y[0],
+              camBounds.x[1], camBounds.y[1] );
+  p.drawLine( camBounds.x[1], camBounds.y[1],
+              camBounds.x[3], camBounds.y[3] );
+  p.drawLine( camBounds.x[2], camBounds.y[2],
+              camBounds.x[3], camBounds.y[3] );
+  p.drawLine( camBounds.x[0], camBounds.y[0],
+              camBounds.x[2], camBounds.y[2] );
   }

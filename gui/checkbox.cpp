@@ -39,7 +39,7 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
 
   if( state ){
     p.setTexture( imgCheck );
-    if( presAnim )
+    if( isPressed() )
       p.drawRect( 2, y+2, imgCheck.width()-4, imgCheck.height()-4,
                   0, 0, imgCheck.width(), imgCheck.height() ); else
       p.drawRect( 0, y, imgCheck.width(), imgCheck.height() );

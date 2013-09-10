@@ -881,7 +881,8 @@ void World::tick() {
   for( size_t i=0; i<nonBackground.size(); ++i )
     if( nonBackground[i]->hp() <= 0 &&
         nonBackground[i]->getClass().deathAnim==ProtoObject::Physic &&
-        createRigid
+        createRigid &&
+        physics.aviableRigids()>0
         /*nonBackground[i]->behavior.find<MoveBehavior>()*/ ) {
       GameObject & src = *nonBackground[i];
       GameObject & obj = addObjectEnv( nonBackground[i]->getClass().name );
@@ -1030,4 +1031,17 @@ void World::serialize(GameSerializer &s) {
 
 const SpatialIndex &World::spatial() const {
   return *spatialId;
+}
+
+
+bool World::CameraViewBounds::operator ==(const World::CameraViewBounds &b) const {
+  for( int i=0; i<4; ++i )
+    if( x[i]!=b.x[i] || y[i]!=b.y[i] )
+      return false;
+
+  return true;
+  }
+
+bool World::CameraViewBounds::operator !=(const World::CameraViewBounds &b) const {
+  return !(*this==b);
   }

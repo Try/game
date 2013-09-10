@@ -1,6 +1,5 @@
 #include "maingui.h"
 
-#include "graphics/paintergui.h"
 #include "prototypesloader.h"
 #include <Tempest/Event>
 
@@ -25,7 +24,6 @@
 
 #include "gui/richtext.h"
 
-#include "graphics/paintergui.h"
 #include "game.h"
 #include "util/lexicalcast.h"
 
@@ -51,15 +49,15 @@ MainGui::MainGui( Tempest::Device &,
   str += L"/\\|!@#$%^&*()_-=+";
 
   for( int i=10; i<=16; ++i ){
-    Tempest::Font f(i, r.sprites() );
+    Tempest::Font f(i);
 
     for( int bold = 0; bold<=1; ++bold )
       for( int italic=0; italic<=1; ++italic ){
         f.setBold(bold);
         f.setItalic(italic);
 
-        f .fetch(str);
-        Lang::fetch(f);
+        f.fetch(str, r.sprites());
+        Lang::fetch(f, r.sprites());
         }
     }
   }
@@ -157,7 +155,7 @@ void MainGui::paintHint( Tempest::PaintEvent &e ){
     if( !HintSys::vrect().contains(mousePos) )
       --HintSys::time;
 
-    p.setFont( Tempest::Font(14, res.sprites()) );
+    p.setFont( Tempest::Font(14) );
     Tempest::Size dpos = RichText::bounds( res, HintSys::hint() );
     //Font(14).textSize(res, HintSys::hint());
     dpos.w += 30;
@@ -180,7 +178,7 @@ void MainGui::paintHint( Tempest::PaintEvent &e ){
     }
 
   if( fps>=0 ){
-    p.setFont( Tempest::Font(14, res.sprites()) );
+    p.setFont( Tempest::Font(14) );
     RichText::renderText( 0, 0, res, p, fpsStr);
     }
   }
@@ -202,17 +200,22 @@ void MainGui::buildVBO( Tempest::SurfaceRender &r0,
                std::mem_fun(&MainGui::paintHUD),
                central.w(),
                central.h(),
-               vbo, ibo );
+               vbo,
+               ibo,
+               res.sprites() );
 
   if( central.needToUpdate() ){
-    ui.buildVbo(central, vbo, ibo);
+    ui.buildVbo(central,
+                vbo, ibo,
+                res.sprites());
     }
 
   hint.buildVbo( this,
                  std::mem_fun(&MainGui::paintHint),
                  central.w(),
                  central.h(),
-                 vbo, ibo );
+                 vbo, ibo,
+                 res.sprites() );
   }
 
 void MainGui::resizeEvent(int w, int h) {

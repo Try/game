@@ -30,11 +30,11 @@ void RichText::setText(const std::wstring &text) {
   }
 
 void RichText::rText( int dx, int dy,
-                      Resource &res,
+                      Resource &/*res*/,
                       Tempest::Painter *p,
                       const std::wstring &txt,
                       Tempest::Size & rect ) {
-  Tempest::Font font(15, res.sprites());
+  Tempest::Font font(15);
 
   if( p ){
     p->setFont(font);
@@ -53,7 +53,7 @@ void RichText::rText( int dx, int dy,
     if( txt[i]=='\n' ){
       x = 0;
       y += ddy;
-      Tempest::Font::Leter l = font.leter(txt[i]);
+      Tempest::Font::LetterGeometry l = font.letterGeometry(txt[i]);
 
       ddy = l.dpos.y + l.size.h;
       }
@@ -146,11 +146,11 @@ void RichText::rText( int dx, int dy,
         i = pr2;
       }
     else {
-      Tempest::Font::Leter l = font.leter(txt[i]);
+      Tempest::Font::LetterGeometry lg = font.letterGeometry(txt[i]);
 
       if( p ){
+        Tempest::Font::Letter l = p->letter(font, txt[i]);
         p->setTexture( l.surf );
-        //PainterGUI &pg = (PainterGUI&)p->device();
 
         if( sh ){
           p->setColor(0,0,0, 0.15);
@@ -171,12 +171,12 @@ void RichText::rText( int dx, int dy,
                      0, 0, l.size.w, l.size.h );
         }
 
-      w = std::max( w, x+l.advance.x );
-      h = std::max( h, y+l.advance.y );
+      w = std::max( w, x+lg.advance.x );
+      h = std::max( h, y+lg.advance.y );
 
-      x+= l.advance.x;
-      y+= l.advance.y;
-      ddy = std::max(ddy, l.dpos.y + l.size.h);
+      x+= lg.advance.x;
+      y+= lg.advance.y;
+      ddy = std::max(ddy, lg.dpos.y + lg.size.h);
       }
     }
 

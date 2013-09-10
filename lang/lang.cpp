@@ -4,7 +4,6 @@
 
 #include <unordered_set>
 
-#include "gui/font.h"
 #include "util/ifstream.h"
 
 std::unordered_map<std::wstring, std::wstring> Lang::lang;
@@ -92,6 +91,6 @@ std::wstring Lang::tr(const std::string &text) {
   return tr_impl(text);
   }
 
-void Lang::fetch( Tempest::Font &f ) {
-  f.fetch(leters);
+void Lang::fetch(Tempest::Font &f , Tempest::SpritesHolder &sp) {
+  f.fetch(leters, sp);
   }

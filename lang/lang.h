@@ -4,7 +4,6 @@
 #include <string>
 #include <unordered_map>
 #include <Tempest/Font>
-#include "gui/font.h"
 
 class Resource;
 
@@ -20,7 +19,7 @@ class Lang {
     static std::wstring tr( const std::wstring& text );
     static std::wstring tr( const std::string& text );
 
-    static void fetch(Tempest::Font& f);
+    static void fetch(Tempest::Font& f, Tempest::SpritesHolder& sp);
   };
 
 #endif // LANG_H
