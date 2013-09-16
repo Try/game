@@ -74,19 +74,19 @@ void GameMessages::paintEvent(Tempest::PaintEvent &e) {
     if( !msg[i].icon.size().isEmpty() ){
       p.setTexture( cride );
       p.drawRect(0, h1-(dh+iconSz)/2, iconSz, iconSz,
-                 0,0, cride.width(), cride.height() );
+                 0,0, cride.w(), cride.h() );
 
       p.setTexture( msg[i].icon );
-      float k1 = msg[i].icon.width() /float(iconSz),
-            k2 = msg[i].icon.height()/float(iconSz);
+      float k1 = msg[i].icon.w()/float(iconSz),
+            k2 = msg[i].icon.h()/float(iconSz);
 
       float k = 1.0/std::max(k1, k2);
-      int w = msg[i].icon.width() *k,
-          h = msg[i].icon.height()*k;
+      int w = msg[i].icon.w()*k,
+          h = msg[i].icon.h()*k;
 
       p.drawRect( (iconSz-w)/2, h1-(dh+h)/2,
                   w,h,
-                  0, 0, msg[i].icon.width(), msg[i].icon.height() );
+                  0, 0, msg[i].icon.w(), msg[i].icon.h() );
       p.drawText( iconSz, h1-dh, msg[i].str );
       } else {
       p.drawText( 0, h1-dh, msg[i].str );

@@ -7,7 +7,7 @@ template< class T >
 void mCall( T m ){
   void (*mx)(int, const char**) = reinterpret_cast<void (*)(int, const char**)>(m);
   static const char * args = "TempestApplication";
-  mx(1, &args);
+  mx(0, &args);
   }
 
 static void invokeMainImpl(){

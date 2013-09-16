@@ -63,7 +63,9 @@ Tempest::Widget *OptionsWidget::mkPriview(Resource &res) {
   //Tempest::Widget *wx = new Widget();
   //wx->setLayout(Tempest::Horizontal);
 
-  w->layout().add( new Button(res) );
+  Button *b = new Button(res);
+  b->clicked.bind(*this, &Widget::deleteLater );
+  w->layout().add( b );
   w->layout().add( new Button(res) );
 
   //w->layout().add(wx);

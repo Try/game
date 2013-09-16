@@ -19,6 +19,8 @@ ProtoObject::ProtoObject()
   data.limInc    = 0;
   data.buildTime = 25;
 
+  data.acseleration = 8;
+
   for( int i=0; i<3; ++i ){
     sizeBounds.min[i] = 1;
     sizeBounds.max[i] = 1;

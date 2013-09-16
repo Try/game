@@ -10,6 +10,7 @@ MainMenu::MainMenu(Resource &res, Tempest::Widget* owner)
   :ModalWindow(res, owner), res(res) {
   using namespace Tempest;
 
+
   setLayout( Vertical );
 
   Widget *m = new Panel(res);
@@ -40,6 +41,10 @@ MainMenu::MainMenu(Resource &res, Tempest::Widget* owner)
   layout().add( new Tempest::Widget() );
   }
 
+MainMenu::~MainMenu() {
+
+  }
+
 Button *MainMenu::button( Resource &res, const std::wstring& s,
                           void (MainMenu::*f)() ) {
   Button *b = new Button(res);
@@ -60,4 +65,8 @@ void MainMenu::start() {
 void MainMenu::showOptions() {
   OptionsWidget *m = new OptionsWidget(res, this);
   //m->onClosed.bind( game, &Game::unsetPause );
+  }
+
+void MainMenu::showAds(bool s) {
+
   }

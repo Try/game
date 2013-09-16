@@ -172,18 +172,20 @@ const Tempest::Pixmap &Player::fog() const {
   }
 
 int Player::atackGrade(size_t atype) const {
-  return 0;
+  if( atype < m.gradeLv.size() )
+    return m.gradeLv[atype]; else
+    return 0;
   }
 
 int Player::gradeLv( const Upgrade &atype ) const {
-  if( atype.id <= m.gradeLv.size() )
+  if( atype.id < m.gradeLv.size() )
     return m.gradeLv[atype.id];
 
   return 0;
   }
 
 void Player::mkGrade( const Upgrade &atype ) {
-  if( atype.id <= m.gradeLv.size() )
+  if( atype.id >= m.gradeLv.size() )
     m.gradeLv.resize(atype.id+1);
 
   ++m.gradeLv[atype.id];

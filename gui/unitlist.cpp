@@ -38,16 +38,16 @@ struct UnitList::Btn : public Button {
     p.setTexture( icon );
 
     int sz = std::min(w(), h());
-    float k = std::min( sz/float(icon.width()),
-                        sz/float(icon.height()) );
+    float k = std::min( sz/float(icon.w()),
+                        sz/float(icon.h()) );
 
-    int icW = icon.width() *k,
-        icH = icon.height()*k;
+    int icW = icon.w() *k,
+        icH = icon.h()*k;
 
     Tempest::Rect s = p.scissor();
     p.setScissor( s.intersected(viewRect()) );
     p.drawRect( (w()-icW)/2, (h()-icH)/2, icW, icH,
-                0, 0, icon.width(), icon.height() );
+                0, 0, icon.w(), icon.h() );
     p.setScissor(s);
 
     drawFrame(p);

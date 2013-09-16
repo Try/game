@@ -28,7 +28,7 @@ void PropertyEditor::paintEvent(Tempest::PaintEvent &pe) {
 
   p.setTexture( back );
   p.drawRectTailed( 0,0, w(), h(),
-                    0,0, back.width(), back.height() );
+                    0,0, back.w(), back.h() );
 
   p.setTexture( frame );
 

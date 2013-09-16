@@ -15,7 +15,8 @@ class BuildInFunction {
       asMinimaize,
       asMaximize,
       asDontCare,
-      asSetTo3
+      asSetTo3,
+      asSetTo4
       };
 
     typedef void(*F1)( const float*, int ,
@@ -173,6 +174,10 @@ class BuildInFunction {
     static void step(const float* a, int sa,
                      const float *b, int sb,
                      float *out, int& osz );
+
+    static void float4(const float* a, int sa,
+                       const float *b, int sb,
+                       float *out, int& osz );
 
     static void smoothstep(const float* a, int sa,
                            const float *b, int sb,

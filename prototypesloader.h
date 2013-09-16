@@ -31,6 +31,8 @@ class PrototypesLoader {
     void unload();
 
     const std::string& material(int i);
+
+    size_t atackId( const std::string& s );
   protected:
     struct Defs{
       std::unordered_map<std::string, PProtoObject> data;

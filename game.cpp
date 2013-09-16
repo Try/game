@@ -47,6 +47,7 @@ Game::Game( ShowMode sm )
       msg(*this),
       serializator(L"./serialize_tmp.obj", Serialize::Write ) {
   paused       = false;
+  setMultiTouchTracking(1);
   //needToUpdate = false;
 
   currentPlayer = 1;
@@ -602,6 +603,11 @@ void Game::onUnitDied( GameObject& u, Player & pl ) {
 
 void Game::setCameraPos(GameObject &obj) {
   setCameraPosSmooth(obj, 1);
+  }
+
+void Game::setCameraPosition(float x, float y) {
+  world->camera.setPosition( x,y, world->camera.z() );
+  world->moveCamera(0,0);
   }
 
 void Game::setCameraPosSmooth( GameObject &obj, float maxK ) {

@@ -552,8 +552,7 @@ void GameObjectView::updatePos() {
     GraphicObject & g = view[0];
     anim.sphere.setPosition( g.x(), g.y(), g.z() );
     anim.sphere.update();
-    }
-
+    } else
   if( anim.box.isValid() && view.size() ){
     GraphicObject & g = view[0];
     anim.box.setPosition( g.x(), g.y(), g.z() );
@@ -567,11 +566,13 @@ void GameObjectView::updatePos() {
     if( form.sphere.isValid() ){
       form.sphere.update();
       updatePosRigid(form.sphere, i);
-      }
-
+      } else
     if( form.box.isValid() ){
       form.box.update();
       updatePosRigid(form.box, i);
+      } else {
+      static const float nullf[16] = {};
+      env[i].setTransform( Tempest::Matrix4x4(nullf) );
       }
     }
   }
@@ -800,7 +801,6 @@ void GameObjectView::updatePosRigid( Physics::Box &rigid, size_t i ) {
   size_t id = env[i].viewID;
   if( id < getClass().view.size() ){
     const double lbs[3] = {1,1,1};//getClass().view[i].boxSize;
-
 
     m.scale( getClass().view[id].size[0]/lbs[0],
              getClass().view[id].size[1]/lbs[1],

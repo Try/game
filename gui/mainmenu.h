@@ -9,6 +9,7 @@ class Button;
 class MainMenu : public ModalWindow {
   public:
     MainMenu(Resource& res , Widget *owner);
+    ~MainMenu();
 
   private:
     Button *button(Resource& res, const std::wstring &s,
@@ -18,6 +19,8 @@ class MainMenu : public ModalWindow {
     void showOptions();
 
     Resource &res;
+
+    void showAds(bool s);
   };
 
 #endif // MAINMENU_H

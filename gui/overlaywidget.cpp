@@ -39,7 +39,7 @@ void OverlayWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
   }
 
 void OverlayWidget::ContainerLayout::applyLayout() {
-  for( size_t i=1; i<widgets().size(); ++i )
+  for( size_t i=0; i<widgets().size(); ++i )
     placeIn( widgets()[i], Tempest::Rect(0,0, owner()->w(), owner()->h()) );
 
   if( widgets().size()==0 ){

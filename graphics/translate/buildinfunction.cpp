@@ -17,6 +17,7 @@ BuildInFunction::BuildInFunction(){
   add( "smoothstep", &BuildInFunction::smoothstep, asMaximize  );
 
   add( "clamp",     &BuildInFunction::clamp,   asMaximize  );
+  add( "float4",    &BuildInFunction::float4,  asSetTo4    );
 
   add( "saturate",  &BuildInFunction::saturate  );
   add( "length",    &BuildInFunction::length    );
@@ -273,6 +274,20 @@ void BuildInFunction::step( const float *a, int sa,
 
   for( int i=0; i<osz; ++i )
     out[i] = b[i] >= a[i];
+  }
+
+void BuildInFunction::float4( const float *a, int sa,
+                              const float *b, int sb,
+                              float *out, int &osz) {
+  osz = 4;
+
+  if( !out )
+    return;
+
+  out[0] = a[0];
+  out[1] = a[1];
+  out[2] = a[2];
+  out[3] = b[0];
   }
 
 void BuildInFunction::smoothstep( const float *a, int sa,

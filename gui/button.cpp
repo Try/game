@@ -122,15 +122,15 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
 
     int sz = std::min(w(), h());
 
-    float k = std::min( sz/float(icon.width()),
-                        sz/float(icon.height()) );
+    float k = std::min( sz/float(icon.w()),
+                        sz/float(icon.h()) );
     k = std::min(k,1.f);
 
-    int icW = icon.width()*k,
-        icH = icon.height()*k;
+    int icW = icon.w()*k,
+        icH = icon.h()*k;
 
     p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
-                0, 0, icon.width(), icon.height() );
+                0, 0, icon.w(), icon.h() );
     }
 
   p.setScissor(r);
@@ -161,7 +161,7 @@ void Button::drawBack(Tempest::Painter &p, const Tempest::Rect& r ){
   p.setTexture( bk );
   p.drawRectTailed( px, py, pw, ph,
                     0, 0,
-                    bk.width(), bk.height() );
+                    bk.w(), bk.h() );
   }
 
 void Button::drawFrame( Tempest::Painter &p ) {

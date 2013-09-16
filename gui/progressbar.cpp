@@ -126,7 +126,7 @@ void ProgressBar::paintEvent( Tempest::PaintEvent &e ) {
  p.setTexture( bk );
  p.drawRect( px, py, pw2, ph2,
              0, 0,
-             bk.width(), bk.height() );
+             bk.w(), bk.h() );
 
  bk = back[0];
  p.setTexture( bk );
@@ -134,7 +134,7 @@ void ProgressBar::paintEvent( Tempest::PaintEvent &e ) {
  if( maxV>minV )
    p.drawRect( px, py, pw2*val/(maxV-minV), ph2,
                0, 0,
-               bk.width(), bk.height() );
+               bk.w(), bk.h() );
 
  p.setTexture( frame );
 
@@ -169,14 +169,14 @@ void ProgressBar::paintEvent( Tempest::PaintEvent &e ) {
 
  int sz = std::min(w(), h());
 
- float k = std::min( sz/float(icon.width()),
-                     sz/float(icon.height()) );
+ float k = std::min( sz/float(icon.w()),
+                     sz/float(icon.h()) );
 
- int icW = icon.width() *k,
-     icH = icon.height()*k;
+ int icW = icon.w() *k,
+     icH = icon.h()*k;
 
  p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
-             0, 0, icon.width(), icon.height() );
+             0, 0, icon.w(), icon.h() );
 
  p.setFont(f);
  p.drawText( 0,0,w(),h(), txt,

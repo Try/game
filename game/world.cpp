@@ -204,8 +204,10 @@ void World::createResp(int pl, int x, int y, int minX, int minY) {
     }
   }
 
-void World::moveCamera(double x, double y) {
+void World::moveCamera(double x, double y, bool angle) {
   double a = -M_PI*camera.spinX()/180.0;
+  if( !angle )
+    a = 0;
 
   double k = camera.distance()/3.0;
   x *= k;

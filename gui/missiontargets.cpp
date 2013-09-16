@@ -31,12 +31,12 @@ void MissionTargets::paintEvent(Tempest::PaintEvent &e) {
     int sz = wx->h();
     p.setTexture( ckFrame );
     p.drawRect( 7, wx->pos().y, sz, sz,
-                 0, 0, ckFrame.width(), ckFrame.height() );
+                 0, 0, ckFrame.w(), ckFrame.h() );
 
     if( game.scenario().tagets()[i].done ){
       p.setTexture( ck );
       p.drawRect( 7, wx->pos().y, sz, sz,
-                  0, 0, ck.width(), ck.height() );
+                  0, 0, ck.w(), ck.h() );
       }
     }
 

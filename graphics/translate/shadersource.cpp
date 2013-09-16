@@ -101,7 +101,9 @@ ShaderSource::Code ShaderSource::code( VertexInputAssembly &d,
       }
     }
 
+  Code c;
   optNodes(cx);
+  mkRState(cx, c);
 
   mkVaryings(cx, true);
   reduceVaryings(cx, 9);
@@ -109,9 +111,8 @@ ShaderSource::Code ShaderSource::code( VertexInputAssembly &d,
   mkUniforms(cx, false);
   mkTransformVarying(cx);
 
-  Code c;
   {
-  std::string scode = color("\n  ", cx, c.rs),
+  std::string scode = color("\n  ", cx),
               tcode = compileTmp(cx,"\n  ", false);
 
   std::stringstream fs;
@@ -484,8 +485,7 @@ std::string ShaderSource::src( const std::string & sep,
   }
 
 std::string ShaderSource::color( const std::string &sep,
-                                 Context &v,
-                                 Tempest::RenderState& rs ) const {
+                                 Context &v ) const {
   static const std::string fr[CompileOptions::LangCount] = {
     "fs.color = ",
     "gl_FragColor = ",
@@ -495,27 +495,7 @@ std::string ShaderSource::color( const std::string &sep,
   for( size_t i=0; i<nodes.size(); ++i )
     if( nodes[i]->shOutType==Lighting ){
       ShaderSource &cl = *nodes[i];
-
-      if( opDefs.equal( cl, opDefs.addBlend, *v.opt ) ){
-        rs.setBlend(1);
-        rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
-                         Tempest::RenderState::AlphaBlendMode::one );
-
-        if( opDefs.equal( *cl.nodes[0], opDefs.getScreen, *v.opt ) )
-          return fr[v.lang] + cl.nodes[1]->src(sep, v, false, 4) +";"+ sep; else
-          return fr[v.lang] + cl.nodes[0]->src(sep, v, false, 4) +";"+ sep;
-        } else
-      if( false ){
-        rs.setBlend(1);
-        rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
-                         Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
-
-        if( opDefs.equal( *cl.nodes[0], opDefs.getScreen, *v.opt ) )
-          return fr[v.lang] + cl.nodes[1]->src(sep, v, false, 4) +";"+ sep; else
-          return fr[v.lang] + cl.nodes[0]->src(sep, v, false, 4) +";"+ sep;
-        } else {
-        return fr[v.lang] + cl.src(sep, v, false, 4) +";"+ sep;
-        }
+      return fr[v.lang] + cl.src(sep, v, false, 4) +";"+ sep;
       }
 
   if( v.lang==CompileOptions::Cg )
@@ -1148,6 +1128,44 @@ void ShaderSource::optNodes(ShaderSource::Context &v) {
       }
   }
 
+void ShaderSource::mkRState(ShaderSource::Context &v, Code &c ) {
+  Tempest::RenderState &rs = c.rs;
+
+  for( size_t i=0; i<nodes.size(); ++i )
+    if( nodes[i]->shOutType==Lighting ){
+      ShaderSource &cl = *nodes[i];
+
+      if( opDefs.equal( cl, opDefs.addBlend, *v.opt ) ){
+        rs.setBlend(1);
+        rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
+                         Tempest::RenderState::AlphaBlendMode::one );
+
+        if( opDefs.equal( *cl.nodes[0], opDefs.getScreen, *v.opt ) )
+          nodes[i] = cl.nodes[1]; else
+          nodes[i] = cl.nodes[0];
+
+        nodes[i]->shOutType = Lighting;
+        return;
+        } else
+      if( opDefs.equal( cl, opDefs.alphaBlend, *v.opt ) ){
+        rs.setBlend(1);
+        rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::src_alpha,
+                         Tempest::RenderState::AlphaBlendMode::one_minus_src_alpha );
+
+        std::shared_ptr<ShaderSource> ptr;
+        ptr.reset( new ShaderSource() );
+        ptr->type     = Math;
+        ptr->funcName = "float4";
+        ptr->csize    = 4;
+        ptr->nodes.push_back( cl.nodes[0]->nodes[0] );
+        ptr->nodes.push_back( cl.nodes[0]->nodes[1] );
+
+        nodes[i] = ptr;
+        nodes[i]->shOutType = Lighting;
+        }
+      }
+  }
+
 bool ShaderSource::mkVaryings( Context &cx,
                                bool forceDeepth ) {
   if( !forceDeepth && (!isTexture && isVarying && convStage<=varyingStage) ){
@@ -1369,6 +1387,19 @@ std::string ShaderSource::compileMath( const std::string &sep,
     return expand( s, csize, vecSz, v);
     }
 
+  if( funcName=="float4" ){
+    static const std::string f[] = {
+      "float4", "vec4", "vec4"
+    };
+    std::string s =
+        f[v.lang] +"("
+        +nodes[0]->src(sep, v, vshader, 3)+", "
+        +nodes[1]->src(sep, v, vshader, 1)
+        +")";
+
+    return expand( s, csize, vecSz, v);
+    }
+
   if( bfunc.argsCount(funcName)==1 ){
     std::string s = funcName +
         "("+nodes[0]->src(sep, v, vshader, nodes[0]->csize)+")";
@@ -1558,6 +1589,12 @@ void ShaderSource::argsSize( int &sz0, int &sz1, int &sz2,
     sz0 = 3;
     sz1 = 3;
     sz2 = 3;
+    }
+
+  if( as==BuildInFunction::asSetTo4 ){
+    sz0 = 4;
+    sz1 = 4;
+    sz2 = 4;
     }
 
   if( funcName=="mix" ){

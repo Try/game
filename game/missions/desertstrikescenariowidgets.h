@@ -108,6 +108,7 @@ struct DesertStrikeScenario::SpellPanel: public TranscurentPanel {
   Game & game;
 
   class SpellButton;
+  class CameraButton;
 
   void setupHook ( const std::string& unit );
   void setupHookU( const std::string& unit );

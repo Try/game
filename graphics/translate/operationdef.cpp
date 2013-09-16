@@ -2,6 +2,10 @@
 
 #include "shadersource.h"
 
+OperationDef::EqContext::EqContext() {
+  alpha = 0;
+  }
+
 OperationDef::Node::Node() {
   std::fill( cvalue, cvalue+4, 0  );
   std::fill( swizle, swizle+4, '-');
@@ -49,12 +53,12 @@ OperationDef::OperationDef() {
 
   addBlend = node( Add, getScreen, node(AnyNode) );
 
-  auto alpha = node( node(Alpha), "w---"),
-       color = node( node(Alpha), "xyz-");
+  auto alpha = node(Alpha),
+       color = node(AnyNode);//node( node(Alpha), "xyz-");
 
-  node( Add,
-        node( Mul, alpha, color ),
-        node( Mul, node( Sub, node(1), alpha ), getScreen ) );
+  alphaBlend = node( Add,
+                node( Mul, color, alpha ),
+                node( Mul, getScreen, node( Sub, node(1), alpha ) ) );
   }
 
 OperationDef::Node OperationDef::node( const std::string & str ) {
@@ -136,7 +140,15 @@ OperationDef::Node OperationDef::node( const Node &a,
 
 bool OperationDef::equal( const ShaderSource &s,
                           const OperationDef::Node &n,
-                          const CompileOptions &opt ) {
+                          const CompileOptions &opt) {
+  EqContext c;
+  return equal(s, n, opt, c);
+  }
+
+bool OperationDef::equal(const ShaderSource &s,
+                          const OperationDef::Node &n,
+                          const CompileOptions &opt,
+                          EqContext &c ) {
   if( n.type==Lang ){
     return equal(s, n.node[ opt.lang ], opt);
     }
@@ -145,7 +157,15 @@ bool OperationDef::equal( const ShaderSource &s,
     return true;
 
   if( n.type==Alpha ){
-    return s.csize==1;
+    if( c.alpha )
+      return *c.alpha == s;
+
+    if( s.csize==1 ){
+      c.alpha = &s;
+      return 1;
+      }
+
+    return 0;
     }
 
   if( s.nodes.size()!=n.node.size() )
@@ -157,16 +177,16 @@ bool OperationDef::equal( const ShaderSource &s,
 
   if( s.type==ShaderSource::Operator && s.nodes.size()==2 ){
     if( s.opType==ShaderSource::Add && n.type==Add ){
-      return equalBin(s,n, opt);
+      return equalBin(s,n, opt, c);
       }
     if( s.opType==ShaderSource::Sub && n.type==Sub ){
-      return equalN(s,n, opt);
+      return equalN(s,n, opt, c);
       }
     if( s.opType==ShaderSource::Div && n.type==Div ){
-      return equalN(s,n, opt);
+      return equalN(s,n, opt, c);
       }
     if( s.opType==ShaderSource::Mul && n.type==Mul ){
-      return equalN(s,n, opt);
+      return equalN(s,n, opt, c);
       }
     }
 
@@ -190,29 +210,30 @@ bool OperationDef::equal( const ShaderSource &s,
     for( int i=0; i<4; ++i )
       if( s.mathSW[i]!=n.swizle[i] )
         return 0;
-    return equal(*s.nodes[0], n.node[0], opt);
+    return equal(*s.nodes[0], n.node[0], opt, c);
     }
 
   if( n.type==ScreenTexture &&
       s.type==ShaderSource::TextureRect &&
       s.textureSemantic==ShaderSource::tsScreenData ){
-    return equal(*s.nodes[0], n.node[0], opt);
+    return equal(*s.nodes[0], n.node[0], opt, c);
     }
 
   return false;
   }
 
-bool OperationDef::equalBin( const ShaderSource &s,
+bool OperationDef::equalBin(const ShaderSource &s,
                              const OperationDef::Node &n,
-                             const CompileOptions& opt ) {
-  return (equal(*s.nodes[0], n.node[0], opt) && equal(*s.nodes[1], n.node[1], opt)) ||
-         (equal(*s.nodes[1], n.node[0], opt) && equal(*s.nodes[0], n.node[1], opt));
+                             const CompileOptions& opt , EqContext &c) {
+  return (equal(*s.nodes[0], n.node[0], opt, c) && equal(*s.nodes[1], n.node[1], opt, c)) ||
+         (equal(*s.nodes[1], n.node[0], opt, c) && equal(*s.nodes[0], n.node[1], opt, c));
   }
 
-bool OperationDef::equalN( const ShaderSource &s,
+bool OperationDef::equalN(const ShaderSource &s,
                            const OperationDef::Node &n,
-                           const CompileOptions& opt ) {
-  return (equal(*s.nodes[0], n.node[0], opt) && equal(*s.nodes[1], n.node[1], opt));
+                           const CompileOptions& opt , EqContext &c) {
+  return (equal(*s.nodes[0], n.node[0], opt, c) && equal(*s.nodes[1], n.node[1], opt, c));
   }
+
 
 

@@ -32,17 +32,17 @@ void CheckBox::paintEvent( Tempest::PaintEvent &e ) {
   Tempest::Painter p(e);
   p.setBlendMode( Tempest::alphaBlend );
 
-  int y = (h()-imgCheck.height())/2;
+  int y = (h()-imgCheck.h())/2;
 
-  Button::drawBack( p, Tempest::Rect{0,y, imgCheck.width(), imgCheck.height()} );
-  Button::drawFrame(p, Tempest::Rect{0,y, imgCheck.width(), imgCheck.height()} );
+  Button::drawBack( p, Tempest::Rect{0,y, imgCheck.w(), imgCheck.h()} );
+  Button::drawFrame(p, Tempest::Rect{0,y, imgCheck.w(), imgCheck.h()} );
 
   if( state ){
     p.setTexture( imgCheck );
     if( isPressed() )
-      p.drawRect( 2, y+2, imgCheck.width()-4, imgCheck.height()-4,
-                  0, 0, imgCheck.width(), imgCheck.height() ); else
-      p.drawRect( 0, y, imgCheck.width(), imgCheck.height() );
+      p.drawRect( 2, y+2, imgCheck.w()-4, imgCheck.h()-4,
+                  0, 0, imgCheck.w(), imgCheck.h() ); else
+      p.drawRect( 0, y, imgCheck.w(), imgCheck.h() );
     }
 
   Button::paintEvent(e);

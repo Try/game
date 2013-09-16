@@ -16,6 +16,8 @@
 #include "util/math.h"
 #include "algo/algo.h"
 
+#include <cmath>
+
 const char * DesertStrikeScenario::units[3][4] = {
   {"gelion", "pikeman", "incvisitor", "water_mage"},
   {"fire_mage", "balista"},
@@ -28,6 +30,8 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
   interval  = 25*Game::ticksPerSecond;
   isTestRun = 0;
   plCenter  = 0;
+
+  cameraSpeed = 0;
 
   unitToView   = 0;
   hasVTracking = 1;
@@ -44,6 +48,8 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
 
   gui.update();
   g.prototypes().load("campagin/td.json");
+
+  sctrl.isScaleMode = false;
   }
 
 DesertStrikeScenario::~DesertStrikeScenario() {
@@ -55,50 +61,74 @@ void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
   isMouseTracking = true;
 
   mpressPos = e.pos();
+
+  if( e.mouseID==0 ){
+    sctrl.m0  = e.pos();
+    sctrl.rm0 = sctrl.m0;
+    }
+
+  if( e.mouseID==1 ){
+    sctrl.m1 = e.pos();
+    sctrl.rm1 = sctrl.m1;
+    isMouseTracking = false;
+
+    sctrl.mouseD0     = (sctrl.m0 - sctrl.m1).manhattanLength();
+    sctrl.d0          = game.curWorld().camera.distance();
+    sctrl.isScaleMode = (sctrl.mouseD0>5);
+    sctrl.angle0      = game.curWorld().camera.spinX();
+    }
   }
 
 void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
-  F3 v = unProject( e.x, e.y );
-  isMouseTracking = false;
-
-  World  &world  = game.curWorld();
-  Player &player = game.player();
-
-  updateMousePos(e);
-
-  if( e.button==Tempest::MouseEvent::ButtonLeft && player.editObj ){
-    msg.message( player.number(), Behavior::EditNext );
+  if( e.mouseID==1 ){
+    sctrl.m1          = e.pos();
+    sctrl.isScaleMode = false;
+    isMouseTracking = false;
     }
 
-  if( e.button==Tempest::MouseEvent::ButtonRight && player.editObj ){
-    msg.message( player.number(), Behavior::EditDel );
-    }
+  if( e.mouseID==0 && !sctrl.isScaleMode){
+    F3 v = unProject( e.x, e.y );
+    isMouseTracking = false;
 
-  if( spellToCast.size() ){
-    if( e.button==Tempest::MouseEvent::ButtonLeft ){
-      if( spellMode==Spell::CastToCoord ){
-        game.message( game.player().number(),
-                      BehaviorMSGQueue::SpellCast,
-                      game.curWorld().mouseX(),
-                      game.curWorld().mouseY(),
-                      spellToCast
-                      );
-        }
+    World  &world  = game.curWorld();
+    Player &player = game.player();
 
-      if( spellMode==Spell::CastToUnit && game.curWorld().mouseObj() ){
-        WeakWorldPtr p = game.curWorld().objectWPtr( game.curWorld().mouseObj() );
+    updateMousePos(e);
 
-        game.message( game.player().number(),
-                      BehaviorMSGQueue::SpellCast,
-                      p.id(),
-                      spellToCast
-                      );
-        }
+    if( e.button==Tempest::MouseEvent::ButtonLeft && player.editObj ){
+      msg.message( player.number(), Behavior::EditNext );
       }
-    } else {
-    world.clickEvent( World::coordCastD(v.data[0]),
-                      World::coordCastD(v.data[1]),
-                      e );
+
+    if( e.button==Tempest::MouseEvent::ButtonRight && player.editObj ){
+      msg.message( player.number(), Behavior::EditDel );
+      }
+
+    if( spellToCast.size() ){
+      if( e.button==Tempest::MouseEvent::ButtonLeft ){
+        if( spellMode==Spell::CastToCoord ){
+          game.message( game.player().number(),
+                        BehaviorMSGQueue::SpellCast,
+                        game.curWorld().mouseX(),
+                        game.curWorld().mouseY(),
+                        spellToCast
+                        );
+          }
+
+        if( spellMode==Spell::CastToUnit && game.curWorld().mouseObj() ){
+          WeakWorldPtr p = game.curWorld().objectWPtr( game.curWorld().mouseObj() );
+
+          game.message( game.player().number(),
+                        BehaviorMSGQueue::SpellCast,
+                        p.id(),
+                        spellToCast
+                        );
+          }
+        }
+      } else {
+      world.clickEvent( World::coordCastD(v.data[0]),
+                        World::coordCastD(v.data[1]),
+                        e );
+      }
     }
   }
 
@@ -108,12 +138,38 @@ void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
     return;
     }
 
+  if( e.mouseID==0 && sctrl.isScaleMode ){
+    mpos3d = unProject( e.x, e.y, moveZ );
+    sctrl.rm0 = e.pos();
+    }
+
+  if( e.mouseID==1 && sctrl.isScaleMode ){
+    sctrl.rm1 = e.pos();
+    double lm = (sctrl.m0 - e.pos() ).manhattanLength();
+
+    double a0 = atan2( sctrl.m0.y - sctrl.m1.y,
+                       sctrl.m0.x - sctrl.m1.x ),
+           a1 = atan2( sctrl.rm0.y - sctrl.rm1.y,
+                       sctrl.rm0.x - sctrl.rm1.x );
+
+    World &w = game.curWorld();
+
+    w.camera.setSpinX( sctrl.angle0+(a1-a0)*180/M_PI );
+    if( lm>5 ){
+      w.camera.setDistance( sctrl.d0 * (sctrl.mouseD0/lm) );
+      }
+    }
+
+  if( sctrl.isScaleMode )
+    return;
+
   acceptMouseObj = true;
 
   if( isMouseTracking ){
     F3 m = unProject( e.x, e.y, moveZ );
     game.curWorld().moveCamera( mpos3d.data[0]-m.data[0],
-                                mpos3d.data[1]-m.data[1]);
+                                mpos3d.data[1]-m.data[1],
+                                false );
     mpos3d = unProject( e.x, e.y, moveZ );
 
     Tempest::Point p = (e.pos()-mpressPos);
@@ -300,8 +356,30 @@ void DesertStrikeScenario::tick() {
           }
       }
 
-    if( unitToView )
-      game.setCameraPosSmooth( *unitToView, 0.1 );
+    if( unitToView ){
+      float x = World::coordCast(unitToView->x()),
+            y = World::coordCast(unitToView->y());
+
+      float dx = -(game.curWorld().camera.x() - x ),
+            dy = -(game.curWorld().camera.y() - y );
+      float l = sqrt(dx*dx+dy*dy);
+
+      cameraSpeed = std::min(cameraSpeed, l);
+
+      float v = cameraSpeed*(l);
+
+      if( l ){
+        dx = dx*std::min(1.0f, v/l);
+        dy = dy*std::min(1.0f, v/l);
+        cameraSpeed += 0.005;
+
+        game.setCameraPosition( game.curWorld().camera.x()+dx,
+                                game.curWorld().camera.y()+dy );
+        } else {
+        cameraSpeed = 0;
+        }
+      //game.setCameraPosSmooth( *unitToView, 0.1 );
+      }
     }
 
   if( tNum%interval==0 ){
@@ -434,8 +512,10 @@ void DesertStrikeScenario::onStartGame() {
   unitToView   = 0;
   hasVTracking = 1;
 
-  int w = game.curWorld().terrain().width() *Terrain::quadSize;
-  int h = game.curWorld().terrain().height()*Terrain::quadSize;
+  //int w = game.curWorld().terrain().width() *Terrain::quadSize;
+  //int h = game.curWorld().terrain().height()*Terrain::quadSize;
+
+  bool swap = rand()%2;
 
   World &wx = game.curWorld();
   for( size_t i=0; i<wx.activeObjects().size(); ++i ){
@@ -445,15 +525,16 @@ void DesertStrikeScenario::onStartGame() {
         x = w*Terrain::quadSize-obj.x(),
         y = obj.y();
 
-    if( x*h > y*w ){
+    if( (x*h > y*w)^swap ){
       obj.setPlayer(1);
       } else {
       obj.setPlayer(2);
       }
-    obj.setClass( &game.prototype("tower") );
+    obj.setClass( &game.prototype( obj.getClass().name ) );
     obj.setHP( obj.getClass().data.maxHp );
     }
 
+  /*
   {
     GameObject& obj = game.curWorld().addObject("castle", 1);
     int p = 10;
@@ -464,7 +545,7 @@ void DesertStrikeScenario::onStartGame() {
     GameObject& obj = game.curWorld().addObject("castle", 2);
     int p = 80-10;
     obj.setPosition( p*w/80, p*h/80 );
-    }
+    }*/
 
   }
 

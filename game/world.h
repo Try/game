@@ -61,7 +61,7 @@ class World {
       return dcoord*4048;
       }
 
-    void moveCamera( double x, double y );
+    void moveCamera( double x, double y, bool angle = true );
     void tick();
 
     Tempest::Camera   camera;

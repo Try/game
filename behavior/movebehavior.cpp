@@ -222,12 +222,6 @@ void MoveBehavior::repositionEvent(RepositionEvent &m) {
   }
 
 void MoveBehavior::positionChangeEvent( PositionChangeEvent & ) {
-  return;
-
-  clos.isReposMove = 0;
-
-  tx = obj.x();
-  ty = obj.y();
   }
 
 void MoveBehavior::calcWayAndMove( int tx, int ty,
@@ -358,7 +352,7 @@ void MoveBehavior::tick(const Terrain &terrain) {
   }
 
 void MoveBehavior::step(const Terrain &terrain ) {
-  int acseleration = 8;
+  int acseleration = obj.getClass().data.acseleration;
 
   int tx = this->tx,
       ty = this->ty;

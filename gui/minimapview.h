@@ -37,9 +37,6 @@ class MiniMapView : public TextureView {
     World::CameraViewBounds camBounds;
     bool pressed;
 
-    void lineTo(Tempest::Pixmap &renderTo,
-                 int x0, int y0, int x1, int y1 , Tempest::Pixmap::Pixel px);
-
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseDragEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);

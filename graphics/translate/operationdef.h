@@ -41,7 +41,7 @@ class OperationDef {
       char  swizle[4];
       };
 
-    Node getScreen, addBlend;
+    Node getScreen, addBlend, alphaBlend;
 
     Node node( const std::string &str );
     Node node( const Node &n, const char s[4] );
@@ -52,12 +52,24 @@ class OperationDef {
     Node node( NodeType t, const Node& a, const Node& b );
     Node node( const Node& a, const Node& b, const Node& c );
 
+    struct EqContext{
+      EqContext();
+
+      const ShaderSource *alpha;
+      };
+
     static bool equal(    const ShaderSource& s, const Node& n,
                           const CompileOptions& opt );
+
+    static bool equal(    const ShaderSource& s, const Node& n,
+                          const CompileOptions& opt,
+                          EqContext& c );
     static bool equalBin( const ShaderSource& s, const Node& n,
-                          const CompileOptions& opt  );
+                          const CompileOptions& opt,
+                          EqContext& c );
     static bool equalN(   const ShaderSource& s, const Node& n,
-                          const CompileOptions& opt );
+                          const CompileOptions& opt,
+                          EqContext& c );
   };
 
 #endif // OPERATIONDEF_H

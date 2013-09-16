@@ -378,6 +378,7 @@ void MaterialServer::setupOpt(CompileOptions &opt) {
     opt.options.insert("directX"); else
     opt.options.insert("openGL");
 
+  opt.options.insert("oesRender");
 #ifdef __ANDROID__
   opt.options.insert("oesRender");
 #endif

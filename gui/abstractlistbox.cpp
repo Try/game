@@ -34,7 +34,9 @@ void AbstractListBox::showList() {
   w->setPosition(0,0);
 
   Widget *box = createDropList();
-  w->layout().add( box );
+  Widget *wb  = new Widget();
+  wb->layout().add( box );
+  w->layout().add(wb);
   box->setFocus(1);
 
   w->setupSignals();

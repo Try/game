@@ -18,6 +18,7 @@ struct ProtoObject {
       int maxHp;
 
       int gold, lim, limInc, buildTime;
+      int acseleration;
       bool isBackground, invincible, isDynamic;
       std::vector<size_t> utype;
 

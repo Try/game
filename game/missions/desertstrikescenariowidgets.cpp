@@ -40,7 +40,7 @@ void DesertStrikeScenario::NumButton::paintEvent(Tempest::PaintEvent &e){
 
   p.setTexture(numFrame);
   Size tsz = font.textSize(s.str());
-  int nw = numFrame.width(),
+  int nw = numFrame.w(),
       th  = tsz.h+10,
       th2 = tsz.h+6;
 
@@ -417,6 +417,58 @@ void DesertStrikeScenario::Minimap::sell(){
   game.message( data );
   }
 
+struct DesertStrikeScenario::SpellPanel::CameraButton: public Button {
+  CameraButton( Resource & r,
+                Game& game ):Button(r), game(game) {
+    selection = res.pixmap("gui/hintFrame");
+    }
+
+  Tempest::Sprite selection;
+  Game& game;
+
+  void paintEvent(Tempest::PaintEvent &e){
+    using namespace Tempest;
+    Button::paintEvent(e);
+
+    Tempest::Painter p(e);
+
+    DesertStrikeScenario& s = (DesertStrikeScenario&)game.scenario();
+    if( s.hasVTracking ){
+      //p.setBlendMode( Tempest::addBlend );
+      p.setTexture(selection);
+
+      int sz = 15;
+      p.setBlendMode( Tempest::addBlend );
+
+      p.drawRect( Rect(0,0, sz,sz),
+                  Rect(0,0, sz,sz) );
+
+      p.drawRect( Rect(sz,0, w()-sz*2,sz),
+                  Rect(sz,0,        1,sz) );
+      p.drawRect( Rect(w()-sz,0,   sz,sz),
+                  Rect(selection.w()-sz,0, sz,sz) );
+
+      p.drawRect( Rect(0,h()-sz, sz,sz),
+                  Rect(0,selection.h()-sz, sz,sz) );
+
+      p.drawRect( Rect(sz,h()-sz, w()-sz*2,sz),
+                  Rect(sz,selection.h()-sz,        1,sz) );
+      p.drawRect( Rect(w()-sz,h()-sz,   sz,sz),
+                  Rect(selection.w()-sz,selection.h()-sz, sz,sz) );
+
+      p.drawRect( Rect(0, sz, sz, h()-2*sz),
+                  Rect(0,sz, sz, selection.w()-sz*2) );
+      p.drawRect( Rect(w()-sz, sz, sz, h()-2*sz),
+                  Rect(selection.w()-sz,sz, sz, selection.w()-sz*2) );
+      /*
+      p.drawRect( Rect(0,0,w(),h()),
+                  Rect(0,0, selection.w(), selection.h()) );
+                  */
+      }
+    }
+
+  };
+
 struct DesertStrikeScenario::SpellPanel::SpellButton: public GradeButton {
   SpellButton( Resource & r,
                DPlayer & pl,
@@ -424,7 +476,9 @@ struct DesertStrikeScenario::SpellPanel::SpellButton: public GradeButton {
                const std::string& obj,
                const std::string& taget,
                const int t ):GradeButton(r,pl,obj,t), taget(taget), game(g) {
-    tagetID = g.prototypes().spell( taget ).id;
+    tagetID   = g.prototypes().spell( taget ).id;
+    selection = res.pixmap("gui/hintFrame");
+
     GradeButton::clicked.bind(this, &SpellButton::emitClick);
     }
 
@@ -436,16 +490,52 @@ struct DesertStrikeScenario::SpellPanel::SpellButton: public GradeButton {
   size_t tagetID;
   std::string taget;
   Game &game;
+  Tempest::Sprite selection;
 
   Tempest::signal<std::string> clicked;
 
   void paintEvent(Tempest::PaintEvent &e){
+    using namespace Tempest;
     GradeButton::paintEvent(e);
 
     Tempest::Painter p(e);
+
+    DesertStrikeScenario& s = (DesertStrikeScenario&)game.scenario();
+    if( s.spellToCast==taget ){
+      //p.setBlendMode( Tempest::addBlend );
+      p.setTexture(selection);
+
+      int sz = 15;
+      p.setBlendMode( Tempest::addBlend );
+
+      p.drawRect( Rect(0,0, sz,sz),
+                  Rect(0,0, sz,sz) );
+
+      p.drawRect( Rect(sz,0, w()-sz*2,sz),
+                  Rect(sz,0,        1,sz) );
+      p.drawRect( Rect(w()-sz,0,   sz,sz),
+                  Rect(selection.w()-sz,0, sz,sz) );
+
+      p.drawRect( Rect(0,h()-sz, sz,sz),
+                  Rect(0,selection.h()-sz, sz,sz) );
+
+      p.drawRect( Rect(sz,h()-sz, w()-sz*2,sz),
+                  Rect(sz,selection.h()-sz,        1,sz) );
+      p.drawRect( Rect(w()-sz,h()-sz,   sz,sz),
+                  Rect(selection.w()-sz,selection.h()-sz, sz,sz) );
+
+      p.drawRect( Rect(0, sz, sz, h()-2*sz),
+                  Rect(0,sz, sz, selection.w()-sz*2) );
+      p.drawRect( Rect(w()-sz, sz, sz, h()-2*sz),
+                  Rect(selection.w()-sz,sz, sz, selection.w()-sz*2) );
+      /*
+      p.drawRect( Rect(0,0,w(),h()),
+                  Rect(0,0, selection.w(), selection.h()) );
+                  */
+      }
+
     p.setTexture( texture );
     p.setBlendMode( Tempest::alphaBlend );
-
     p.drawRect( 0, h()-coolDown, w(), coolDown,
                 2,        4, 1, 1 );
     }
@@ -491,7 +581,7 @@ DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
   setSizePolicy( FixedMin );
   setLayout( Vertical );
 
-  Button * c = new Button(res);
+  Button * c = new CameraButton(res, game);
   c->setMinimumSize( 55, 55 );
   c->setMaximumSize( 55, 55 );
   c->icon = res.pixmap("gui/icon/camera");
@@ -713,18 +803,18 @@ void DesertStrikeScenario::CentralPanel::paintEvent(Tempest::PaintEvent &e) {
   p.setScissor( Tempest::Rect(0,0,w(),h()) );
 
   p.setTexture( bg );
-  int h0 = 3*bg.height()/4;
-  p.drawRect( w()/2-bg.width()/2, -h0/2,
-              bg.width(), h0,
-              0,0, bg.width(), bg.height());
+  int h0 = 3*bg.h()/4;
+  p.drawRect( w()/2-bg.w()/2, -h0/2,
+              bg.w(), h0,
+              0,0, bg.w(), bg.h());
   p.setColor(1,1,1,0.5);
 
   p.setBlendMode( Tempest::alphaBlend );
   p.setTexture(cride);
   float sz = 0.5;
-  p.drawRect( w()/2-sz*cride.width()/2, -sz*cride.height()/2,
-              sz*cride.width(), sz*cride.height(),
-              0, 0, cride.width(), cride.height() );
+  p.drawRect( w()/2-sz*cride.w()/2, -sz*cride.h()/2,
+              sz*cride.w(), sz*cride.h(),
+              0, 0, cride.w(), cride.h() );
   p.setColor(1,1,1,1);
 
   Tempest::Font font;

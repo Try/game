@@ -83,6 +83,20 @@ const std::string &PrototypesLoader::material(int i) {
   return defs.back().materials[i];
   }
 
+size_t PrototypesLoader::atackId( const std::string &str ) {
+  size_t ret = 0;
+  auto i = std::find( defs.back().atackTypes.begin(),
+                      defs.back().atackTypes.end(), str );
+  if( i!=defs.back().atackTypes.end() ){
+    ret  = i-defs.back().atackTypes.begin();
+    } else {
+    ret = defs.back().atackTypes.size();
+    defs.back().atackTypes.push_back(str);
+    }
+
+  return ret;
+  }
+
 void PrototypesLoader::readCommandsPage( ProtoObject &obj,
                                          const rapidjson::Value &v ) {
   using namespace rapidjson;
@@ -176,6 +190,10 @@ void PrototypesLoader::loadClass(const rapidjson::Value &v) {
       p->data.speed = speed["move"].GetInt();
     if( speed["rotate"].IsInt() )
       p->rotateSpeed = speed["rotate"].GetInt();
+
+    if( speed["acseleration"].IsInt() ){
+      p->data.acseleration = speed["acseleration"].GetInt();
+      }
     }
 
   const Value& view = v["view"];
@@ -503,14 +521,7 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &a,
 
   if( e["type"].IsString() ){
     std::string str = e["type"].GetString();
-    auto i = std::find( defs.back().atackTypes.begin(),
-                        defs.back().atackTypes.end(), str );
-    if( i!=defs.back().atackTypes.end() ){
-      a.type  = i-defs.back().atackTypes.begin() + 1;
-      } else {
-      a.type = defs.back().atackTypes.size() + 1;
-      defs.back().atackTypes.push_back(str);
-      }
+    a.type = atackId(str);
     }
 
   if( e["bullet"].IsString() ){
@@ -586,6 +597,10 @@ void PrototypesLoader::readGrade( Upgrade &v,
     readIf( p["buildTime"], v.data[0].buildTime );
     readIf( p["lvCount"],   v.lvCount );
     }
+
+  if( e["atk_target"].IsString() ){
+    v.id = atackId( e["atk_target"].GetString() );
+    }
   }
 
 void PrototypesLoader::readParticle( ParticleSystemDeclaration &obj,
@@ -635,9 +650,12 @@ void PrototypesLoader::readParticle( ParticleSystemDeclaration::D &obj,
   }
 
 void PrototypesLoader::load(const std::string &s) {
-  if( defs.size() )
-    defs.push_back( defs.back() ); else
+  if( defs.size() ){
+    defs.push_back( defs.back() );
+    } else {
     defs.push_back( Defs() );
+    defs.back().atackTypes.push_back("");
+    }
 
   loadImpl(s);
   }

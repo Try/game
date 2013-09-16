@@ -15,10 +15,13 @@ ModalWindow::ModalWindow( Resource &res, Widget *owner ) {
     }
 */
   OverlayWidget *w = new OverlayWidget();
-  w->setLayout( Tempest::Horizontal );
+  //w->setLayout( Tempest::Horizontal );
   r->layout().add(w);
 
   w->setPosition(0,0);
+
+  setPosition(0,0);
+  resize( r->size() );
 
   w->layout().add( this );
   setFocus(1);

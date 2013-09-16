@@ -32,8 +32,19 @@ class DesertStrikeScenario  : public Scenario {
     void tick();
     int  tNum, interval;
 
+    struct ScaleCtrl{
+      Tempest::Point  m0,  m1;
+      Tempest::Point rm0, rm1;
+      bool  isScaleMode;
+      float d0, mouseD0;
+      float angle0;
+      };
+
+    ScaleCtrl sctrl;
+
     GameObject * unitToView;
     bool hasVTracking;
+    float cameraSpeed;
     void cancelTracking(float, float, Tempest::Event::MouseButton, MiniMapView::Mode);
 
     virtual void onStartGame();
