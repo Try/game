@@ -402,6 +402,12 @@ size_t Physics::aviableRigids() const {
   return data->maxRigid - data->rigidCount;
   }
 
+void Physics::setDetail(int lv) const {
+  int l[] = {0, 16, 32, 128};
+
+  data->maxRigid = l[lv];
+  }
+
 Physics::Rigid::Rigid() {
   data = 0;
   engine = 0;

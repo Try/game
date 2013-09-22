@@ -20,6 +20,9 @@ struct UnitList::Btn : public Button {
   Btn( Resource & res ):Button(res){
     Button::clicked.bind( this, &Btn::onClick );
     oldHp = 255;
+
+    timer.timeout.bind(this, &Btn::updateValue);
+    timer.start(250);
     }
 
   void onClick(){
@@ -53,7 +56,7 @@ struct UnitList::Btn : public Button {
     drawFrame(p);
     }
 
-  void customEvent(Tempest::CustomEvent &){
+  void updateValue(){
     if( owner==0 )
       return;
 
@@ -64,6 +67,7 @@ struct UnitList::Btn : public Button {
       }
     }
 
+  Tempest::Timer timer;
   GameObject * owner;
   Tempest::signal<GameObject*> clicked;
 

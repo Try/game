@@ -492,11 +492,15 @@ void Resource::load(const std::string &s) {
 
           if( v["usage"].IsString() ){
             static const std::string
-                pefect   = "efect",
+                //pefect   = "efect",
                 material = "material";
             const char* u = v["usage"].GetString();
             if( u==material )
               umaterials.push_back( v["name"].GetString() );
+            }
+
+          if( v["z_writing"].IsBool() ){
+
             }
           }
         }

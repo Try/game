@@ -203,6 +203,7 @@ class Game : public Tempest::Window {
     bool   isRunning, physicStarted;
 
     void update();
+    void updateOrientation();
 
   friend class World;
   friend class Scenario;

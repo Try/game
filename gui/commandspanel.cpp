@@ -58,6 +58,8 @@ class CommandsPanel::SpellBtn: public BtnBase{
       texture = r.pixmap("gui/colors");
 
       coolDown = 0;
+      timer.timeout.bind(this, &SpellBtn::updateValues);
+      timer.start(250);
       }
 
     void proxyClick(){
@@ -75,7 +77,7 @@ class CommandsPanel::SpellBtn: public BtnBase{
                   2,        4, 1, 1 );
       }
 
-    void customEvent( Tempest::CustomEvent & ){
+    void updateValues(){
       assert(u0);
       int maxT = u0->game().prototypes().spell(taget).coolDown;
 
@@ -96,6 +98,7 @@ class CommandsPanel::SpellBtn: public BtnBase{
         }
       }
 
+    Tempest::Timer timer;
     std::string taget;
     size_t      tagetID;
     GameObject  *  u0;

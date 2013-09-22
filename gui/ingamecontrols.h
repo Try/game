@@ -40,7 +40,7 @@ class InGameControls : public Tempest::Surface {
     Tempest::signal< int > onSetPlayer, toogleEditTab;
     Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
 
-    Tempest::signal<const GraphicsSettingsWidget::Settings&> onSettingsChanged;
+    //Tempest::signal<const GraphicsSettingsWidget::Settings&> onSettingsChanged;
 
     Tempest::signal<> save, load;
     Tempest::signal<> updateView;

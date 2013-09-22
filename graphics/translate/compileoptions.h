@@ -7,7 +7,7 @@
 
 class CompileOptions{
   public:
-    CompileOptions():lang(Cg){}
+    CompileOptions():lang(Cg), maxVaryings(8){}
     std::set<std::string> options;
 
     enum Lang{
@@ -17,6 +17,7 @@ class CompileOptions{
       LangCount
       };
     Lang lang;
+    int  maxVaryings;
   };
 
 #endif // COMPILEOPTIONS_H

@@ -35,6 +35,21 @@ void AbstractListBox::showList() {
 
   Widget *box = createDropList();
   Widget *wb  = new Widget();
+
+  if( box->w() > r->w() )
+    box->resize( r->w(), box->h() );
+
+  if( box->h() > r->h() )
+    box->resize( box->w(), r->h() );
+
+  if( box->y()+box->h() > r->h() ){
+    box->setPosition( box->x(), r->h()-box->h() );
+    }
+
+  if( box->x()+box->w() > r->w() ){
+    box->setPosition( r->w()-box->w(), box->y() );
+    }
+
   wb->layout().add( box );
   w->layout().add(wb);
   box->setFocus(1);

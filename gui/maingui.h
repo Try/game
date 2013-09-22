@@ -56,7 +56,7 @@ class MainGui {
     Tempest::signal<const ProtoObject&, int> addObject;
     Tempest::signal< int > onSetPlayer, toogleEditTab;
 
-    Tempest::signal<const GraphicsSettingsWidget::Settings&> onSettingsChanged;
+    //Tempest::signal<const GraphicsSettingsWidget::Settings&> onSettingsChanged;
 
     Tempest::signal< Tempest::Painter&, int, int> paintObjectsHud;
     Tempest::signal<> toogleFullScreen;

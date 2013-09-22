@@ -442,7 +442,7 @@ void Scenario::setupUI( InGameControls *mw,
   top->setSizePolicy(p);
 
   editPanel     = createEditPanel(mainWidget, res);
-  settingsPanel = createSettingsPanel(mainWidget, res);
+  settingsPanel = createSettingsPanel(res);
 
   cen->setLayout( Tempest::Horizontal );
   cen->layout().add( new MissionTargets(game, res) );
@@ -498,10 +498,8 @@ void Scenario::toogleSettingsPanel() {
   settingsPanel->setVisible( !settingsPanel->isVisible() );
   }
 
-Tempest::Widget *Scenario::createSettingsPanel( InGameControls *mainWidget,
-                                                Resource & res ) {
+Tempest::Widget *Scenario::createSettingsPanel( Resource & res ) {
   GraphicsSettingsWidget * s = new GraphicsSettingsWidget(res);
-  s->onSettingsChanged.bind( mainWidget->onSettingsChanged );
   return s;
   }
 
@@ -653,8 +651,12 @@ Tempest::Widget *Scenario::createEditPanel( InGameControls *mainWidget, Resource
   }
 
 void Scenario::showMenu() {
-  game.pause(1);
+#ifdef __ANDROID__
+  showMainMenu(false);
+  return;
+#endif
 
+  game.pause(1);
   InGameMenu *m = new InGameMenu(res, mainWidget);
 
   m->save.bind( mainWidget->save );
@@ -663,10 +665,10 @@ void Scenario::showMenu() {
   m->quit.bind( game.exitGame );
   }
 
-void Scenario::showMainMenu() {
+void Scenario::showMainMenu( bool start ) {
   game.pause(1);
 
-  MainMenu *m = new MainMenu(res, mainWidget);
+  MainMenu *m = new MainMenu(res, mainWidget, start);
   m->onClosed.bind( game, &Game::unsetPause );
   }
 

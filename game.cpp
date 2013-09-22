@@ -3,6 +3,7 @@
 #include <Tempest/TessObject>
 #include <Tempest/Event>
 #include <Tempest/Application>
+#include <Tempest/Android>
 #include <iostream>
 
 #include "threads/time.h"
@@ -71,6 +72,9 @@ Game::Game( ShowMode sm )
   timer.timeout.bind(this, &Game::update);
   timer.start(1000/ticksPerSecond);
   timer.setRepeatCount(1);
+
+  GraphicsSettingsWidget::onSettingsChanged.bind( *this, &Game::settingsChanged );
+  updateOrientation();
   }
 
 Game::~Game() {
@@ -96,8 +100,6 @@ void Game::loadData() {
 
   gui.setCameraPos.bind( this, &Game::setCameraPos );
   gui.minimapEvent.bind( this, &Game::minimapEvent );
-
-  gui.onSettingsChanged.bind( *this, &Game::settingsChanged );
 
   gui.save.bind( *this, &Game::save );
   gui.load.bind( *this, &Game::load );
@@ -303,6 +305,17 @@ void Game::update(){
     }
 
   //size_t dt   = time;
+  }
+
+void Game::updateOrientation() {
+#ifdef __ANDROID__
+  JNIEnv *env         = Tempest::AndroidAPI::jenvi();
+  jclass clazz        = env->FindClass( "com/tempest/game/GameActivity" );
+  jmethodID setOrient = env->GetStaticMethodID( clazz, "setOrientation", "(I)V");
+
+  const GraphicsSettingsWidget::Settings &s = GraphicsSettingsWidget::Settings::settings();
+  env->CallStaticVoidMethod(clazz, setOrient, s.oreentation );
+#endif
   }
 
 void Game::render() {
@@ -696,6 +709,7 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
 
   material.diffuse   = r.texture( src.name+"/diff" );
   material.normal    = r.texture( src.name+"/norm" );
+  material.glow      = r.texture( src.name+"/glow" );
   material.emission  = r.texture( src.name+"/emis" );
   material.specular  = src.specularFactor;
 
@@ -960,6 +974,11 @@ void Game::setCurrectPlayer(int pl) {
   }
 
 void Game::settingsChanged(const GraphicsSettingsWidget::Settings &s) {
+  updateOrientation();
   resource.setupSettings(s);
   graphics.setSettings(s);
+
+  for( size_t i=0; i<worlds.size(); ++i )
+    worlds[i]->physics.setDetail(s.physics);
+
   }

@@ -136,6 +136,8 @@ class GameObject {
     void applyBulletForce(const GameObject &src);
 
     void incDieVec( float x, float y, float z );
+
+    GameObjectView &getView();
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;

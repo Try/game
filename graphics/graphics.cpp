@@ -34,6 +34,8 @@ Graphics::Graphics( void *hwnd, bool isFullScreen )
   time   = 0;
   useHDR = 0;
 
+  settings = GraphicsSettingsWidget::Settings::settings();
+
 #ifdef __ANDROID__
   lvboHolder.setReserveSize( 8092 );
   lvboHolder.setMaxReservedCount( 1 );
@@ -146,9 +148,9 @@ void Graphics::setSettings(const GraphicsSettingsWidget::Settings &s) {
   }
 
 void Graphics::renderImpl( Scene &scene,
-                           ParticleSystemEngine &,
+                           ParticleSystemEngine &e,
                            const Tempest::Camera& camera,
-                           size_t /*dt*/) {
+                           size_t dt ) {
   device.beginPaint();
   device.clear( Tempest::Color(0,0,1), 1 );
   device.endPaint();
@@ -161,6 +163,8 @@ void Graphics::renderImpl( Scene &scene,
 
   context.texture[ ShaderSource::tsShadowMap ][0]
       = fillShadowMap(device, scene, Tempest::Size(settings.shadowMapRes));
+
+  e.exec( camera.view(), camera.projective(), dt );
 
   Frustum frustum( camera );
   draw( frustum, true, false, scene.all() );

@@ -33,6 +33,9 @@ class ParticleSystem {
     ParticleSystemDeclaration decl;
 
     float mx, my, mz;
+    float ox, oy, oz;
+    bool  actualOXYZ;
+
     ParticleSystemEngine * engine;
     const ProtoObject::View* proto;
 
@@ -40,6 +43,7 @@ class ParticleSystem {
       Point3( float x, float y, float z );
       float x,y,z;
       float size;
+      float angle;
 
       Tempest::Color color;
       };

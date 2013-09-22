@@ -24,6 +24,35 @@ const char * DesertStrikeScenario::units[3][4] = {
   {"fire_element", "golem"}
   };
 
+struct DesertStrikeScenario::GoldButton : public Button {
+  GoldButton( Resource &res, Game& g ):Button(res), game(g){}
+
+  void paintEvent(Tempest::PaintEvent &e){
+    Button::paintEvent(e);
+    Tempest::Painter p(e);
+    p.setBlendMode( Tempest::alphaBlend );
+    int ws = w()-6;
+
+    DPlayer &pl = (DPlayer&)game.player();
+
+    for( size_t i=0; i<pl.queue.size(); ++i ){
+      if( pl.queue[i].name=="house" ){
+        p.setColor(1,1,0, 0.3);
+        int coolDown = ws*pl.queue[i].btime/pl.queue[i].maxBTime;
+        p.drawRect(3,3, coolDown,h()-6);
+        }
+
+      if( pl.queue[i].name=="castle" ){
+        p.setColor(0,0,1, 0.3);
+        int coolDown = ws*pl.queue[i].btime/pl.queue[i].maxBTime;
+        p.drawRect(3,3, coolDown,h()-6);
+        }
+      }
+    }
+
+  Game &game;
+  };
+
 DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueue &msg)
   :Scenario(g,ui, msg){
   tNum      = 0;
@@ -306,13 +335,15 @@ void DesertStrikeScenario::onUnitDied(GameObject &obj) {
   if( obj.playerNum()>=1 && obj.playerNum()<=2 )
     --player(obj.playerNum()).realCount[ obj.getClass().name ];
 
-  if( obj.getClass().name=="tower" ){
-    if( obj.player().team()==game.player().team() )
-      GameMessages::message( L"$(desertstrike/tower_lose)",
-                             res.pixmap("gui/icon/tower") );
-    else
-      GameMessages::message( L"$(desertstrike/tower_kill)",
-                             res.pixmap("gui/icon/tower") );
+  if( obj.playerNum() ){
+    if( obj.getClass().name=="tower" ){
+      if( obj.player().team()==game.player().team() )
+        GameMessages::message( L"$(desertstrike/tower_lose)",
+                               res.pixmap("gui/icon/tower") );
+      else
+        GameMessages::message( L"$(desertstrike/tower_kill)",
+                               res.pixmap("gui/icon/tower") );
+      }
     }
   }
 
@@ -322,22 +353,23 @@ void DesertStrikeScenario::tick() {
 
   int p1 = 15,
       p2 = 80-p1;
+  int id[2][2] = {{1,2},{2,1}};
   if( tNum%interval==0 ){
-    mkUnits( 1,
+    mkUnits( id[revPlPos][0],
              p1*w/80, p1*h/80,
              p2*w/80, p2*h/80,
              0 );
     }
 
   if( tNum%interval==0 ){
-    mkUnits( 2,
+    mkUnits( id[revPlPos][1],
              p2*w/80, p2*h/80,
              p1*w/80, p1*h/80,
              1 );
     }
 
   if( hasVTracking ){
-    unitToView = 0;
+    //unitToView = 0;
 
     if( !unitToView ){
       int l = 0;
@@ -349,7 +381,7 @@ void DesertStrikeScenario::tick() {
 
           int l2 = x*x + y*y;
 
-          if( unitToView==0 || l2>l ){
+          if( unitToView==0 || (l2>l)^revPlPos ){
             unitToView = &player().unit(i);
             l = l2;
             }
@@ -507,7 +539,7 @@ void DesertStrikeScenario::mkUnits( int p,
   }
 
 void DesertStrikeScenario::onStartGame() {
-  showMainMenu();
+  showMainMenu(true);
 
   unitToView   = 0;
   hasVTracking = 1;
@@ -515,38 +547,37 @@ void DesertStrikeScenario::onStartGame() {
   //int w = game.curWorld().terrain().width() *Terrain::quadSize;
   //int h = game.curWorld().terrain().height()*Terrain::quadSize;
 
-  bool swap = rand()%2;
+  revPlPos = rand()%2;
 
   World &wx = game.curWorld();
-  for( size_t i=0; i<wx.activeObjects().size(); ++i ){
-    GameObject & obj = *wx.activeObjects()[i];
-    int w = game.curWorld().terrain().width(),
-        h = game.curWorld().terrain().height(),
-        x = w*Terrain::quadSize-obj.x(),
-        y = obj.y();
+  std::vector<GameObject*> aobj;
+  aobj.resize( wx.activeObjects().size() );
+  for( size_t i=0; i<wx.activeObjects().size(); ++i )
+    aobj[i] = wx.activeObjects()[i].get();
 
-    if( (x*h > y*w)^swap ){
+  for( size_t i=0; i<aobj.size(); ++i ){
+    int w = wx.terrain().width(),
+        h = wx.terrain().height(),
+        x = w*Terrain::quadSize - aobj[i]->x(),
+        y = aobj[i]->y(),
+
+        ox = aobj[i]->x(),
+        oy = aobj[i]->y();
+    const ProtoObject &pr = game.prototype( aobj[i]->getClass().name );
+
+    wx.deleteObject( aobj[i] );
+
+    GameObject &obj = wx.addObject(pr, 0, false );
+    obj.setPosition(ox, oy);
+
+    if( (x*h > y*w)^revPlPos ){
       obj.setPlayer(1);
       } else {
       obj.setPlayer(2);
       }
-    obj.setClass( &game.prototype( obj.getClass().name ) );
+    //obj.setClass( &game.prototype( obj.getClass().name ) );
     obj.setHP( obj.getClass().data.maxHp );
     }
-
-  /*
-  {
-    GameObject& obj = game.curWorld().addObject("castle", 1);
-    int p = 10;
-    obj.setPosition( p*w/80, p*h/80 );
-    }
-
-  {
-    GameObject& obj = game.curWorld().addObject("castle", 2);
-    int p = 80-10;
-    obj.setPosition( p*w/80, p*h/80 );
-    }*/
-
   }
 
 void DesertStrikeScenario::updateCenterOwner() {
@@ -561,12 +592,12 @@ void DesertStrikeScenario::updateCenterOwner() {
         y = obj.y();
 
     if( obj.player().number()>=1 ){
-      if( x*h >= y*w ){
+      if( (x*h >= y*w)^revPlPos ){
         //obj.setPlayer(1);
         plCnt[0][ obj.player().number()-1 ] = true;
         }
 
-      if( x*h <= y*w ) {
+      if( (x*h <= y*w)^revPlPos ) {
         //obj.setPlayer(2);
         plCnt[1][ obj.player().number()-1 ] = true;
         }
@@ -619,33 +650,13 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
   p.maxSize.h = 30;
   p.typeV = Tempest::FixedMax;
 
-  {
-    UI::TopPanel p;
-    p.setupUi( top, res );
-    //p.fullScr->clicked.bind( toogleFullScreen );
-    p.menu->clicked.bind( *this, &DesertStrikeScenario::showMenu );
-    p.menu->setShortcut( Tempest::Shortcut(p.menu, Tempest::KeyEvent::K_ESCAPE) );
-
-    p.frmEdit->clicked.bind( *this, &DesertStrikeScenario::showFormBuilder );
-    gold = p.gold;
-    lim  = p.lim;
-
-    gold->icon = res.pixmap("gui/icon/gold");
-    lim-> icon = res.pixmap("gui/icon/house");
-
-    gold->setHint(L"$(gold)");
-    lim ->setHint(L"$(units_limit)");
-    lim->setVisible(0);
-
-    p.frmEdit->setVisible(0);
-    p.fullScr->setVisible(0);
-    }
+  setupTopUi(res,top);
 
   p.maxSize.h = gold->sizePolicy().maxSize.h;
   top->setSizePolicy(p);
 
   editPanel     = createEditPanel(mainWidget, res);
-  settingsPanel = createSettingsPanel(mainWidget, res);
+  settingsPanel = createSettingsPanel(res);
 
   cen->setLayout( Tempest::Horizontal );
   cen->layout().add( new MissionTargets(game, res) );
@@ -664,11 +675,44 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
   cen->useScissor( false );
   box->useScissor( false );
 
-  //editPanel->setVisible(0);
-  //settingsPanel->setVisible(0);
+  editPanel->setVisible(0);
+  settingsPanel->setVisible(0);
 
   showEditPanel.activated.bind( *this, &DesertStrikeScenario::toogleEditPanel );
   showSettings. activated.bind( *this, &DesertStrikeScenario::toogleSettingsPanel );
+  }
+
+void DesertStrikeScenario::setupTopUi( Resource &res, Tempest::Widget *top ) {
+  using namespace Tempest;
+  top->setLayout( Horizontal );
+  top->layout().add( new Widget() );
+  Button *menu = new Button(res);
+  menu->clicked.bind( *this, &DesertStrikeScenario::showMenu );
+  menu->setShortcut( Tempest::Shortcut(menu, Tempest::KeyEvent::K_ESCAPE) );
+  top->layout().add(menu);
+  Widget *btns = new Widget();
+  btns->setLayout( Horizontal );
+  top->layout().add( btns );
+
+  gold = new GoldButton(res, game);
+  lim  = new Button(res);
+  btns->layout().add( new Widget() );
+  btns->layout().add( lim );
+  btns->layout().add( gold );
+
+  gold->icon = res.pixmap("gui/icon/gold");
+  lim-> icon = res.pixmap("gui/icon/house");
+
+  menu->setText( Lang::tr(L"$(game_menu/menu)") );
+  gold->setHint(L"$(gold)");
+  lim ->setHint(L"$(units_limit)");
+  lim->setVisible(0);
+
+  gold->clicked.bind(this, &DesertStrikeScenario::toogleEditPanel);
+  }
+
+void DesertStrikeScenario::toogleEditPanel() {
+  editPanel->setVisible( !editPanel->isVisible() );
   }
 
 Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget,

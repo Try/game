@@ -106,7 +106,7 @@ ShaderSource::Code ShaderSource::code( VertexInputAssembly &d,
   mkRState(cx, c);
 
   mkVaryings(cx, true);
-  reduceVaryings(cx, 9);
+  reduceVaryings(cx, opt.maxVaryings+1);
 
   mkUniforms(cx, false);
   mkTransformVarying(cx);
@@ -1137,6 +1137,7 @@ void ShaderSource::mkRState(ShaderSource::Context &v, Code &c ) {
 
       if( opDefs.equal( cl, opDefs.addBlend, *v.opt ) ){
         rs.setBlend(1);
+        rs.setZWriting(false);
         rs.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
                          Tempest::RenderState::AlphaBlendMode::one );
 

@@ -62,7 +62,9 @@ MaterialServer::MaterialServer( Tempest::VertexShaderHolder &vsHolder,
     fsHolder(fsHolder),
     localTex(localTex),
     lang(lang),
-    res(0) {
+    res(0) {  
+  GraphicsSettingsWidget::Settings::load();
+  settings = GraphicsSettingsWidget::Settings::settings();
   }
 
 size_t MaterialServer::idOfMaterial( const std::string &m ) {
@@ -321,10 +323,15 @@ void MaterialServer::setupObjectConstants( const AbstractGraphicObject &obj,
   context.shMatrix = context.shView;
   context.shMatrix.mul( object );
 
-  context.texture[0][0] = obj.material().diffuse;
-  context.texture[1][0] = obj.material().normal;
+  const Material& m = obj.material();
+  context.texture[0][0] = m.diffuse;
+  context.texture[1][0] = m.normal;
 
-  context.texture[ShaderSource::tsEmission][0] = obj.material().emission;
+  if( !m.emission.isEmpty() )
+    context.texture[ShaderSource::tsEmission][0] = m.emission;
+
+  if( !m.glow.isEmpty() )
+    context.texture[3][0] = m.glow;
 
   context.texID = 0;
   }
@@ -378,7 +385,7 @@ void MaterialServer::setupOpt(CompileOptions &opt) {
     opt.options.insert("directX"); else
     opt.options.insert("openGL");
 
-  opt.options.insert("oesRender");
+  //opt.options.insert("oesRender");
 #ifdef __ANDROID__
   opt.options.insert("oesRender");
 #endif
@@ -389,6 +396,8 @@ void MaterialServer::setupOpt(CompileOptions &opt) {
 
   if( settings.shadowMapRes>0 )
     opt.options.insert("shadow");
+
+  opt.maxVaryings = vsHolder.device().caps().maxVaryingVectors;
   }
 
 void MaterialServer::setSettings( const GraphicsSettingsWidget::Settings &s ) {

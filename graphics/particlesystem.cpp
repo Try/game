@@ -5,10 +5,11 @@
 #include <cmath>
 
 ParticleSystem::ParticleSystem() {
+  actualOXYZ = false;
   setPosition(0,0,0);
   proto  = 0;
   engine = 0;
-  dispathMode = false;
+  dispathMode = false;  
   }
 
 void ParticleSystem::evalute( ParticleSystem::Point3 &p ) {
@@ -22,7 +23,8 @@ void ParticleSystem::evalute( ParticleSystem::Point3 &p,
   p.y += d.y;
   p.z += d.z;
 
-  p.size += d.size;
+  p.size  += d.size;
+  p.angle += d.angle;
 
   p.color.set( p.color.r() + d.r,
                p.color.g() + d.g,
@@ -35,6 +37,7 @@ ParticleSystem::ParticleSystem( ParticleSystemEngine & e,
                                 const ParticleSystemDeclaration &decl )
                :decl(decl), engine(&e){
   setPosition(0,0,0);
+  par.reserve(128);
   proto = &p;
   dispathMode = false;
   engine->particles.push_back( this );
@@ -79,7 +82,7 @@ void ParticleSystem::exec( int dt ) {
                           par[i].y,
                           par[i].z,
                           par[i].size,
-
+                          par[i].angle,
                           par[i].color );
     }
 
@@ -91,8 +94,13 @@ void ParticleSystem::exec( int dt ) {
     if( decl.density<0 && rand()%(-decl.density) )
       c = 1;
 
+    float a  = 1.0/std::max(c-1,1),
+          dx = mx-ox,
+          dy = my-oy,
+          dz = mz-oz;
+
     for( int i=0; i<c; ++i ){
-      par.push_back( Point3( x(), y(), z() ) );
+      par.push_back( Point3( ox+dx*i*a, oy+dy*i*a, oz+dz*i*a ) );
       ParticleSystemDeclaration::D d = ParticleSystemDeclaration::mix( decl.initMin,
                                                                        decl.initMax );
       evalute(par.back(), d);
@@ -112,12 +120,23 @@ void ParticleSystem::exec( int dt ) {
       ++i;
       }
     }
+
+  ox = mx;
+  oy = my;
+  oz = mz;
+  actualOXYZ = true;
   }
 
 void ParticleSystem::setPosition(float ix, float iy, float iz) {
   mx = ix;
   my = iy;
   mz = iz;
+
+  if( !actualOXYZ ){
+    ox = mx;
+    oy = my;
+    oz = mz;
+    }
   }
 
 float ParticleSystem::x() const {
@@ -137,6 +156,6 @@ const ProtoObject::View &ParticleSystem::viewInfo() const {
   }
 
 ParticleSystem::Point3::Point3(float x, float y, float z):
-  x(x), y(y), z(z), size(0) {
+  x(x), y(y), z(z), size(0), angle(0) {
 
   }

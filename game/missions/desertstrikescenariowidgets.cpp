@@ -353,8 +353,7 @@ void DesertStrikeScenario::Minimap::updateValues(){
   if( unitToBuy.size()==0 )
     return;
 
-  { std::wstringstream s;
-    std::string name = "$(unit/" +unitToBuy+")";
+  { std::string name = "$(unit/" +unitToBuy+")";
     inf.ledit->setText( Lang::tr(name) );
     }
 
@@ -420,7 +419,7 @@ void DesertStrikeScenario::Minimap::sell(){
 struct DesertStrikeScenario::SpellPanel::CameraButton: public Button {
   CameraButton( Resource & r,
                 Game& game ):Button(r), game(game) {
-    selection = res.pixmap("gui/hintFrame");
+    selection = res.pixmap("gui/buttonHightlight");
     }
 
   Tempest::Sprite selection;
@@ -434,36 +433,12 @@ struct DesertStrikeScenario::SpellPanel::CameraButton: public Button {
 
     DesertStrikeScenario& s = (DesertStrikeScenario&)game.scenario();
     if( s.hasVTracking ){
-      //p.setBlendMode( Tempest::addBlend );
       p.setTexture(selection);
 
-      int sz = 15;
       p.setBlendMode( Tempest::addBlend );
 
-      p.drawRect( Rect(0,0, sz,sz),
-                  Rect(0,0, sz,sz) );
-
-      p.drawRect( Rect(sz,0, w()-sz*2,sz),
-                  Rect(sz,0,        1,sz) );
-      p.drawRect( Rect(w()-sz,0,   sz,sz),
-                  Rect(selection.w()-sz,0, sz,sz) );
-
-      p.drawRect( Rect(0,h()-sz, sz,sz),
-                  Rect(0,selection.h()-sz, sz,sz) );
-
-      p.drawRect( Rect(sz,h()-sz, w()-sz*2,sz),
-                  Rect(sz,selection.h()-sz,        1,sz) );
-      p.drawRect( Rect(w()-sz,h()-sz,   sz,sz),
-                  Rect(selection.w()-sz,selection.h()-sz, sz,sz) );
-
-      p.drawRect( Rect(0, sz, sz, h()-2*sz),
-                  Rect(0,sz, sz, selection.w()-sz*2) );
-      p.drawRect( Rect(w()-sz, sz, sz, h()-2*sz),
-                  Rect(selection.w()-sz,sz, sz, selection.w()-sz*2) );
-      /*
-      p.drawRect( Rect(0,0,w(),h()),
+      p.drawRect( Rect(4,4,w()-8,h()-8),
                   Rect(0,0, selection.w(), selection.h()) );
-                  */
       }
     }
 
@@ -477,14 +452,18 @@ struct DesertStrikeScenario::SpellPanel::SpellButton: public GradeButton {
                const std::string& taget,
                const int t ):GradeButton(r,pl,obj,t), taget(taget), game(g) {
     tagetID   = g.prototypes().spell( taget ).id;
-    selection = res.pixmap("gui/hintFrame");
+    selection = res.pixmap("gui/buttonHightlight");
 
     GradeButton::clicked.bind(this, &SpellButton::emitClick);
+    timer.timeout.bind(this, &SpellButton::updateValues);
+    timer.start(100);
     }
 
   void emitClick(){
     clicked(taget);
     }
+
+  Tempest::Timer timer;
 
   int coolDown;
   size_t tagetID;
@@ -502,36 +481,12 @@ struct DesertStrikeScenario::SpellPanel::SpellButton: public GradeButton {
 
     DesertStrikeScenario& s = (DesertStrikeScenario&)game.scenario();
     if( s.spellToCast==taget ){
-      //p.setBlendMode( Tempest::addBlend );
       p.setTexture(selection);
 
-      int sz = 15;
       p.setBlendMode( Tempest::addBlend );
 
-      p.drawRect( Rect(0,0, sz,sz),
-                  Rect(0,0, sz,sz) );
-
-      p.drawRect( Rect(sz,0, w()-sz*2,sz),
-                  Rect(sz,0,        1,sz) );
-      p.drawRect( Rect(w()-sz,0,   sz,sz),
-                  Rect(selection.w()-sz,0, sz,sz) );
-
-      p.drawRect( Rect(0,h()-sz, sz,sz),
-                  Rect(0,selection.h()-sz, sz,sz) );
-
-      p.drawRect( Rect(sz,h()-sz, w()-sz*2,sz),
-                  Rect(sz,selection.h()-sz,        1,sz) );
-      p.drawRect( Rect(w()-sz,h()-sz,   sz,sz),
-                  Rect(selection.w()-sz,selection.h()-sz, sz,sz) );
-
-      p.drawRect( Rect(0, sz, sz, h()-2*sz),
-                  Rect(0,sz, sz, selection.w()-sz*2) );
-      p.drawRect( Rect(w()-sz, sz, sz, h()-2*sz),
-                  Rect(selection.w()-sz,sz, sz, selection.w()-sz*2) );
-      /*
-      p.drawRect( Rect(0,0,w(),h()),
+      p.drawRect( Rect(4,4,w()-8,h()-8),
                   Rect(0,0, selection.w(), selection.h()) );
-                  */
       }
 
     p.setTexture( texture );
@@ -540,7 +495,7 @@ struct DesertStrikeScenario::SpellPanel::SpellButton: public GradeButton {
                 2,        4, 1, 1 );
     }
 
-  void customEvent( Tempest::CustomEvent & ){
+  void updateValues(){
     //assert(u0);
     int maxT = game.prototypes().spell(taget).coolDown;
 

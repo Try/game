@@ -174,7 +174,8 @@ HEADERS += \
     graphics/translate/operationdef.h \
     gui/loadscreen.h \
     gui/mainmenu.h \
-    gui/optionswidget.h
+    gui/optionswidget.h \
+    gui/mapselectmenu.h
 
 SOURCES += \
     main.cpp \
@@ -302,7 +303,8 @@ SOURCES += \
     android_dummy.cpp \
     gui/loadscreen.cpp \
     gui/mainmenu.cpp \
-    gui/optionswidget.cpp
+    gui/optionswidget.cpp \
+    gui/mapselectmenu.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

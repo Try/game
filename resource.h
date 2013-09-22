@@ -77,6 +77,10 @@ class Resource : public Tempest::ResourceContext {
     Tempest::TextureHolder       &  texHolder;
     Tempest::LocalTexturesHolder &  ltexHolder;
 
+    struct MaterialOpt{
+      bool zwriting;
+      };
+
     void setupSettings( const GraphicsSettingsWidget::Settings& settings );
   private:
     GraphicsSettingsWidget::Settings settings;
@@ -228,6 +232,8 @@ class Resource : public Tempest::ResourceContext {
       bool avg; Tempest::Color color;
       Tempest::Texture2d       data;
       };
+
+    //std::unordered_map<MaterialOpt, std::string> matOpt;
 
     void load( Box<Texture>& textures,
                const std::string &k, const std::string & f, bool );

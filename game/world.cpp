@@ -282,6 +282,10 @@ void World::deleteObject(GameObject *obj) {
   if( obj==mouseObject )
     mouseObject = 0;
 
+  //int c = updatePosIntents.count(&obj->getView());
+  //updatePosIntents.erase( &obj->getView() );
+  updatePosIntents.clear();
+
   //deleteObject(  gameObjects,  obj );
   deleteObject(   eviObjects,  obj );
   deleteObject( nonBackground, obj );
@@ -589,6 +593,7 @@ void World::paintHUD( Tempest::Painter & p,
 
       if( v &&
           obj.isVisible(frustum) &&
+          obj.hp()<obj.getClass().data.maxHp &&
           !obj.behavior.find<BonusBehavior>() ) {
         Tempest::Rect rect = projectUnit( game.player(plN).unit(i),
                                           gmMat, w, h );
@@ -654,8 +659,8 @@ Tempest::Rect World::projectUnit( GameObject& obj,
     }
 
   float x = 0,//obj.x(),
-      y = 0,//obj.y(),
-      z = 0;//0.5*obj.rawRadius();//obj.z();
+        y = 0,//obj.y(),
+        z = 0;//0.5*obj.rawRadius();//obj.z();
 
   float r = 0.5*obj.rawRadius();
 
@@ -677,6 +682,12 @@ Tempest::Rect World::projectUnit( GameObject& obj,
 
   int x0 = 0.5*(1+data2[0])*w;
   int x1 = 0.5*(1+data1[0])*w;
+
+  if( y1<y0 )
+    std::swap(y1, y0);
+
+  if( x1<x0 )
+    std::swap(x1, x0);
 
   return Tempest::Rect(x0, y0, x1-x0, y1-y0);
   }

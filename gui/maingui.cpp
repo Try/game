@@ -84,7 +84,7 @@ void MainGui::createControls(BehaviorMSGQueue & msg, Game &game) {
   mainwidget->setCameraPos.bind( setCameraPos );
   mainwidget->minimapEvent.bind( minimapEvent );
 
-  mainwidget->onSettingsChanged.bind( onSettingsChanged );
+  //mainwidget->onSettingsChanged.bind( onSettingsChanged );
 
   //updateView.bind( mainwidget->updateView );
 
@@ -305,8 +305,8 @@ void MainGui::renderMinimap() {
   }
 
 void MainGui::updateValues() {
-  Tempest::CustomEvent e;
-  central.customEvent(e);
+  //Tempest::CustomEvent e;
+  //central.customEvent(e);
   }
 
 bool MainGui::isCutsceneMode() {

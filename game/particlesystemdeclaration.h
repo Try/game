@@ -9,6 +9,7 @@ class ParticleSystemDeclaration {
       float x,y,z;
       float size;
       float r,g,b,a;
+      float angle;
       };
 
     D initMax, initMin;

@@ -159,9 +159,11 @@ void Button::drawBack(Tempest::Painter &p, const Tempest::Rect& r ){
 
   Tempest::Sprite bk = back[ (hasFocus() || presAnim) ? 1:0 ];
   p.setTexture( bk );
-  p.drawRectTailed( px, py, pw, ph,
-                    0, 0,
-                    bk.w(), bk.h() );
+
+  if( !bk.size().isEmpty() )
+    p.drawRectTailed( px, py, pw, ph,
+                      0, 0,
+                      bk.w(), bk.h() );
   }
 
 void Button::drawFrame( Tempest::Painter &p ) {
@@ -174,8 +176,9 @@ void Button::drawFrame( Tempest::Painter & p, const Tempest::Rect &vRect ) {
   int px = vRect.x, py = vRect.y,
       pw = vRect.w, ph = vRect.h;
 
-  int bw = std::min(20, pw/2);
-  int bh = std::min(20, ph/2);
+  int sz = 20;
+  int bw = std::min(sz, pw/2);
+  int bh = std::min(sz, ph/2);
 
   p.setTexture( frame );
 
@@ -183,24 +186,24 @@ void Button::drawFrame( Tempest::Painter & p, const Tempest::Rect &vRect ) {
               fx+20, fy, 10, 20 );
 
   p.drawRect( px+bw, py+ph-20, pw-2*bw, 20,
-              fx+20, fy+30, 10, 20 );
+              fx+sz, fy+frame.h()-sz, 10, 20 );
 
 
   p.drawRect( px,    py+bh, 20, ph-bh*2,
               fx,    fy+20, 20, 10 );
   p.drawRect( px+pw-20, py+bh, 20, ph-bh*2,
-              fx+30, fy+20, 20, 10 );
+              fx+frame.w()-sz, fy+20, 20, 10 );
 
 
   p.drawRect( px, py, bw, bh,
               fx, fy );
   p.drawRect( px+pw-bw, py, bw, bh,
-              fx+50-bw, fy );
+              fx+frame.w()-bw, fy );
 
   p.drawRect( px, py+ph-bh, bw, bh,
-              fx, fy+50-bh );
+              fx, fy+frame.h()-bh );
   p.drawRect( px+pw-bw, py+ph-bh, bw, bh,
-              fx+50-bw, fy+50-bh );
+              fx+frame.w()-bw, fy+frame.h()-bh );
   p.unsetTexture();
   }
 

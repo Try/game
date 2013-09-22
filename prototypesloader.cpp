@@ -10,6 +10,7 @@
 
 #include <Tempest/SystemAPI>
 #include <Tempest/Assert>
+#include <cmath>
 
 PrototypesLoader::PrototypesLoader() {
   defs.reserve(4);
@@ -571,7 +572,7 @@ void PrototypesLoader::readSpell( Spell &v,
 
   const Value& prop = e["property"];
   if( prop.IsObject() ){
-    readIf( prop["cooldown"],    v.coolDown    );
+    readIf( prop["coolDown"],    v.coolDown    );
     readIf( prop["manaCost"],    v.manaCost    );
     readIf( prop["bulletSpeed"], v.bulletSpeed );
     }
@@ -641,7 +642,9 @@ void PrototypesLoader::readParticle( ParticleSystemDeclaration::D &obj,
   readIf( e["y"], obj.y );
   readIf( e["z"], obj.z );
 
-  readIf( e["size"], obj.size );
+  readIf( e["size"],  obj.size );
+  readIf( e["angle"], obj.angle );
+  obj.angle = obj.angle*M_PI/180.0;
 
   readIf( e["r"], obj.r );
   readIf( e["g"], obj.g );

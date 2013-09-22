@@ -71,7 +71,6 @@ GameObject::GameObject( Scene & s,
   }
 
 GameObject::~GameObject() {
-  //if( behavior.size() )
   onDied( *this );
   wrld.player( m.pl ).delUnit(this);
 
@@ -534,4 +533,8 @@ void GameObject::incDieVec(float x, float y, float z) {
   m.dieVec[0] += x;
   m.dieVec[1] += y;
   m.dieVec[2] += z;
+  }
+
+GameObjectView &GameObject::getView() {
+  return view;
   }

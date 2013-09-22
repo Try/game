@@ -25,18 +25,29 @@ class GraphicsSettingsWidget:public Panel {
       bool  shadowTextures;
       bool  transcurentShadows;
 
+      int   physics;
+      int   oreentation;
+
       enum API{
         openGL,
         directX
         };
       static API api;
+      static void setSettings( const Settings & s );
+      static const Settings& settings();
+
+      static void save();
+      static bool load();
+
+      private:
+        static Settings st;
+        static const std::string &settingsFileName();
+
+      friend class GraphicsSettingsWidget;
       };
 
-    Tempest::signal<const Settings&> onSettingsChanged;
-
+    static Tempest::signal<const Settings&> onSettingsChanged;
   private:
-    Settings s;
-
     void shadowMapRes(int v);
     void smFilterQ(int v);
     void colorSh(bool v );
@@ -45,6 +56,8 @@ class GraphicsSettingsWidget:public Panel {
     void normalMap(bool v );
     void oclusion(bool v );
     void shTexture(bool v );
+
+    void update();
   };
 
 #endif // GRAPHICSSETTINGSWIDGET_H

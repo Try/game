@@ -88,9 +88,6 @@ struct UnitInfo::Stats : public PanelBase {
       }
     }
 
-  void customEvent( Tempest::CustomEvent & ){
-    }
-
   Resource  & res;
   GameObject& obj;
 
@@ -121,9 +118,12 @@ struct UnitInfo::Production : public PanelBase {
     layout().add( top );
     layout().add( bottom );
     layout().add( new Widget() );
+
+    timer.timeout.bind(this, &Production::updateValue);
+    timer.start(250);
     }
 
-  void customEvent( Tempest::CustomEvent & ){
+  void updateValue(){
     if( RecruterBehavior *b = obj.behavior.find<RecruterBehavior>() ){
       const std::vector<RecruterBehavior::Queue::Order>& q =
           b->orders()[0].orders;
@@ -151,6 +151,7 @@ struct UnitInfo::Production : public PanelBase {
 
     }
 
+  Tempest::Timer timer;
   ProgressBar * le;
   Resource  & res;
   GameObject& obj;

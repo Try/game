@@ -107,7 +107,7 @@ struct Scenario {
 
     Resource    & res;
 
-    Tempest::Widget  *createSettingsPanel(InGameControls *mainWidget, Resource &res);
+    Tempest::Widget  *createSettingsPanel(Resource &res);
     EditTerrainPanel *createLandEdit( InGameControls *mainWidget,
                                      Resource & res );
     Tempest::Widget* createEditPanel(InGameControls *mainWidget, Resource &res);
@@ -119,7 +119,7 @@ struct Scenario {
 
     void showFormBuilder();
     void showMenu();
-    void showMainMenu();
+    void showMainMenu(bool start);
 
     Tempest::Shortcut showEditPanel, showSettings;
 

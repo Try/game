@@ -68,6 +68,8 @@ class DesertStrikeScenario  : public Scenario {
     struct SpellPanel;
     struct CentralPanel;
 
+    struct GoldButton;
+
     struct Minimap;
     Minimap        *mmap;
     BuyUnitPanel   *buyUnitPanel;
@@ -101,6 +103,7 @@ class DesertStrikeScenario  : public Scenario {
       };
 
     int   plCenter;
+    bool  revPlPos;
     float moveZ;
 
     std::string spellToCast;
@@ -118,6 +121,9 @@ class DesertStrikeScenario  : public Scenario {
     DPlayer& player();
 
     int tierOf( const char* u );
+
+    void setupTopUi( Resource &res, Tempest::Widget *ow );
+    void toogleEditPanel();
   };
 
 #endif // DESERTSTRIKESCENARIO_H

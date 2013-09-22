@@ -41,6 +41,8 @@ ParticleSystemDeclaration::D
   ret.b = mix( min.b, max.b, rand()/float(RAND_MAX) );
   ret.a = mix( min.a, max.a, rand()/float(RAND_MAX) );
 
+  ret.angle = mix( min.angle, max.angle, rand()/float(RAND_MAX) );
+
   return ret;
   }
 

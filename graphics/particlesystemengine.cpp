@@ -15,6 +15,7 @@ ParticleSystemEngine::ParticleSystemEngine( Scene &s,
   raw.vertex.reserve(1024*32);
   visible.reserve( 128 );
   view.reserve(128);
+  particles.reserve(128);
   }
 
 void ParticleSystemEngine::exec( const Tempest::Matrix4x4 &mview,
@@ -87,8 +88,21 @@ void ParticleSystemEngine::exec( const Tempest::Matrix4x4 &mview,
       }
 
     if( scene.viewTester().isVisible( bds1, mvp ) )
-      visible.push_back( &p );
+      visible.push_back( &p ); else
+      dispath[i].reset();
     }
+
+  {
+    size_t dc = 0;
+    for( size_t i=0; i<dispath.size(); ++i ){
+      if( dispath[i] ){
+        dispath[dc] = dispath[i];
+        ++dc;
+        }
+      }
+
+    dispath.resize(dc);
+  }
 
   std::sort( visible.begin(), visible.end(), cmpMat );
 
@@ -138,6 +152,7 @@ void ParticleSystemEngine::update() {
 void ParticleSystemEngine::emitParticle( Model::Raw &raw,
                                          float x, float y, float z,
                                          float sz,
+                                         float angle,
                                          Tempest::Color & color ) {
   MVertex v;
   v.u = 0.5;
@@ -159,14 +174,18 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
 
   size_t iSz = raw.vertex.size();
 
+  double sa = sin(angle), ca = cos(angle);
+
   for( int i=0; i<2; ++i )
     for( int r=0; r<2; ++r ){
       double dx = mul[i]*left[0] + mul[r]*top[0];
       double dy = mul[i]*left[1] + mul[r]*top[1];
       double dz = mul[i]*left[2] + mul[r]*top[2];
 
-      v.x = x + sz*dx;
-      v.y = y + sz*dy;
+      double sdx = sz*dx, sdy = sz*dy;
+
+      v.x = x + sdx*ca - sdy*sa;
+      v.y = y + sdx*sa + sdy*ca;
       v.z = z + sz*dz;
 
       v.nx = v.nx+0.25*dx;
@@ -191,8 +210,9 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
 
 void ParticleSystemEngine::emitParticle( float x, float y, float z,
                                          float sz,
+                                         float angle,
                                          Tempest::Color & color ) {
-  emitParticle(raw, x, y, z, sz, color );
+  emitParticle(raw, x, y, z, sz, angle, color );
   }
 
 bool ParticleSystemEngine::cmpMat( const ParticleSystem *a,
