@@ -34,7 +34,7 @@ class MiniMapView : public TextureView {
     Resource &res;
 
     size_t rtime, rtime2, tcount;
-    World::CameraViewBounds camBounds;
+    World::CameraViewBounds camBounds, originalCb;
     bool pressed;
 
     void mouseDownEvent(Tempest::MouseEvent &e);

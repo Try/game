@@ -21,6 +21,7 @@
 #include "graphics/translate/objectcode.h"
 
 #include <memory>
+#include <rapidjson/document.h>
 
 namespace Tempest{
   class TextureHolder;
@@ -298,6 +299,8 @@ class Resource : public Tempest::ResourceContext {
     Tempest::SpritesHolder pixmaps;
     std::string settingsStr;
     std::string loadSrc( const std::string & f );
+
+    void readPack( const rapidjson::Value & v );
   };
 
 #endif // RESOURCE_H

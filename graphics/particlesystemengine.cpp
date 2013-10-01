@@ -115,7 +115,8 @@ void ParticleSystemEngine::exec( const Tempest::Matrix4x4 &mview,
         currView->name != p.viewInfo().name ){
       if( currView && raw.vertex.size() ){
         GraphicObject obj(scene);
-        obj.setModel( res.model( raw ) );
+        res.model( raw ).setTo( obj );
+
         setupMaterial( obj, *currView, Tempest::Color() );
         view.push_back( obj );
 
@@ -130,7 +131,8 @@ void ParticleSystemEngine::exec( const Tempest::Matrix4x4 &mview,
 
   if( currView && raw.vertex.size() ){
     GraphicObject obj(scene);
-    obj.setModel( res.model( raw ) );
+    res.model( raw ).setTo(obj);
+
     setupMaterial( obj, *currView, Tempest::Color() );
     view.push_back( obj );
     }

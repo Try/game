@@ -6,7 +6,7 @@
 class GameSerializer : public FileSerialize {
   public:
     GameSerializer( const std::wstring & s, OpenMode m );
-    GameSerializer( const std::string & s );
+    GameSerializer( const std::wstring & s );
 
     static const unsigned currentVersion;
     unsigned version() const;

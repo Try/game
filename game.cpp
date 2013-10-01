@@ -46,7 +46,12 @@ Game::Game( ShowMode sm )
                 graphics.fsHolder ),
       gui( graphics.device, w(), h(), resource, proto ),
       msg(*this),
-      serializator(L"./serialize_tmp.obj", Serialize::Write ) {
+#     ifdef __ANDROID__
+      serializator(L"./serialize_tmp.obj", Serialize::Null )
+#     else
+      serializator(L"./serialize_tmp.obj", Serialize::Write )
+#     endif
+      {
   paused       = false;
   setMultiTouchTracking(1);
   //needToUpdate = false;
@@ -60,7 +65,7 @@ Game::Game( ShowMode sm )
 
   initFactorys();
   loadData();
-  loadGame();
+  initGame();
 
   //graphics.drawOpWindow.bind( this, &Game::update);
 
@@ -75,6 +80,8 @@ Game::Game( ShowMode sm )
 
   GraphicsSettingsWidget::onSettingsChanged.bind( *this, &Game::settingsChanged );
   updateOrientation();
+
+  isLoading = false;
   }
 
 Game::~Game() {
@@ -82,6 +89,10 @@ Game::~Game() {
   isRunning = false;
   physicCompute.join();
   worlds.clear();
+  }
+
+void Game::showMainMenu(){
+  gui.showMenu();
   }
 
 void Game::loadData() {
@@ -130,27 +141,32 @@ void Game::loadData() {
   setPlaylersCount(1);
   }
 
-void Game::loadGame() {
+void Game::initGame() {
   Tempest::Application::processEvents();
+  bool dsScenario = 1;
+
+  gui.showMenuFunc.removeBinds();
+
 #ifdef __ANDROID__
-  loadMission("campagin/td1_1.sav");
-  //loadMission("save/map5.sav");
-  setScenario( new DesertStrikeScenario(*this, gui, msg) );
-  //setScenario( new DeatmachScenario(*this, gui, msg) );
+  //loadMission("campagin/td2.sav");
 #else
-  loadMission("save/td1_1.sav");
-  setScenario( new DeatmachScenario(*this, gui, msg) );
+  //loadMission("campagin/td2.sav");
 #endif
   //loadPngWorld( Tempest::Pixmap("./terrImg/h2.png") );
 
-  //setScenario( new DeatmachScenario(*this, gui, msg) );
-  setScenario( new DesertStrikeScenario(*this, gui, msg) );
-
-  //for( size_t i=0; i<world->activeObjects().size(); ++i )
-    //world->activeObjects()[i]->setHP(0);
+  if( dsScenario ){
+    setScenario( new DesertStrikeScenario(*this, gui, msg) );
+    gui.showMenuFunc.bind( DesertStrikeScenario::createMenu );
+    } else {
+    setScenario( new DeatmachScenario(*this, gui, msg) );
+    gui.showMenuFunc.bind( DeatmachScenario::createMenu );
+    }
 
   mscenario->onStartGame();
   updateTime = Time::tickCount();
+
+  if( dsScenario )
+    showMainMenu();
   }
 
 void Game::loadPngWorld( const Tempest::Pixmap& png ){
@@ -192,13 +208,14 @@ void Game::setScenario(Scenario *s) {
 
 void Game::computePhysic(void *) {
   while( isRunning ){
+    size_t time = Tempest::Application::tickCount();
     if( world ){
       if( !isPaused() )
         world->physics.tick(1);
       physicStarted = true;
       }
 
-    Time::sleep(60);
+    Time::sleep(60 - std::min<uint64_t>(Tempest::Application::tickCount()-time,50));
     }
   }
 
@@ -793,6 +810,14 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
   obj.setMaterial( material );
   }
 
+void Game::saveGame() {
+  gui.saveGame();
+  }
+
+void Game::loadGame() {
+  gui.loadGame();
+  }
+
 void Game::save( const std::wstring& f ) {
   GameSerializer s( f, Serialize::Write );
 
@@ -800,18 +825,29 @@ void Game::save( const std::wstring& f ) {
     serialize(s);
   }
 
-void Game::load( const std::wstring& f ) {
-  GameSerializer s( f, Serialize::Read );
-
-  if( s.isOpen() )
-    serialize(s);
-  }
-
-void Game::loadMission(const std::string &f) {
+bool Game::load( const std::wstring& f ) {
   GameSerializer s( f );
 
-  if( s.isOpen() )
+  if( s.isOpen() ){
     serialize(s);
+    return 1;
+    }
+
+  return 0;
+  }
+
+bool Game::loadMission(const std::string &f) {
+  std::wstring wstr;
+  wstr.assign(f.begin(),f.end());
+
+  GameSerializer s( wstr );
+
+  if( s.isOpen() ){
+    serialize(s);
+    return 1;
+    }
+
+  return 0;
   }
 
 void Game::serialize( GameSerializer &s ) {

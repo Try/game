@@ -63,6 +63,7 @@ struct Physics::Data{
 
   size_t animCount, rigidCount;
   size_t maxRigid;
+  int    detail;
 
   enum PoolException {
     OutOfRigidPool,
@@ -405,7 +406,12 @@ size_t Physics::aviableRigids() const {
 void Physics::setDetail(int lv) const {
   int l[] = {0, 16, 32, 128};
 
+  data->detail   = lv;
   data->maxRigid = l[lv];
+  }
+
+int Physics::detail() const {
+  return data->detail;
   }
 
 Physics::Rigid::Rigid() {

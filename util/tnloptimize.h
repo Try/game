@@ -1,7 +1,7 @@
 #ifndef TNLOPTIMIZE_H
 #define TNLOPTIMIZE_H
 
-#include "model_mx.h"
+//#include "model_mx.h"
 #include <vector>
 #include <unordered_map>
 #include <cstdint>
@@ -13,12 +13,12 @@ class TnlOptimize {
     template< class T >
     static void index( std::vector<T>& v,
                        std::vector<uint16_t>& ibo ){
-      std::unordered_map<T, uint16_t, MVertex::hash > m;
+      std::unordered_map<T, uint16_t, typename T::hash > m;
       ibo.reserve( v.size() );
       ibo.resize( v.size() );
 
       for( size_t i=0; i<ibo.size(); ++i ){
-        typename std::unordered_map<T, uint16_t, MVertex::hash>::iterator it = m.find( v[i] );
+        typename std::unordered_map<T, uint16_t, typename T::hash>::iterator it = m.find( v[i] );
         if( it==m.end() ){
           size_t sz = m.size();
           ibo[i]  = sz;
@@ -30,7 +30,7 @@ class TnlOptimize {
 
       v.resize( m.size() );
 
-      typename std::unordered_map<T, uint16_t, MVertex::hash>::iterator
+      typename std::unordered_map<T, uint16_t, typename T::hash>::iterator
           i = m.begin(),
           e = m.end();
 

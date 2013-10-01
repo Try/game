@@ -40,8 +40,6 @@ class InGameControls : public Tempest::Surface {
     Tempest::signal< int > onSetPlayer, toogleEditTab;
     Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
 
-    //Tempest::signal<const GraphicsSettingsWidget::Settings&> onSettingsChanged;
-
     Tempest::signal<> save, load;
     Tempest::signal<> updateView;
 
@@ -70,6 +68,8 @@ class InGameControls : public Tempest::Surface {
                             Tempest::Event::MouseButton btn,
                             MiniMapView::Mode m );
     void removeAllHooks();
+    void showMenu();
+    Tempest::signal<Resource&, Game&, Tempest::Widget*> showMenuFunc;
   protected:
     void paintEvent(Tempest::PaintEvent &p);
 
@@ -112,7 +112,6 @@ class InGameControls : public Tempest::Surface {
     std::vector< InputHookBase* > hooks;
     struct AddUnitButton;
 
-    void showMenu();
     void showMainMenu();
     void showFormBuilder();
     //void addEditorObject( const ProtoObject& );

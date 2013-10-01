@@ -90,6 +90,8 @@ struct Scenario {
 
     virtual Player &player(int i);
     virtual Player &player();
+
+    static void createMenu(Resource &res, Game &game, Tempest::Widget * w );
   protected:
     Game    & game;
     MainGui & gui;
@@ -119,7 +121,6 @@ struct Scenario {
 
     void showFormBuilder();
     void showMenu();
-    void showMainMenu(bool start);
 
     Tempest::Shortcut showEditPanel, showSettings;
 

@@ -15,6 +15,7 @@
 
 #include "util/math.h"
 #include "algo/algo.h"
+#include "gui/mainmenu.h"
 
 #include <cmath>
 
@@ -174,7 +175,7 @@ void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
 
   if( e.mouseID==1 && sctrl.isScaleMode ){
     sctrl.rm1 = e.pos();
-    double lm = (sctrl.m0 - e.pos() ).manhattanLength();
+    double lm = Math::sqrt( (sctrl.m0 - e.pos() ).quadLength() );
 
     double a0 = atan2( sctrl.m0.y - sctrl.m1.y,
                        sctrl.m0.x - sctrl.m1.x ),
@@ -348,23 +349,20 @@ void DesertStrikeScenario::onUnitDied(GameObject &obj) {
   }
 
 void DesertStrikeScenario::tick() {
-  int w = game.curWorld().terrain().width() *Terrain::quadSize;
-  int h = game.curWorld().terrain().height()*Terrain::quadSize;
+  Tempest::Point p1x = player(1).spawnPoint,
+                 p2x = player(2).spawnPoint;
 
-  int p1 = 15,
-      p2 = 80-p1;
-  int id[2][2] = {{1,2},{2,1}};
   if( tNum%interval==0 ){
-    mkUnits( id[revPlPos][0],
-             p1*w/80, p1*h/80,
-             p2*w/80, p2*h/80,
+    mkUnits( 1,
+             p1x.x, p1x.y,
+             p2x.x, p2x.y,
              0 );
     }
 
   if( tNum%interval==0 ){
-    mkUnits( id[revPlPos][1],
-             p2*w/80, p2*h/80,
-             p1*w/80, p1*h/80,
+    mkUnits( 2,
+             p2x.x, p2x.y,
+             p1x.x, p1x.y,
              1 );
     }
 
@@ -376,12 +374,12 @@ void DesertStrikeScenario::tick() {
       for( size_t i=0; i<player().unitsCount(); ++i )
         if( player().unit(i).getClass().data.speed>0 ){
           GameObject &u = player().unit(i);
-          int x = u.x()/Terrain::quadSize,
-              y = u.y()/Terrain::quadSize;
+          int x = (u.x() - player(u.playerNum()).spawnPoint.x )/Terrain::quadSize,
+              y = (u.y() - player(u.playerNum()).spawnPoint.y )/Terrain::quadSize;
 
           int l2 = x*x + y*y;
 
-          if( unitToView==0 || (l2>l)^revPlPos ){
+          if( unitToView==0 || l2>l ){
             unitToView = &player().unit(i);
             l = l2;
             }
@@ -539,27 +537,29 @@ void DesertStrikeScenario::mkUnits( int p,
   }
 
 void DesertStrikeScenario::onStartGame() {
-  showMainMenu(true);
-
   unitToView   = 0;
   hasVTracking = 1;
-
-  //int w = game.curWorld().terrain().width() *Terrain::quadSize;
-  //int h = game.curWorld().terrain().height()*Terrain::quadSize;
 
   revPlPos = rand()%2;
 
   World &wx = game.curWorld();
+  std::vector<Tempest::Point> casP;
+  for( size_t i=0; i<wx.activeObjects().size(); ++i )
+    if( wx.activeObjects()[i]->getClass().name=="castle" )
+      casP.emplace_back( wx.activeObjects()[i]->x()/Terrain::quadSize,
+                         wx.activeObjects()[i]->y()/Terrain::quadSize );
+
+  if( casP.size()!=2 )
+    return;
+
   std::vector<GameObject*> aobj;
   aobj.resize( wx.activeObjects().size() );
   for( size_t i=0; i<wx.activeObjects().size(); ++i )
     aobj[i] = wx.activeObjects()[i].get();
 
   for( size_t i=0; i<aobj.size(); ++i ){
-    int w = wx.terrain().width(),
-        h = wx.terrain().height(),
-        x = w*Terrain::quadSize - aobj[i]->x(),
-        y = aobj[i]->y(),
+    int x = aobj[i]->x()/Terrain::quadSize,
+        y = aobj[i]->y()/Terrain::quadSize,
 
         ox = aobj[i]->x(),
         oy = aobj[i]->y();
@@ -570,35 +570,43 @@ void DesertStrikeScenario::onStartGame() {
     GameObject &obj = wx.addObject(pr, 0, false );
     obj.setPosition(ox, oy);
 
-    if( (x*h > y*w)^revPlPos ){
+    if( (casP[0] - Tempest::Point(x,y) ).quadLength() <
+        (casP[1] - Tempest::Point(x,y) ).quadLength() ){
       obj.setPlayer(1);
       } else {
       obj.setPlayer(2);
       }
     //obj.setClass( &game.prototype( obj.getClass().name ) );
     obj.setHP( obj.getClass().data.maxHp );
+
+    if( obj.getClass().name=="castle" ){
+      player( obj.playerNum() ).spawnPoint = Tempest::Point( obj.x(), obj.y() );
+      }
     }
   }
 
 void DesertStrikeScenario::updateCenterOwner() {
   bool plCnt[2][2] = {};
 
+  Tempest::Point ab = (player(2).spawnPoint - player(1).spawnPoint)/Terrain::quadSize;
+  int l = std::max( Math::sqrt(ab.quadLength()), 1 );
+
   World &wx = game.curWorld();
   for( size_t i=0; i<wx.activeObjects().size(); ++i ){
     GameObject & obj = *wx.activeObjects()[i];
-    int w = game.curWorld().terrain().width(),
-        h = game.curWorld().terrain().height(),
-        x = w*Terrain::quadSize-obj.x(),
-        y = obj.y();
 
     if( obj.player().number()>=1 ){
-      if( (x*h >= y*w)^revPlPos ){
-        //obj.setPlayer(1);
+      Tempest::Point pos{obj.x(), obj.y()};
+      Tempest::Point aq = (pos - player(1).spawnPoint)/Terrain::quadSize;
+
+      int sq = (aq.x*ab.x+aq.y*ab.y);
+      int len = sq/l;
+
+      if( (len < l/2) ){
         plCnt[0][ obj.player().number()-1 ] = true;
         }
 
-      if( (x*h <= y*w)^revPlPos ) {
-        //obj.setPlayer(2);
+      if( (len > l/2) ) {
         plCnt[1][ obj.player().number()-1 ] = true;
         }
       }
@@ -715,6 +723,14 @@ void DesertStrikeScenario::toogleEditPanel() {
   editPanel->setVisible( !editPanel->isVisible() );
   }
 
+void DesertStrikeScenario::createMenu( Resource &res, Game &game, Tempest::Widget *w ) {
+  static bool defaultMainMenu = true;
+  MainMenu *m = new MainMenu(game, res, w, defaultMainMenu);
+  defaultMainMenu = false;
+
+  m->onClosed.bind( game, &Game::unsetPause );
+  }
+
 Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget,
                                                       BehaviorMSGQueue &  ) {
   using namespace Tempest;
@@ -804,7 +820,7 @@ void DesertStrikeScenario::aiTick( int npl ) {
   for( auto i=pl.units.begin(); i!=pl.units.end(); ++i )
     c += (i->second);
 
-  if( std::min(4, pl.aiTick/5 + (pl.aiTick>1?1:0) ) > pl.economyGrade ){
+  if( std::min(4, pl.aiTick/6 + (pl.aiTick>3?1:0) ) > pl.economyGrade ){
     if( !pl.isInQueue("house") &&
         pl.gold() >= game.prototype("house").data.gold ){
       pl.addGold( -game.prototype("house").data.gold );
@@ -884,4 +900,11 @@ void DesertStrikeScenario::aiTick( int npl ) {
           }
         }
     }
+  }
+
+void DesertStrikeScenario::showMainMenu( bool start ) {
+  game.pause(1);
+
+  MainMenu *m = new MainMenu(game, res, mainWidget, start);
+  m->onClosed.bind( game, &Game::unsetPause );
   }

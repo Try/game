@@ -175,7 +175,8 @@ HEADERS += \
     gui/loadscreen.h \
     gui/mainmenu.h \
     gui/optionswidget.h \
-    gui/mapselectmenu.h
+    gui/mapselectmenu.h \
+    game/missions/desertstriketutorialscenario.h
 
 SOURCES += \
     main.cpp \
@@ -304,7 +305,8 @@ SOURCES += \
     gui/loadscreen.cpp \
     gui/mainmenu.cpp \
     gui/optionswidget.cpp \
-    gui/mapselectmenu.cpp
+    gui/mapselectmenu.cpp \
+    game/missions/desertstriketutorialscenario.cpp
 
 OTHER_FILES += \
     ../game-build-desktop/data/shadow_map.vert \

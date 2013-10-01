@@ -102,6 +102,7 @@ class Physics {
 
      size_t aviableRigids() const;
      void   setDetail( int lv ) const;
+     int detail() const;
   private:
     Physics( const Physics &){}
 

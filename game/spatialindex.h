@@ -207,6 +207,8 @@ class SpatialIndex {
     static bool hasEffect(GameObject &tg, GameObject &obj );
     static void collision(GameObject &obj , GameObject &m, int &id);
 
+    static bool isColisionAviable( GameObject &obj );
+
     static const int TerrQSize;
     static const int qsize;
     static const int detail;

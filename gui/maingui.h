@@ -47,6 +47,11 @@ class MainGui {
              PrototypesLoader & prototypes );
     ~MainGui();
 
+    void showMenu();
+    Tempest::signal<Resource&, Game&, Tempest::Widget*> showMenuFunc;
+    void saveGame();
+    void loadGame();
+
     void setFocus();
     void setupSelUnitsList( const World& obj );
     void onUnitDied( GameObject & obj );
@@ -131,9 +136,6 @@ class MainGui {
 
     CentralWidget central;
     PrototypesLoader & prototypes;
-
-    void saveGame();
-    void loadGame();
 
     Tempest::Point mousePos;
 

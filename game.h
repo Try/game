@@ -35,6 +35,7 @@ class Game : public Tempest::Window {
     Game( Tempest::Window::ShowMode s );
     ~Game();
 
+    void showMainMenu();
     void tick();
     //void render(size_t dt);
     void render();
@@ -107,9 +108,11 @@ class Game : public Tempest::Window {
                          const ProtoObject::View &src,
                          const Tempest::Color &teamColor );
 
+    void saveGame();
+    void loadGame();
     void save(const std::wstring &str);
-    void load(const std::wstring &str);
-    void loadMission(const std::string  &str);
+    bool load(const std::wstring &str);
+    bool loadMission(const std::string  &str);
 
     void setCurrectPlayer( int pl );
     void setupAsServer();
@@ -139,12 +142,17 @@ class Game : public Tempest::Window {
 
     static const int ticksPerSecond;
 
+    template< class T >
+    void setupScenario(){
+      setScenario( new T(*this, gui, msg) );
+      mscenario->onStartGame();
+      }
   private:
     bool  paused;//, needToUpdate;
     //bool isFullScreen;
 
     //bool acceptMouseObj;
-    void loadGame();
+    void initGame();
 
     Graphics graphics;
     SoundDevice    soundDev;

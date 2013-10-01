@@ -339,12 +339,8 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
     for( size_t i=0; i<obj.view.size(); ++i ){
-      for( size_t r=0; r<obj.view[i].materials.size(); ++r ){
-        if( obj.view[i].materials[r]=="phong" )
-          obj.view[i].materials[r] = "terrain.main";
-        }
-
-      remove(obj.view[i].materials, "shadow_cast");
+      obj.view[i].shadedMaterial = prototype.material("terrain");
+      obj.view[i].shadowType     = ProtoObject::View::NoShadow;
       }
 
     view.view.reset( new GameObjectView( scene,
@@ -365,12 +361,8 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
     for( size_t i=0; i<obj.view.size(); ++i ){
-      /*
-      for( size_t r=0; r<obj.view[i].materials.size(); ++r ){
-        if( obj.view[i].materials[r]=="phong" )
-          obj.view[i].materials[r] = "terrain.minor";
-        }*/
-      remove(obj.view[i].materials, "shadow_cast");
+      obj.view[i].shadedMaterial = prototype.material("terrain_minor");
+      obj.view[i].shadowType     = ProtoObject::View::NoShadow;
       }
 
     view.view.reset( new GameObjectView( scene,
@@ -388,8 +380,8 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                                                     prototype.get( "water" ),
                                                     prototype) );
     chunk.waterView.view->loadView( waterGeometry(cX, cY) );
-    return;//TODO
 
+    /*
     chunk.fogView.view.reset( new GameObjectView( scene,
                                                   world,
                                                   prototype.get( "water" ),
@@ -399,6 +391,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
     vf.materials.push_back("fog_of_war");
 
     chunk.fogView.view->loadView( fogGeometry(cX, cY), vf );
+    */
 
     buildShadowVBO(lx, rx, ly, ry, land, ibo );
     if( land.size() ){
@@ -408,8 +401,7 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
 
       ProtoObject obj;
       obj.view.resize(1);
-      obj.view[0].materials.clear();
-      obj.view[0].materials.push_back("shadow_cast");
+      obj.view[0].shadedMaterial = prototype.material("terrain_zp");
 
       view.view.reset( new GameObjectView( scene,
                                            world,

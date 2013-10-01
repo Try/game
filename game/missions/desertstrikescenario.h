@@ -11,10 +11,12 @@ class MainGui;
 
 class DesertStrikeScenario  : public Scenario {
   public:
-    DesertStrikeScenario(Game &game,
-                          MainGui & ui  , BehaviorMSGQueue &msg);
+    DesertStrikeScenario( Game &game,
+                          MainGui & ui,
+                          BehaviorMSGQueue &msg );
     ~DesertStrikeScenario();
 
+    static void createMenu(Resource &res, Game &game, Tempest::Widget * w );
   protected:
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);
@@ -89,6 +91,8 @@ class DesertStrikeScenario  : public Scenario {
       int atkGrade,    armorGrade;
       int castleGrade, economyGrade;
 
+      Tempest::Point spawnPoint;
+
       int getParam( const std::string& p ) const;
       std::vector<GameObject*>& selected();
 
@@ -124,6 +128,7 @@ class DesertStrikeScenario  : public Scenario {
 
     void setupTopUi( Resource &res, Tempest::Widget *ow );
     void toogleEditPanel();
+    void showMainMenu( bool start );
   };
 
 #endif // DESERTSTRIKESCENARIO_H

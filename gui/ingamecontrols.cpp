@@ -80,19 +80,13 @@ void InGameControls::showFormBuilder() {
 
 void InGameControls::showMenu() {
   game.pause(1);
-
-  InGameMenu *m = new InGameMenu(res, this);
-
-  m->save.bind( save );
-  m->load.bind( load );
-  m->onClosed.bind( game, &Game::unsetPause );
-  m->quit.bind( game.exitGame );
+  showMenuFunc(res, game, this);
   }
 
 void InGameControls::showMainMenu() {
   game.pause(1);
 
-  MainMenu *m = new MainMenu(res, this);
+  MainMenu *m = new MainMenu(game, res, this);
   m->onClosed.bind( game, &Game::unsetPause );
   }
 

@@ -51,19 +51,12 @@ class FileSerialize : public Serialize {
       }
 
   private:
-    //FILE * f;
-
-    struct File;
-    File * f;
+    std::wstring fname;
     std::vector<char> data;
     size_t rpos;
 
-    File *fopen(const wchar_t*, bool r );
-    void  fclose( File *  );
-    bool  feof( File *  ) const;
-
-    size_t fwrite( const void*, size_t, size_t, File* f );
-    size_t fread ( void*,       size_t, size_t, File* f);
+    size_t fwrite( const void*, size_t, size_t );
+    size_t fread ( void*,       size_t, size_t );
 };
 
 #endif // FILESERIALIZE_H

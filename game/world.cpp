@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <Tempest/Application>
 
 #include "util/math.h"
 #include "threads/time.h"
@@ -172,8 +173,12 @@ void World::createTestMap() {
 void World::computePhysic( void * ) {
   //#ifndef __ANDROID__
   while( isRunning ){
+    auto t = Tempest::Application::tickCount();
+
     physics.tick(1);
-    Time::sleep(50);
+
+    auto dt = Tempest::Application::tickCount() - t;
+    Time::sleep( std::max<uint64_t>(10, 50 - dt) );
     }
   isRunning = false;
   //#endif

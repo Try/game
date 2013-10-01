@@ -8,8 +8,10 @@
 #include "optionswidget.h"
 #include "lang/lang.h"
 #include "resource.h"
+#include "game.h"
 
 #include "mapselectmenu.h"
+#include "game/missions/desertstrikescenario.h"
 
 struct MainMenu::Btn : public Button {
   Btn( Resource &res ):Button(res){
@@ -33,8 +35,8 @@ struct MainMenu::Btn : public Button {
   Tempest::Sprite grad;
   };
 
-MainMenu::MainMenu(Resource &res, Tempest::Widget* owner, bool startM)
-  :ModalWindow(res, owner), res(res) {
+MainMenu::MainMenu(Game &game, Resource &res, Tempest::Widget* owner, bool startM)
+  :ModalWindow(res, owner), res(res), game(game) {
   using namespace Tempest;
 
   setLayout( Vertical );
@@ -49,11 +51,11 @@ MainMenu::MainMenu(Resource &res, Tempest::Widget* owner, bool startM)
 
   m->setLayout( Vertical );
 
-  if( startM )
-    m->layout().add( button(res, Lang::tr("$(game_menu/play)"), &MainMenu::start) );
-
   if( !startM )
     m->layout().add( button(res, Lang::tr("$(game_menu/continue_game)"), &MainMenu::continueGame) );
+
+  //if( startM )
+    m->layout().add( button(res, Lang::tr("$(game_menu/play)"), &MainMenu::start) );
 
   m->layout().add( button(res, Lang::tr("$(game_menu/tutorial)"), &MainMenu::start) );
 
@@ -83,8 +85,11 @@ Button *MainMenu::button( Resource &res, const std::wstring& s,
   return b;
   }
 
-void MainMenu::startMap(const std::string &) {
+void MainMenu::startMap(const std::wstring &m) {
+  if( !game.load( L"campagin/"+m ) )
+    return;
 
+  game.setupScenario<DesertStrikeScenario>();
   deleteLater();
   }
 

@@ -31,6 +31,7 @@ class PrototypesLoader {
     void unload();
 
     const std::string& material(int i);
+    size_t material( const char* m ) const;
 
     size_t atackId( const std::string& s );
   protected:
@@ -43,7 +44,7 @@ class PrototypesLoader {
       std::vector<PUpgrade> grades;
 
       std::vector< std::string > unitTypes, atackTypes;
-      std::vector< std::string > materials;
+      mutable std::vector< std::string > materials;
       };
 
     std::vector<Defs> defs;

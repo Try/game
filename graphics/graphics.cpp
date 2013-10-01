@@ -52,21 +52,47 @@ Graphics::Graphics( void *hwnd, bool isFullScreen )
   //Tempest::DisplaySettings s( 1280, 768, 32, true );
 
   //device.setDisplaySettings(s);
+
+  SBorderVertex sb[] = { {-1,-1}, {1, -1}, {-1, 1}, {1,1},
+                         {-1,-1}, {-1, 1}, {1, -1}, {1,1} };
+  smBorder = vboHolder.load( sb, sizeof(sb)/sizeof(sb[0]) );
+
+  Tempest::VertexDeclaration::Declarator decl;
+  decl.add( Tempest::Decl::float2, Tempest::Usage::Position );
+  smBorderDecl = Tempest::VertexDeclaration(device, decl);
+
+  Tempest::AbstractShadingLang::UiShaderOpt opt;
+  opt.hasTexture = false;
+  opt.vertex     = Tempest::Decl::float2;
+  opt.texcoord   = Tempest::Decl::count;
+  opt.color      = Tempest::Decl::count;
+
+  smBorderVs     = vsHolder.surfaceShader(opt);
+  smBorderFs     = fsHolder.surfaceShader(opt);
   }
 
 bool Graphics::render( Tempest::Surface &scene,
                        Tempest::SpritesHolder & sp ) {
+  lvboHolder.pauseCollect(1);
+  liboHolder.pauseCollect(1);
+  localTex.pauseCollect(1);
+
   if( !device.startRender() )
     return false;
 
   device.clear( Tempest::Color(1,0,0), 1 );
-  uiRender.buildVbo(scene, vboHolder, iboHolder, sp );
+  //uiRender.buildVbo(scene, vboHolder, iboHolder, sp );
+  uiRender.buildVbo(scene, lvboHolder, liboHolder, sp );
 
   device.beginPaint();
   uiRender.renderTo(device);
   device.endPaint();
 
   device.present();
+
+  lvboHolder.pauseCollect(0);
+  liboHolder.pauseCollect(0);
+  localTex.pauseCollect(0);
   return true;
   }
 
@@ -175,8 +201,6 @@ void Graphics::renderImpl( Scene &scene,
   setupSceneConstants( scene, context );
   msrv.completeDraw(device, scene, g, 0, 0, context, cefects);
 
-  //gui.exec( *widget, 0, 0, device );
-  //surfRender.renderTo( device );
   device.beginPaint();
   r0.renderTo(device);
   uiRender.renderTo(device);

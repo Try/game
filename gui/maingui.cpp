@@ -60,10 +60,16 @@ MainGui::MainGui( Tempest::Device &,
         Lang::fetch(f, r.sprites());
         }
     }
+
+  showMenuFunc.bind( Scenario::createMenu );
   }
 
 MainGui::~MainGui() {
   delete mainwidget;
+  }
+
+void MainGui::showMenu() {
+  mainwidget->showMenu();
   }
 
 void MainGui::setFocus() {
@@ -83,6 +89,7 @@ void MainGui::createControls(BehaviorMSGQueue & msg, Game &game) {
   mainwidget->renderScene. bind( renderScene  );
   mainwidget->setCameraPos.bind( setCameraPos );
   mainwidget->minimapEvent.bind( minimapEvent );
+  mainwidget->showMenuFunc.bind( showMenuFunc );
 
   //mainwidget->onSettingsChanged.bind( onSettingsChanged );
 

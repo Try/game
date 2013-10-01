@@ -11,24 +11,31 @@
 #include <arpa/inet.h>
 #endif
 
-#include <cassert>
+#include <Tempest/Assert>
 
 FileSerialize::FileSerialize( const std::wstring &s, OpenMode m ) {
-  f = fopen( s.data(), m==Read );
+  fname = s;
+
   mode = m;
+  rpos = 0;
+
+  if( mode==Read )
+    data = Tempest::SystemAPI::loadBytes(s.data());
   }
 
 FileSerialize::FileSerialize(const std::string &s) {
-  f = 0;
+  fname.assign( s.begin(), s.end() );
+
   mode = Read;
   rpos = 0;
 
-  data = Tempest::SystemAPI::loadBytes(s.data());
+  if( mode==Read )
+    data = Tempest::SystemAPI::loadBytes(s.data());
   }
 
 FileSerialize::~FileSerialize() {
-  if( isOpen() )
-    fclose(f);
+  if( mode==Write )
+    Tempest::SystemAPI::writeBytes(fname.c_str(), data);
   }
 
 void FileSerialize::write(int val) {
@@ -58,17 +65,17 @@ void FileSerialize::read(bool &val) {
 void FileSerialize::write(unsigned int val) {
   val = htonl (val);
 
-  fwrite( (const void*)&val, sizeof(val), 1, f );
+  fwrite( (const void*)&val, sizeof(val), 1 );
   }
 
 void FileSerialize::read(unsigned int &val) {
-  fread( (void*)&val, sizeof(val), 1, f );
+  fread( (void*)&val, sizeof(val), 1 );
   val = ntohl(val);
   }
 
 void FileSerialize::write( const std::string &val ) {
   write( val.size() );
-  fwrite( val.data(), 1, val.size(), f );
+  fwrite( val.data(), 1, val.size() );
   }
 
 void FileSerialize::read(std::string &val) {
@@ -78,13 +85,13 @@ void FileSerialize::read(std::string &val) {
   if( s<100000 ){
     val.resize(s);
 
-    fread ( &val[0], 1, val.size(), f );
+    fread ( &val[0], 1, val.size() );
     }
   }
 
 void FileSerialize::write(const std::vector<char> &val) {
   write( val.size() );
-  fwrite( val.data(), 1, val.size(), f );
+  fwrite( val.data(), 1, val.size() );
   }
 
 void FileSerialize::read(std::vector<char> &val) {
@@ -94,13 +101,13 @@ void FileSerialize::read(std::vector<char> &val) {
   if( s<100000 ){
     val.resize(s);
 
-    fread ( &val[0], 1, val.size(), f );
+    fread ( &val[0], 1, val.size() );
     }
   }
 
 void FileSerialize::write(const std::wstring &val) {
   write( val.size() );
-  fwrite( val.data(), sizeof(wchar_t), val.size(), f );
+  fwrite( val.data(), sizeof(wchar_t), val.size() );
   }
 
 void FileSerialize::read(std::wstring &val) {
@@ -110,84 +117,42 @@ void FileSerialize::read(std::wstring &val) {
   if( s<100000 ){
     val.resize(s);
 
-    fread ( &val[0], sizeof(wchar_t), val.size(), f );
+    fread ( &val[0], sizeof(wchar_t), val.size() );
     }
   }
 
 void FileSerialize::write(char val) {
-  fwrite( &val, 1, 1, f );
+  fwrite( &val, 1, 1 );
   }
 
 void FileSerialize::read(char &val) {
-  fread ( &val, 1, 1, f );
+  fread ( &val, 1, 1 );
   }
 
 bool FileSerialize::isEof() const {
-  return isReader() && feof(f);
+  return isReader() && rpos==data.size();
   }
 
 bool FileSerialize::isOpen() const {
-  return f || data.size();
+  return data.size();
   }
 
 bool FileSerialize::isReader() const {
   return mode==Read;
   }
 
-
-FileSerialize::File *FileSerialize::fopen(const wchar_t *f, bool r) {
-#ifdef __WIN32
-  HANDLE hFile = 0;
-
-  if( r ){
-    hFile = CreateFile( f,
-                        GENERIC_READ|GENERIC_WRITE,
-                        FILE_SHARE_READ, NULL,
-                        OPEN_ALWAYS,
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL );
-    //data = Tempest::AbstractSystemAPI::loadBytes(f);
-    } else {
-    hFile = CreateFile( f,
-                        GENERIC_READ|GENERIC_WRITE,
-                        FILE_SHARE_READ, NULL,
-                        OPEN_ALWAYS,
-                        FILE_ATTRIBUTE_NORMAL,
-                        NULL );
-    }
-
-  return (FileSerialize::File*)hFile;
-#endif
-  return 0;
-  }
-
-void FileSerialize::fclose( FileSerialize::File *f ) {
-#ifdef __WIN32
-  if( isOpen() )
-    CloseHandle( f );
-#endif
-  }
-
-bool FileSerialize::feof( FileSerialize::File * ) const {
-  return false;
-  }
-
-size_t FileSerialize::fwrite( const void * data,
+size_t FileSerialize::fwrite(const void * c_data,
                               size_t s,
-                              size_t c,
-                              FileSerialize::File *f) {
-#ifdef __WIN32
-  DWORD wmWritten = 0;
-  WriteFile( f, data, s*c, &wmWritten, NULL );
-  assert( s*c==wmWritten );
-  return wmWritten;
-#endif
+                              size_t c) {
+  size_t sz = s*c;
+  for( size_t i=0; i<sz; ++i )
+    data.push_back( ((const char*)c_data)[i] );
+
   return 0;
   }
 
-size_t FileSerialize::fread( void *odata,
-                             size_t s, size_t c,
-                             FileSerialize::File *f) {
+size_t FileSerialize::fread(void *odata,
+                             size_t s, size_t c) {
   if( data.size() ){
     s *= c;
     while( s ){
@@ -196,13 +161,9 @@ size_t FileSerialize::fread( void *odata,
       ++((char*&)odata);
       --s;
       }
+
+    return s*c;
     }
 
-#ifdef __WIN32
-  DWORD wmWritten = 0;
-  ReadFile(f, odata, s*c, &wmWritten, NULL);
-  assert( s*c==wmWritten );
-  return wmWritten;
-#endif
   return 0;
   }

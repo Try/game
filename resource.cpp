@@ -70,18 +70,8 @@ const Model& Resource::model(const std::string &key) const {
 const Model::Raw &Resource::rawModel(const std::string &key) const {
   if( !rawModels.contains(key ) ){
     const Model& m = models.get(key);
-    Model::Raw  *model = new Model::Raw();
 
-    model->index. resize( m.indexes().size()  );
-    model->vertex.resize( m.vertexes().size() );
-
-    m.vertexes().get( model->vertex.begin(),
-                      model->vertex.end(),
-                      0 );
-    m.indexes().get( model->index.begin(),
-                     model->index.end(),
-                     0 );
-    rawModels.add( key, std::shared_ptr<Model::Raw>(model) );
+    rawModels.add( key, std::shared_ptr<Model::Raw>( m.getRaw() ) );
     }
 
   return *rawModels.get(key);
@@ -395,6 +385,40 @@ std::string Resource::loadSrc(const std::string &f) {
   return Tempest::SystemAPI::loadText( f.data() );
   }
 
+void Resource::readPack(const rapidjson::Value &v) {
+  if( v.IsArray() ){
+    for( size_t i=0; i<v.Size(); ++i )
+      if( v[i].IsObject() )
+        readPack(v[i]);
+    return;
+    }
+
+  if( !v.IsObject() )
+    return;
+
+  if( !v["name"].IsString() ){
+    return;
+    }
+
+  const std::string name = v["name"].GetString();
+
+  if( v["model"].IsString() ){
+    models.preload( name+"/model", v["model"].GetString() );
+    }
+
+  if( v["diff"].IsString() ){
+    textures.preload( name+"/diff", v["diff"].GetString(), false );
+    }
+
+  if( v["norm"].IsString() ){
+    textures.preload( name+"/norm", v["norm"].GetString(), false );
+    }
+
+  if( v["glow"].IsString() ){
+    textures.preload( name+"/glow", v["glow"].GetString(), false );
+    }
+  }
+
 void Resource::load(const std::string &s) {
   using namespace rapidjson;
   std::string jsonstr = Tempest::SystemAPI::loadText(s.data());
@@ -503,6 +527,14 @@ void Resource::load(const std::string &s) {
 
             }
           }
+        }
+      }
+
+    const Value& pack = data["pack"];
+    if( pack.IsArray() ){
+      for( size_t i=0; i<pack.Size(); ++i ){
+        const Value& v = pack[i];
+        readPack(v);
         }
       }
 

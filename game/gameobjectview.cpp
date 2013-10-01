@@ -142,7 +142,7 @@ void GameObjectView::loadView( const Resource &r, Physics & p, bool env ) {
       }
 
     for( int i=0; i<selectModelsCount; ++i )
-      selection[i]->setModel( r.model("quad/model") );
+      r.model("quad/model").setTo( *selection[i] );
     }
 
   setViewSize(1, 1, 1);
@@ -170,24 +170,26 @@ void GameObjectView::loadView( const Resource & r,
 
   if( isEnv ){
     if( src.isParticle.size()==0 ){
-      if( model.groups.size() ){
-        for( size_t i=0; i<model.groups.size(); ++i ){
+      if( model.groupsCount() ){
+        for( size_t i=0; i<model.groupsCount(); ++i ){
           EnvObject object( scene );
-          object.setModel( model.groups[i] );
+          object.setModel( model.group(i) );
 
           env.push_back( object );
 
-          if( model.groups[i].physicType==Model::Sphere ){
+          Model m = model.group(i);
+
+          if( m.physicType()==ModelPhysic::Sphere ){
             setForm( this->env.back(),
                      p.createSphere( x(), y(), 0,
                                      object.model().radius()*szMid ) );
             }
 
-          if( model.groups[i].physicType==Model::Box ){
+          if( m.physicType()==ModelPhysic::Box ){
             const double bs[] = {
-              model.groups[i].boxSzX()*src.size[0],
-              model.groups[i].boxSzY()*src.size[1],
-              model.groups[i].boxSzZ()*src.size[2],
+              m.boxSzX()*src.size[0],
+              m.boxSzY()*src.size[1],
+              m.boxSzZ()*src.size[2],
               };
 
             setForm( this->env.back(),
@@ -230,7 +232,8 @@ void GameObjectView::loadView( const Resource & r,
           !src.hasOverDecal  &&
           !src.isLandDecal){
         GraphicObject object( scene );
-        object.setModel( model );
+        //object.setModel( model );
+        model.setTo(object);
 
         view.push_back( object );
         if( src.randRotate ){
@@ -259,10 +262,11 @@ void GameObjectView::loadView( const Resource & r,
     setupMaterials(*obj, src );
     }
 
-  bool pCrt = false;
-#ifdef __ANDROID__
-   pCrt = this->getClass().data.isBackground;
-#endif
+  bool pCrt = true;
+//#ifdef __ANDROID__
+  if( physic->detail()<2 )
+     pCrt = this->getClass().data.isBackground;
+//#endif
 
    m.radius = std::max(m.radius, model.bounds().diameter()/2.0 );
 
@@ -310,7 +314,8 @@ void GameObjectView::loadView( const Model &model,
     m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
 
   GraphicObject object( scene );
-  object.setModel( model );
+  //object.setModel( model );
+  model.setTo(object);
   m.radius = model.bounds().radius();
 
   setupMaterials( object, pview );

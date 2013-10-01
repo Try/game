@@ -9,7 +9,7 @@ GameSerializer::GameSerializer(const std::wstring &s, OpenMode m )
   *this + cversion;
   }
 
-GameSerializer::GameSerializer(const std::string &s) :FileSerialize(s) {
+GameSerializer::GameSerializer(const std::wstring &s) :FileSerialize(s,Read) {
   cversion = currentVersion;
 
   *this + cversion;

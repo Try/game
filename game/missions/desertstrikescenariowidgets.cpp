@@ -206,6 +206,7 @@ void DesertStrikeScenario::Minimap::buildBase( Resource &res, Inf & inf ){
 
   BuyButton *btn = new BuyButton(res);
   btn->clicked.bind( this, &Minimap::sell );
+  btn->icon = res.pixmap("gui/minus");
   w->layout().add( btn );
 
   Widget *t = new Widget();
@@ -217,7 +218,7 @@ void DesertStrikeScenario::Minimap::buildBase( Resource &res, Inf & inf ){
 
   btn = new BuyButton(res);
   btn->clicked.bind( this, &Minimap::buy );
-  btn->icon = res.pixmap("gui/icon/atack");
+  btn->icon = res.pixmap("gui/plus");
   w->layout().add( btn );
 
   w->setMaximumSize( w->sizePolicy().maxSize.w, 50 );

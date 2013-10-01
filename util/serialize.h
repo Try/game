@@ -7,9 +7,10 @@
 class Serialize {
   public:
     enum OpenMode{
-      Read   = 0,
-      Write  = 1,
-      Append = 2
+      Null   = 0,
+      Read   = 1,
+      Write  = 2,
+      Append = 3
       };
 
     virtual void write( unsigned int  val ) = 0;
@@ -38,6 +39,7 @@ class Serialize {
     Serialize & operator + ( T & t ){
       if( mode==Read )
         read(t); else
+      if( mode!=Null )
         write(t);
 
       return *this;

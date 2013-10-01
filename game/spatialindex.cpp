@@ -81,11 +81,15 @@ void SpatialIndex::clear() {
 
 void SpatialIndex::solveColisions( std::vector<PGameObject> &obj ) {
   for( size_t i=0; i<obj.size(); ++i ){
-    if( obj[i] && obj[i]->isMoviable() && !obj[i]->isMineralMove() ){
-      obj[i]->colisions.clear();
+    obj[i]->colisions.clear();
+    if( obj[i] && isColisionAviable(*obj[i]) ){
       solveColisions( obj[i].get(), i );
       }
     }
+  }
+
+bool SpatialIndex::isColisionAviable( GameObject &obj  ){
+  return obj.isMoviable() && !obj.isMineralMove();
   }
 
 void SpatialIndex::add( GameObject *obj ) {
@@ -159,7 +163,9 @@ void SpatialIndex::collision(GameObject &obj, GameObject &m,
 
   if( &m!=&obj && d <= 4*maxD ){
     obj.colisions.push_back(&m);
-    m  .colisions.push_back(&obj);
+
+    if( isColisionAviable(m) )
+      m.colisions.push_back(&obj);
     }
 
   if( (&m!=&obj) && hasEffect(m,obj) ){

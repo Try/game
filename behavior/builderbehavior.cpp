@@ -99,7 +99,7 @@ bool BuilderBehavior::message( AbstractBehavior::Message msg,
     proto = &obj.game().prototype(taget);
 
     Model m = obj.game().resources().model( proto->view[0].name+"/model" );
-    hud.setModel( m );
+    m.setTo( hud );
 
     obj.game().setupMaterials( hud,       proto->view[0], obj.teamColor() );
     obj.game().setupMaterials( hudIntent, proto->view[0], obj.teamColor() );
@@ -210,7 +210,8 @@ void BuilderBehavior::mouseUp(Tempest::MouseEvent & e ) {
                         obj.world().mouseY() );    
 
     Model m = obj.game().resources().model(proto->view[0].name+"/model");
-    hudIntent.setModel( m );
+//    hudIntent.setModel( m );
+    m.setTo(hudIntent);
 
     GameObject::setViewPosition( hudIntent,
                                  proto->view[0],

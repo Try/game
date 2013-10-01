@@ -84,6 +84,15 @@ const std::string &PrototypesLoader::material(int i) {
   return defs.back().materials[i];
   }
 
+size_t PrototypesLoader::material(const char *c) const {
+  size_t id = find( defs.back().materials, c )-defs.back().materials.begin();
+
+  if( id==defs.back().materials.size() )
+    defs.back().materials.push_back(c);
+
+  return id;
+  }
+
 size_t PrototypesLoader::atackId( const std::string &str ) {
   size_t ret = 0;
   auto i = std::find( defs.back().atackTypes.begin(),
@@ -395,18 +404,12 @@ void PrototypesLoader::readView( ProtoObject::View &v,
   if( e["material"].IsArray() ){
     const Value& m = e["material"];
     for( size_t i=0; i<m.Size(); ++i )
-        readMaterial( v, m[i] );
+      readMaterial( v, m[i] );
     }
 
   if( e["shadedMaterial"].IsString() ){
-    const char* c = e["shadedMaterial"].GetString();
-
-    size_t id = find( defs.back().materials, c )-defs.back().materials.begin();
-
-    if( id==defs.back().materials.size() )
-      defs.back().materials.push_back(c);
-
-    v.shadedMaterial = id;
+    const char* c    = e["shadedMaterial"].GetString();
+    v.shadedMaterial = material(c);
     }
   }
 

@@ -96,6 +96,24 @@ void MaterialServer::load( Resource &r ) {
     r.setCullFaceMode( Tempest::RenderState::CullMode::front );
     mat[shadow_main[2]]->m.setRenderState(r);
   }
+  {
+    size_t id = idOfMaterial("terrain_minor");
+
+    Tempest::RenderState r;
+    r.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
+    r.setBlend(1);
+    r.setBlendMode( Tempest::RenderState::AlphaBlendMode::one,
+                    Tempest::RenderState::AlphaBlendMode::one );
+
+    mat[id]->m.setRenderState(r);
+  }
+  {
+    size_t id = idOfMaterial("terrain");
+
+    Tempest::RenderState r;
+    r.setZTestMode( Tempest::RenderState::ZTestMode::LEqual );
+    mat[id]->m.setRenderState(r);
+  }
 
   main_material  = idOfMaterial("main");
   water          = idOfMaterial("water");

@@ -33,8 +33,8 @@ void TerrainChunk::update( Resource & res ) {
         polish[i]->geometry.vertex.reserve( 0 );
         polish[i]->geometry.index.reserve( 0 );
 
-        polish[i]->obj.setModel( Model() );
-        polish[i]->obj.setModel( res.model(polish[i]->geometry) );
+        Model().setTo( polish[i]->obj );
+        res.model(polish[i]->geometry).setTo( polish[i]->obj );
 
         polish[i]->needToUpdate = false;
         }

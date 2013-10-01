@@ -41,8 +41,8 @@ void EnvObject::setModel(const Model &m){
   this->sceneDelObject();
 
   m_model = m;
-  vboH = m.vertexes().handle();
-  iboH = m.vertexes().handle();
+  vboH = m.vboHandle();
+  iboH = m.iboHandle();
 
   setTransform( mat );
 
@@ -83,11 +83,13 @@ void EnvObject::render( const Tempest::AbstractMaterial &mat,
                         Tempest::Render &r,
                         const Tempest::Matrix4x4 &object,
                         const Tempest::AbstractCamera &camera) const {
-  r.draw(mat, m_model, object, camera);
+  //r.draw(mat, m_model, object, camera);
+  m_model.render( mat, r, object, camera );
   }
 
 void EnvObject::render(Tempest::Render &r) const {
-  r.draw( m_model );
+  //r.draw( m_model );
+  m_model.render(r);
   }
 
 float EnvObject::x() const {

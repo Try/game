@@ -131,8 +131,8 @@ void PacketObject::update() {
 
     TerrainChunk::PolishView& vx = chunk();
 
-    vx.obj.setModel( Model() );
-    vx.obj.setModel( game.resources().model(vx.geometry) );
+    Model().setTo( vx.obj );
+    game.resources().model(vx.geometry).setTo( vx.obj );
     }
 
   needToUpdate = false;

@@ -24,8 +24,6 @@
 #include "gui/unitview.h"
 #include "gui/unitlist.h"
 
-#include "gui/mainmenu.h"
-
 #include "util/lexicalcast.h"
 
 struct Scenario::AddUnitButton: public Button{
@@ -651,25 +649,7 @@ Tempest::Widget *Scenario::createEditPanel( InGameControls *mainWidget, Resource
   }
 
 void Scenario::showMenu() {
-#ifdef __ANDROID__
-  showMainMenu(false);
-  return;
-#endif
-
-  game.pause(1);
-  InGameMenu *m = new InGameMenu(res, mainWidget);
-
-  m->save.bind( mainWidget->save );
-  m->load.bind( mainWidget->load );
-  m->onClosed.bind( game, &Game::unsetPause );
-  m->quit.bind( game.exitGame );
-  }
-
-void Scenario::showMainMenu( bool start ) {
-  game.pause(1);
-
-  MainMenu *m = new MainMenu(res, mainWidget, start);
-  m->onClosed.bind( game, &Game::unsetPause );
+  mainWidget->showMenu();
   }
 
 Player *Scenario::createPlayer() {
@@ -708,4 +688,15 @@ Player &Scenario::player(int i) {
 
 Player &Scenario::player() {
   return game.player();
+  }
+
+void Scenario::createMenu( Resource& res,
+                           Game &game,
+                           Tempest::Widget *w) {
+  InGameMenu *m = new InGameMenu(res, w);
+
+  m->save.    bind( game, &Game::saveGame );
+  m->load.    bind( game, &Game::loadGame );
+  m->onClosed.bind( game, &Game::unsetPause );
+  m->quit.    bind( game.exitGame );
   }

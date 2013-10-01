@@ -125,8 +125,9 @@ void MiniMapView::render() {
     fog   = res.ltexHolder.create(fogTex, false, false);
     }
 
-  if( camBounds != wx.cameraBounds() ){
-    camBounds = wx.cameraBounds();
+  if( originalCb != wx.cameraBounds() ){
+    originalCb = wx.cameraBounds();
+    camBounds  = originalCb;
     int sx = wx.terrain().width()*Terrain::quadSize,
         sy = wx.terrain().height()*Terrain::quadSize;
 

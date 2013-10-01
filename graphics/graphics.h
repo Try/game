@@ -133,6 +133,14 @@ class Graphics {
     size_t time;
 
     GraphicsSettingsWidget::Settings settings;
+
+    struct SBorderVertex{
+      float x,y;
+      };
+    Tempest::VertexDeclaration           smBorderDecl;
+    Tempest::VertexBuffer<SBorderVertex> smBorder;
+    Tempest::VertexShader                smBorderVs;
+    Tempest::FragmentShader              smBorderFs;
   };
 
 #endif // GRAPHICS_H
