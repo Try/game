@@ -18,6 +18,9 @@ ParticleSystemEngine::ParticleSystemEngine( Scene &s,
   particles.reserve(128);
   }
 
+ParticleSystemEngine::~ParticleSystemEngine() {
+  }
+
 void ParticleSystemEngine::exec( const Tempest::Matrix4x4 &mview,
                                  const Tempest::Matrix4x4 &mproj,
                                  int dt,

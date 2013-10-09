@@ -23,6 +23,8 @@ class World;
 class Player;
 class GameSerializer;
 
+class ObjectEfect;
+
 class Bullet;
 
 class GameObject {
@@ -138,6 +140,8 @@ class GameObject {
     void incDieVec( float x, float y, float z );
 
     GameObjectView &getView();
+
+    void addEfect( ObjectEfect * e );
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;
@@ -167,7 +171,8 @@ class GameObject {
       } m;
 
     Behavior::Closure bclos;
-    std::vector< std::shared_ptr<Bullet> > bullets;
+    std::vector< std::shared_ptr<Bullet> >     bullets;
+    std::vector< std::unique_ptr<ObjectEfect>> efects;
 
     std::unordered_map<size_t, int> coolDowns;
 

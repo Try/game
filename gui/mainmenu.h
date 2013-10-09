@@ -18,7 +18,10 @@ class MainMenu : public ModalWindow {
 
     class Btn;
 
+    void paintEvent(Tempest::PaintEvent &e);
+
     void startMap(const std::wstring &mx );
+    void tutorial();
     void start();
     void continueGame();
     void showOptions();
@@ -27,6 +30,7 @@ class MainMenu : public ModalWindow {
     Resource &res;
     Game &game;
 
+    Tempest::Sprite logo;
     void showAds(bool s);
   };
 

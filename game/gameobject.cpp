@@ -19,6 +19,9 @@
 #include "behavior/movebehavior.h"
 #include "behavior/warriorbehavior.h"
 
+#include "objectefect.h"
+#include "ability.h"
+
 GameObject::GameObject( Scene & s,
                         World & w,
                         const ProtoObject &p,
@@ -420,6 +423,9 @@ void GameObject::tick( const Terrain &terrain ) {
   for( size_t i=0; i<bullets.size(); ++i )
     bullets[i]->tick();
 
+  for( size_t i=0; i<getClass().ability.size(); ++i )
+    Ability::autoCast( game(), wrld, getClass().ability[i], *this );
+
   for( size_t i=0; i<bullets.size(); )
     if( bullets[i]->isFinished ){
       //setHP( hp() - bullets[i]->absDmg );
@@ -537,4 +543,8 @@ void GameObject::incDieVec(float x, float y, float z) {
 
 GameObjectView &GameObject::getView() {
   return view;
+  }
+
+void GameObject::addEfect(ObjectEfect *e) {
+  efects.push_back( std::unique_ptr<ObjectEfect>(e) );
   }

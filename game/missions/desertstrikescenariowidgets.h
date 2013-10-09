@@ -5,6 +5,9 @@
 
 #include "game.h"
 #include "gui/ingamecontrols.h"
+#include "gui/modalwindow.h"
+
+#include <cstdint>
 
 class RichText;
 class UnitView;
@@ -73,23 +76,26 @@ struct DesertStrikeScenario::Minimap: MiniMapView{
            Game & game,
            DPlayer & pl );
 
-  void buildBase( Resource &res, Inf & inf );
-  void buildCas( Resource &res, Inf & inf );
+  void buildBase ( Resource &res, Inf & inf );
+  void buildCas  ( Resource &res, Inf & inf );
+  void buildGrade( Resource &res, Inf & inf );
 
   void mkInfoPanel(Resource &res, Inf &inf, Widget* owner );
 
   void paintEvent(Tempest::PaintEvent &e);
   void mouseDownEvent(Tempest::MouseEvent &);
   void setupUnit( const std::string & unit );
+  void setGrade();
   void updateValues();
   void hideInfo();
   void buy();
   void grade();
   void sell();
 
+  Tempest::signal<std::string> onUnit, onBuilding;
   UnitView* base;
 
-  Inf inf[2];
+  Inf inf[3];
   int infID;
 
   std::string unitToBuy;
@@ -120,15 +126,23 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
                 DPlayer & pl,
                 Minimap * mmap);
   void onUnit( const ProtoObject & p );
+  void onGrade();
   void setupBuyPanel( const std::string & s );
 
+  void setup( int id, bool e[3][4] );
+
+  struct PanelW{
+    Widget *w;
+    Button *btns[3][4];
+    };
   template< int w, int h >
-  Widget* mkPanel( DPlayer & pl, const char * pr[w][h],
+  PanelW mkPanel( DPlayer & pl, const char * pr[w][h],
                    Button* (BuyUnitPanel::*f)( Resource & ,
                                                const char* ,
                                                DPlayer &,
                                                int ) ){
     using namespace Tempest;
+    PanelW pw;
 
     Widget *w = new Widget();
     w->setLayout(Vertical);
@@ -140,19 +154,17 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
       l->setLayout( Horizontal );
 
       for( int r=0; r<4; ++r ){
+        pw.btns[i][r] = 0;
         if( pr[i][r] ){
-          l->layout().add( (this->*f)(res, pr[i][r], pl, i) );
-          //const ProtoObject & obj = game.prototype(pr[i][r]);
-
-          //T * u = new T(res, obj, pl, i);
-          //u->onClick.bind( *this, &BuyUnitPanel::onUnit );
-          //l->layout().add( u );
+          pw.btns[i][r] = (this->*f)(res, pr[i][r], pl, i);
+          l->layout().add( pw.btns[i][r] );
           }
         }
       w->layout().add(l);
       }
 
-    return w;
+    pw.w = w;
+    return pw;
     }
 
   Button* mkBuyCasBtn( Resource & r,
@@ -173,7 +185,7 @@ struct DesertStrikeScenario::BuyUnitPanel: public TranscurentPanel {
   Game &game;
   Minimap * mmap;
 
-  Widget* layers[4];
+  PanelW layers[4];
   };
 
 struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
@@ -186,6 +198,8 @@ struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
 
   Game & game;
   DesertStrikeScenario::BuyUnitPanel *mmap;
+
+  Tempest::signal<int> onPage;
   };
 
 class DesertStrikeScenario::CentralPanel: public Tempest::Widget {
@@ -204,6 +218,25 @@ class DesertStrikeScenario::CentralPanel: public Tempest::Widget {
 
     int time;
     Tempest::Color cl;
+  };
+
+struct DesertStrikeScenario::WinLoseScreen: public ModalWindow {
+  WinLoseScreen(Resource& res, Tempest::Widget *owner , Game &game);
+
+  void paintEvent(Tempest::PaintEvent &e);
+
+  bool isWin;
+  uint64_t stime;
+  };
+
+struct DesertStrikeScenario::Hint: public ModalWindow{
+  Hint(Resource& res, Tempest::Widget *owner, Game &game );
+  ~Hint();
+
+  void paintEvent(Tempest::PaintEvent &e);
+
+  Tempest::Texture2d hintView;
+  Game &game;
   };
 
 #endif // DESERTSTRIKESCENARIOWIDGETS_H

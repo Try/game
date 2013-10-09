@@ -24,6 +24,7 @@ class Panel : public Tempest::Widget {
     void mouseWheelEvent(Tempest::MouseEvent &e);
 
     void paintEvent( Tempest::PaintEvent &p);
+    virtual void paintFrame(Tempest::Painter &p );
 
   private:
     bool mouseTracking, dragable;

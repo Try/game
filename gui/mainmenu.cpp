@@ -11,7 +11,9 @@
 #include "game.h"
 
 #include "mapselectmenu.h"
+
 #include "game/missions/desertstrikescenario.h"
+#include "game/missions/desertstriketutorialscenario.h"
 
 struct MainMenu::Btn : public Button {
   Btn( Resource &res ):Button(res){
@@ -39,6 +41,8 @@ MainMenu::MainMenu(Game &game, Resource &res, Tempest::Widget* owner, bool start
   :ModalWindow(res, owner), res(res), game(game) {
   using namespace Tempest;
 
+  logo = res.pixmap("gui/logo");
+
   setLayout( Vertical );
 
   Widget *m = new Panel(res);
@@ -57,7 +61,7 @@ MainMenu::MainMenu(Game &game, Resource &res, Tempest::Widget* owner, bool start
   //if( startM )
     m->layout().add( button(res, Lang::tr("$(game_menu/play)"), &MainMenu::start) );
 
-  m->layout().add( button(res, Lang::tr("$(game_menu/tutorial)"), &MainMenu::start) );
+  m->layout().add( button(res, Lang::tr("$(game_menu/tutorial)"), &MainMenu::tutorial) );
 
   m->layout().add( button(res, Lang::tr("$(game_menu/options)"), &MainMenu::showOptions) );
   m->layout().add( button(res, Lang::tr("$(game_menu/rate)"),    &MainMenu::rate) );
@@ -85,11 +89,29 @@ Button *MainMenu::button( Resource &res, const std::wstring& s,
   return b;
   }
 
+void MainMenu::paintEvent(Tempest::PaintEvent &e) {
+  ModalWindow::paintEvent(e);
+
+  Tempest::Painter p(e);
+  p.setTexture( logo );
+  p.setBlendMode( Tempest::alphaBlend );
+  p.drawRect( (w()-logo.w())/2, 50, logo.w(), logo.h() );
+  }
+
 void MainMenu::startMap(const std::wstring &m) {
   if( !game.load( L"campagin/"+m ) )
     return;
 
   game.setupScenario<DesertStrikeScenario>();
+  deleteLater();
+  game.unsetPause();
+  }
+
+void MainMenu::tutorial() {
+  if( !game.load( L"campagin/td1_1.sav" ) )
+    return;
+
+  game.setupScenario<DesertStrikeTutorialScenario>();
   deleteLater();
   }
 
@@ -100,6 +122,7 @@ void MainMenu::start() {
 
 void MainMenu::continueGame() {
   deleteLater();
+  game.unsetPause();
   }
 
 void MainMenu::showOptions() {

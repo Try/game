@@ -3,10 +3,10 @@
 #include "lang/lang.h"
 
 std::wstring    HintSys::current;
-Tempest::Rect  HintSys::rect;
+Tempest::Rect   HintSys::rect;
 int             HintSys::time = 0;
 
-void HintSys::setHint(const std::wstring &h, const Tempest::Rect &r) {
+void HintSys::setHint( const std::wstring &h, const Tempest::Rect &r) {
   current = Lang::tr(h);
   rect    = r;
 

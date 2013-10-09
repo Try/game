@@ -19,6 +19,7 @@ class ParticleSystemEngine {
     ParticleSystemEngine( Scene & s,
                           const PrototypesLoader & p,
                           Resource & r );
+    ~ParticleSystemEngine();
 
     void exec( const Tempest::Matrix4x4 &view,
                const Tempest::Matrix4x4 &proj,

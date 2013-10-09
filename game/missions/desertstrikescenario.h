@@ -18,6 +18,8 @@ class DesertStrikeScenario  : public Scenario {
 
     static void createMenu(Resource &res, Game &game, Tempest::Widget * w );
   protected:
+    virtual void onStartGame();
+
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);
     void mouseMoveEvent(Tempest::MouseEvent &e);
@@ -30,54 +32,16 @@ class DesertStrikeScenario  : public Scenario {
                                     BehaviorMSGQueue & q );
 
     void toogleCameraMode();
-  private:
-    void tick();
-    int  tNum, interval;
 
-    struct ScaleCtrl{
-      Tempest::Point  m0,  m1;
-      Tempest::Point rm0, rm1;
-      bool  isScaleMode;
-      float d0, mouseD0;
-      float angle0;
+    struct HightLight{
+      Tempest::Rect rect;
+      int alpha;
       };
 
-    ScaleCtrl sctrl;
+    std::vector<HightLight> hightligt;
 
-    GameObject * unitToView;
-    bool hasVTracking;
-    float cameraSpeed;
-    void cancelTracking(float, float, Tempest::Event::MouseButton, MiniMapView::Mode);
-
-    virtual void onStartGame();
-
-    Tempest::Point mpos;
-    F3             mpos3d;
-    Tempest::Point mpressPos;
-    bool           isMouseTracking;
-
-    using Scenario::showMenu;
-    using Scenario::showFormBuilder;
-    using Scenario::toogleEditPanel;
-    using Scenario::toogleSettingsPanel;
-
-    struct NumButton;
-    struct BuyButton;
-    struct GradeButton;
-    struct BuyUnitPanel;
-    struct TranscurentPanel;
-    struct UpgradePanel;
-    struct SpellPanel;
-    struct CentralPanel;
-
-    struct GoldButton;
-
-    struct Minimap;
-    Minimap        *mmap;
-    BuyUnitPanel   *buyUnitPanel;
-    CentralPanel   *cen;    
-
-    static const char * units[3][4];
+    void addHigtlight( const Tempest::Rect &rect );
+    struct Hint;
 
     struct DPlayer:Player{
       DPlayer( int num ):Player(num),
@@ -106,9 +70,78 @@ class DesertStrikeScenario  : public Scenario {
       bool isInQueue( const char* ch );
       };
 
+    DPlayer& player(int i);
+    DPlayer& player();
+
+    void tick();
+    virtual void onBuildingToBuy( const std::string& ){}
+    virtual void onUnitToBuy( const std::string& ){}
+    virtual void onUnitHired( const std::string& ){}
+    virtual void onPanelChoised(int /*p*/){}
+
+    struct NumButton;
+    struct BuyButton;
+    struct GradeButton;
+    struct BuyUnitPanel;
+    struct TranscurentPanel;
+    struct UpgradePanel;
+    struct SpellPanel;
+    struct CentralPanel;
+
+    struct GoldButton;
+    struct WinLoseScreen;
+
+    struct Minimap;
+    Minimap        *mmap;
+    BuyUnitPanel   *buyUnitPanel;
+    CentralPanel   *cen;
+    SpellPanel     *spellPanel;
+    UpgradePanel   *upgradePanel;
+
+    static const char * units[3][4];
+  private:
+    int  tNum, interval;
+    static bool defaultMainMenu;
+
+    struct ScaleCtrl{
+      Tempest::Point  m0,  m1;
+      Tempest::Point rm0, rm1;
+      bool  isScaleMode;
+      float d0, mouseD0;
+      float angle0;
+      };
+
+    ScaleCtrl sctrl;
+
+    GameObject * unitToView;
+    bool hasVTracking;
+    float cameraSpeed;
+    void cancelTracking(float, float, Tempest::Event::MouseButton, MiniMapView::Mode);
+
+    Tempest::Point mpos;
+    F3             mpos3d;
+    Tempest::Point mpressPos;
+    bool           isMouseTracking;
+
+    void showWinLose();
+
+    using Scenario::showMenu;
+    using Scenario::showFormBuilder;
+    using Scenario::toogleEditPanel;
+    using Scenario::toogleSettingsPanel;
+
     int   plCenter;
     bool  revPlPos;
     float moveZ;
+
+    struct WinAnim{
+      bool isWinAnim;
+      Tempest::Point viewPos;
+      int timer;
+      bool isWin;
+
+      void setup( const Tempest::Point& p, bool win );
+      } winAnim;
 
     std::string spellToCast;
     Spell::Mode spellMode;
@@ -121,8 +154,6 @@ class DesertStrikeScenario  : public Scenario {
     bool isTestRun;
 
     virtual Player* createPlayer();
-    DPlayer& player(int i);
-    DPlayer& player();
 
     int tierOf( const char* u );
 

@@ -226,7 +226,7 @@ void GameObjectView::loadView( const Resource & r,
 
     } else {
     if( src.isParticle.size()==0 ){
-      if( (model.size() > GraphicsSystem::dipOptimizeRef() ||
+      if( (int(model.size()) > GraphicsSystem::dipOptimizeRef() ||
            !getClass().data.isBackground ||
             getClass().data.isDynamic) &&
           !src.hasOverDecal  &&

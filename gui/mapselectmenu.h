@@ -11,6 +11,7 @@ class Button;
 class MapSelectMenu : public ModalWindow {
   public:
     MapSelectMenu( Resource &res, Widget* ow );
+    ~MapSelectMenu();
 
     Tempest::signal<std::wstring> acepted;
   private:

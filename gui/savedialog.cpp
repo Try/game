@@ -14,6 +14,8 @@
 #include <windows.h>
 #endif
 
+const std::wstring SaveDialog::sDir = L"./save/";
+
 static bool FileExists( const wchar_t* szPath) {
 #ifndef __ANDROID__
   DWORD dwAttrib = GetFileAttributes(szPath);
@@ -77,7 +79,7 @@ SaveDialog::SaveDialog(Resource &res, Widget *w)
 
   items = menu.items;
 
-  setDir(L"./save");
+  setDir( sDir );
   }
 
 void SaveDialog::setSaveMode() {
@@ -92,7 +94,7 @@ void SaveDialog::acceptAction() {
     fname+=L".sav";
     }
 
-  accept( L"./save/"+fname );
+  accept( sDir+fname );
   deleteLater();
   }
 
@@ -101,7 +103,7 @@ std::vector<std::wstring> SaveDialog::filesInDir( const std::wstring &dirName ){
   (void)dirName;
 
 #ifndef __ANDROID__
-  _WDIR *dir = _wopendir ( L"./save" );//data->curDir;
+  _WDIR *dir = _wopendir ( dirName.c_str() );//data->curDir;
   struct _wdirent *ent;
   
   //dir = _wopendir ( dirName.c_str() );

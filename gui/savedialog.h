@@ -31,6 +31,8 @@ class SaveDialog : public ModalWindow {
     Resource & res;
 
     void setDir(const std::wstring& dirName);
+
+    static const std::wstring sDir;
   };
 
 #endif // SAVEDIALOG_H

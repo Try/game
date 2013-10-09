@@ -231,7 +231,7 @@ void Resource::load( Box<  std::shared_ptr<Model::Raw>  > &,
                      const std::string &,
                      const std::string &,
                      bool ){
-  assert(0);
+  T_ASSERT(0);
   }
 
 void Resource::load(const Box<std::shared_ptr<ObjectCode> > & ,
@@ -265,21 +265,21 @@ void Resource::load( Box<VShader> &,
                      const std::string &,
                      const std::string &,
                      bool ){
-  assert(0);
+  T_ASSERT(0);
   }
 
 void Resource::load( Box<FShader> &,
                      const std::string &,
                      const std::string &,
                      bool  ){
-  assert(0);
+  T_ASSERT(0);
   }
 
 void Resource::load(Box<Tempest::Sprite> &,
                     const std::string &,
                     const std::string &,
                     bool ) {
-  assert(0);
+  T_ASSERT(0);
   }
 
 void Resource::load( const Tempest::Sprite& p, const std::string &f) {
@@ -308,7 +308,7 @@ void Resource::load( Box<std::shared_ptr<ObjectCode> > &,
                      const std::string &,
                      const std::string &,
                      bool ) {
-  assert(0);
+  T_ASSERT(0);
   }
 
 void Resource::load( Box<Texture> &textures,

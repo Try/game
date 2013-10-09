@@ -31,6 +31,28 @@ bool Ability::spell( Game &g,
   return 0;
   }
 
+void Ability::autoCast( Game &g, World &w,
+                        const std::string &spell,
+                        GameObject & obj ) {
+  if( spell=="fire_strike" ){
+    GameObject *tg = 0;
+    int r = 8*Terrain::quadSize;
+    int x = obj.x(), y = obj.y(), team = obj.team();
+
+    w.spatial().visit( x, y,
+                       r,
+                       &findEnemy,
+                       x,
+                       y,
+                       r,
+                       team,
+                       tg );
+
+    if( tg )
+      fireStrike(g,w,obj, *tg);
+    }
+  }
+
 bool Ability::blink( Game &g,
                      World &w,
                      GameObject &obj,
@@ -93,8 +115,11 @@ bool Ability::fireStrike( Game &g,
     return 0;
 
   GameObject & tg = w.object( m.size );
+  return fireStrike(g,w,obj,tg);
+  }
 
-  const Spell & s = g.prototypes().spell(m.str);
+bool Ability::fireStrike(Game &g, World &w, GameObject &obj, GameObject &tg) {
+  const Spell & s = g.prototypes().spell("fire_strike");
 
   std::vector<GameObject*> & objs = obj.player().selected();
 
@@ -185,4 +210,16 @@ bool Ability::heal( Game &g,
     }
 
   return 1;
+  }
+
+void Ability::findEnemy( GameObject &tg,
+                         int x, int y, int r,
+                         int team, GameObject *&out) {
+  int d  = tg.distanceSQ( x, y );
+
+  if( tg.team() == team )
+    return;
+
+  if( d<r*r )
+    out = &tg;
   }

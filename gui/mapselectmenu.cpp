@@ -46,6 +46,10 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow) {
   timer.start(10);
   }
 
+MapSelectMenu::~MapSelectMenu() {
+  isAnim  = false;
+  }
+
 void MapSelectMenu::paintEvent(Tempest::PaintEvent &e) {
   ModalWindow::paintEvent(e);
 

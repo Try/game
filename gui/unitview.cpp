@@ -50,6 +50,11 @@ void UnitView::setupUnit( Game &game,
     pEng->setupMaterial.bind( game, &Game::setupMaterials );
     }
 
+  if( proto=="" ){
+    view.reset();
+    return;
+    }
+
   const ProtoObject & p = game.prototype( proto );
 
   view.reset( new GameObjectView( scene,
@@ -96,7 +101,8 @@ void UnitView::mouseUpEvent(Tempest::MouseEvent &) {
 
 void UnitView::paintEvent(Tempest::PaintEvent &e) {
   if( view )
-    TextureView::paintEvent(e);
+    TextureView::paintEvent(e); else
+    paintNested(e);
   }
 
 void UnitView::setupCamera() {

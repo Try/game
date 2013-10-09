@@ -129,7 +129,9 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
     int icW = icon.w()*k,
         icH = icon.h()*k;
 
-    p.drawRect( ( txt.size() ? 0:(w()-icW)/2), (h()-icH)/2, icW, icH,
+    int x = std::min( ( txt.size() ? 0:(w()-icW)/2+3), (w()-icW)/2 );
+
+    p.drawRect( x, (h()-icH)/2, icW, icH,
                 0, 0, icon.w(), icon.h() );
     }
 

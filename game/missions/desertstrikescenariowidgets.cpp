@@ -1,5 +1,7 @@
 #include "desertstrikescenariowidgets.h"
 
+#include <Tempest/Application>
+
 #include "gui/unitinfo.h"
 #include "gui/minimapview.h"
 
@@ -186,8 +188,9 @@ DesertStrikeScenario::Minimap::Minimap( Resource &res,
   base = new UnitView(res);
   base->setLayout( Tempest::Vertical );
 
-  buildBase( res, inf[0] );
-  buildCas ( res, inf[1] );
+  buildBase  ( res, inf[0] );
+  buildCas   ( res, inf[1] );
+  buildGrade ( res, inf[2] );
 
   base->setVisible(0);
   }
@@ -282,6 +285,49 @@ void DesertStrikeScenario::Minimap::buildCas( Resource &res, Inf & inf ){
   //setFocusPolicy();
   }
 
+void DesertStrikeScenario::Minimap::buildGrade( Resource &res, Inf & inf ){
+  using namespace Tempest;
+
+  Widget *panel = new Widget();
+  panel->setLayout( Vertical );
+  panel->setVisible(0);
+  inf.widget = panel;
+
+  Widget* w = new Widget();
+  w->setLayout( Horizontal );
+
+  DesertStrikeScenario::TranscurentPanel *t = new TranscurentPanel(res);
+  t->setLayout( Vertical );
+  t->layout().setMargin(6);
+  inf.ledit = new RichText(res);
+  t->layout().add( inf.ledit );
+  w->layout().add( t );
+
+  GradeButton *btn = 0;
+  btn = new GradeButton(res, pl);
+  btn->clicked.bind( this, &Minimap::grade );
+  btn->icon = res.pixmap("gui/icon/actions/plus");
+  w->layout().add( btn );
+  inf.grade = btn;
+
+  w->setMaximumSize( w->sizePolicy().maxSize.w, 50 );
+  w->setSizePolicy( Preferred, FixedMax );
+
+  panel->layout().add(w);
+  w = new Widget();
+  //w->setSizePolicy( Expanding );
+  panel->layout().add( w );
+  mkInfoPanel(res, inf, panel);
+
+  setLayout( Vertical );
+  base->layout().add( panel );
+  layout().add(base);
+
+  //ledit->setEditable(0);
+
+  //setFocusPolicy();
+  }
+
 void DesertStrikeScenario::Minimap::mkInfoPanel( Resource &res,
                                                  Inf &inf,
                                                  Widget* panel ){
@@ -289,7 +335,7 @@ void DesertStrikeScenario::Minimap::mkInfoPanel( Resource &res,
 
   const char* icon[][2] = {
     {"gui/icon/atack", "gui/item/shield"},
-    {"gui/icon/atack", "gui/icon/gold"}
+    {"gui/heart",      "gui/coin"}
     };
 
   Widget *w = 0;
@@ -334,8 +380,10 @@ void DesertStrikeScenario::Minimap::setupUnit( const std::string & unit ){
 
   if( unit=="castle" ||
       unit=="house" ||
-      unit=="tower" )
+      unit=="tower" ){
     infID = 1;
+    onBuilding(unit);
+    }
 
   base->setVisible(1);
   inf[infID].widget->setVisible(1);
@@ -345,7 +393,25 @@ void DesertStrikeScenario::Minimap::setupUnit( const std::string & unit ){
   if( inf[infID].grade )
     inf[infID].grade->type = unit;
 
+  onUnit( unit );
   updateValues();
+  }
+
+void DesertStrikeScenario::Minimap::setGrade() {
+  inf[infID].widget->setVisible(0);
+  infID = 2;
+  unitToBuy = "";
+
+  base->setVisible(1);
+  inf[infID].widget->setVisible(1);
+  base->setFocus(1);
+  base->setupUnit(game, "");
+
+  if( inf[infID].grade )
+    inf[infID].grade->type = "";
+
+  inf[infID].ledit->setText( Lang::tr("melee_atack") );
+  //updateValues();
   }
 
 void DesertStrikeScenario::Minimap::updateValues(){
@@ -611,7 +677,8 @@ DesertStrikeScenario::BuyUnitPanel::BuyUnitPanel( Resource & res,
   setLayout( Vertical );
   layout().setMargin(10);
 
-  std::fill(layers, layers+4, (Widget*)0);
+  for( int i=0; i<4; ++i )
+    layers[i].w = 0;
 
   auto pr = DesertStrikeScenario::units;
 
@@ -631,9 +698,9 @@ DesertStrikeScenario::BuyUnitPanel::BuyUnitPanel( Resource & res,
   layers[1] = mkPanel<3,4>(pl, pr , &BuyUnitPanel::mkBuyUnitBtn  );
   layers[2] = mkPanel<3,4>(pl, gr , &BuyUnitPanel::mkBuyGradeBtn );
 
-  layout().add( layers[0] );
-  layout().add( layers[1] );
-  layout().add( layers[2] );
+  layout().add( layers[0].w );
+  layout().add( layers[1].w );
+  layout().add( layers[2].w );
 
   setTab(1);
   }
@@ -671,7 +738,7 @@ Button *DesertStrikeScenario::BuyUnitPanel::mkBuyGradeBtn( Resource &res,
   NumButton * u = new NumButton(res);
   u->icon = res.pixmap( std::string("gui/icon/") + sobj);
 
-  //u->onClick.bind( *this, &BuyUnitPanel::onUnit );
+  u->clicked.bind( *this, &BuyUnitPanel::onGrade );
 
   return u;
   }
@@ -680,14 +747,25 @@ void DesertStrikeScenario::BuyUnitPanel::onUnit( const ProtoObject & p ){
   setupBuyPanel(p.name);
   }
 
+void DesertStrikeScenario::BuyUnitPanel::onGrade() {
+  mmap->setGrade();
+  }
+
 void DesertStrikeScenario::BuyUnitPanel::setupBuyPanel( const std::string & s ){
   mmap->setupUnit(s);
   }
 
+void DesertStrikeScenario::BuyUnitPanel::setup(int id, bool e[3][4]) {
+  for( int i=0; i<3; ++i )
+    for( int r=0; r<4; ++r )
+      if( layers[id].btns[i][r] )
+        layers[id].btns[i][r]->setVisible(e[i][r]);
+  }
+
 void DesertStrikeScenario::BuyUnitPanel::setTab( int id ){
   for( int i=0; i<4; ++i )
-    if( layers[i] )
-      layers[i]->setVisible(i==id);
+    if( layers[i].w )
+      layers[i].w->setVisible(i==id);
   }
 
 DesertStrikeScenario::UpgradePanel::UpgradePanel( Resource & res,
@@ -715,6 +793,7 @@ DesertStrikeScenario::UpgradePanel::UpgradePanel( Resource & res,
     u = new DesertStrikeScenario::GradeButton(res, pl, gr[i][0], i );
     layout().add( u );
     u->onClick.bind( *this, &UpgradePanel::buy );
+    u->onClick.bind( onPage );
     }
 
   }
@@ -781,4 +860,112 @@ void DesertStrikeScenario::CentralPanel::paintEvent(Tempest::PaintEvent &e) {
   const std::string s = ss.str();//ds.tNum/40);
   Tempest::Size r = font.textSize(s);
   p.drawText( w()/2-r.w/2, 0, s );
+}
+
+
+DesertStrikeScenario::WinLoseScreen::WinLoseScreen( Resource &res,
+                                                    Tempest::Widget *owner,
+                                                    Game & game )
+  :ModalWindow(res, owner), isWin(0){
+  using namespace Tempest;
+
+  defaultMainMenu = true;
+
+  Button *cont = new Button(res);
+  cont->setText( Lang::tr("$(game_menu/to_mainmenu)") );
+  cont->clicked.bind( game, &Game::showMainMenu );
+
+  Widget* w = new Widget;
+  w->setMaximumSize(500, 500);
+  w->setLayout( Vertical );
+  w->layout().add( new Widget() );
+  w->layout().add( cont );
+
+  setLayout( Vertical );
+  layout().add( new Widget() );
+  layout().add( w );
+  layout().add( new Widget() );
+
+  stime = Tempest::Application::tickCount();
+  }
+
+void DesertStrikeScenario::WinLoseScreen::paintEvent(Tempest::PaintEvent &e) {
+  Tempest::Painter p(e);
+
+  const uint64_t dt = 1000*3;
+
+  double k = std::min(1.0, (Tempest::Application::tickCount()-stime)/double(dt));
+  p.setColor(0,0,0, k );
+  p.setBlendMode( Tempest::alphaBlend );
+  p.drawRect(0,0,w(),h());
+
+  p.setColor( 1,1,1,1 );
+  p.setFont( Tempest::Font(50) );
+
+  const std::wstring ws = isWin ? Lang::tr("$(desertstrike/win)")
+                                : Lang::tr("$(desertstrike/lose)");
+  p.drawText(0,0,w(),h(), ws, Tempest::AlignHCenter|Tempest::AlignVCenter );
+  paintNested(e);
+
+  if( k<1 )
+    update();
+  }
+
+
+DesertStrikeScenario::Hint::Hint(Resource &res, Tempest::Widget *owner, Game &game)
+  :ModalWindow(res,owner), game(game) {
+  setLayout( Tempest::Vertical );
+
+  struct CPanel:Panel{
+    CPanel( Resource &res, Widget* ow ):Panel(res),owner(ow), closeRq(0){}
+
+    void mouseDownEvent(Tempest::MouseEvent &e){
+      closeRq = 1;
+      ppress = e.pos();
+      }
+
+    void mouseDragEvent(Tempest::MouseEvent &e){
+      if( (e.pos()-ppress).manhattanLength()>15 )
+        closeRq = 0;
+      }
+
+    void mouseUpEvent(Tempest::MouseEvent &){
+      if( closeRq )
+        owner->deleteLater();
+      }
+
+    void paintFrame( Tempest::Painter & p){
+      Panel::paintFrame(p);
+      p.setColor(0,0,0,0.3);
+      p.setBlendMode( Tempest::alphaBlend );
+
+      int sz = 8;
+      p.drawRect( sz, sz, w()-sz*2, h()-sz*2 );
+      }
+
+    Widget * owner;
+    bool     closeRq;
+    Tempest::Point ppress;
+    };
+  Panel *p = new CPanel(res, this);
+
+  RichText * t = new RichText(res);
+  t->setText( Lang::tr(L"$(desertstrike/tutorial/intro)") );
+
+  p->layout().add(t);
+  p->setMargin(10);
+  p->setMaximumSize(480, 300);
+  p->setMinimumSize(480, 300);
+
+  layout().add( new Widget );
+  layout().add( p );
+  layout().add( new Widget );
+  }
+
+DesertStrikeScenario::Hint::~Hint() {
+  game.unsetPause();
+  }
+
+void DesertStrikeScenario::Hint::paintEvent(Tempest::PaintEvent &e) {
+  ModalWindow::paintEvent(e);
   }

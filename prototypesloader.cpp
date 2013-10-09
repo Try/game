@@ -22,7 +22,7 @@ const ProtoObject &PrototypesLoader::get(const std::string &obj) const {
   if( i!=defs.back().data.end() ){
     return *i->second.get();
     } else {
-    assert(0);
+    T_ASSERT(0);
     }
 
   return *defs.back().data.begin()->second.get();
@@ -46,7 +46,7 @@ const Spell &PrototypesLoader::spell(const std::string &obj) const {
   if( i!=defs.back().dataSpells.end() ){
     return *i->second.get();
     } else {
-    assert(0);
+    T_ASSERT(0);
     }
 
   return *defs.back().dataSpells.begin()->second.get();
@@ -58,7 +58,7 @@ const Upgrade &PrototypesLoader::upgrade(const std::string &obj) const {
   if( i!=defs.back().dataUpgrades.end() ){
     return *i->second.get();
     } else {
-    assert(0);
+    T_ASSERT(0);
     }
 
   return *defs.back().dataUpgrades.begin()->second.get();
@@ -70,7 +70,7 @@ const ParticleSystemDeclaration &PrototypesLoader::particle(const std::string &o
   if( i!=defs.back().dataParticles.end() ){
     return *i->second.get();
     } else {
-    assert(0);
+    T_ASSERT(0);
     }
 
   return *defs.back().dataParticles.begin()->second.get();
