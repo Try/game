@@ -15,6 +15,8 @@ ParticleSystemDeclaration::ParticleSystemDeclaration() {
 
   density = 1;
   hasDD   = false;
+
+  orign   = Screen;
   }
 
 void ParticleSystemDeclaration::init(ParticleSystemDeclaration::D &d, float c ) {

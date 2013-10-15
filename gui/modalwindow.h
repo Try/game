@@ -20,6 +20,7 @@ class ModalWindow : public Tempest::Widget {
     void paintEvent(Tempest::PaintEvent &e);
 
     void shortcutEvent(Tempest::KeyEvent &e);
+    void closeEvent(Tempest::CloseEvent &e);
   private:
     Tempest::Sprite frame;
   };

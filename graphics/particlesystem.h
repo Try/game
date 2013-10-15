@@ -5,6 +5,7 @@
 #include "game/protoobject.h"
 #include "game/particlesystemdeclaration.h"
 
+#include <cstdint>
 #include <Tempest/Color>
 
 class ParticleSystemEngine;
@@ -50,6 +51,8 @@ class ParticleSystem {
 
     std::vector<Point3> par;
     bool dispathMode;
+
+    uint64_t time;
 
     void evalute( Point3& p );
     void evalute( Point3& p, ParticleSystemDeclaration::D& d );

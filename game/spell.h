@@ -10,7 +10,8 @@ struct Spell {
     int coolDown;
     int manaCost;
 
-    int bulletSpeed;
+    int  bulletSpeed;
+    bool autoCast;
 
     std::string name;
 

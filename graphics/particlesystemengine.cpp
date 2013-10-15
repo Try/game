@@ -158,6 +158,7 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
                                          float x, float y, float z,
                                          float sz,
                                          float angle,
+                                         ParticleSystemDeclaration::Orign orign,
                                          Tempest::Color & color ) {
   MVertex v;
   v.u = 0.5;
@@ -183,9 +184,23 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
 
   for( int i=0; i<2; ++i )
     for( int r=0; r<2; ++r ){
-      double dx = mul[i]*left[0] + mul[r]*top[0];
-      double dy = mul[i]*left[1] + mul[r]*top[1];
-      double dz = mul[i]*left[2] + mul[r]*top[2];
+      double dx, dy, dz;
+      if( orign == ParticleSystemDeclaration::Screen ){
+        dx = mul[i]*left[0] + mul[r]*top[0];
+        dy = mul[i]*left[1] + mul[r]*top[1];
+        dz = mul[i]*left[2] + mul[r]*top[2];
+        } else
+      if( orign == ParticleSystemDeclaration::XYOrign ){
+        dx = -mul[i]*1;
+        dy =  mul[r]*1;
+        dz = 0;
+        } else
+      if( orign == ParticleSystemDeclaration::Planar ){
+        double t[3] = {0,0,1};
+        dx = mul[i]*left[0] + mul[r]*t[0];
+        dy = mul[i]*left[1] + mul[r]*t[1];
+        dz = mul[i]*left[2] + mul[r]*t[2];
+        }
 
       double sdx = sz*dx, sdy = sz*dy;
 
@@ -197,9 +212,11 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
       v.ny = v.ny+0.25*dy;
       v.nz = v.nz+0.25*dz;
 
-      v.x = v.x+0.5*sz*v.nx;
-      v.y = v.y+0.5*sz*v.ny;
-      v.z = v.z+0.5*sz*v.nz;
+      if( orign == ParticleSystemDeclaration::Screen ){
+        v.x = v.x+0.5*sz*v.nx;
+        v.y = v.y+0.5*sz*v.ny;
+        v.z = v.z+0.5*sz*v.nz;
+        }
 
       v.u = std::max(0.0, mul[i]);
       v.v = 1.0 - std::max(0.0, mul[r]);
@@ -213,11 +230,14 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
   raw.vertex[iSz+5] = raw.vertex[iSz+2];
   }
 
-void ParticleSystemEngine::emitParticle( float x, float y, float z,
+void ParticleSystemEngine::emitParticle( float x,
+                                         float y,
+                                         float z,
                                          float sz,
                                          float angle,
+                                         ParticleSystemDeclaration::Orign orign,
                                          Tempest::Color & color ) {
-  emitParticle(raw, x, y, z, sz, angle, color );
+  emitParticle(raw, x, y, z, sz, angle, orign, color );
   }
 
 bool ParticleSystemEngine::cmpMat( const ParticleSystem *a,

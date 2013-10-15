@@ -22,6 +22,7 @@ class PrototypesLoader;
 class World;
 class Player;
 class GameSerializer;
+class Spell;
 
 class ObjectEfect;
 
@@ -173,6 +174,7 @@ class GameObject {
     Behavior::Closure bclos;
     std::vector< std::shared_ptr<Bullet> >     bullets;
     std::vector< std::unique_ptr<ObjectEfect>> efects;
+    std::vector< const Spell* > autoCastSpell;
 
     std::unordered_map<size_t, int> coolDowns;
 

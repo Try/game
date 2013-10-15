@@ -122,6 +122,7 @@ class DesertStrikeScenario  : public Scenario {
     F3             mpos3d;
     Tempest::Point mpressPos;
     bool           isMouseTracking;
+    bool           acceptSpell;
 
     void showWinLose();
 

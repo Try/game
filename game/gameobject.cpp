@@ -66,8 +66,13 @@ GameObject::GameObject( Scene & s,
     behavior.add( *i );
     }
 
-  for( auto i=p.ability.begin(); i!=p.ability.end(); ++i )
-    setCoolDown( pl.spell(*i).id, 0 );
+  for( auto i=p.ability.begin(); i!=p.ability.end(); ++i ){
+    const Spell &s = pl.spell(*i);
+    setCoolDown( s.id, 0 );
+
+    if( s.autoCast )
+      autoCastSpell.push_back( &s );
+    }
 
   colisions.reserve(16);
   bullets.reserve(16);
@@ -78,7 +83,7 @@ GameObject::~GameObject() {
   wrld.player( m.pl ).delUnit(this);
 
   if( !getClass().data.isBackground && !m.isEnv )
-    wrld.onObjectDelete( this);
+    wrld.onObjectDelete( this );
   }
 
 int GameObject::distanceSQ(const GameObject &other) const {
@@ -423,8 +428,13 @@ void GameObject::tick( const Terrain &terrain ) {
   for( size_t i=0; i<bullets.size(); ++i )
     bullets[i]->tick();
 
-  for( size_t i=0; i<getClass().ability.size(); ++i )
-    Ability::autoCast( game(), wrld, getClass().ability[i], *this );
+  if( player().isAi() ){
+    for( size_t i=0; i<getClass().ability.size(); ++i )
+      Ability::autoCast( game(), wrld, getClass().ability[i], *this );
+    } else {
+    for( size_t i=0; i<autoCastSpell.size(); ++i )
+      Ability::autoCast( game(), wrld, autoCastSpell[i]->name, *this );
+    }
 
   for( size_t i=0; i<bullets.size(); )
     if( bullets[i]->isFinished ){

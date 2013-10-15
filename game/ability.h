@@ -5,6 +5,7 @@
 
 class GameObject;
 class World;
+class Spell;
 
 class Ability {
     Ability();
@@ -14,23 +15,38 @@ class Ability {
                        GameObject &obj,
                        const BehaviorMSGQueue::MSG &m );
 
-    static void autoCast(Game &game, World &w,
-                          const std::string & spell , GameObject &obj);
+    static void autoCast( Game &game, World &w,
+                          const std::string & spell,
+                          GameObject &obj);
   private:
     static bool blink( Game &game, World &w,
                        GameObject &obj,
                        const BehaviorMSGQueue::MSG &m );
+
     static bool fireStrike( Game &game, World &w,
                             GameObject &obj,
                             const BehaviorMSGQueue::MSG &m );
-    static bool fireStrike( Game &game, World &w,
+    static bool fireStrike( World &w,
                             GameObject &obj,
-                            GameObject &tg );
+                            GameObject &tg,
+                            const Spell &s);
     static bool heal( Game &game, World &w,
                       GameObject &obj,
                       const BehaviorMSGQueue::MSG &m );
+    static bool heal(World &w,
+                      GameObject &u,
+                      GameObject &tg , const Spell &s);
+
+    static bool fireStorm( Game &game, World &w,
+                           GameObject &obj,
+                           const BehaviorMSGQueue::MSG &m );
+    static bool fireStorm(World &w,
+                           GameObject &u,
+                           int tgX, int tgY,
+                           const Spell &s);
 
     static void findEnemy(GameObject& tg, int x, int y, int r, int team, GameObject*& out );
+    static void findAlly(GameObject& tg, int x, int y, int r, GameObject &caster, GameObject*& out );
   };
 
 #endif // ABILITY_H

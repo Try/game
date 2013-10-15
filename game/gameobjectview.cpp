@@ -253,8 +253,7 @@ void GameObjectView::loadView( const Resource & r,
 
       //view.back().setSize( sz[0], sz[1], sz[2] );
       } else {
-      ParticleSystem sys( psysEngine, src, prototypes.particle(src.isParticle) );
-      particles.push_back( sys );
+      particles.emplace_back( psysEngine, src, prototypes.particle(src.isParticle) );
       }
     }
 

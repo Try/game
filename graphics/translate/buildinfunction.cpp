@@ -276,8 +276,8 @@ void BuildInFunction::step( const float *a, int sa,
     out[i] = b[i] >= a[i];
   }
 
-void BuildInFunction::float4( const float *a, int sa,
-                              const float *b, int sb,
+void BuildInFunction::float4( const float *a, int /*sa*/,
+                              const float *b, int /*sb*/,
                               float *out, int &osz) {
   osz = 4;
 

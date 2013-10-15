@@ -88,6 +88,7 @@ Game::~Game() {
   gui.setupMinimap(0);
   isRunning = false;
   physicCompute.join();
+
   worlds.clear();
   }
 
@@ -449,6 +450,10 @@ void Game::keyUpEvent( Tempest::KeyEvent & e ) {
   if( e.key==Tempest::Event::K_Insert ){
     world->camera.setSpinX( world->camera.spinX()-10 );
     }
+  }
+
+void Game::closeEvent(Tempest::CloseEvent &e) {
+  gui.closeEvent(e);
   }
 
 void Game::toogleFullScr() {

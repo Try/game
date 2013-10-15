@@ -202,15 +202,15 @@ void BehaviorMSGQueue::tick( Game &game, World &w ) {
 
       if( m.msg==MoveGroup ){
         w.emitHudAnim( "hud/move",
-                       World::coordCast(m.x),
-                       World::coordCast(m.y),
+                       m.x,
+                       m.y,
                        0.01 );
         }
 
       if( m.msg==AtackMoveGroup ){
         w.emitHudAnim( "hud/atack",
-                       World::coordCast(m.x),
-                       World::coordCast(m.y),
+                       m.x,
+                       m.y,
                        0.01 );
         }
       }

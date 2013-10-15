@@ -69,6 +69,7 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
   hasVTracking = 1;
 
   isMouseTracking = false;
+  acceptSpell     = false;
 
   player(1).units["pikeman"] = 1;
   player(2).units["pikeman"] = 1;
@@ -87,12 +88,14 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
   }
 
 DesertStrikeScenario::~DesertStrikeScenario() {
+  //players.clear();
   game.prototypes().unload();
   }
 
 void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
   mpos3d          = unProjectRz( e.x, e.y, moveZ );
   isMouseTracking = true;
+  acceptSpell     = true;
 
   mpressPos = e.pos();
 
@@ -117,17 +120,17 @@ void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
   if( e.mouseID==1 ){
     sctrl.m1          = e.pos();
     sctrl.isScaleMode = false;
-    isMouseTracking = false;
+    isMouseTracking   = false;
     }
 
   if( e.mouseID==0 && !sctrl.isScaleMode){
     F3 v = unProject( e.x, e.y );
-    isMouseTracking = false;
 
     World  &world  = game.curWorld();
     Player &player = game.player();
 
-    updateMousePos(e);
+    updateMousePos(e);    
+    isMouseTracking = false;
 
     if( e.button==Tempest::MouseEvent::ButtonLeft && player.editObj ){
       msg.message( player.number(), Behavior::EditNext );
@@ -137,31 +140,34 @@ void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
       msg.message( player.number(), Behavior::EditDel );
       }
 
-    if( spellToCast.size() ){
-      if( e.button==Tempest::MouseEvent::ButtonLeft ){
-        if( spellMode==Spell::CastToCoord ){
-          game.message( game.player().number(),
-                        BehaviorMSGQueue::SpellCast,
-                        game.curWorld().mouseX(),
-                        game.curWorld().mouseY(),
-                        spellToCast
-                        );
-          }
+    if( acceptSpell ){
+      acceptSpell = false;
+      if( spellToCast.size() ){
+        if( e.button==Tempest::MouseEvent::ButtonLeft ){
+          if( spellMode==Spell::CastToCoord ){
+            game.message( game.player().number(),
+                          BehaviorMSGQueue::SpellCast,
+                          game.curWorld().mouseX(),
+                          game.curWorld().mouseY(),
+                          spellToCast
+                          );
+            }
 
-        if( spellMode==Spell::CastToUnit && game.curWorld().mouseObj() ){
-          WeakWorldPtr p = game.curWorld().objectWPtr( game.curWorld().mouseObj() );
+          if( spellMode==Spell::CastToUnit && game.curWorld().mouseObj() ){
+            WeakWorldPtr p = game.curWorld().objectWPtr( game.curWorld().mouseObj() );
 
-          game.message( game.player().number(),
-                        BehaviorMSGQueue::SpellCast,
-                        p.id(),
-                        spellToCast
-                        );
+            game.message( game.player().number(),
+                          BehaviorMSGQueue::SpellCast,
+                          p.id(),
+                          spellToCast
+                          );
+            }
           }
+        } else {
+        world.clickEvent( World::coordCastD(v.data[0]),
+                          World::coordCastD(v.data[1]),
+                          e );
         }
-      } else {
-      world.clickEvent( World::coordCastD(v.data[0]),
-                        World::coordCastD(v.data[1]),
-                        e );
       }
     }
   }
@@ -210,6 +216,7 @@ void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
     if( p.x*p.x + p.y*p.y > 5*5 ){
       unitToView   = 0;
       hasVTracking = 0;
+      acceptSpell  = 0;
       }
     }
 
@@ -555,13 +562,15 @@ void DesertStrikeScenario::mkUnits( int p,
         ++c;
         ++id;
 
+        int mul = Terrain::quadSize;
         if( rev ){
-          obj.setPosition( x+(qc/2 - id%qc)*Terrain::quadSize,
-                           y+(qc/2 - id/qc)*Terrain::quadSize );
+          obj.setPosition( x+(qc/2 - id%qc)*mul,
+                           y+(qc/2 - id/qc)*mul );
           } else {
-          obj.setPosition( x+(id%qc - qc/2)*Terrain::quadSize,
-                           y+(id/qc - qc/2)*Terrain::quadSize );
+          obj.setPosition( x+(id%qc - qc/2)*mul,
+                           y+(id/qc - qc/2)*mul );
           }
+//        obj.setPosition( x, y );
 
         obj.behavior.message( Behavior::MoveSingle, tgX, tgY );
         obj.behavior.message( Behavior::AtackMove,  tgX, tgY );

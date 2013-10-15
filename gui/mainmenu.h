@@ -2,6 +2,7 @@
 #define MAINMENU_H
 
 #include "modalwindow.h"
+#include <Tempest/Timer>
 
 class Resource;
 class Game;
@@ -27,11 +28,27 @@ class MainMenu : public ModalWindow {
     void showOptions();
     void rate();
 
+    void updateParticles();
+    void closeEvent(Tempest::CloseEvent &e);
+
     Resource &res;
     Game &game;
 
-    Tempest::Sprite logo;
+    Tempest::Sprite logo, efect;
+    bool fbackgr;
+
+    struct Particle{
+      Tempest::Point pos, v;
+      Tempest::Color color;
+      float sz;
+      };
+
+    std::vector<Particle> par;
+
     void showAds(bool s);
+
+    Tempest::Timer timer, efeTimer;
+    Particle mkParticle();
   };
 
 #endif // MAINMENU_H

@@ -43,7 +43,7 @@ Player::Player( int num ) {
   }
 
 Player::~Player() {
-
+  //delete editObj;
   }
 
 void Player::addUnit(GameObject *u) {

@@ -273,6 +273,11 @@ int MainGui::keyUpEvent(Tempest::KeyEvent &e) {
   return e.isAccepted();
   }
 
+int MainGui::closeEvent(Tempest::CloseEvent &e) {
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::Close);
+  return e.isAccepted();
+  }
+
 bool MainGui::minimapMouseEvent( float x, float y,
                                  Tempest::Event::MouseButton btn,
                                  MiniMapView::Mode m ) {

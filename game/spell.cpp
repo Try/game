@@ -6,4 +6,5 @@ Spell::Spell() {
 
   bulletSpeed = 600;
   mode = CastToCoord;
+  autoCast = false;
   }

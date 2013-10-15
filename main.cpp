@@ -53,7 +53,7 @@ int main( int, char** ){
   pm.setFormat( Tempest::Pixmap::Format_RGB );
   pm.save("data/textures/land/t.png");*/
 
-  Lang::load("lang/ru.lang");
+  Lang::load("lang/l.lang", L"rus");
   Tempest::Application app;
   setupTh();
   Game game( Tempest::Window::Maximized );

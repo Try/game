@@ -27,11 +27,11 @@ World::World( Game & gm,
   : game(gm),
     physics(w,h),
     scene( World::coordCast(std::max(w,h)*Terrain::quadSizef) ),
+    particles( scene, gm.prototypes(), gm.resources() ),
     spatialId( new SpatialIndex(w,h) ),
     graphics( gm.graphics ),
     resource( gm.resources() ),
-    prototypes( gm.prototypes() ),
-    particles(scene, prototypes, resource) {
+    prototypes( gm.prototypes() ) {
   tx = ty = 0;
   mouseObject = 0;
 
@@ -97,15 +97,13 @@ World::~World() {
   physicCompute.join();
   }
 
-void World::emitHudAnim( const std::string &s,
-                         float x, float y, float z ) {
-  HudAnim *a = new HudAnim( scene, *this, prototypes.get(s),
-                            prototypes,
-                            resource, physics );
+void World::emitHudAnim(const std::string &s,
+                         int x, int y, float z ) {
+  HudAnim &a = emitEfect<HudAnim>(s);
 
-  a->setPosition( x, y, z+zAt(x,y) );
-
-  hudAnims.push_back( std::shared_ptr<EfectBase>(a) );
+  float fx = World::coordCast( x ),
+        fy = World::coordCast( y );
+  a.setPosition( fx, fy, z+zAt(fx,fy) );
   }
 
 float World::zAt(float x, float y) const {
@@ -879,13 +877,13 @@ void World::tick() {
 
   // physics.tick();
 
-  for( size_t i=0; i<hudAnims.size(); ++i )
-    hudAnims[i]->tick();
+  for( size_t i=0; i<efectsAnims.size(); ++i )
+    efectsAnims[i]->tick();
 
-  for( size_t i=0; i<hudAnims.size();  ){
-    if( hudAnims[i]->isEnd() ){
-      std::swap( hudAnims[i], hudAnims.back() );
-      hudAnims.pop_back();
+  for( size_t i=0; i<efectsAnims.size();  ){
+    if( efectsAnims[i]->isEnd() ){
+      std::swap( efectsAnims[i], efectsAnims.back() );
+      efectsAnims.pop_back();
       } else {
       ++i;
       }

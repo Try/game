@@ -264,8 +264,8 @@ void ScenarioMission1::tick() {
         GameObject & obj2 = obj.world().addObject("incvisitor_t");
 
         obj.world().emitHudAnim( "hud/blink",
-                                 World::coordCast( obj.x() ),
-                                 World::coordCast( obj.y() ),
+                                 obj.x(),
+                                 obj.y(),
                                  0.01 );
 
         obj2.setPosition( obj.x(), obj.y(), obj.z() );

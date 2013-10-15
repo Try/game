@@ -1,8 +1,10 @@
 #include "particlesystem.h"
 
 #include "particlesystemengine.h"
+#include "game.h"
 
 #include <cmath>
+#include <Tempest/Application>
 
 ParticleSystem::ParticleSystem() {
   actualOXYZ = false;
@@ -41,6 +43,8 @@ ParticleSystem::ParticleSystem( ParticleSystemEngine & e,
   proto = &p;
   dispathMode = false;
   engine->particles.push_back( this );
+
+  time = Tempest::Application::tickCount();
   }
 
 ParticleSystem::ParticleSystem(const ParticleSystem &other) {
@@ -57,6 +61,7 @@ ParticleSystem &ParticleSystem::operator =  (const ParticleSystem &other) {
   setPosition( other.x(), other.y(), other.z() );
   par  = other.par;
   decl = other.decl;
+  time = other.time;
 
   return *this;
   }
@@ -83,48 +88,58 @@ void ParticleSystem::exec( int dt ) {
                           par[i].z,
                           par[i].size,
                           par[i].angle,
+                          decl.orign,
                           par[i].color );
     }
 
   if( dt==0 )
     return;
 
-  if( !dispathMode ){
-    int c = decl.density;
-    if( decl.density<0 && rand()%(-decl.density) )
-      c = 1;
+  size_t cp = (Tempest::Application::tickCount() - time);
+  cp /= size_t(1000/Game::ticksPerSecond);
+  cp = std::min<size_t>(cp,3);
 
-    float a  = 1.0/std::max(c-1,1),
-          dx = mx-ox,
-          dy = my-oy,
-          dz = mz-oz;
+  if( cp )
+    time = Tempest::Application::tickCount();
 
-    for( int i=0; i<c; ++i ){
-      par.push_back( Point3( ox+dx*i*a, oy+dy*i*a, oz+dz*i*a ) );
-      ParticleSystemDeclaration::D d = ParticleSystemDeclaration::mix( decl.initMin,
-                                                                       decl.initMax );
-      evalute(par.back(), d);
-      par.back().color.set( d.r, d.g, d.b, d.a );
+  for( size_t r=0; r<cp; ++r ){
+    if( !dispathMode ){
+      int c = decl.density;
+      if( decl.density<0 && rand()%(-decl.density) )
+        c = 1;
+
+      float a  = 1.0/std::max(c-1,1),
+            dx = mx-ox,
+            dy = my-oy,
+            dz = mz-oz;
+
+      for( int i=0; i<c; ++i ){
+        par.push_back( Point3( ox+dx*i*a, oy+dy*i*a, oz+dz*i*a ) );
+        ParticleSystemDeclaration::D d = ParticleSystemDeclaration::mix( decl.initMin,
+                                                                         decl.initMax );
+        evalute(par.back(), d);
+        par.back().color.set( d.r, d.g, d.b, d.a );
+        }
       }
-    }
 
-  for( size_t i=0; i<par.size(); ++i ){
-    evalute( par[i] );
-    }
-
-  for( size_t i=0; i<par.size(); ){
-    if( par[i].size<0.005 || par[i].color.a()<0.01 ){
-      par[i] = par.back();
-      par.pop_back();
-      } else {
-      ++i;
+    for( size_t i=0; i<par.size(); ++i ){
+      evalute( par[i] );
       }
-    }
 
-  ox = mx;
-  oy = my;
-  oz = mz;
-  actualOXYZ = true;
+    for( size_t i=0; i<par.size(); ){
+      if( par[i].size<0.005 || par[i].color.a()<0.01 ){
+        par[i] = par.back();
+        par.pop_back();
+        } else {
+        ++i;
+        }
+      }
+
+    ox = mx;
+    oy = my;
+    oz = mz;
+    actualOXYZ = true;
+    }
   }
 
 void ParticleSystem::setPosition(float ix, float iy, float iz) {

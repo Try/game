@@ -40,7 +40,7 @@ class Graphics {
     Graphics(void *hwnd, bool isFullScreen);
 
     bool render(Tempest::Surface &scene , Tempest::SpritesHolder &sp);
-    bool render( Scene &scene,
+    bool render(Scene &scene,
                  ParticleSystemEngine &e,
                  const Tempest::Camera &camera,
                  size_t dt );

@@ -257,12 +257,12 @@ void MoveBehavior::mouseUp( Tempest::MouseEvent &e ) {
                           obj.world().mouseY()
                           );
       obj.world().emitHudAnim( "hud/blink",
-                               World::coordCast(obj.x()),
-                               World::coordCast(obj.y()),
+                               obj.x(),
+                               obj.y(),
                                0.1);
       obj.world().emitHudAnim( "hud/blink",
-                               World::coordCast(obj.world().mouseX()),
-                               World::coordCast(obj.world().mouseY()),
+                               obj.world().mouseX(),
+                               obj.world().mouseY(),
                                0.1);
       }
     }

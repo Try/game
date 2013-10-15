@@ -126,7 +126,17 @@ class World {
 
     const SpatialIndex& spatial() const;
     void emitHudAnim( const std::string& s,
-                      float x, float y, float z );
+                      int x, int y, float z );
+
+    template< class EFECT >
+    EFECT& emitEfect( const std::string& s ){
+      EFECT *a = new EFECT( scene, *this, prototypes.get(s),
+                            prototypes,
+                            resource, physics );
+
+      efectsAnims.push_back( std::shared_ptr<EfectBase>(a) );
+      return *a;
+      }
 
     float zAt( float x, float y ) const;
 
@@ -154,6 +164,8 @@ class World {
     bool    isRunning;
 
     Scene scene;
+    ParticleSystemEngine particles;
+
     std::unique_ptr<Terrain> terr;
 
     int mpos[3];
@@ -172,7 +184,7 @@ class World {
     std::vector< WeakWorldPtr* > wptrs;
     GameObject* mouseObject;
 
-    std::vector< std::shared_ptr<EfectBase> > hudAnims;
+    std::vector< std::shared_ptr<EfectBase> > efectsAnims;
 
     std::vector< GameObject* > warehouses, resouces;
 
@@ -186,8 +198,6 @@ class World {
     Graphics      & graphics;
     Resource      & resource;
     const PrototypesLoader &prototypes;
-
-    ParticleSystemEngine particles;
 
     std::unique_ptr<WayFindRequest> wayFindRq;
 

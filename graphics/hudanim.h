@@ -30,4 +30,26 @@ class HudAnim : public EfectBase {
     int t;
   };
 
+class StormEfect : public EfectBase {
+  public:
+    StormEfect( Scene & s,
+                World       & wrld,
+                const ProtoObject &p,
+                const PrototypesLoader & pl,
+
+                Resource & res,
+                Physics  & phys );
+
+    void setPosition( int x, int y, float z );
+
+    void tick();
+    bool isEnd() const;
+  private:
+    int t;
+    World &w;
+    int x,y;
+
+    static void findEnemy(GameObject& tg, int x, int y, int r, int team);
+  };
+
 #endif // HUDANIM_H

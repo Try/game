@@ -39,11 +39,13 @@ class ParticleSystemEngine {
     std::vector<ParticleSystem*> particles, visible;
     std::vector< std::shared_ptr<ParticleSystem> > dispath;
 
-    void emitParticle(Model::Raw &v,
+    void emitParticle( Model::Raw &v,
                        float x, float y, float z , float sz, float angle,
+                       ParticleSystemDeclaration::Orign orign,
                        Tempest::Color &color );
 
-    void emitParticle(float x, float y, float z, float sz, float angle,
+    void emitParticle( float x, float y, float z, float sz, float angle,
+                       ParticleSystemDeclaration::Orign orign,
                        Tempest::Color &color );
 
     double left[3], top[3], norm[3];

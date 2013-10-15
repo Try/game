@@ -612,7 +612,7 @@ DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
 
   const char* spell[] = {
     "fire_strike",
-    "blink",
+    "fire_storm",
     0
     };
 

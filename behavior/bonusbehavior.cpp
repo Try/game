@@ -56,8 +56,8 @@ void BonusBehavior::lookOn( GameObject &tg , GameObject &obj ){
 
       World& w = obj.world();
       w.emitHudAnim( "hud/take",
-                     World::coordCast( obj.x() ),
-                     World::coordCast( obj.y() ),
+                     obj.x(),
+                     obj.y(),
                      0.01 );
       }
     }

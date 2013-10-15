@@ -9,19 +9,36 @@
 std::unordered_map<std::wstring, std::wstring> Lang::lang;
 std::wstring Lang::leters;
 
-void Lang::load(const char *f) {
+void Lang::load(const char *f, const wchar_t* iso3Code ) {
   ifstream fin( f );
   std::unordered_set<wchar_t, std::hash<size_t> > let;
 
+  uint16_t ver, col;
   size_t c = 0;
+
+  fin.read( (char*)&ver, sizeof(ver) );
+  fin.read( (char*)&col, sizeof(col) );
+  ++col;
+
+  int lcode = 1;
+  std::wstring langName;
+  for( int i=1; i<col; ++i ){
+    size_t sz;
+    fin.read( (char*)&sz, sizeof(sz) );
+    langName.resize( sz );
+    fin.read( (char*)&langName[0], sz*sizeof(int16_t) );
+
+    if( langName==iso3Code )
+      lcode = i;
+    }
+
   fin.read( (char*)&c, sizeof(c) );
 
   std::vector<int16_t> tmpBuf;
+  std::vector<std::wstring> kv(col);
 
   for( size_t i=0; i<c; ++i ){
-    std::wstring kv[2];
-
-    for( int r=0; r<2; ++r ){
+    for( int r=0; r<col; ++r ){
       std::wstring& str = kv[r];
       size_t sz = str.size();
 
@@ -37,7 +54,7 @@ void Lang::load(const char *f) {
         let.insert(str[q]);
       }
 
-    lang[kv[0]] = kv[1];
+    lang[kv[0]] = kv[lcode];
     }
 
   leters.assign( let.begin(), let.end() );

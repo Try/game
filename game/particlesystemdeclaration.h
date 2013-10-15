@@ -18,6 +18,13 @@ class ParticleSystemDeclaration {
     int density;
     bool hasDD;
 
+    enum Orign{
+      Screen,
+      XYOrign,
+      Planar
+      };
+    Orign orign;
+
     void init(D & d , float c = 0);
 
     static D mix(const D& min, const D& max);

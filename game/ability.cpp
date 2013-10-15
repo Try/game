@@ -28,15 +28,20 @@ bool Ability::spell( Game &g,
     return fireStrike(g,w,obj,m);
     }
 
+  if( m.str=="fire_storm" ){
+    return fireStorm(g,w,obj,m);
+    }
+
   return 0;
   }
 
 void Ability::autoCast( Game &g, World &w,
                         const std::string &spell,
                         GameObject & obj ) {
-  if( spell=="fire_strike" ){
+  if( spell=="fire_storm" ){
+    const Spell & s = g.prototypes().spell(spell);
     GameObject *tg = 0;
-    int r = 8*Terrain::quadSize;
+    int r = 8, rq = r*Terrain::quadSize;
     int x = obj.x(), y = obj.y(), team = obj.team();
 
     w.spatial().visit( x, y,
@@ -44,12 +49,50 @@ void Ability::autoCast( Game &g, World &w,
                        &findEnemy,
                        x,
                        y,
-                       r,
+                       rq,
                        team,
                        tg );
 
-    if( tg )
-      fireStrike(g,w,obj, *tg);
+    if( tg && obj.coolDown( s.id )==0 )
+      fireStorm( w, obj, tg->x(), tg->y(), s);
+    }
+
+  if( spell=="fire_strike" ){
+    const Spell & s = g.prototypes().spell(spell);
+    GameObject *tg = 0;
+    int r = 8, rq = r*Terrain::quadSize;
+    int x = obj.x(), y = obj.y(), team = obj.team();
+
+    w.spatial().visit( x, y,
+                       r,
+                       &findEnemy,
+                       x,
+                       y,
+                       rq,
+                       team,
+                       tg );
+
+    if( tg && obj.coolDown( s.id )==0 )
+      fireStrike( w, obj, *tg, s);
+    }
+
+  if( spell=="heal" ){
+    const Spell & s = g.prototypes().spell(spell);
+    GameObject *tg = 0;
+    int r = 6, rq = r*Terrain::quadSize;
+    int x = obj.x(), y = obj.y();
+
+    w.spatial().visit( x, y,
+                       r,
+                       &findAlly,
+                       x,
+                       y,
+                       rq,
+                       obj,
+                       tg );
+
+    if( tg && obj.coolDown( s.id )==0 )
+      heal( w, obj, *tg, s);
     }
   }
 
@@ -91,12 +134,12 @@ bool Ability::blink( Game &g,
             wy = y/Terrain::quadSizef;
 
       w.emitHudAnim( "hud/blink",
-                     World::coordCast( u.x() ),
-                     World::coordCast( u.y() ),
+                     u.x(),
+                     u.y(),
                      0.01 );
       w.emitHudAnim( "hud/blink",
-                     World::coordCast( x ),
-                     World::coordCast( y ),
+                     x,
+                     y,
                      0.01 );
 
       u.setPosition( x, y, t.heightAt(wx,wy) );
@@ -115,10 +158,7 @@ bool Ability::fireStrike( Game &g,
     return 0;
 
   GameObject & tg = w.object( m.size );
-  return fireStrike(g,w,obj,tg);
-  }
 
-bool Ability::fireStrike(Game &g, World &w, GameObject &obj, GameObject &tg) {
   const Spell & s = g.prototypes().spell("fire_strike");
 
   std::vector<GameObject*> & objs = obj.player().selected();
@@ -127,43 +167,55 @@ bool Ability::fireStrike(Game &g, World &w, GameObject &obj, GameObject &tg) {
     GameObject & u = *objs[i];
 
     int cd = u.coolDown( s.id );
-    if( cd==0 && !tg.behavior.find<BuildingBehavior>() ){
-      u.setCoolDown( s.id, s.coolDown );
-
-      w.emitHudAnim( "hud/blink",
-                     World::coordCast( u.x() ),
-                     World::coordCast( u.y() ),
-                     0.01 );
-
-      w.emitHudAnim( "smoke",
-                     World::coordCast( tg.x() ),
-                     World::coordCast( tg.y() ),
-                     0.01 );
-
-      w.emitHudAnim( "fire",
-                     World::coordCast( tg.x() ),
-                     World::coordCast( tg.y() ),
-                     0.01 );
-
-      auto bul = tg.reciveBulldet( "bullets/fire_large" );
-      Bullet& b = *bul;
-
-      b.x = u.x();
-      b.y = u.y();
-      b.setTeamColor( u.teamColor() );
-
-      b.z   = u.viewHeight()/2  + World::coordCast(u.z());
-      b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
-
-      b.speed        = s.bulletSpeed;
-      b.atack.damage = 150;
-      b.tick();
+    if( cd==0 && fireStrike(w, u,tg, s) )
       return 1;
-      }
     }
 
   return 1;
   }
+
+bool Ability::fireStrike( World &w,
+                          GameObject &u,
+                          GameObject &tg,
+                          const Spell & s ) {
+  int cd = u.coolDown( s.id );
+  if( cd==0 && !tg.behavior.find<BuildingBehavior>() ){
+    u.setCoolDown( s.id, s.coolDown );
+
+    w.emitHudAnim( "hud/blink",
+                   u.x(),
+                   u.y(),
+                   0.01 );
+
+    w.emitHudAnim( "smoke",
+                   tg.x(),
+                   tg.y(),
+                   0.01 );
+
+    w.emitHudAnim( "fire",
+                   tg.x(),
+                   tg.y(),
+                   0.01 );
+
+    auto bul = tg.reciveBulldet( "bullets/fire_large" );
+    Bullet& b = *bul;
+
+    b.x = u.x();
+    b.y = u.y();
+    b.setTeamColor( u.teamColor() );
+
+    b.z   = u.viewHeight()/2  + World::coordCast(u.z());
+    b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
+
+    b.speed        = s.bulletSpeed;
+    b.atack.damage = 150;
+    b.tick();
+    return 1;
+    }
+
+  return 0;
+  }
+
 
 bool Ability::heal( Game &g,
                     World &w,
@@ -174,7 +226,7 @@ bool Ability::heal( Game &g,
 
   GameObject & tg = w.object( m.size );
 
-  const Spell & s = g.prototypes().spell(m.str);
+  const Spell & s = g.prototypes().spell("heal");
 
   std::vector<GameObject*> & objs = obj.player().selected();
 
@@ -182,34 +234,91 @@ bool Ability::heal( Game &g,
     GameObject & u = *objs[i];
 
     int cd = u.coolDown( s.id );
-    if( cd==0 ){
-      u.setCoolDown( s.id, s.coolDown );
-
-      w.emitHudAnim( "hud/blink",
-                     World::coordCast( u.x() ),
-                     World::coordCast( u.y() ),
-                     0.01 );
-
-      auto bul = tg.reciveBulldet( "bullets/fire_large" );
-      Bullet& b = *bul;
-
-      b.x = u.x();
-      b.y = u.y();
-      b.setTeamColor( u.teamColor() );
-
-      b.z   = u.viewHeight()/2  + World::coordCast(u.z());
-      b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
-
-      b.atack.damage = 150;
-      b.speed  = 250;
-      b.tick();
-
-      u.setHP( std::min(u.getClass().data.maxHp, u.hp()+10) );
+    if( cd==0 && heal(w, u,tg, s) )
       return 1;
-      }
     }
 
   return 1;
+  }
+
+bool Ability::heal( World &w,
+                    GameObject &u,
+                    GameObject &tg,
+                    const Spell & s ) {
+  int cd = u.coolDown( s.id );
+  if( cd==0 && !tg.behavior.find<BuildingBehavior>() &&
+      &u!=&tg &&
+      tg.hp() != tg.getClass().data.maxHp ){
+    u.setCoolDown( s.id, s.coolDown );
+
+    /*
+    w.emitHudAnim( "hud/blink",
+                   ( u.x() ),
+                   ( u.y() ),
+                   0.01 );
+    */
+
+    w.emitHudAnim( "heal",
+                   tg.x(),
+                   tg.y(),
+                   0.01 );
+
+    tg.setHP( std::min(tg.hp()+150, tg.getClass().data.maxHp) );
+    return 1;
+    }
+
+  return 0;
+  }
+
+bool Ability::fireStorm( Game  &g,
+                         World &w,
+                         GameObject &obj,
+                         const BehaviorMSGQueue::MSG &m ) {  
+  //if( m.size == size_t(-1) )
+    //return 0;
+
+  //GameObject & tg = w.object( m.size );
+
+  const Spell & s = g.prototypes().spell("fire_storm");
+
+  std::vector<GameObject*> & objs = obj.player().selected();
+
+  for( size_t i=0; i<objs.size(); ++i ){
+    GameObject & u = *objs[i];
+
+    int cd = u.coolDown( s.id );
+    if( cd==0 && fireStorm(w, u, m.x, m.y, s) )
+      return 1;
+    }
+
+  return 1;
+  }
+
+bool Ability::fireStorm( World &w,
+                         GameObject &u,
+                         int tgX,
+                         int tgY,
+                         const Spell &s) {
+  int cd = u.coolDown( s.id );
+  if( cd==0 ){
+    u.setCoolDown( s.id, s.coolDown );
+
+    w.emitEfect<StormEfect>( "storm" ).setPosition(tgX,tgY,0);
+
+    w.emitHudAnim( "storm",
+                   tgX,
+                   tgY,
+                   0.01 );
+
+    w.emitHudAnim( "fire_gaizer",
+                   tgX,
+                   tgY,
+                   0.01 );
+
+    return 1;
+    }
+
+  return 0;
   }
 
 void Ability::findEnemy( GameObject &tg,
@@ -220,6 +329,21 @@ void Ability::findEnemy( GameObject &tg,
   if( tg.team() == team )
     return;
 
-  if( d<r*r )
+  if( d<r*r && !tg.behavior.find<BuildingBehavior>())
+    out = &tg;
+  }
+
+void Ability::findAlly( GameObject &tg,
+                        int x, int y, int r,
+                        GameObject &caster,
+                        GameObject *&out) {
+  int d  = tg.distanceSQ( x, y );
+
+  if( tg.team() != caster.team() )
+    return;
+
+  if( d<r*r && &tg!=&caster &&
+      ( tg.hp() < tg.getClass().data.maxHp-150 || tg.hp()<50 ) &&
+      !tg.behavior.find<BuildingBehavior>() )
     out = &tg;
   }

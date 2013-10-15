@@ -237,8 +237,9 @@ void PrototypesLoader::loadClass(const rapidjson::Value &v) {
   if( ability.IsArray() ){
     for( size_t i=0; i<ability.Size(); ++i ){
       const Value& v = ability[i];
-      if( v.IsString() )
+      if( v.IsString() ){
         p->ability.push_back( v.GetString() );
+        }
       }
     }
 
@@ -578,6 +579,7 @@ void PrototypesLoader::readSpell( Spell &v,
     readIf( prop["coolDown"],    v.coolDown    );
     readIf( prop["manaCost"],    v.manaCost    );
     readIf( prop["bulletSpeed"], v.bulletSpeed );
+    readIf( prop["autoCast"],    v.autoCast    );
     }
 
   const Value& info = e["info"];
@@ -637,6 +639,27 @@ void PrototypesLoader::readParticle( ParticleSystemDeclaration &obj,
 
   if( e["density"].IsInt() )
     obj.density = e["density"].GetInt();
+
+  if( e["emit"].IsObject() ){
+
+    }
+
+  if( e["options"].IsObject() ){
+    if( e["options"]["orign"].IsString() ){
+      const char* orign = e["options"]["orign"].GetString();
+      static const std::string
+          xy     = "xy",
+          screen = "screen",
+          planar = "planar";
+
+      if( orign==xy )
+        obj.orign = ParticleSystemDeclaration::XYOrign;
+      if( orign==screen )
+        obj.orign = ParticleSystemDeclaration::Screen;
+      if( orign==planar )
+        obj.orign = ParticleSystemDeclaration::Planar;
+      }
+    }
   }
 
 void PrototypesLoader::readParticle( ParticleSystemDeclaration::D &obj,

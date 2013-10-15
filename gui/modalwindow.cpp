@@ -59,3 +59,13 @@ void ModalWindow::shortcutEvent(Tempest::KeyEvent &e) {
   Widget::shortcutEvent(e);
   e.accept();
   }
+
+void ModalWindow::closeEvent(Tempest::CloseEvent &e) {
+#ifdef __ANDROID__
+  (void)e;
+  deleteLater();
+#else
+  e.ignore();
+  //deleteLater();
+#endif
+  }
