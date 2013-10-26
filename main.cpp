@@ -1,4 +1,5 @@
 #include <Tempest/Application>
+#include <Tempest/Android>
 #include "game.h"
 #include "lang/lang.h"
 
@@ -52,8 +53,11 @@ int main( int, char** ){
   pm.save("data/textures/land/t.dds");
   pm.setFormat( Tempest::Pixmap::Format_RGB );
   pm.save("data/textures/land/t.png");*/
-
-  Lang::load("lang/l.lang", L"rus");
+#ifdef __ANDROID__
+  Lang::load("lang/l.lang", Tempest::AndroidAPI::iso3Locale() );
+#else
+  Lang::load("lang/l.lang", L"eng");
+#endif
   Tempest::Application app;
   setupTh();
   Game game( Tempest::Window::Maximized );

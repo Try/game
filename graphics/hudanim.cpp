@@ -80,6 +80,10 @@ void StormEfect::findEnemy( GameObject &tg,
   if( tg.team() == team )
     return;
 
-  if( d<r*r && !tg.behavior.find<BuildingBehavior>())
-    tg.setHP( tg.hp()-1 );
+  if( d<r*r && !tg.behavior.find<BuildingBehavior>() ){
+    if( !tg.hasEfect(EfectBase::Strorm) ){
+      tg.setHP( tg.hp()-1 );
+      tg.addEfectFlg( EfectBase::Strorm );
+      }
+    }
   }

@@ -10,6 +10,7 @@
 #include "gui/unitview.h"
 #include "gui/richtext.h"
 #include "gui/listbox.h"
+#include "gui/scroolwidget.h"
 
 #include "lang/lang.h"
 
@@ -405,7 +406,7 @@ void DesertStrikeScenario::Minimap::setGrade() {
   base->setVisible(1);
   inf[infID].widget->setVisible(1);
   base->setFocus(1);
-  base->setupUnit(game, "");
+  base->setupUnit(game, "storm");
 
   if( inf[infID].grade )
     inf[infID].grade->type = "";
@@ -799,7 +800,8 @@ DesertStrikeScenario::UpgradePanel::UpgradePanel( Resource & res,
   }
 
 void DesertStrikeScenario::UpgradePanel::buy( const int grade ){
-  mmap->setTab(grade);
+  if( grade!=2 )
+    mmap->setTab(grade);
   }
 
 DesertStrikeScenario::CentralPanel::CentralPanel( DesertStrikeScenario &ds,
@@ -968,4 +970,89 @@ DesertStrikeScenario::Hint::~Hint() {
 
 void DesertStrikeScenario::Hint::paintEvent(Tempest::PaintEvent &e) {
   ModalWindow::paintEvent(e);
+  }
+
+
+DesertStrikeScenario::UInfo::UInfo( Resource &res, Tempest::Widget *owner, Game &game )
+  :ModalWindow(res,owner), game(game) {
+  using namespace Tempest;
+
+  setLayout( Horizontal );
+
+  Widget * w = new Widget();
+  w->setSizePolicy( FixedMin );
+  w->setMinimumSize( 500, 300 );
+
+  layout().add( w );
+  }
+
+DesertStrikeScenario::UInfo::~UInfo() {
+  game.unsetPause();
+  }
+
+void DesertStrikeScenario::UInfo::paintEvent(Tempest::PaintEvent &e) {
+  paintNested(e);
+  }
+
+
+DesertStrikeScenario::MiniBuyPanel::MiniBuyPanel(Resource &res, Game &game, DPlayer &pl)
+  :TranscurentPanel(res), game(game){
+  setMaximumSize( maxSize().w, 90 );
+
+  setLayout( Tempest::Horizontal );
+  ScroolWidget *w = new ScroolWidget(res);
+  layout().add( w );
+  setMargin(10, 10, 0, 0);
+
+  w->setOrientation( Tempest::Horizontal );
+  w->setScroolBarVisible(0);
+  w->scroolAfterEnd(0);
+
+  auto pr = DesertStrikeScenario::units;
+  for( int i=0; i<3; ++i )
+    for( int r=0; r<4; ++r )
+      if( pr[i][r] ){
+        const ProtoObject & obj = game.prototype( pr[i][r] );
+
+        BuyButton * u = new BuyButton(res, obj, pl, i);
+
+        u->setMinimumSize( 80, 80 );
+        u->setMaximumSize( u->minSize() );
+        u->onClick.bind( *this, &MiniBuyPanel::buyU );
+
+        w->centralWidget().layout().add( u );
+        }
+
+  const char* f[2] = {"house", "castle"};
+  for( int i=0; i<2; ++i ){
+    const ProtoObject & obj = game.prototype( f[i] );
+
+    BuyButton * u = new BuyButton(res, obj, pl, 0);
+    u->setMinimumSize( 80, 80 );
+    u->setMaximumSize( u->minSize() );
+
+    u->onClick.bind( *this, &MiniBuyPanel::buyG );
+
+    w->centralWidget().layout().add( u );
+    }
+  }
+
+void DesertStrikeScenario::MiniBuyPanel::buyU(const ProtoObject &unitToBuy ){
+  std::vector<char> data;
+  ByteArraySerialize s(data, ByteArraySerialize::Write);
+
+  s.write( game.player().number()-1 );
+  s.write( unitToBuy.name );
+  s.write( 'b' );
+  game.message( data );
+  }
+
+void DesertStrikeScenario::MiniBuyPanel::buyG(const ProtoObject &gradeToBuy ){
+  std::vector<char> data;
+  ByteArraySerialize s(data, ByteArraySerialize::Write);
+
+  s.write( game.player().number()-1 );
+  s.write( gradeToBuy.name );
+  s.write( 'g' );
+  game.message( data );
   }

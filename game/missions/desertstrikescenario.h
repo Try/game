@@ -33,6 +33,8 @@ class DesertStrikeScenario  : public Scenario {
 
     void toogleCameraMode();
 
+    int  waveNumber() const;
+
     struct HightLight{
       Tempest::Rect rect;
       int alpha;
@@ -42,6 +44,7 @@ class DesertStrikeScenario  : public Scenario {
 
     void addHigtlight( const Tempest::Rect &rect );
     struct Hint;
+    struct UInfo;
 
     struct DPlayer:Player{
       DPlayer( int num ):Player(num),
@@ -79,6 +82,8 @@ class DesertStrikeScenario  : public Scenario {
     virtual void onUnitHired( const std::string& ){}
     virtual void onPanelChoised(int /*p*/){}
 
+    void toogleMinimap(int page);
+
     struct NumButton;
     struct BuyButton;
     struct GradeButton;
@@ -87,13 +92,16 @@ class DesertStrikeScenario  : public Scenario {
     struct UpgradePanel;
     struct SpellPanel;
     struct CentralPanel;
+    struct MiniBuyPanel;
 
     struct GoldButton;
     struct WinLoseScreen;
 
     struct Minimap;
+    Panel          *mmapbox;
     Minimap        *mmap;
     BuyUnitPanel   *buyUnitPanel;
+    MiniBuyPanel   *miniBuy;
     CentralPanel   *cen;
     SpellPanel     *spellPanel;
     UpgradePanel   *upgradePanel;
@@ -146,8 +154,9 @@ class DesertStrikeScenario  : public Scenario {
 
     std::string spellToCast;
     Spell::Mode spellMode;
+    int  waveNum;
 
-    void mkUnits(int pl, int x, int y, int tgX, int tgY, bool rev);
+    void mkUnits(int pl, int x, int y, int tgX, int tgY);
     void aiTick(int pl);
     void updateCenterOwner();
 

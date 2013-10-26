@@ -98,6 +98,9 @@ void ShaderMaterial::mkUniform( const ShaderSource::Code::Uniform &u,
   if( u.name=="viewVec" ){
     ux.usage = Uniform::ViewVec;
     }
+  if( u.name=="color" ){
+    ux.usage = Uniform::Color;
+    }
   if( u.type==ShaderSource::Code::texture ){
     ux.usage = Uniform::Texture;
     }
@@ -158,6 +161,9 @@ void ShaderMaterial::installUniform( T& vs,
       break;
     case Uniform::LightAblimient:
       vs.setUniform( u.name.data(), c.sceneAblimient, 3 );
+      break;
+    case Uniform::Color:
+      vs.setUniform( u.name.data(), c.color.data(), 4 );
       break;
     case Uniform::dxScreenOffset:{
       float w[2] = { -c.invW, c.invH };

@@ -202,6 +202,16 @@ struct DesertStrikeScenario::UpgradePanel: public TranscurentPanel {
   Tempest::signal<int> onPage;
   };
 
+struct DesertStrikeScenario::MiniBuyPanel: public TranscurentPanel {
+  MiniBuyPanel( Resource & res,
+                Game & game,
+                DPlayer & pl );
+
+  void buyU( const ProtoObject & unitToBuy );
+  void buyG( const ProtoObject & gradeToBuy );
+  Game &game;
+  };
+
 class DesertStrikeScenario::CentralPanel: public Tempest::Widget {
   public:
     CentralPanel( DesertStrikeScenario &ds, Resource & res );
@@ -232,6 +242,16 @@ struct DesertStrikeScenario::WinLoseScreen: public ModalWindow {
 struct DesertStrikeScenario::Hint: public ModalWindow{
   Hint(Resource& res, Tempest::Widget *owner, Game &game );
   ~Hint();
+
+  void paintEvent(Tempest::PaintEvent &e);
+
+  Tempest::Texture2d hintView;
+  Game &game;
+  };
+
+struct DesertStrikeScenario::UInfo: public ModalWindow{
+  UInfo(Resource& res, Tempest::Widget *owner, Game &game );
+  ~UInfo();
 
   void paintEvent(Tempest::PaintEvent &e);
 

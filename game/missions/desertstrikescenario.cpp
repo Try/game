@@ -84,7 +84,8 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
 
   sctrl.isScaleMode = false;
 
-  winAnim.isWinAnim = false;  
+  winAnim.isWinAnim = false;
+  waveNum           = 0;
   }
 
 DesertStrikeScenario::~DesertStrikeScenario() {
@@ -105,6 +106,7 @@ void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
     }
 
   if( e.mouseID==1 ){
+    acceptSpell = false;
     sctrl.m1 = e.pos();
     sctrl.rm1 = sctrl.m1;
     isMouseTracking = false;
@@ -292,7 +294,7 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
       }
     }else
   if( ch=='m' ){
-    if( spellToCast==name ){
+    if( spellToCast==name && 0 ){
       spellToCast = "";
       } else {
       spellToCast = name;
@@ -389,15 +391,17 @@ void DesertStrikeScenario::tick() {
   if( tNum%interval==0 ){
     mkUnits( 1,
              p1x.x, p1x.y,
-             p2x.x, p2x.y,
-             0 );
+             p2x.x, p2x.y );
     }
 
   if( tNum%interval==0 ){
     mkUnits( 2,
              p2x.x, p2x.y,
-             p1x.x, p1x.y,
-             1 );
+             p1x.x, p1x.y );
+    }
+
+  if( tNum%interval==0 ){
+    ++waveNum;
     }
 
   if( hasVTracking ){
@@ -444,8 +448,12 @@ void DesertStrikeScenario::tick() {
         dy = dy*std::min(1.0f, v/l);
         cameraSpeed += 0.005;
 
-        game.setCameraPosition( game.curWorld().camera.x()+dx,
-                                game.curWorld().camera.y()+dy );
+        if( l<0.2 ){
+          game.setCameraPosition( x, y );
+          } else {
+          game.setCameraPosition( game.curWorld().camera.x()+dx,
+                                  game.curWorld().camera.y()+dy );
+          }
         } else {
         cameraSpeed = 0;
         }
@@ -528,6 +536,15 @@ void DesertStrikeScenario::tick() {
     }
   }
 
+void DesertStrikeScenario::toogleMinimap( int page ) {
+  if( page!=2 )
+    return;
+
+  mmapbox     ->setVisible( !mmapbox     ->isVisible() );
+  buyUnitPanel->setVisible( !buyUnitPanel->isVisible() );
+  miniBuy     ->setVisible( !miniBuy     ->isVisible() );
+  }
+
 void DesertStrikeScenario::cancelTracking( float, float,
                                            Tempest::Event::MouseButton,
                                            MiniMapView::Mode) {
@@ -537,8 +554,7 @@ void DesertStrikeScenario::cancelTracking( float, float,
 
 void DesertStrikeScenario::mkUnits( int p,
                                     int   x, int   y,
-                                    int tgX, int tgY,
-                                    bool rev ){
+                                    int tgX, int tgY ){
   DPlayer &pl = player(p);
 
   std::map<std::string, int>::iterator u, e = pl.units.end();
@@ -554,23 +570,57 @@ void DesertStrikeScenario::mkUnits( int p,
 
   int id = 0;
 
-  for( u = pl.units.begin(); u!=e; ++u ){
-    int& c = pl.realCount[u->first];
-    for( int i=0; i<u->second; ++i ){
-      if( 1 || c < 3*u->second ){
-        GameObject& obj = game.curWorld().addObject(u->first, pl.number());
+  Tempest::Point du = Tempest::Point(tgX,tgY) - Tempest::Point(x,y),
+                 dv;
+  {
+    int mul = Terrain::quadSize;
+    while( abs(du.x)>10 || abs(du.y) > 10)
+      du /= 2;
+
+    int lm = std::max(1, Math::sqrt( du.quadLength() ) );
+    du *= mul;
+    du /= lm;
+
+    //if( rev )
+      //du *= -1;
+
+    dv = Tempest::Point( -du.y, du.x );
+  }
+
+  std::vector<std::string> utypes;
+  for( u = pl.units.begin(); u!=e; ++u )
+    utypes.push_back( u->first );
+
+  for( size_t i=0; i<utypes.size(); ++i )
+    for( size_t r=i+1; r<utypes.size(); ++r ){
+      const ProtoObject& a = game.prototype(utypes[i]),
+                       & b = game.prototype(utypes[r]);
+
+      int ra = 0, rb = 0;
+
+      for( size_t q=0; q<a.data.atk.size(); ++q )
+        ra = std::max(ra, a.data.atk[q].range );
+
+      for( size_t q=0; q<b.data.atk.size(); ++q )
+        rb = std::max(rb, b.data.atk[q].range );
+
+      if( ra<rb )
+        std::swap( utypes[i], utypes[r] );
+      }
+
+  for( size_t r=0; r<utypes.size(); ++r ){
+    int plc = pl.units[ utypes[r] ];
+    int& c  = pl.realCount[ utypes[r] ];
+
+    for( int i=0; i<plc; ++i ){
+      if( 1 || c < 3*plc ){
+        GameObject& obj = game.curWorld().addObject( utypes[r], pl.number());
         ++c;
         ++id;
 
-        int mul = Terrain::quadSize;
-        if( rev ){
-          obj.setPosition( x+(qc/2 - id%qc)*mul,
-                           y+(qc/2 - id/qc)*mul );
-          } else {
-          obj.setPosition( x+(id%qc - qc/2)*mul,
-                           y+(id/qc - qc/2)*mul );
-          }
-//        obj.setPosition( x, y );
+        Tempest::Point dpos = du*(id/qc) + dv*(id%qc);
+
+        obj.setPosition( x+dpos.x, y+dpos.y );
 
         obj.behavior.message( Behavior::MoveSingle, tgX, tgY );
         obj.behavior.message( Behavior::AtackMove,  tgX, tgY );
@@ -586,6 +636,7 @@ void DesertStrikeScenario::onStartGame() {
   revPlPos = rand()%2;
 
   World &wx = game.curWorld();
+  wx.camera.setDistance( 2*wx.camera.distance()/3 );
 
 
   std::vector<Tempest::Point> casP;
@@ -601,6 +652,9 @@ void DesertStrikeScenario::onStartGame() {
     game.setCameraPosition( World::coordCast(pt.x*Terrain::quadSize),
                             World::coordCast(pt.y*Terrain::quadSize) );
   }
+
+  if( revPlPos )
+    std::swap( casP[0], casP[1] );
 
   std::vector<GameObject*> aobj;
   aobj.resize( wx.activeObjects().size() );
@@ -735,10 +789,13 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
   box->layout().add( editPanel );
   box->layout().add( settingsPanel );
   cen->layout().add( box );
+
   UpgradePanel *upnl = new UpgradePanel(res, game, player(1), buyUnitPanel);
   upnl->onPage.bind( this, &DesertStrikeScenario::onPanelChoised );
   cen->layout().add( upnl );
   upgradePanel = upnl;
+  upgradePanel->onPage.bind( this, &DesertStrikeScenario::toogleMinimap );
+  //upgradePanel->setVisible(0);
 
   cen->useScissor( false );
   box->useScissor( false );
@@ -809,11 +866,13 @@ Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget
 
   Panel * img = new Panel( res );
   img->setSizePolicy(p);
+  mmapbox = img;
 
   mmap = new Minimap(res,game, player(1));
   mmap->base->renderScene.bind( mainWidget->renderScene );
   mainWidget->updateView.bind( *mmap->base, &UnitView::updateView );
   mmap->base->onClick.bind(*mmap, &Minimap::hideInfo);
+
   mmap->onUnit.    bind( this, &DesertStrikeScenario::onUnitToBuy     );
   mmap->onBuilding.bind( this, &DesertStrikeScenario::onBuildingToBuy );
 
@@ -829,6 +888,11 @@ Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget
   console->layout().add( img );
   Widget *w = new Widget();
   w->setSizePolicy( Tempest::Expanding );
+  w->setLayout( Horizontal );
+
+  miniBuy = new MiniBuyPanel(res, game, player(1));
+  w->layout().add( miniBuy );
+  miniBuy->setVisible(0);
   console->layout().add( w );
 
   buyUnitPanel = new BuyUnitPanel( res, game, player(1), mmap );
@@ -841,6 +905,10 @@ Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget
 void DesertStrikeScenario::toogleCameraMode() {
   hasVTracking = !hasVTracking;
   unitToView   = 0;
+  }
+
+int DesertStrikeScenario::waveNumber() const {
+  return waveNum;
   }
 
 void DesertStrikeScenario::addHigtlight(const Tempest::Rect &rect) {
@@ -949,6 +1017,8 @@ void DesertStrikeScenario::aiTick( int npl ) {
   for( ; b[count].src.size(); ++count )
     ;
 
+  bool uaccum = false;
+
   for( int pass=1; pass<4; ++pass ){
     for( int i=1; i<3; ++i )
       if( npl!=i ){
@@ -968,6 +1038,8 @@ void DesertStrikeScenario::aiTick( int npl ) {
               if( pl.gold() >= gold ){
                 ++pl.units[e.dst];
                 pl.setGold( pl.gold() - gold );
+                } else {
+                uaccum = true;
                 }
               }
             }
@@ -984,22 +1056,27 @@ void DesertStrikeScenario::aiTick( int npl ) {
     0
     };
 
-  if( !gradeAccum ){
-    for( int i=0; defaultUnits[i]; ++i ){
-      const char* unit = defaultUnits[i];
+  if( !gradeAccum && !uaccum ){
+    bool ok = true;
 
-      int tr = tierOf(unit);
-      if( tr <= pl.castleGrade &&
-          !(pl.castleGrade==2 && tr==0)){
-        for( int q=pl.units[unit]; q<c; ++q ){
+    while( ok ){
+      ok = false;
+      for( int i=0; defaultUnits[i]; ++i ){
+        const char* unit = defaultUnits[i];
+
+        int tr = tierOf(unit);
+        if( tr <= pl.castleGrade &&
+            !(pl.castleGrade==2 && tr==0)){
           int gold = game.prototype(unit).data.gold;
           if( pl.gold() >= gold ){
             ++pl.units[unit];
             pl.setGold( pl.gold() - gold );
+            ok = true;
             }
           }
         }
       }
+
     }
   }
 

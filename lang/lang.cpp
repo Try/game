@@ -20,13 +20,17 @@ void Lang::load(const char *f, const wchar_t* iso3Code ) {
   fin.read( (char*)&col, sizeof(col) );
   ++col;
 
-  int lcode = 1;
+  int lcode = 2;
+  std::vector<int16_t> tmpBuf;
   std::wstring langName;
   for( int i=1; i<col; ++i ){
     size_t sz;
     fin.read( (char*)&sz, sizeof(sz) );
     langName.resize( sz );
-    fin.read( (char*)&langName[0], sz*sizeof(int16_t) );
+    tmpBuf.resize( std::max(sz, tmpBuf.size()) );
+
+    fin.read( (char*)&tmpBuf[0],   sz*sizeof(int16_t) );
+    langName.assign( tmpBuf.begin(), tmpBuf.begin()+sz );
 
     if( langName==iso3Code )
       lcode = i;
@@ -34,7 +38,6 @@ void Lang::load(const char *f, const wchar_t* iso3Code ) {
 
   fin.read( (char*)&c, sizeof(c) );
 
-  std::vector<int16_t> tmpBuf;
   std::vector<std::wstring> kv(col);
 
   for( size_t i=0; i<c; ++i ){
@@ -58,6 +61,13 @@ void Lang::load(const char *f, const wchar_t* iso3Code ) {
     }
 
   leters.assign( let.begin(), let.end() );
+}
+
+void Lang::load(const char *f, const std::string &iso3Code) {
+  std::wstring str;
+  str.assign( iso3Code.begin(), iso3Code.end() );
+
+  return load( f, str.c_str() );
   }
 
 template< class String >

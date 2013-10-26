@@ -345,6 +345,8 @@ void MaterialServer::setupObjectConstants( const AbstractGraphicObject &obj,
   context.texture[0][0] = m.diffuse;
   context.texture[1][0] = m.normal;
 
+  context.color = *m.teamColor;
+
   if( !m.emission.isEmpty() )
     context.texture[ShaderSource::tsEmission][0] = m.emission;
 
@@ -356,7 +358,12 @@ void MaterialServer::setupObjectConstants( const AbstractGraphicObject &obj,
 
 void MaterialServer::pushMaterial( Resource &res, const std::string &s ) {
   std::shared_ptr<Mat> m = std::make_shared<Mat>(vsHolder, fsHolder);
-  MxAssembly assemb( MVertex::decl(), lang );
+
+  Tempest::VertexDeclaration::Declarator decl = MVertex::decl();
+  if( !Model::hasFP16 )
+    decl = MVertexF::decl();
+
+  MxAssembly assemb(decl, lang );
 
   m->code = res.material(s);
   CompileOptions opt;

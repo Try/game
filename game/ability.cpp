@@ -273,12 +273,7 @@ bool Ability::heal( World &w,
 bool Ability::fireStorm( Game  &g,
                          World &w,
                          GameObject &obj,
-                         const BehaviorMSGQueue::MSG &m ) {  
-  //if( m.size == size_t(-1) )
-    //return 0;
-
-  //GameObject & tg = w.object( m.size );
-
+                         const BehaviorMSGQueue::MSG &m ) {
   const Spell & s = g.prototypes().spell("fire_storm");
 
   std::vector<GameObject*> & objs = obj.player().selected();
@@ -304,13 +299,7 @@ bool Ability::fireStorm( World &w,
     u.setCoolDown( s.id, s.coolDown );
 
     w.emitEfect<StormEfect>( "storm" ).setPosition(tgX,tgY,0);
-
     w.emitHudAnim( "storm",
-                   tgX,
-                   tgY,
-                   0.01 );
-
-    w.emitHudAnim( "fire_gaizer",
                    tgX,
                    tgY,
                    0.01 );

@@ -3,6 +3,7 @@
 
 #include <Tempest/Widget>
 #include <Tempest/Font>
+#include <Tempest/Timer>
 #include <string>
 
 class Resource;
@@ -38,6 +39,7 @@ class LineEdit : public Tempest::Widget {
     Resource & res;
 
     bool editable;
+    bool anim;
 
     size_t sedit, eedit;
     Tempest::Point sp, ep;
@@ -45,11 +47,15 @@ class LineEdit : public Tempest::Widget {
 
     Tempest::Font   font;
     Tempest::Sprite frame;
+    Tempest::Timer  timer;
 
     bool isEdited;
     void updateSel();
 
     void storeText(bool);
+    void setupTimer( bool );
+
+    void animation();
   };
 
 #endif // LINEEDIT_H

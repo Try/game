@@ -45,7 +45,7 @@ class GameObjectView {
     void loadView(const Resource &r, Physics &p, bool env );
     void loadView(const Resource &r, const ProtoObject::View &src, bool isEnv ) ;
     void loadView(const Model &model, const ProtoObject::View &view);
-    void loadView(const Tempest::Model<WaterVertex> &model);
+    void loadView(const Tempest::Model<MVertex> &model);
 
     void setViewPosition(float x, float y );
     void setViewPosition(float x, float y, float z );

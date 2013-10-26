@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_set>
 
 class Scene;
 
@@ -12,6 +13,7 @@ class Scene;
 #include "game/envobject.h"
 #include "game/protoobject.h"
 #include "game/gameobjectview.h"
+#include "graphics/hudanim.h"
 
 #include <Tempest/signal>
 
@@ -51,7 +53,7 @@ class GameObject {
                    bool env );
     void loadView(const Model &model , const ProtoObject::View &pview);
 
-    void loadView( const Tempest::Model<WaterVertex> & model );
+    void loadView(const Tempest::Model<MVertex> &model );
 
     void setPosition( int x, int y );
     void setPosition( int x, int y, int z );
@@ -143,6 +145,9 @@ class GameObject {
     GameObjectView &getView();
 
     void addEfect( ObjectEfect * e );
+    void addEfectFlg( EfectBase::UnitEfect e );
+    void delEfectFlg( EfectBase::UnitEfect e );
+    bool hasEfect( EfectBase::UnitEfect e ) const;
   private:
     GameObject( const GameObject& obj ) = delete;
     GameObject& operator = ( const GameObject& obj ) = delete;
@@ -177,6 +182,7 @@ class GameObject {
     std::vector< const Spell* > autoCastSpell;
 
     std::unordered_map<size_t, int> coolDowns;
+    std::unordered_set<EfectBase::UnitEfect, std::hash<size_t> > efectFlg;
 
     void setupMaterials( AbstractGraphicObject &obj,
                          const ProtoObject::View &src );

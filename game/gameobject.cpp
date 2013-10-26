@@ -144,7 +144,7 @@ void GameObject::loadView( const Model &model,
   view.loadView( model, pview );
   }
 
-void GameObject::loadView(const Tempest::Model<WaterVertex> &model ){
+void GameObject::loadView(const Tempest::Model<MVertex> &model ){
   m.isEnv = true;
   view.loadView( model );
   }
@@ -421,6 +421,8 @@ bool GameObject::isMineralMove() const {
   }
 
 void GameObject::tick( const Terrain &terrain ) {
+  efectFlg.clear();
+
   std::fill( m.dieVec, m.dieVec+3, 0 );
   view.tick();
   behavior.tick( terrain );
@@ -557,4 +559,16 @@ GameObjectView &GameObject::getView() {
 
 void GameObject::addEfect(ObjectEfect *e) {
   efects.push_back( std::unique_ptr<ObjectEfect>(e) );
+  }
+
+void GameObject::addEfectFlg(EfectBase::UnitEfect e) {
+  efectFlg.insert(e);
+  }
+
+void GameObject::delEfectFlg(EfectBase::UnitEfect e) {
+  efectFlg.erase(e);
+  }
+
+bool GameObject::hasEfect(EfectBase::UnitEfect e) const {
+  return efectFlg.find(e)!=efectFlg.end();
   }

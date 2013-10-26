@@ -14,6 +14,7 @@
 #include "util/tnloptimize.h"
 #include "graphics/material.h"
 
+struct MVertex;
 struct MVertexF {
   float x,y,z,u;
   float nx, ny, v, bx;
@@ -27,6 +28,8 @@ struct MVertexF {
   struct hash{
     size_t operator()( const MVertexF& mv ) const;
     };
+
+  void operator = ( const MVertex& f );
 
   static const Tempest::VertexDeclaration::Declarator& decl();
 
@@ -48,6 +51,8 @@ struct MVertex {
     size_t operator()( const MVertex& mv ) const;
     };
 
+
+  void operator = ( const MVertexF& f );
   static const Tempest::VertexDeclaration::Declarator& decl();
 
   private:
@@ -273,31 +278,101 @@ class ModelImpl : public Tempest::Model<MVertex> {
     float cen[3], r, pbounds[3][2];
   };
 
+template< class M, class V >
+void loadModelImpl( ModelImpl<M> & data,
+                    Tempest::VertexBufferHolder & vboHolder,
+                    Tempest::IndexBufferHolder  & iboHolder,
+                    const std::vector<V>&   buf,
+                    const std::vector<uint16_t>& index,
+                    const Tempest::VertexDeclaration::Declarator& decl ){
+  std::vector<M> vx;
+  vx.assign(buf.begin(), buf.end());
+  data.load( vboHolder, iboHolder, vx, index, decl );
+  }
+
+template< class M >
+void loadModelImpl( ModelImpl<M> & data,
+                    Tempest::VertexBufferHolder & vboHolder,
+                    Tempest::IndexBufferHolder  & iboHolder,
+                    const std::vector<M>&   buf,
+                    const std::vector<uint16_t>& index,
+                    const Tempest::VertexDeclaration::Declarator& decl ){
+  data.load( vboHolder, iboHolder, buf, index, decl );
+  }
+
+
+template< class M, class V >
+void loadModelImpl( ModelImpl<M> & data,
+                    Tempest::VertexBufferHolder & vboHolder,
+                    Tempest::IndexBufferHolder  & iboHolder,
+                    const std::vector<V>&   buf,
+                    const Tempest::VertexDeclaration::Declarator& decl ){
+  std::vector<M> vx;
+  vx.assign(buf.begin(), buf.end());
+  data.load( vboHolder, iboHolder, vx, decl );
+  }
+
+template< class M >
+void loadModelImpl( ModelImpl<M> & data,
+                    Tempest::VertexBufferHolder & vboHolder,
+                    Tempest::IndexBufferHolder  & iboHolder,
+                    const std::vector<M>&   buf,
+                    const Tempest::VertexDeclaration::Declarator& decl ){
+  data.load( vboHolder, iboHolder, buf, decl );
+  }
+
+
+template< class M, class V >
+void loadModelImplR( ModelImpl<M> & data,
+                    Tempest::VertexBufferHolder & vboHolder,
+                    Tempest::IndexBufferHolder  & iboHolder,
+                    const typename Tempest::Model<V>::Raw& buf,
+                    const Tempest::VertexDeclaration::Declarator& decl ){
+  typename Tempest::Model<M>::Raw vx;
+  vx.vertex.assign(buf.vertex.begin(), buf.vertex.end());
+  vx.index    = buf.index;
+  vx.hasIndex = buf.hasIndex;
+
+  data.load( vboHolder, iboHolder, vx, decl );
+  }
+
+template< class M >
+void loadModelImplR( ModelImpl<M> & data,
+                    Tempest::VertexBufferHolder & vboHolder,
+                    Tempest::IndexBufferHolder  & iboHolder,
+                    const typename Tempest::Model<M>::Raw& buf,
+                    const Tempest::VertexDeclaration::Declarator& decl ){
+  data.load( vboHolder, iboHolder, buf, decl );
+  }
+
+
 class Model {
   public:
     typedef ModelImpl<MVertex>::Raw Raw;
     typedef MVertex Vertex;
 
+    static bool hasFP16;
+
+    Model(){
+      if( hasFP16 )
+        model.reset( new Data<MVertex>() ); else
+        model.reset( new Data<MVertexF>() );
+      }
+
     void loadMX( Tempest::VertexBufferHolder &vboHolder,
                  Tempest::IndexBufferHolder  &iboHolder,
                  const std::string & fname ){
-      model.loadMX(vboHolder, iboHolder, fname );
+      model->loadMX(vboHolder, iboHolder, fname );
+      }
+
+    Model group( size_t id ) const {
+      Model m;
+      m.model->setupGroupElt( model.get(), id );
+      return m;
       }
 
     Raw* getRaw() const {
-      Raw  *m = new Model::Raw();
-
-      m->index. resize( model.indexes().size()  );
-      m->vertex.resize( model.vertexes().size() );
-
-      model.vertexes().get( m->vertex.begin(),
-                            m->vertex.end(),
-                            0 );
-      model.indexes().get( m->index.begin(),
-                           m->index.end(),
-                           0 );
-
-      return m;
+      return model->getRaw();
       }
 
     void load( Tempest::VertexBufferHolder & vboHolder,
@@ -305,97 +380,266 @@ class Model {
                const std::vector<Vertex>&   buf,
                const std::vector<uint16_t>& index,
                const Tempest::VertexDeclaration::Declarator& decl ){
-      model.load( vboHolder, iboHolder, buf, index, decl );
+      model->load( vboHolder, iboHolder, buf, index, decl );
       }
 
     void load( Tempest::VertexBufferHolder & vboHolder,
                Tempest::IndexBufferHolder  & iboHolder,
                const std::vector<Vertex>&   buf,
                const Tempest::VertexDeclaration::Declarator& decl ){
-      model.load( vboHolder, iboHolder, buf, decl );
+      model->load( vboHolder, iboHolder, buf, decl );
       }
 
     void load( Tempest::VertexBufferHolder & vboHolder,
                Tempest::IndexBufferHolder  & iboHolder,
                const Tempest::Model<MVertex>::Raw& buf,
                const Tempest::VertexDeclaration::Declarator& decl ){
-      model.load( vboHolder, iboHolder, buf, decl );
+      model->load( vboHolder, iboHolder, buf, decl );
       }
 
     void setTo( GraphicObject & obj ) const {
-      obj.setModel(model);
+      model->setTo(obj);
       }
 
     size_t vboHandle() const{
-      return model.vertexes().handle();
+      return model->vboHandle();
       }
 
     size_t iboHandle() const{
-      return model.indexes().handle();
+      return model->iboHandle();
       }
 
     const Tempest::ModelBounds &bounds() const {
-      return model.bounds();
+      return model->bounds();
       }
 
     void render( Tempest::Render &r) const {
-      r.draw( model );
+      model->render(r);
       }
 
     void render( const Tempest::AbstractMaterial &mat,
                  Tempest::Render &r,
                  const Tempest::Matrix4x4 &object,
                  const Tempest::AbstractCamera &camera ) const {
-      r.draw(mat, model, object, camera);
+      model->render(mat, r, object, camera);
       }
 
     ModelPhysic::PhysicType physicType() const {
-      return model.physicType;
+      return model->physicType();
       }
 
     size_t groupsCount() const {
-      return model.groups.size();
+      return model->groupsCount();
       }
 
-    Model group( size_t id ) const {
-      Model m;
-      m.model = model.groups[id];
-
-      return m;
-      }
     float cenX() const {
-      return model.cenX();
+      return model->cenX();
       }
 
     float cenY() const {
-      return model.cenY();
+      return model->cenY();
       }
 
     float cenZ() const {
-      return model.cenZ();
+      return model->cenZ();
       }
 
     float radius() const {
-      return model.radius();
+      return model->radius();
       }
 
     float boxSzX() const {
-      return model.boxSzX();
+      return model->boxSzX();
       }
 
     float boxSzY() const {
-      return model.boxSzY();
+      return model->boxSzY();
       }
 
     float boxSzZ() const {
-      return model.boxSzZ();
+      return model->boxSzZ();
       }
 
     size_t size() const{
-      return model.size();
+      return model->size();
       }
   private:
-    ModelImpl<MVertex> model;
+    struct IModel{
+      virtual ~IModel(){}
+      virtual void loadMX( Tempest::VertexBufferHolder &vboHolder,
+                           Tempest::IndexBufferHolder  &iboHolder,
+                           const std::string & fname ) = 0;
+
+      virtual void setupGroupElt( IModel *m, int id ) = 0;
+      virtual ModelImpl<MVertex>::Raw* getRaw() const = 0;
+
+      virtual void load( Tempest::VertexBufferHolder & vboHolder,
+                         Tempest::IndexBufferHolder  & iboHolder,
+                         const std::vector<Vertex>&   buf,
+                         const std::vector<uint16_t>& index,
+                         const Tempest::VertexDeclaration::Declarator& decl ) = 0;
+
+      virtual void load( Tempest::VertexBufferHolder & vboHolder,
+                         Tempest::IndexBufferHolder  & iboHolder,
+                         const std::vector<Vertex>&   buf,
+                         const Tempest::VertexDeclaration::Declarator& decl ) = 0;
+
+      virtual void load( Tempest::VertexBufferHolder & vboHolder,
+                         Tempest::IndexBufferHolder  & iboHolder,
+                         const Tempest::Model<MVertex>::Raw& buf,
+                         const Tempest::VertexDeclaration::Declarator& decl ) = 0;
+
+      virtual void setTo( GraphicObject & obj ) const = 0;
+      virtual size_t vboHandle() const = 0;
+      virtual size_t iboHandle() const = 0;
+
+      virtual const Tempest::ModelBounds &bounds() const = 0;
+
+      virtual float cenX() const = 0;
+      virtual float cenY() const = 0;
+      virtual float cenZ() const = 0;
+
+      virtual float radius() const = 0;
+
+      virtual float boxSzX() const = 0;
+      virtual float boxSzY() const = 0;
+      virtual float boxSzZ() const = 0;
+
+      virtual size_t size() const = 0;
+
+      virtual ModelPhysic::PhysicType physicType() const = 0;
+      virtual size_t groupsCount() const = 0;
+
+      virtual void render( Tempest::Render &r) const = 0;
+      virtual void render( const Tempest::AbstractMaterial &mat,
+                           Tempest::Render &r,
+                           const Tempest::Matrix4x4 &object,
+                           const Tempest::AbstractCamera &camera ) const = 0;
+      };
+
+    template< class V >
+    struct Data:IModel{
+      ModelImpl<V> data;
+
+      void loadMX( Tempest::VertexBufferHolder &vboHolder,
+                   Tempest::IndexBufferHolder  &iboHolder,
+                   const std::string & fname ){
+        data.loadMX(vboHolder, iboHolder, fname);
+        }
+
+      void setupGroupElt( IModel *m, int id ){
+        Data<V> &d = *((Data<V>*)m);
+        data = d.data.groups[id];
+        }
+
+      ModelImpl<MVertex>::Raw* getRaw() const {
+        ModelImpl<MVertex>::Raw *m = new ModelImpl<MVertex>::Raw();
+
+        m->index. resize( data.indexes().size()  );
+        m->vertex.resize( data.vertexes().size() );
+
+        data.vertexes().get( m->vertex.begin(),
+                             m->vertex.end(),
+                             0 );
+        data.indexes().get( m->index.begin(),
+                            m->index.end(),
+                            0 );
+
+        return m;
+        }
+
+      void load( Tempest::VertexBufferHolder & vboHolder,
+                 Tempest::IndexBufferHolder  & iboHolder,
+                 const std::vector<Vertex>&   buf,
+                 const std::vector<uint16_t>& index,
+                 const Tempest::VertexDeclaration::Declarator& decl ){
+        loadModelImpl(data, vboHolder, iboHolder, buf, index, decl );
+        }
+
+      void load( Tempest::VertexBufferHolder & vboHolder,
+                 Tempest::IndexBufferHolder  & iboHolder,
+                 const std::vector<Vertex>&   buf,
+                 const Tempest::VertexDeclaration::Declarator& decl ){
+        loadModelImpl(data, vboHolder, iboHolder, buf, decl );
+        }
+
+      void load( Tempest::VertexBufferHolder & vboHolder,
+                 Tempest::IndexBufferHolder  & iboHolder,
+                 const Tempest::Model<MVertex>::Raw& buf,
+                 const Tempest::VertexDeclaration::Declarator& decl ){
+        loadModelImplR<V, MVertex>( data, vboHolder, iboHolder, buf, decl );
+        }
+
+      void setTo( GraphicObject & obj ) const {
+        obj.setModel(data);
+        }
+
+      size_t vboHandle() const{
+        return data.vertexes().handle();
+        }
+
+      size_t iboHandle() const{
+        return data.indexes().handle();
+        }
+
+      const Tempest::ModelBounds &bounds() const {
+        return data.bounds();
+        }
+
+      void render( Tempest::Render &r ) const {
+        r.draw( data );
+        }
+
+      void render( const Tempest::AbstractMaterial &mat,
+                   Tempest::Render &r,
+                   const Tempest::Matrix4x4 &object,
+                   const Tempest::AbstractCamera &camera ) const {
+        r.draw( mat, data, object, camera );
+        }
+
+      float cenX() const {
+        return data.cenX();
+        }
+
+      float cenY() const {
+        return data.cenY();
+        }
+
+      float cenZ() const {
+        return data.cenZ();
+        }
+
+      float radius() const {
+        return data.radius();
+        }
+
+      float boxSzX() const {
+        return data.boxSzX();
+        }
+
+      float boxSzY() const {
+        return data.boxSzY();
+        }
+
+      float boxSzZ() const {
+        return data.boxSzZ();
+        }
+
+      size_t size() const {
+        return data.size();
+        }
+
+      ModelPhysic::PhysicType physicType() const {
+        return data.physicType;
+        }
+
+      size_t groupsCount() const {
+        return data.groups.size();
+        }
+      };
+
+    std::shared_ptr<IModel> model;
+    //ModelImpl<MVertex> model;
   };
 
 #endif // MODEL_MX_H

@@ -92,6 +92,7 @@ class MainGui {
     int keyUpEvent  ( Tempest::KeyEvent & e );
 
     int closeEvent ( Tempest::CloseEvent &e);
+    int gestureEvent(Tempest::AbstractGestureEvent &e);
     bool minimapMouseEvent(float x, float y, Tempest::Event::MouseButton btn , MiniMapView::Mode m);
 
     Tempest::Rect& selectionRect();

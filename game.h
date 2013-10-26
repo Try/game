@@ -51,6 +51,7 @@ class Game : public Tempest::Window {
     void keyUpEvent  ( Tempest::KeyEvent &e );
 
     void closeEvent(Tempest::CloseEvent &e);
+    void gestureEvent(Tempest::AbstractGestureEvent &e);
 
     Tempest::signal<bool> toogleFullScreen;
     void toogleFullScr();

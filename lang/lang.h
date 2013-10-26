@@ -15,6 +15,7 @@ class Lang {
     static std::wstring tr_impl( const String& text );
   public:
     static void load(const char* f , const wchar_t *iso3Code);
+    static void load(const char* f , const std::string &iso3Code);
 
     static std::wstring tr( const std::wstring& text );
     static std::wstring tr( const std::string& text );

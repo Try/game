@@ -456,6 +456,10 @@ void Game::closeEvent(Tempest::CloseEvent &e) {
   gui.closeEvent(e);
   }
 
+void Game::gestureEvent(Tempest::AbstractGestureEvent &e) {
+  gui.gestureEvent(e);
+  }
+
 void Game::toogleFullScr() {
   toogleFullScreen( isFullScreenMode() );
   }
@@ -729,6 +733,7 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
 
   material.shMatID = src.shadowType;
 
+  material.teamColor = &teamColor;
   material.diffuse   = r.texture( src.name+"/diff" );
   material.normal    = r.texture( src.name+"/norm" );
   material.glow      = r.texture( src.name+"/glow" );

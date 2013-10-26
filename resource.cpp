@@ -34,6 +34,8 @@ Resource::Resource( Tempest::TextureHolder       & tx,
     vsHolder(vsh),
     fsHolder(fsh),
     pixmaps( ltexHolder ){
+  Model::hasFP16 = tx.device().caps().hasHalf2 && tx.device().caps().hasHalf4;
+
   models.owner   = this;
   textures.owner = this;
   vs.owner = this;
@@ -80,7 +82,9 @@ const Model::Raw &Resource::rawModel(const std::string &key) const {
 Model Resource::model( const Tempest::Model<MVertex>::Raw &r ) const {
   Model m;
 
-  m.load( lvboHolder, iboHolder, r, MVertex::decl() );
+  if( m.hasFP16 )
+    m.load( lvboHolder, iboHolder, r, MVertex::decl()  ); else
+    m.load( lvboHolder, iboHolder, r, MVertexF::decl() );
 
   return m;
   }

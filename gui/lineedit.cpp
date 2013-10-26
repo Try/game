@@ -4,7 +4,7 @@
 
 using namespace Tempest;
 
-LineEdit::LineEdit(Resource &res):res(res) {
+LineEdit::LineEdit(Resource &res):res(res), anim(0) {
   frame = res.pixmap("gui/colors");
   sedit = 0;
   eedit = 0;
@@ -26,6 +26,10 @@ LineEdit::LineEdit(Resource &res):res(res) {
   p.typeV = FixedMax;
 
   setSizePolicy(p);
+
+  timer.setRepeatCount(0);
+  timer.timeout.bind( this, &LineEdit::animation );
+  onFocusChange.bind( this, &LineEdit::setupTimer );
   }
 
 void LineEdit::setText(const std::wstring &t) {
@@ -138,8 +142,9 @@ void LineEdit::paintEvent( Tempest::PaintEvent &pe ) {
     x += 1;
     }
 
-  p.drawRect( sx+oldSc, 0, x-sx, h(),
-              2,0, 1,1 );
+  if( editable && anim )
+    p.drawRect( sx+oldSc, 0, x-sx, h(),
+                2,0, 1,1 );
 
   if( hasFocus() ){
     //p.drawRect( 0, 0, w(), h(),
@@ -282,4 +287,20 @@ void LineEdit::storeText(bool) {
     isEdited = 0;
     onEditingFinished( txt );
     }
+  }
+
+void LineEdit::setupTimer( bool f ) {
+  if( f ){
+    timer.start(1000);
+    } else {
+    timer.stop();
+    anim = 0;
+    }
+
+  update();
+  }
+
+void LineEdit::animation() {
+  anim = !anim;
+  update();
   }

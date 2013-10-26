@@ -60,8 +60,7 @@ InGameControls::InGameControls( Resource &res,
                                 BehaviorMSGQueue &,
                                 PrototypesLoader &prototypes,
                                 Game &game)
-                : //Surface( ),
-                 res(res),
+                :res(res),
                  game(game),
                  prototypes(prototypes)
   {

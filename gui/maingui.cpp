@@ -278,6 +278,11 @@ int MainGui::closeEvent(Tempest::CloseEvent &e) {
   return e.isAccepted();
   }
 
+int MainGui::gestureEvent(Tempest::AbstractGestureEvent &e) {
+  Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::Gesture);
+  return e.isAccepted();
+  }
+
 bool MainGui::minimapMouseEvent( float x, float y,
                                  Tempest::Event::MouseButton btn,
                                  MiniMapView::Mode m ) {
@@ -371,10 +376,12 @@ void MainGui::setCutsceneMode(bool cs) {
   }
 
 void MainGui::setFPS(float f) {
+#ifndef NO_DEBUG
   if( fps!=f ){
     fpsStr = L"fps = "+Lexical::upcastw(f);
     fps = f;
     }
+#endif
   }
 
 void MainGui::saveGame() {

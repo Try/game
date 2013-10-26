@@ -43,7 +43,10 @@ class Button : public Tempest::Widget {
     void mouseDownEvent(Tempest::MouseEvent &e);
     void mouseMoveEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);
+    void mouseDragEvent(Tempest::MouseEvent &e);
     void paintEvent( Tempest::PaintEvent &p);
+
+    void gestureEvent(Tempest::AbstractGestureEvent &e);
 
     void keyPressEvent(Tempest::KeyEvent &e);
 

@@ -97,13 +97,18 @@ void Button::mouseMoveEvent( Tempest::MouseEvent & ) {
   }
 
 void Button::mouseUpEvent(Tempest::MouseEvent &e) {
-  if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 ){
+  if( e.x <= w() && e.y <=h() &&  e.x >=0 && e.y >=0 &&
+      pressed ){
     emitClick();
     res.sound("click").play();
     }
 
   pressed = false;
   update();
+  }
+
+void Button::mouseDragEvent(Tempest::MouseEvent &e) {
+  e.ignore();
   }
 
 void Button::paintEvent( Tempest::PaintEvent &e ) {
@@ -148,6 +153,21 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
       presAnim = pressed;
 
     update();
+    }
+  }
+
+void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
+  if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture ){
+    Tempest::DragGesture& g = (Tempest::DragGesture&)e;
+
+    if( g.state()==Tempest::DragGesture::GestureUpdated ){
+      pressed  = false;
+      presAnim = false;
+      update();
+      }
+    e.ignore();
+    } else {
+    e.ignore();
     }
   }
 

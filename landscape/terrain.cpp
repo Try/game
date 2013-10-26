@@ -333,8 +333,9 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
   buildVBO(lx, rx, ly, ry, land,  ibo, true, plane );
 
   if( land.size() ){
-    model.load( vboHolder, iboHolder, land, ibo, MVertex::decl() );
-    //model.load( vboHolder, iboHolder, land,  MVertex::decl() );
+    if( model.hasFP16 )
+      model.load( vboHolder, iboHolder, land, ibo, MVertex::decl() ); else
+      model.load( vboHolder, iboHolder, land, ibo, MVertexF::decl() );
 
     TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
@@ -356,7 +357,9 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
 
   buildVBO(lx, rx, ly, ry, minor, ibo, false, plane );
   if( minor.size() ){
-    model.load( vboHolder, iboHolder, minor, ibo, MVertex::decl() );
+    if( model.hasFP16 )
+      model.load( vboHolder, iboHolder, minor, ibo, MVertex::decl() ); else
+      model.load( vboHolder, iboHolder, minor, ibo, MVertexF::decl() );
 
     TerrainChunk::View view;
     ProtoObject obj = prototype.get( aviableTiles[texture] );
@@ -381,21 +384,11 @@ void Terrain::buildGeometry( Tempest::VertexBufferHolder & vboHolder,
                                                     prototype) );
     chunk.waterView.view->loadView( waterGeometry(cX, cY) );
 
-    /*
-    chunk.fogView.view.reset( new GameObjectView( scene,
-                                                  world,
-                                                  prototype.get( "water" ),
-                                                  prototype) );
-    ProtoObject::View vf;
-    vf.materials.clear();
-    vf.materials.push_back("fog_of_war");
-
-    chunk.fogView.view->loadView( fogGeometry(cX, cY), vf );
-    */
-
     buildShadowVBO(lx, rx, ly, ry, land, ibo );
     if( land.size() ){
-      model.load( vboHolder, iboHolder, land, ibo, MVertex::decl() );
+      if( model.hasFP16 )
+        model.load( vboHolder, iboHolder, land, ibo, MVertex::decl() ); else
+        model.load( vboHolder, iboHolder, land, ibo, MVertexF::decl() );
 
       TerrainChunk::View view;
 
@@ -473,17 +466,15 @@ void Terrain::computePlanes() {
       }
   }
 
-Tempest::Model<WaterVertex>
+Tempest::Model<MVertex>
       Terrain::waterGeometry(int cX, int cY ) const {
-  Tempest::Model<WaterVertex> model;
-  WaterVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
+  Tempest::Model<MVertex> model;
+  MVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
   v.h = 0;
-  v.dir[0] = 1;
-  v.dir[1] = 1;
+  //v.dir[0] = 1;
+  //v.dir[1] = 1;
 
-  //std::fill( v.color, v.color+4, 1 );
-
-  std::vector< WaterVertex > land;
+  std::vector< MVertex > land;
   const int dx[] = {0, 1, 1, 0, 1, 0},
             dy[] = {0, 0, 1, 0, 1, 1};
 
@@ -544,21 +535,23 @@ Tempest::Model<WaterVertex>
           v.h = v.h*3;
           v.h = std::min( 1.0f, std::max( float(v.h), 0.0f) );
 
+          /*
           v.dir[0] =  heightAt(i+dx[q],r+dy[q]-1)
                      -heightAt(i+dx[q],r+dy[q]+1);
 
           v.dir[1] =  heightAt(i+dx[q]-1,r+dy[q])
                      -heightAt(i+dx[q]+1,r+dy[q]);
+          */
 
-          { v.dir[0] = 1;//0.5*(x-width()/2);//double(width());
-            v.dir[1] = 1;//0.5*(y-height()/2);//double(height());
-            }
           land.push_back(v);
           }
 
-  Tempest::VertexDeclaration::Declarator decl = MVertex::decl();
-  decl//.add( Tempest::Decl::float1, Tempest::Usage::Depth    )
-      .add( Tempest::Decl::half2, Tempest::Usage::TexCoord, 1 );
+  Tempest::VertexDeclaration::Declarator decl;
+  if( Model::hasFP16 )
+    decl = MVertex ::decl(); else
+    decl = MVertexF::decl();
+
+  // decl.add( Tempest::Decl::half2, Tempest::Usage::TexCoord, 1 );
 
   std::vector<uint16_t> index;
   TnlOptimize::index( land, index );

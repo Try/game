@@ -5,6 +5,11 @@
 
 class EfectBase{
   public:
+    enum UnitEfect{
+      NoEfect = 0,
+      Strorm
+      };
+
     virtual ~EfectBase(){}
     virtual void tick(){}
     virtual bool isEnd() const { return true; }

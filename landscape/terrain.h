@@ -19,7 +19,7 @@ class SmallGraphicsObject;
 
 struct WaterVertex: MVertex{
   //Tempest::Half h;
-  Tempest::Half dir[2];
+  //Tempest::Half dir[2];
   };
 
 #include "game/gameobjectview.h"
@@ -55,7 +55,7 @@ class Terrain {
 
     void buildGeometry();
 
-    Tempest::Model<WaterVertex> waterGeometry( int cX, int cY ) const;
+    Tempest::Model<MVertex> waterGeometry( int cX, int cY ) const;
 
     Model fogGeometry( int cX, int cY ) const;
 
@@ -132,7 +132,7 @@ class Terrain {
     array2d<TileInfo> tileinf;
     array2d<TerrainChunk> chunks;
 
-    std::vector< Model::Vertex > land, minor;
+    std::vector< MVertex > land, minor;
     std::vector<uint16_t>        ibo;
 
     array2d<int>  heightMap;

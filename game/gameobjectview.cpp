@@ -321,7 +321,7 @@ void GameObjectView::loadView( const Model &model,
   view.push_back( object );
   }
 
-void GameObjectView::loadView(const Tempest::Model<WaterVertex> &model ){
+void GameObjectView::loadView(const Tempest::Model<MVertex> &model ){
   view.clear();
 
   for( int i=0; i<3; ++i )

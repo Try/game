@@ -34,6 +34,7 @@ class ShaderMaterial {
       Tempest::Texture2d texture[ ShaderSource::tsCount ][32];
 
       float lightDir[3], lightColor[3], sceneAblimient[3];
+      Tempest::Color color;
       };
 
     void setupShaderConst(UniformsContext& context );
@@ -56,7 +57,8 @@ class ShaderMaterial {
         ViewVec,
         LightDir,
         LightColor,
-        LightAblimient
+        LightAblimient,
+        Color
         } usage;
 
       enum Shader{

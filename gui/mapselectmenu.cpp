@@ -4,7 +4,10 @@
 #include <Tempest/LocalTexturesHolder>
 #include <Tempest/Painter>
 #include <Tempest/Layout>
+
 #include "button.h"
+#include "listbox.h"
+
 #include <cmath>
 
 struct Btn:Button{
@@ -21,8 +24,8 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow) {
   Button *bmenu = new Button(res);
   bmenu->clicked.bind(this, &Widget::deleteLater );
   bmenu->icon = triangle;
-  bmenu->setMinimumSize(50,50);
-  bmenu->setMaximumSize(50,50);
+  bmenu->setMinimumSize(75,75);
+  bmenu->setMaximumSize(75,75);
 
   Widget* mbox = new Widget();
   mbox->setLayout(Tempest::Horizontal);
@@ -31,9 +34,15 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow) {
   mbox->layout().add(bmenu);
   mbox->layout().add( new Widget() );
 
+  bmenu = new Button(res);
+  bmenu->clicked.bind(this, &Widget::deleteLater );
+  bmenu->icon = triangle;
+  bmenu->setMinimumSize(75,75);
+  bmenu->setMaximumSize(75,75);
+  mbox->layout().add(bmenu);
+
   setLayout(Tempest::Vertical);
   layout().add( mbox );
-  layout().add( new Widget() );
 
   isAnim  = false;
   mouseDx = 0;

@@ -23,7 +23,7 @@ class MaterialServer {
     size_t idOfMaterial( const std::string& m );
 
     void load( Resource &res );
-    void draw(const AbstractGraphicObject& obj , bool spass);
+    void draw( const AbstractGraphicObject& obj, bool spass );
     void completeDraw( Tempest::Device &device,
                        const Scene &scene,
                        GBuffer &g,
