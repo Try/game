@@ -65,7 +65,8 @@ void DesertStrikeScenario::NumButton::gestureEvent(Tempest::AbstractGestureEvent
     Tempest::DragGesture &d = (Tempest::DragGesture&)e;
     Tempest::Point dp = d.pos - d.start;
 
-    if( dp.x<15 && d.pos.y>mapToRoot( Tempest::Point(0,h())).y ){
+    if( dp.x<15 && d.pos.y>mapToRoot( Tempest::Point(0,h())).y &&
+        e.state()==Tempest::AbstractGestureEvent::GestureFinished ){
       sellGesture();
       return;
       }

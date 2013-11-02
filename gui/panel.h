@@ -22,6 +22,7 @@ class Panel : public Tempest::Widget {
     void mouseUpEvent(Tempest::MouseEvent &e);
 
     void mouseWheelEvent(Tempest::MouseEvent &e);
+    void gestureEvent(Tempest::AbstractGestureEvent &e);
 
     void paintEvent( Tempest::PaintEvent &p);
     virtual void paintFrame(Tempest::Painter &p );

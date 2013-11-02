@@ -36,7 +36,7 @@ class GameObjectView {
                     const ProtoObject &p,
                     const PrototypesLoader & pl );
 
-    ~GameObjectView();
+    virtual ~GameObjectView();
 
     Tempest::Color teamColor;
 
@@ -167,6 +167,8 @@ class GameObjectView {
     void serialize(GameSerializer &s, Obj * obj , bool store);
 
     void init();
+
+    static int viewsCount;
   };
 
 #endif // GAMEOBJECTVIEW_H

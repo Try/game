@@ -57,6 +57,8 @@ class Button : public Tempest::Widget {
 
     Resource & res;
     bool isPressed() const;
+    void finishPaint();
+
   private:
     clock_t timePressed;
     bool pressed, presAnim;

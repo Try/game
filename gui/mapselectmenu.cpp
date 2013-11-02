@@ -8,18 +8,155 @@
 #include "button.h"
 #include "listbox.h"
 
+#include "lang/lang.h"
+#include "game/player.h"
+
+#include "gamesettings.h"
+
 #include <cmath>
 
 struct Btn:Button{
   Btn(Resource &res):Button(res){}
-
   };
 
-MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow) {
+struct MapSelectMenu::ColorBtn: Button{
+  ColorBtn( Resource & res ):Button(res){
+    setMinimumSize(75,75);
+    setMaximumSize(75,75);
+
+    sp   = res.pixmap("gui/plColor");
+    cl   = Tempest::Color(1);
+    }
+
+  void paintEvent(Tempest::PaintEvent &e){
+    Tempest::Painter p(e);
+
+    drawBack(p);
+
+    p.setColor(cl);
+    p.setTexture(sp);
+
+    if( GameSettings::color == cl ){
+      p.drawRect( size().toRect(),
+                  sp.size().toRect() );
+      } else {
+      p.drawRect( Tempest::Rect(3,3, w()-6, h()-6),
+                  sp.size().toRect() );
+      }
+
+    p.setColor( Tempest::Color(1) );
+
+    p.setBlendMode( Tempest::alphaBlend );
+    drawFrame(p);
+    finishPaint();
+    }
+
+  void emitClick(){
+    Button::emitClick();
+    onClicked( cl );
+    update();
+    }
+
+  Tempest::signal<Tempest::Color> onClicked;
+
+  Tempest::Sprite sp;
+  Tempest::Color  cl;
+  };
+
+struct MapSelectMenu::ColorChoser: AbstractListBox {
+  ColorChoser(Resource & r):AbstractListBox(r), res(r){
+    setMinimumSize(100,100);
+    setMaximumSize(100,100);
+
+    sp   = res.pixmap("gui/plColor");
+    }
+
+  void paintEvent(Tempest::PaintEvent &e){
+    Tempest::Painter p(e);
+
+    drawBack(p);
+
+    p.setTexture(sp);
+    p.setColor( GameSettings::color );
+    p.drawRect( Tempest::Rect(3,3, w()-6, h()-6),
+                sp.size().toRect() );
+    p.setColor( Tempest::Color(1) );
+
+    p.setBlendMode( Tempest::alphaBlend );
+    drawFrame(p);
+    }
+
+  Tempest::Widget *createDropList(){
+    Panel *p = new Panel(res);
+    p->resize(250,250);
+    p->setLayout( Tempest::Vertical );
+    p->setMargin(10);
+
+    for( int i=0; i<3; ++i ){
+      Widget* w = new Widget();
+      w->setLayout(Tempest::Horizontal);
+      for( int r=0; r<3; ++r ){
+        ColorBtn *b = new ColorBtn(res);
+        b->cl = Player::colors[(i*3+r)%8];
+        b->onClicked.bind( onClicked );
+
+        w->layout().add( b );
+        }
+
+      p->layout().add( w );
+      }
+
+    p->setPosition( mapToRoot( Tempest::Point(-p->w(), h() )) );
+    return p;
+    }
+
+  Tempest::signal<Tempest::Color> onClicked;
+  Resource & res;
+  Tempest::Sprite sp;
+  };
+
+struct MapSelectMenu::Options: AbstractListBox {
+  Options(Resource & r):AbstractListBox(r), res(r){}
+
+  Tempest::Widget *createDropList(){
+    Panel *p = new Panel(res);
+    p->resize(140,150);
+    p->setLayout( Tempest::Vertical );
+    p->setMargin(10);
+
+    ColorChoser *ch = new ColorChoser(res);
+    ch->onClicked.bind( onColor );
+    p->layout().add( ch );
+
+    ListBox *l = new ListBox(res);
+    std::vector< std::wstring > d;
+    d.push_back( Lang::tr(L"$(difficulty/easy)")   );
+    d.push_back( Lang::tr(L"$(difficulty/medium)") );
+    d.push_back( Lang::tr(L"$(difficulty/hard)")   );
+
+    l->setItemList(d);
+    l->setCurrentItem( GameSettings::difficulty );
+    l->onItemSelected.bind( onItemSelected );
+
+    p->layout().add( l );
+
+    p->setPosition( mapToRoot( Tempest::Point(-p->w(), h() )) );
+
+    return p;
+    }
+
+  Tempest::signal<int> onItemSelected;
+  Tempest::signal<Tempest::Color> onColor;
+
+  Resource & res;
+  };
+
+MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow), res(res) {
   base     = res.ltexHolder.load("data/icons/maps/base.png");
   mPriview = res.ltexHolder.load("data/icons/maps/1.png");
 
   triangle = res.pixmap("gui/triangle");
+  GameSettings::load();
 
   Button *bmenu = new Button(res);
   bmenu->clicked.bind(this, &Widget::deleteLater );
@@ -34,12 +171,15 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow) {
   mbox->layout().add(bmenu);
   mbox->layout().add( new Widget() );
 
-  bmenu = new Button(res);
-  bmenu->clicked.bind(this, &Widget::deleteLater );
-  bmenu->icon = triangle;
-  bmenu->setMinimumSize(75,75);
-  bmenu->setMaximumSize(75,75);
-  mbox->layout().add(bmenu);
+  Options *optMenu = new Options(res);
+  optMenu->clicked.bind(this, &MapSelectMenu::showOptions );
+  optMenu->onItemSelected.bind(this, &MapSelectMenu::setDificulty);
+  optMenu->onColor.bind(this, &MapSelectMenu::setColor );
+
+  optMenu->icon = res.pixmap("gui/icon/castle");
+  optMenu->setMinimumSize(75,75);
+  optMenu->setMaximumSize(75,75);
+  mbox->layout().add(optMenu);
 
   setLayout(Tempest::Vertical);
   layout().add( mbox );
@@ -142,4 +282,18 @@ Tempest::Rect MapSelectMenu::rect(int i, const Tempest::Texture2d &t) {
 
   return Tempest::Rect( (w()-t.width()*sz)/2+dx, (h()-t.height()*sz)/2,
                         t.width()*sz, t.height()*sz );
+  }
+
+void MapSelectMenu::showOptions() {
+  //new Options(res);
+  }
+
+void MapSelectMenu::setColor(const Tempest::Color &cl) {
+  GameSettings::color = cl;
+  GameSettings::save();
+  }
+
+void MapSelectMenu::setDificulty(int d) {
+  GameSettings::difficulty = d;
+  GameSettings::save();
   }

@@ -70,7 +70,7 @@ World::World( Game & gm,
   scene.lights().direction()[0] = light;
 
   //Tempest::DirectionLight light;
-  light.setDirection( -2, 1, -2 );
+  light.setDirection( 2, 1, -2 );
   light.setColor    ( Tempest::Color( 0.7, 0.7, 0.7 ) );
   light.setAblimient( Tempest::Color( 0.23, 0.23,  0.35) );
   scene.lights().direction()[0] = light;
@@ -84,14 +84,16 @@ World::World( Game & gm,
   //physicCompute = async( this, &World::computePhysic, 0 );
   }
 
-World::~World() {
+World::~World() {  
+  for( size_t i=0; i<wptrs.size(); ++i )
+    *wptrs[i] = WeakWorldPtr();
+
   updatePosIntents.clear();
   gameObjects.clear();
   nonBackground.clear();
   eviObjects.clear();
   warehouses.clear();
   resouces.clear();
-  wptrs.clear();
 
   isRunning = false;
   physicCompute.join();

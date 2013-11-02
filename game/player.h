@@ -21,6 +21,7 @@ class Player {
     Player(int num );
     virtual ~Player();
 
+    static const Tempest::Color colors[8];
     GameObject * editObj;
 
     void addUnit( GameObject * u );
@@ -42,6 +43,7 @@ class Player {
     Tempest::signal< GameObject&, Player& > onUnitDied;
 
     const Tempest::Color& color() const;
+    void setColor( const Tempest::Color & cl );
 
     void addGold( int g );
     int  gold() const;

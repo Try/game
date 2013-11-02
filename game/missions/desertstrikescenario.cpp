@@ -16,6 +16,7 @@
 #include "util/math.h"
 #include "algo/algo.h"
 #include "gui/mainmenu.h"
+#include "gamesettings.h"
 
 #include <cmath>
 
@@ -291,6 +292,8 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
       m.name = name;
       player(pl+1).queue.push_back(m);
       grade( player(pl+1), player(pl+1).queue.back() );
+      GameMessages::message( L"$(message/upgrade started)",
+                             res.pixmap("gui/icon/house") );
       }
     }else
   if( ch=='m' ){
@@ -543,6 +546,9 @@ void DesertStrikeScenario::toogleMinimap( int page ) {
   mmapbox     ->setVisible( !mmapbox     ->isVisible() );
   buyUnitPanel->setVisible( !buyUnitPanel->isVisible() );
   miniBuy     ->setVisible( !miniBuy     ->isVisible() );
+
+  GameSettings::smallMenu = miniBuy->isVisible();
+  GameSettings::save();
   }
 
 void DesertStrikeScenario::cancelTracking( float, float,
@@ -638,6 +644,14 @@ void DesertStrikeScenario::onStartGame() {
   World &wx = game.curWorld();
   wx.camera.setDistance( 2*wx.camera.distance()/3 );
 
+  player().setColor( GameSettings::color );
+  int cl2 = rand()%7;
+  for( int i=0; i<8; ++i )
+    if( Player::colors[i]==GameSettings::color && cl2>=i )
+      cl2++;
+
+  player(2).setColor( Player::colors[cl2] );
+  player(2).dificultyLv = GameSettings::difficulty;
 
   std::vector<Tempest::Point> casP;
   for( size_t i=0; i<wx.activeObjects().size(); ++i )
@@ -960,7 +974,11 @@ void DesertStrikeScenario::aiTick( int npl ) {
     c += (i->second);
 
   bool gradeAccum = false;
-  if( std::min(4, pl.aiTick/6 + (pl.aiTick>3?1:0) ) > pl.economyGrade ){
+  int firstHouseTiming = 3;
+  if( pl.dificultyLv==0 )
+    firstHouseTiming = 1;
+
+  if( std::min(4, pl.aiTick/6 + (pl.aiTick>firstHouseTiming?1:0) ) > pl.economyGrade ){
     if( !pl.isInQueue("house") &&
         pl.gold() >= game.prototype("house").data.gold ){
       pl.addGold( -game.prototype("house").data.gold );
@@ -1056,27 +1074,29 @@ void DesertStrikeScenario::aiTick( int npl ) {
     0
     };
 
-  if( !gradeAccum && !uaccum ){
-    bool ok = true;
+  if( pl.dificultyLv>=1 ){
+    if( !gradeAccum && !uaccum ){
+      bool ok = true;
 
-    while( ok ){
-      ok = false;
-      for( int i=0; defaultUnits[i]; ++i ){
-        const char* unit = defaultUnits[i];
+      while( ok ){
+        ok = false;
+        for( int i=0; defaultUnits[i]; ++i ){
+          const char* unit = defaultUnits[i];
 
-        int tr = tierOf(unit);
-        if( tr <= pl.castleGrade &&
-            !(pl.castleGrade==2 && tr==0)){
-          int gold = game.prototype(unit).data.gold;
-          if( pl.gold() >= gold ){
-            ++pl.units[unit];
-            pl.setGold( pl.gold() - gold );
-            ok = true;
+          int tr = tierOf(unit);
+          if( tr <= pl.castleGrade &&
+              !(pl.castleGrade==2 && tr==0)){
+            int gold = game.prototype(unit).data.gold;
+            if( pl.gold() >= gold ){
+              ++pl.units[unit];
+              pl.setGold( pl.gold() - gold );
+              ok = true;
+              }
             }
           }
         }
-      }
 
+      }
     }
   }
 

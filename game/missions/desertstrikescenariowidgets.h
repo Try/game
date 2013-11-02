@@ -16,9 +16,13 @@ struct DesertStrikeScenario::NumButton: public Button {
   NumButton( Resource & r );
   void paintEvent(Tempest::PaintEvent &e);
 
+  void gestureEvent(Tempest::AbstractGestureEvent &e);
+
   int  num;
   Tempest::Font font;
   Tempest::Sprite numFrame;
+
+  Tempest::signal<> sellGesture;
   };
 
 struct DesertStrikeScenario::BuyButton: public NumButton {
@@ -27,9 +31,10 @@ struct DesertStrikeScenario::BuyButton: public NumButton {
              DPlayer & pl,
              int tier );
   void emitClick();
+  void emitSell();
   void paintEvent(Tempest::PaintEvent &e);
 
-  Tempest::signal<const ProtoObject&> onClick;
+  Tempest::signal<const ProtoObject&> onClick, onSell;
 
   const ProtoObject& p;
   DPlayer & pl;
@@ -209,6 +214,8 @@ struct DesertStrikeScenario::MiniBuyPanel: public TranscurentPanel {
 
   void buyU( const ProtoObject & unitToBuy );
   void buyG( const ProtoObject & gradeToBuy );
+
+  void sellU( const ProtoObject & unitToBuy );
   Game &game;
   };
 

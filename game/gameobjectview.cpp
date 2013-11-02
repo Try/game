@@ -11,6 +11,8 @@
 
 #include <cmath>
 
+int GameObjectView::viewsCount = 0;
+
 GameObjectView::GameObjectView( GameObject &obj,
                                 const ProtoObject &p )
   : scene( obj.getScene() ),
@@ -71,10 +73,13 @@ void GameObjectView::init() {
     selection[i]->setVisible(false);
     htime[i] = 0;
     }
+
+  ++viewsCount;
   }
 
 GameObjectView::~GameObjectView() {
   freePhysic();
+  --viewsCount;
   }
 
 void GameObjectView::freePhysic(){

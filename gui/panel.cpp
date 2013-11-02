@@ -55,8 +55,10 @@ void Panel::mouseUpEvent(Tempest::MouseEvent &) {
   mouseTracking = false;
   }
 
-void Panel::mouseWheelEvent(Tempest::MouseEvent &) {
+void Panel::mouseWheelEvent(Tempest::MouseEvent &) {  
+  }
 
+void Panel::gestureEvent(Tempest::AbstractGestureEvent &e) {
   }
 
 void Panel::paintEvent( Tempest::PaintEvent &e ) {

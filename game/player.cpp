@@ -8,6 +8,17 @@
 #include "util/gameserializer.h"
 #include "world.h"
 
+const Tempest::Color Player::colors[8] = {
+  Tempest::Color(1, 1, 1 ),
+  Tempest::Color(1, 1, 0 ),
+  Tempest::Color(1, 0, 0 ),
+  Tempest::Color(0, 1, 0 ),
+  Tempest::Color(0, 0, 1 ),
+  Tempest::Color(1, 0, 1 ),
+  Tempest::Color(0, 1, 1 ),
+  Tempest::Color(0, 0, 0 ),
+  };
+
 Player::Player( int num ) {
   editObj  = 0;
 
@@ -21,20 +32,9 @@ Player::Player( int num ) {
   m.htCtrl = 0;
   m.isAi   = 1;
 
-  static Tempest::Color cl[8] = {
-    Tempest::Color(1, 1, 1 ),
-    Tempest::Color(1, 1, 0 ),
-    Tempest::Color(1, 0, 0 ),
-    Tempest::Color(0, 1, 0 ),
-    Tempest::Color(0, 0, 1 ),
-    Tempest::Color(1, 0, 1 ),
-    Tempest::Color(0, 1, 1 ),
-    Tempest::Color(0, 0, 0 ),
-    };
-
   m.objects.reserve(2048);
   m.selected.reserve(256);
-  m.color = cl[ std::min(7, m.num) ];
+  m.color = colors[ std::min(7, m.num) ];
   /*
   m.color = Tempest::Color( 255*m.color.r(),
                          255*m.color.g(),
@@ -108,6 +108,10 @@ std::vector<GameObject*> &Player::selected() {
 
 const Tempest::Color &Player::color() const {
   return m.color;
+  }
+
+void Player::setColor(const Tempest::Color &cl) {
+  m.color = cl;
   }
 
 void Player::addGold(int g) {

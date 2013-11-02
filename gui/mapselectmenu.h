@@ -41,6 +41,17 @@ class MapSelectMenu : public ModalWindow {
 
     Tempest::Rect rect( int i );
     Tempest::Rect rect( int i, const Tempest::Texture2d &t );
+
+    struct Options;
+    struct ColorChoser;
+    struct ColorBtn;
+
+    void showOptions();
+
+    void setColor( const Tempest::Color & cl );
+    void setDificulty( int d );
+
+    Resource &res;
   };
 
 #endif // MAPSELECTMENU_H

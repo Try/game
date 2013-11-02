@@ -52,7 +52,8 @@ class DesertStrikeScenario  : public Scenario {
         armorGrade(0),
         castleGrade(0),
         economyGrade(0),
-        aiTick(0){}
+        aiTick(0),
+        dificultyLv(1){}
 
       std::map<std::string, int> units, realCount;
       int atkGrade,    armorGrade;
@@ -70,6 +71,7 @@ class DesertStrikeScenario  : public Scenario {
       std::vector<QElement> queue;
 
       int aiTick;
+      int dificultyLv;
       bool isInQueue( const char* ch );
       };
 

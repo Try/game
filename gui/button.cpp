@@ -148,12 +148,7 @@ void Button::paintEvent( Tempest::PaintEvent &e ) {
   p.drawText( 0,0,w(),h(), txt,
               Tempest::AlignHCenter | Tempest::AlignVCenter );
 
-  if( presAnim != pressed ){
-    if( clock() > timePressed+CLOCKS_PER_SEC/8 )
-      presAnim = pressed;
-
-    update();
-    }
+  finishPaint();
   }
 
 void Button::gestureEvent(Tempest::AbstractGestureEvent &e) {
@@ -271,4 +266,13 @@ void Button::emitClick() {
 
 bool Button::isPressed() const {
   return presAnim;
+  }
+
+void Button::finishPaint() {
+  if( presAnim != pressed ){
+    if( clock() > timePressed+CLOCKS_PER_SEC/8 )
+      presAnim = pressed;
+
+    update();
+    }
   }
