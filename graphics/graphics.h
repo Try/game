@@ -101,7 +101,10 @@ class Graphics {
               bool deepVTest, bool shadowPass,
               const Scene::Objects & v );
 
-    Tempest::Texture2d fillShadowMap(Tempest::Device &device, const Scene &scene , const Tempest::Size &sm);
+    Tempest::Texture2d fillShadowMap( Tempest::Device &device,
+                                      const Scene &scene,
+                                      const Tempest::Size &sm,
+                                      float sv = 0 );
 
     MaterialServer msrv;
     ShaderMaterial::UniformsContext context, cefects;

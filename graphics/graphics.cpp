@@ -50,7 +50,6 @@ Graphics::Graphics( void *hwnd, bool isFullScreen )
 #endif
   //Tempest::DisplaySettings s( Tempest::SystemAPI::screenSize(), 32, true );
   //Tempest::DisplaySettings s( 1280, 768, 32, true );
-
   //device.setDisplaySettings(s);
 
   SBorderVertex sb[] = { {-1,-1}, {1, -1}, {-1, 1}, {1,1},
@@ -88,7 +87,7 @@ bool Graphics::render( Tempest::Surface &scene,
   uiRender.renderTo(device);
   device.endPaint();
 
-  device.present();
+  device.present( Tempest::AbstractAPI::SB_BufferDestroyed );
 
   lvboHolder.pauseCollect(0);
   liboHolder.pauseCollect(0);
@@ -113,7 +112,8 @@ bool Graphics::render( Scene &scene,
 
   time = dt;//(time+dt);
   renderImpl(scene, e, camera, dt);
-  device.present();
+
+  device.present( Tempest::AbstractAPI::SB_BufferDestroyed );
 
   return true;
   }
@@ -136,10 +136,6 @@ void Graphics::renderSubScene( const Scene &scene,
                                Tempest::Texture2d &out ) {
   Tempest::Texture2d d = depth(out.size());
 
-  device.beginPaint(out, d);
-  device.clear( Tempest::Color(0), 1 );
-  device.endPaint();
-
   context.invW = 1.0f/out.width();
   context.invH = 1.0f/out.height();
 
@@ -147,7 +143,11 @@ void Graphics::renderSubScene( const Scene &scene,
   cefects.invH = context.invH;
 
   context.texture[ ShaderSource::tsShadowMap ][0]
-      = fillShadowMap(device, scene, Tempest::Size(128));
+      = fillShadowMap(device, scene, Tempest::Size(256), 10);
+
+  device.beginPaint(out, d);
+  device.clear( Tempest::Color(0), 1 );
+  device.endPaint();
 
   Frustum frustum( scene.camera() );
   draw( frustum, true, false, scene.all() );
@@ -177,10 +177,6 @@ void Graphics::renderImpl( Scene &scene,
                            ParticleSystemEngine &e,
                            const Tempest::Camera& camera,
                            size_t dt ) {
-  device.beginPaint();
-  device.clear( Tempest::Color(0,0,1), 1 );
-  device.endPaint();
-
   context.invW = 1.0f/wndSize.w;
   context.invH = 1.0f/wndSize.h;
 
@@ -191,6 +187,10 @@ void Graphics::renderImpl( Scene &scene,
       = fillShadowMap(device, scene, Tempest::Size(settings.shadowMapRes));
 
   e.exec( camera.view(), camera.projective(), dt );
+
+  device.beginPaint();
+  device.clear( Tempest::Color(0,0,1), 1 );
+  device.endPaint();
 
   Frustum frustum( camera );
   draw( frustum, true, false, scene.all() );
@@ -216,7 +216,8 @@ void Graphics::renderImpl( Scene &scene,
 
 Tempest::Texture2d Graphics::fillShadowMap( Tempest::Device & device,
                                             const Scene & scene,
-                                            const Tempest::Size& sm ) {
+                                            const Tempest::Size& sm,
+                                            float sv ) {
   if( sm.isEmpty() )
     return Tempest::Texture2d();
 
@@ -230,7 +231,7 @@ Tempest::Texture2d Graphics::fillShadowMap( Tempest::Device & device,
   float dir[3] = { float(light.xDirection()),
                    float(light.yDirection()),
                    float(light.zDirection()) };
-  Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir, 0);
+  Tempest::Matrix4x4 matrix = makeShadowMatrix(scene, dir, sv);
 
   Tempest::Matrix4x4 proj;
   proj.identity();
@@ -400,8 +401,8 @@ ShaderSource::Lang Graphics::lang() const {
 
 Tempest::Device::Options Graphics::makeOpt(bool isFullScreen) {
   Tempest::Device::Options opt;
-  opt.windowed = !isFullScreen;
-  opt.vSync    = !opt.windowed;
+  opt.displaySettings.fullScreen = isFullScreen;
+  opt.vSync    = !opt.displaySettings.fullScreen;
 
   return opt;
   }

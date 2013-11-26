@@ -56,6 +56,11 @@ struct InGameControls::AddUnitButton: public Button{
   ProtoObject& prototype;
   };
 
+Tempest::signal<> InGameControls::updateView;
+Tempest::signal< const ::Scene &,
+                 ParticleSystemEngine &,
+                 Tempest::Texture2d & > InGameControls::renderScene;
+
 InGameControls::InGameControls( Resource &res,
                                 BehaviorMSGQueue &,
                                 PrototypesLoader &prototypes,

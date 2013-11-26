@@ -11,6 +11,7 @@ class Bullet {
             const PrototypesLoader &pl);
 
     GameObjectView view;
+    const std::string* explosion;
 
     void loadView( Resource & res, Physics &p );
     void setTeamColor( const Tempest::Color &cl );

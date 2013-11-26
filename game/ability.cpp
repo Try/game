@@ -32,6 +32,14 @@ bool Ability::spell( Game &g,
     return fireStorm(g,w,obj,m);
     }
 
+  if( m.str=="ice_bolt" ){
+    return iceBolt(g,w,obj,m);
+    }
+
+  if( m.str=="force_field" ){
+    return forceField(g,w,obj,m);
+    }
+
   return 0;
   }
 
@@ -332,7 +340,105 @@ void Ability::findAlly( GameObject &tg,
     return;
 
   if( d<r*r && &tg!=&caster &&
-      ( tg.hp() < tg.getClass().data.maxHp-150 || tg.hp()<50 ) &&
+      ( tg.hp() < tg.getClass().data.maxHp-150 || tg.hp()<tg.getClass().data.maxHp/3 ) &&
       !tg.behavior.find<BuildingBehavior>() )
     out = &tg;
+  }
+
+
+bool Ability::forceField( Game  &g,
+                         World &w,
+                         GameObject &obj,
+                         const BehaviorMSGQueue::MSG &m ) {
+  const Spell & s = g.prototypes().spell("force_field");
+
+  std::vector<GameObject*> & objs = obj.player().selected();
+
+  for( size_t i=0; i<objs.size(); ++i ){
+    GameObject & u = *objs[i];
+
+    int cd = u.coolDown( s.id );
+    if( cd==0 && forceField(w, u, m.x, m.y, s) )
+      return 1;
+    }
+
+  return 1;
+  }
+
+bool Ability::forceField( World &w,
+                         GameObject &u,
+                         int tgX,
+                         int tgY,
+                         const Spell &s) {
+  int cd = u.coolDown( s.id );
+  if( cd==0 ){
+    u.setCoolDown( s.id, s.coolDown );
+
+    w.emitEfect<ForceFieldEfect>( "bullets/ice" ).setPosition(tgX,tgY,0);
+    /*
+    w.emitHudAnim( "storm",
+                   tgX,
+                   tgY,
+                   0.01 );*/
+
+    return 1;
+    }
+
+  return 0;
+  }
+
+
+bool Ability::iceBolt( Game &g,
+                       World &w,
+                       GameObject &obj,
+                       const BehaviorMSGQueue::MSG &m) {
+  if( m.size == size_t(-1) )
+    return 0;
+
+  GameObject & tg = w.object( m.size );
+
+  const Spell & s = g.prototypes().spell("ice_bolt");
+
+  std::vector<GameObject*> & objs = obj.player().selected();
+
+  for( size_t i=0; i<objs.size(); ++i ){
+    GameObject & u = *objs[i];
+
+    int cd = u.coolDown( s.id );
+    if( cd==0 && iceBolt(w, u,tg, s) )
+      return 1;
+    }
+
+  return 1;
+  }
+
+bool Ability::iceBolt( World &w,
+                       GameObject &u,
+                       GameObject &tg,
+                       const Spell & s ) {
+  int cd = u.coolDown( s.id );
+  if( cd==0 && !tg.behavior.find<BuildingBehavior>() ){
+    u.setCoolDown( s.id, s.coolDown );
+
+    auto bul = tg.reciveBulldet( "bullets/ice_large" );
+    Bullet& b = *bul;
+
+    w.emitHudAnim( "blue_gaizer",
+                   tg.x(),
+                   tg.y(),
+                   0.01 );
+    b.x = u.x();
+    b.y = u.y();
+    b.setTeamColor( u.teamColor() );
+
+    b.z   = u.viewHeight()/2  + World::coordCast(u.z());
+    b.tgZ = tg.viewHeight()/2 + World::coordCast(tg.z());
+
+    b.speed        = s.bulletSpeed;
+    b.atack.damage = 75;
+    b.tick();
+    return 1;
+    }
+
+  return 0;
   }

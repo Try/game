@@ -10,6 +10,8 @@ class GraphicsSettingsWidget:public Panel {
     struct Settings{
       Settings();
 
+      bool operator == ( const Settings& ) const;
+
       enum Bloom{
         Off,
         Low,

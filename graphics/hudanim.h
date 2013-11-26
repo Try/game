@@ -25,9 +25,10 @@ class HudAnim : public EfectBase {
              Resource & res,
              Physics  & phys );
 
-    void setPosition( float x, float y, float z );
+    HudAnim& setPosition( float x, float y, float z );
 
     void tick();
+    void setTimeout( int t );
     bool isEnd() const;
   private:
     GameObjectView view;
@@ -55,6 +56,29 @@ class StormEfect : public EfectBase {
     int x,y;
 
     static void findEnemy(GameObject& tg, int x, int y, int r, int team);
+  };
+
+class ForceFieldEfect : public EfectBase {
+  public:
+    ForceFieldEfect( Scene & s,
+                     World       & wrld,
+                     const ProtoObject &p,
+                     const PrototypesLoader & pl,
+
+                     Resource & res,
+                     Physics  & phys );
+    ~ForceFieldEfect();
+
+    void setPosition( int x, int y, float z );
+
+    void tick();
+    bool isEnd() const;
+  private:
+    World &w;
+    int x,y;
+
+    int t;
+    GameObjectView view;
   };
 
 #endif // HUDANIM_H

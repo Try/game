@@ -239,6 +239,7 @@ void GameObjectView::loadView( const Resource & r,
         GraphicObject object( scene );
         //object.setModel( model );
         model.setTo(object);
+        object.setRotation( 0, -90 );
 
         view.push_back( object );
         if( src.randRotate ){
@@ -326,18 +327,8 @@ void GameObjectView::loadView( const Model &model,
   view.push_back( object );
   }
 
-void GameObjectView::loadView(const Tempest::Model<MVertex> &model ){
-  view.clear();
-
-  for( int i=0; i<3; ++i )
-    m.modelSize[i] = model.bounds().max[i]-model.bounds().min[i];
-
-  GraphicObject object( scene );
-  object.setModel( model );
-  m.radius = model.bounds().radius();
-
-  setupMaterials( object, getClass().view[0] );
-  view.push_back( object );
+void GameObjectView::loadView(const Model &model ){
+  loadView( model, getClass().view[0] );
   }
 
 void GameObjectView::setViewPosition(float x, float y) {
@@ -621,8 +612,12 @@ void GameObjectView::setVisible(bool v) {
     smallViews[i]->setVisible(v);
   }
 
+double GameObjectView::rotation() const {
+  return 180*atan2( (double)m.intentDirY, (double)m.intentDirX )/M_PI;
+  }
+
 void GameObjectView::rotate( int delta ) {
-  double a = atan2( (double)m.intentDirY, (double)m.intentDirX ) + delta;
+  double a = rotation() + delta;
 
   for( size_t i=0; i<view.size(); ++i ){
     a = view[i].angleZ() + delta;
@@ -833,6 +828,18 @@ int GameObjectView::x() const {
 
 int GameObjectView::y() const {
   return m.y;
+  }
+
+float GameObjectView::viewX() const {
+  return view[0].x();
+  }
+
+float GameObjectView::viewY() const {
+  return view[0].y();
+  }
+
+float GameObjectView::viewZ() const {
+  return view[0].z();
   }
 
 void GameObjectView::setPosition(int x, int y) {

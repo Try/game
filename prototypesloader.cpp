@@ -477,6 +477,14 @@ void PrototypesLoader::readProperty( ProtoObject &p,
     if( e["deathAnim"].GetString()==ph )
       p.deathAnim = ProtoObject::Physic;
     }
+
+  if( e["deathExplosion"].IsArray() ){
+    const Value& u = e["deathExplosion"];
+
+    for( size_t i=0; i<u.Size(); ++i )
+      if( u[i].IsString() )
+        p.deathExplosion.push_back( u[i].GetString() );
+    }
   }
 
 void PrototypesLoader::readMaterial( ProtoObject::View &v,
@@ -531,6 +539,9 @@ void PrototypesLoader::readAtack( ProtoObject::GameSpecific::Atack &a,
 
   if( e["bullet"].IsString() ){
     a.bullet = e["bullet"].GetString();
+    }
+  if( e["explosion"].IsString() ){
+    a.explosion = e["explosion"].GetString();
     }
   }
 

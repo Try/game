@@ -87,8 +87,8 @@ void GameSettings::load(const char *file) {
   if( d["difficulty"].IsInt() )
     difficulty = d["difficulty"].GetInt();
 
-  if( d["smallMenu"].IsInt() )
-    smallMenu = d["smallMenu"].GetInt();
+  if( d["smallMenu"].IsBool() )
+    smallMenu = d["smallMenu"].GetBool();
 
   if( d["color"].IsObject() ){
     const Value& cl = d["color"];

@@ -4,8 +4,10 @@
 #include "game/gameobject.h"
 #include "game.h"
 
+#include "ingamecontrols.h"
+
 UnitView::UnitView( Resource &res )
-  : TextureView(res), scene(0), res(res) {
+  : TextureView(res), scene(0), res(res), sangle(0) {
   //texture = res.texHolder.create(120, 200);
 
   scene.lights().direction().resize(1);
@@ -17,14 +19,20 @@ UnitView::UnitView( Resource &res )
 
   folowMode = 0;
   curUnit   = 0;
+  autoRotate = true;
+  fingerRotate = false;
 
   rotateMode = true;
   rotAngle   = 0;
 
   onResize.bind( *this, &UnitView::resizeEvent );
+
+  renderScene.bind( InGameControls::renderScene );
+  InGameControls::updateView.bind( this, &UnitView::updateView );
   }
 
 UnitView::~UnitView() {
+  InGameControls::updateView.ubind( this, &UnitView::updateView );
   }
 
 void UnitView::setupUnit(GameObject *obj) {
@@ -66,8 +74,15 @@ void UnitView::setupUnit( Game &game,
   view->teamColor = Tempest::Color(1, 1, 0, 1);
 
   view->setViewPosition(0,0, -view->viewHeight()*0.5 );
+  view->setRotation(sangle);
 
   setupCamera();
+  }
+
+void UnitView::setFingerControl(bool c) {
+  fingerRotate = c;
+  if( !fingerRotate )
+    autoRotate = 1;
   }
 
 void UnitView::updateView() {
@@ -79,19 +94,35 @@ void UnitView::updateView() {
     }
 
   if( texture.width()!=w() || texture.height()!=h() ){
-    texture = res.texHolder.create( w(), h() );
+    texture = res.texHolder.create( w(), h(), Tempest::AbstractTexture::Format::RGBA5 );
     }
 
   if( pEng ){
-    if( view )
+    if( view && autoRotate )
       view->rotate(1.5);
 
     renderScene( scene, *pEng, texture );
     }
   }
 
-void UnitView::mouseDownEvent(Tempest::MouseEvent &) {
+void UnitView::mouseDownEvent( Tempest::MouseEvent &e ) {
   folowMode = (1);
+
+  if( fingerRotate ){
+    pos = e.pos();
+
+    sangle = view->rotation();
+    autoRotate = true;
+    }
+  }
+
+void UnitView::mouseDragEvent(Tempest::MouseEvent &e) {
+  if( fingerRotate ){
+    double angle = sangle - 1*( e.pos()-pos ).x;
+    view->setRotation( angle );
+
+    autoRotate = false;
+    }
   }
 
 void UnitView::mouseUpEvent(Tempest::MouseEvent &) {

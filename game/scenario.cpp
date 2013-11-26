@@ -72,7 +72,10 @@ Scenario::~Scenario() {
   }
 
 void Scenario::tick() {
-  }
+}
+
+void Scenario::onRender(){
+}
 
 void Scenario::uiTick() {
   moveCamera();
@@ -567,9 +570,6 @@ Tempest::Widget *Scenario::createConsole( InGameControls *mainWidget,
     pa.typeH = Tempest::FixedMin;
     pa.minSize.w = 120;
     avatar->setSizePolicy( pa );
-
-    uview->renderScene.bind( mainWidget->renderScene );
-    mainWidget->updateView.bind( *uview, &UnitView::updateView );
 
     avatar->layout().add( uview );
     avatar->layout().setMargin(8);

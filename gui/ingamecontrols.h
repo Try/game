@@ -41,16 +41,16 @@ class InGameControls : public Tempest::Surface {
     Tempest::signal<const Terrain::EditMode&> toogleEditLandMode;
 
     Tempest::signal<> save, load;
-    Tempest::signal<> updateView;
+
+    static Tempest::signal<> updateView;
+    static Tempest::signal< const Scene &,
+                            ParticleSystemEngine &,
+                            Tempest::Texture2d & > renderScene;
 
     Tempest::signal<GameObject&>  setCameraPos;
     Tempest::signal< float, float,
                       Tempest::MouseEvent::MouseButton,
                       MiniMapView::Mode > minimapEvent;
-
-    Tempest::signal< const Scene &,
-                      ParticleSystemEngine &,
-                      Tempest::Texture2d & > renderScene;
 
     //Tempest::Rect selection;
 

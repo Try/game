@@ -17,6 +17,7 @@ class DesertStrikeScenario  : public Scenario {
     ~DesertStrikeScenario();
 
     static void createMenu(Resource &res, Game &game, Tempest::Widget * w );
+    struct UInfo;
   protected:
     virtual void onStartGame();
 
@@ -44,7 +45,6 @@ class DesertStrikeScenario  : public Scenario {
 
     void addHigtlight( const Tempest::Rect &rect );
     struct Hint;
-    struct UInfo;
 
     struct DPlayer:Player{
       DPlayer( int num ):Player(num),
@@ -79,13 +79,16 @@ class DesertStrikeScenario  : public Scenario {
     DPlayer& player();
 
     void tick();
+    void onRender();
+
     virtual void onBuildingToBuy( const std::string& ){}
     virtual void onUnitToBuy( const std::string& ){}
     virtual void onUnitHired( const std::string& ){}
-    virtual void onPanelChoised(int /*p*/){}
+    virtual void onPanelChoised(int p);
 
     void toogleMinimap(int page);
 
+    struct UBtn;
     struct NumButton;
     struct BuyButton;
     struct GradeButton;

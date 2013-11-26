@@ -63,6 +63,18 @@ MaterialServer::MaterialServer( Tempest::VertexShaderHolder &vsHolder,
     localTex(localTex),
     lang(lang),
     res(0) {  
+  Tempest::Device& dev = vsHolder.device();
+
+//#ifdef __ANDROID__
+  if( dev.renderer().find_first_of("Tegra")!=std::string::npos ){
+    GraphicsSettingsWidget::Settings s = GraphicsSettingsWidget::Settings::settings();
+    s.normalMap    = false;
+    s.shadowMapRes = 1024;
+
+    GraphicsSettingsWidget::Settings::setSettings(s);
+    }
+//#endif
+
   GraphicsSettingsWidget::Settings::load();
   settings = GraphicsSettingsWidget::Settings::settings();
   }

@@ -208,10 +208,10 @@ void WayFindAlgo::findWay( GameObject & obj, int x, int y, int rx, int ry,
   rPointX = rx;
   rPointY = ry;
 
-  if( abs(x-rx) + abs(y-ry) < 5 &&
-      optimizeWay( Point{x,y}, Point{rx,ry} ) ){
+  if( optimizeWay( Point{x,y}, Point{rx,ry} ) ){
     way.push_back(Point{rx,ry});
     way.push_back(Point{ x, y});
+    optimizeWay();
     return;
     }
 
@@ -357,15 +357,15 @@ void WayFindAlgo::optimizeWay() {
   for( size_t i=1; i<way.size(); ++i ){
     const Point &a = way[i-1],
                 &b = way[i];
-    int dx = a.x-b.x, dy = a.y-b.y, c = 0;
-    while( abs(dx)+abs(dy) > Terrain::quadSize*10 ){
+    int dx = abs(a.x-b.x), dy = abs(a.y-b.y), c = 1;
+    while( dx+dy > 10 ){
       dx /= 2;
       dy /= 2;
-      ++c;
+      c *= 2;
       }
 
-    dx = a.x-b.x;
-    dy = a.y-b.y;
+    dx = b.x-a.x;
+    dy = b.y-a.y;
     ++c;
     for( int i=1; i<c; ++i ){
       wayBuf.push_back( Point{a.x+dx*i/c, a.y+dy*i/c} );

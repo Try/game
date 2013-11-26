@@ -13,6 +13,7 @@ class MainMenu : public ModalWindow {
     MainMenu( Game &game, Resource& res, Widget *owner, bool startM = true );
     ~MainMenu();
 
+    static int  adsHeight();
   private:
     Button *button(Resource& res, const std::wstring &s,
                    void (MainMenu::*f)() );
@@ -27,6 +28,7 @@ class MainMenu : public ModalWindow {
     void continueGame();
     void showOptions();
     void rate();
+    void showHelp();
 
     void updateParticles();
     void closeEvent(Tempest::CloseEvent &e);

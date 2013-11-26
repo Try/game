@@ -45,6 +45,22 @@ class Ability {
                            int tgX, int tgY,
                            const Spell &s);
 
+    static bool forceField( Game &game, World &w,
+                            GameObject &obj,
+                            const BehaviorMSGQueue::MSG &m );
+    static bool forceField( World &w,
+                            GameObject &u,
+                            int tgX, int tgY,
+                            const Spell &s);
+
+    static bool iceBolt( Game &game, World &w,
+                         GameObject &obj,
+                         const BehaviorMSGQueue::MSG &m );
+    static bool iceBolt( World &w,
+                         GameObject &obj,
+                         GameObject &tg,
+                         const Spell &s);
+
     static void findEnemy(GameObject& tg, int x, int y, int r, int team, GameObject*& out );
     static void findAlly(GameObject& tg, int x, int y, int r, GameObject &caster, GameObject*& out );
   };

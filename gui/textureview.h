@@ -18,6 +18,7 @@ class TextureView : public Tempest::Widget {
   protected:
     void paintEvent(Tempest::PaintEvent &e);
 
+    bool alpha;
     Tempest::Texture2d texture;
   };
 

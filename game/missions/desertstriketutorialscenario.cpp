@@ -3,6 +3,8 @@
 #include "desertstrikescenariowidgets.h"
 #include "gui/hintsys.h"
 
+#include "gamesettings.h"
+
 DesertStrikeTutorialScenario::DesertStrikeTutorialScenario( Game &game,
                                                             MainGui &ui,
                                                             BehaviorMSGQueue &msg)
@@ -21,7 +23,10 @@ DesertStrikeTutorialScenario::DesertStrikeTutorialScenario( Game &game,
   }
 
 void DesertStrikeTutorialScenario::onStartGame() {
+  auto d = GameSettings::difficulty;
+  GameSettings::difficulty = 0;
   DesertStrikeScenario::onStartGame();
+  GameSettings::difficulty = d;
 
   Hint *h = new Hint(res, mainWidget, game);
   h->onDestroy.bind(this, &DesertStrikeTutorialScenario::showBuyUnitHint);
@@ -29,9 +34,12 @@ void DesertStrikeTutorialScenario::onStartGame() {
   }
 
 void DesertStrikeTutorialScenario::setupUI(InGameControls *mainWidget, Resource &res) {
+  auto sm = GameSettings::smallMenu;
+  GameSettings::smallMenu = 0;
   DesertStrikeScenario::setupUI(mainWidget, res);
+  GameSettings::smallMenu = sm;
 
-  bool units[3][4] = { {1,1,1,0},{},{} };
+  bool units[3][4] = { {1,1,1,1},{},{} };
   buyUnitPanel->setup(1, units);
   upgradePanel->setVisible(0);
   }

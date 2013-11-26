@@ -18,19 +18,24 @@ class UnitView : public TextureView {
     UnitView( Resource & res );
     ~UnitView();
 
+    void setupUnit( GameObject * obj );
+    void setupUnit( Game &game,
+                    const std::string & proto );
+
+    Tempest::signal<GameObject&> setCameraPos;
+    Tempest::signal<> onClick;
+
+    using TextureView::alpha;
+
+    void setFingerControl( bool c );
+  protected:
+    void updateView();
     Tempest::signal< const Scene &,
                       ParticleSystemEngine &,
                       Tempest::Texture2d & > renderScene;
 
-    void setupUnit( GameObject * obj );
-    void setupUnit( Game &game,
-                    const std::string & proto );
-    void updateView();
-
-    Tempest::signal<GameObject&> setCameraPos;
-    Tempest::signal<> onClick;
-  protected:
     void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseDragEvent(Tempest::MouseEvent &e);
     void mouseUpEvent(Tempest::MouseEvent &e);
 
     void paintEvent(Tempest::PaintEvent &e);
@@ -41,6 +46,10 @@ class UnitView : public TextureView {
     bool  folowMode, rotateMode;
     float rotAngle;
     GameObject * curUnit;
+
+    bool autoRotate, fingerRotate;
+    Tempest::Point pos;
+    float sangle;
 
     std::unique_ptr<World> world;
     std::unique_ptr<ParticleSystemEngine> pEng;

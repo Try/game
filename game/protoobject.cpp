@@ -1,7 +1,6 @@
 #include "protoobject.h"
 
-ProtoObject::ProtoObject()
-{
+ProtoObject::ProtoObject() {
   rotateSpeed = 5;
 
   data.isBackground = 0;

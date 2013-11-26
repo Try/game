@@ -52,6 +52,9 @@ class MapSelectMenu : public ModalWindow {
     void setDificulty( int d );
 
     Resource &res;
+
+    Tempest::Rect leftBtn();
+    Tempest::Rect rightBtn();
   };
 
 #endif // MAPSELECTMENU_H

@@ -1312,6 +1312,77 @@ std::string ShaderSource::compileOperator( const std::string & sep,
     };
 
   int nsz = outSize();
+
+  if( opType==Add ){
+    ShaderSource *s0 = nodes[0].get(), *s1 = nodes[1].get();
+
+    if( s0->type==Operator &&
+        s0->opType==Mul )
+      std::swap( s0, s1);
+
+    if( s1->type==Operator &&
+        s1->opType==Mul ){
+      ShaderSource *ss0 = s1->nodes[0].get(), *ss1 = s1->nodes[1].get();
+      if( ss0->type==Constant )
+        std::swap( ss0, ss1);
+
+      if( ss1->type==Constant )
+        if( (ss1->csize > s0->csize) ){
+          bool ok = true;
+          for( int i=0; i<s0->csize; ++i )
+            ok &= (ss1->cvalue[i]==0);
+
+          bool okInv = ok;
+          for( int i=s0->csize; i<ss1->csize; ++i )
+            ok &= (ss1->cvalue[i]==1);
+
+          for( int i=s0->csize; i<ss1->csize; ++i )
+            okInv &= (ss1->cvalue[i]==-1);
+
+          const char* arg = "xyzw";
+
+          if( ok ){
+            return floatN(v, ss1->csize) +
+                "(" + floatN(v, s0->csize) + "(" +
+                s0-> src(sep, v, vshader, s0->csize) + "), " +
+                ss0->src(sep, v, vshader, vecSz) + "." +
+                arg[s0->csize] +
+                ")";
+            }
+
+          if( okInv ){
+            return floatN(v, ss1->csize) +
+                "(" + floatN(v, s0->csize) + "(" +
+                s0-> src(sep, v, vshader, s0->csize) + "), -(" +
+                ss0->src(sep, v, vshader, vecSz) + "." +
+                arg[s0->csize] +
+                ") )";
+            }
+          }
+      } else {
+      if( s0->type==Constant )
+        std::swap( s0, s1);
+
+      if( s1->type==Constant && (s1->csize > s0->csize) ){
+        bool ok = true;
+        for( int i=0; i<s0->csize; ++i )
+          ok &= (s1->cvalue[i]==0);
+
+        if( ok ){
+          std::stringstream ss;
+          ss.setf(std::ios_base::showpoint );
+
+          ss << floatN(v, s1->csize) << "(" << floatN(v, s0->csize) <<"("
+             << s0-> src(sep, v, vshader, s0->csize) << ")";
+          for( int i=s0->csize; i<s1->csize; ++i )
+            ss << ", " << s1->cvalue[i];
+          ss <<")";
+          return ss.str();
+          }
+        }
+      }
+    }
+
   if( opType==Add &&
       ( nodes[0]->isZero() || nodes[1]->isZero() ) ){
     if( !nodes[0]->isZero() )

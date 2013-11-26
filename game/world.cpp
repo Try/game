@@ -70,10 +70,10 @@ World::World( Game & gm,
   scene.lights().direction()[0] = light;
 
   //Tempest::DirectionLight light;
-  light.setDirection( 2, 1, -2 );
-  light.setColor    ( Tempest::Color( 0.7, 0.7, 0.7 ) );
-  light.setAblimient( Tempest::Color( 0.23, 0.23,  0.35) );
-  scene.lights().direction()[0] = light;
+  light.setDirection( -1, 2, -1 );
+  light.setColor    ( Tempest::Color( 0.5, 0.5, 0.7 ) );
+  light.setAblimient( Tempest::Color( 0.2, 0.2, 0.2) );
+  //scene.lights().direction()[0] = light;
 
   camera.setPerespective( true, w, h );
   camera.setPosition( 2, 3, 0 );
@@ -557,8 +557,10 @@ bool World::isUnitUnderMouse( Tempest::Matrix4x4 & gmMat,
       }
     }
 
-  if( data2[0] <= mx && mx <= data1[0] &&
-      data2[1] <= my && my <= data1[1] ){
+  int dsz = 15;
+
+  if( data2[0]-dsz <= mx && mx <= data1[0]+dsz &&
+      data2[1]-dsz <= my && my <= data1[1]+dsz ){
     int midX = (data1[0]+data2[0])/2;
     int midY = (data1[1]+data2[1])/2;
 
@@ -896,36 +898,47 @@ void World::tick() {
   createRigid = false;
 #endif
 
-  for( size_t i=0; i<nonBackground.size(); ++i )
-    if( nonBackground[i]->hp() <= 0 &&
-        nonBackground[i]->getClass().deathAnim==ProtoObject::Physic &&
-        createRigid &&
-        physics.aviableRigids()>0
-        /*nonBackground[i]->behavior.find<MoveBehavior>()*/ ) {
-      GameObject & src = *nonBackground[i];
-      GameObject & obj = addObjectEnv( nonBackground[i]->getClass().name );
+  for( size_t i=0; i<nonBackground.size(); ++i ){
+    GameObject& obj = *nonBackground[i];
 
-      obj.setTeamColor( src.teamColor() );
-      Tempest::Color cl = obj.teamColor();
-      float k = 0.7;
-      cl.set( cl.r()*k, cl.g()*k, cl.b()*k, cl.a() );
-      obj.setTeamColor( cl );
+    if( obj.hp() <= 0 ){
+      const ProtoObject& proto = obj.getClass();
 
-      physics.beginUpdate();
-      obj.rotate( src.rAngle()*180.0/M_PI );
-      obj.setPosition( src.x(), src.y(), src.z()+100 );
+      if( obj.getClass().deathAnim==ProtoObject::Physic &&
+          createRigid && physics.aviableRigids()>0  ) {
+        GameObject & src = *nonBackground[i];
+        GameObject & obj = addObjectEnv( nonBackground[i]->getClass().name );
 
-      float f = 0.03,
-            s = f*sin( src.rAngle() ),
-            c = f*cos( src.rAngle() );
+        obj.setTeamColor( src.teamColor() );
+        Tempest::Color cl = obj.teamColor();
+        float k = 0.7;
+        cl.set( cl.r()*k, cl.g()*k, cl.b()*k, cl.a() );
+        obj.setTeamColor( cl );
 
-      obj.applyForce( -c, -s, 0 );
-      obj.applyBulletForce(src);
-      obj.updatePos();
-      physics.endUpdate();
+        physics.beginUpdate();
+        obj.rotate( src.rAngle()*180.0/M_PI );
+        obj.setPosition( src.x(), src.y(), src.z()+100 );
 
-      obj.envLifeTime = 200;
+        float f = 0.03,
+              s = f*sin( src.rAngle() ),
+              c = f*cos( src.rAngle() );
+
+        obj.applyForce( -c, -s, 0 );
+        obj.applyBulletForce(src);
+        obj.updatePos();
+        physics.endUpdate();
+
+        obj.envLifeTime = 200;
+        }
+
+      for( size_t i=0; i<proto.deathExplosion.size(); ++i ){
+        emitHudAnim( proto.deathExplosion[i],
+                     obj.x(),
+                     obj.y(),
+                     0.01 );
+        }
       }
+    }
 
   for( size_t i=0; i<eviObjects.size(); ){
     GameObject & obj = *eviObjects[i];

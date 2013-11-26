@@ -18,6 +18,8 @@
 #include "gui/mainmenu.h"
 #include "gamesettings.h"
 
+#include <sstream>
+
 #include <cmath>
 
 const char * DesertStrikeScenario::units[3][4] = {
@@ -117,6 +119,7 @@ void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
     sctrl.isScaleMode = (sctrl.mouseD0>5);
     sctrl.angle0      = game.curWorld().camera.spinX();
     }
+  updateMousePos(e);
   }
 
 void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
@@ -198,7 +201,7 @@ void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
     World &w = game.curWorld();
 
     w.camera.setSpinX( sctrl.angle0+(a1-a0)*180/M_PI );
-    if( lm>5 ){
+    if( lm>25 ){
       w.camera.setDistance( sctrl.d0 * (sctrl.mouseD0/lm) );
       }
     }
@@ -237,6 +240,9 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
   s.read(name);
   s.read(ch);
 
+  std::wstringstream ngold;
+  ngold << L"$(message/no_gold) - ";
+
   if( ch=='b' ){
     if( tierOf(name.c_str()) <= player().castleGrade ){
       int g = game.prototype(name).data.gold;
@@ -253,7 +259,8 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
         GameMessages::message( L"$(message/new_unit)",
                                res.pixmap("gui/icon/"+name) );
         } else {
-        GameMessages::message( L"$(message/no_gold)",
+        ngold << g;
+        GameMessages::message( ngold.str(),
                                res.pixmap("gui/icon/gold") );
         }
       } else {
@@ -283,7 +290,8 @@ void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
                              res.pixmap("gui/icon/cancel") );
       } else
     if( player(pl+1).gold() < game.prototype(name).data.gold ){
-      GameMessages::message( L"$(message/no_gold)",
+      ngold << game.prototype(name).data.gold;
+      GameMessages::message( ngold.str(),
                              res.pixmap("gui/icon/gold") );
       } else {
       player(pl+1).addGold( -game.prototype(name).data.gold );
@@ -407,63 +415,6 @@ void DesertStrikeScenario::tick() {
     ++waveNum;
     }
 
-  if( hasVTracking ){
-    //unitToView = 0;
-
-    if( !unitToView || !unitToView->isOnMove() ){
-      int l = 0;
-      if( unitToView ){
-        GameObject &u = *unitToView;
-        int x = (u.x() - player(u.playerNum()).spawnPoint.x )/Terrain::quadSize,
-            y = (u.y() - player(u.playerNum()).spawnPoint.y )/Terrain::quadSize;
-
-        l = x*x + y*y;
-        }
-
-      for( size_t i=0; i<player().unitsCount(); ++i )
-        if( player().unit(i).getClass().data.speed>0 ){
-          GameObject &u = player().unit(i);
-          int x = (u.x() - player(u.playerNum()).spawnPoint.x )/Terrain::quadSize,
-              y = (u.y() - player(u.playerNum()).spawnPoint.y )/Terrain::quadSize;
-
-          int l2 = x*x + y*y;
-          if( unitToView==0 || l2>l ){
-            unitToView = &player().unit(i);
-            l = l2;
-            }
-          }
-      }
-
-    if( unitToView ){
-      float x = World::coordCast(unitToView->x()),
-            y = World::coordCast(unitToView->y());
-
-      float dx = -(game.curWorld().camera.x() - x ),
-            dy = -(game.curWorld().camera.y() - y );
-      float l = sqrt(dx*dx+dy*dy);
-
-      cameraSpeed = std::min(cameraSpeed, l);
-
-      float v = cameraSpeed*(l);
-
-      if( l ){
-        dx = dx*std::min(1.0f, v/l);
-        dy = dy*std::min(1.0f, v/l);
-        cameraSpeed += 0.005;
-
-        if( l<0.2 ){
-          game.setCameraPosition( x, y );
-          } else {
-          game.setCameraPosition( game.curWorld().camera.x()+dx,
-                                  game.curWorld().camera.y()+dy );
-          }
-        } else {
-        cameraSpeed = 0;
-        }
-      //game.setCameraPosSmooth( *unitToView, 0.1 );
-      }
-    }
-
   if( tNum%interval==0 ){
     if( !isTestRun ){
       for( int i=1; i<game.plCount(); ++i )
@@ -539,9 +490,76 @@ void DesertStrikeScenario::tick() {
     }
   }
 
-void DesertStrikeScenario::toogleMinimap( int page ) {
-  if( page!=2 )
+void DesertStrikeScenario::onRender() {
+  if( winAnim.isWinAnim )
     return;
+
+  if( hasVTracking ){
+    //unitToView = 0;
+
+    if( !unitToView || !unitToView->isOnMove() ){
+      int l = 0;
+      if( unitToView ){
+        GameObject &u = *unitToView;
+        int x = (u.x() - player(u.playerNum()).spawnPoint.x )/Terrain::quadSize,
+            y = (u.y() - player(u.playerNum()).spawnPoint.y )/Terrain::quadSize;
+
+        l = x*x + y*y;
+        }
+
+      for( size_t i=0; i<player().unitsCount(); ++i )
+        if( player().unit(i).getClass().data.speed>0 ){
+          GameObject &u = player().unit(i);
+          int x = (u.x() - player(u.playerNum()).spawnPoint.x )/Terrain::quadSize,
+              y = (u.y() - player(u.playerNum()).spawnPoint.y )/Terrain::quadSize;
+
+          int l2 = x*x + y*y;
+          if( unitToView==0 || l2>l ){
+            unitToView = &player().unit(i);
+            l = l2;
+            }
+          }
+      }
+
+    if( unitToView ){
+      float x = unitToView->viewX(),//World::coordCast(unitToView->x()),
+            y = unitToView->viewY();//World::coordCast(unitToView->y());
+
+      float dx = -(game.curWorld().camera.x() - x ),
+            dy = -(game.curWorld().camera.y() - y );
+      float l = sqrt(dx*dx+dy*dy);
+
+      cameraSpeed = std::min(cameraSpeed, l);
+
+      float v = cameraSpeed*(l);
+
+      if( l ){
+        dx = dx*std::min(1.0f, v/l);
+        dy = dy*std::min(1.0f, v/l);
+        cameraSpeed += 0.005;
+
+        if( l<0.2 ){
+          game.setCameraPosition( x, y, unitToView->viewZ() );
+          } else {
+          game.setCameraPosition( game.curWorld().camera.x()+dx,
+                                  game.curWorld().camera.y()+dy );
+          }
+        } else {
+        cameraSpeed = 0;
+        }
+      //game.setCameraPosSmooth( *unitToView, 0.1 );
+      }
+    }
+  }
+
+void DesertStrikeScenario::onPanelChoised(int ) {
+  }
+
+void DesertStrikeScenario::toogleMinimap( int page ) {
+  if( page!=2 ){
+    miniBuy->scrooltoPath(page);
+    return;
+    }
 
   mmapbox     ->setVisible( !mmapbox     ->isVisible() );
   buyUnitPanel->setVisible( !buyUnitPanel->isVisible() );
@@ -645,8 +663,8 @@ void DesertStrikeScenario::onStartGame() {
   wx.camera.setDistance( 2*wx.camera.distance()/3 );
 
   player().setColor( GameSettings::color );
-  int cl2 = rand()%7;
-  for( int i=0; i<8; ++i )
+  int cl2 = rand()%8;
+  for( int i=0; i<9; ++i )
     if( Player::colors[i]==GameSettings::color && cl2>=i )
       cl2++;
 
@@ -819,6 +837,9 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
 
   showEditPanel.activated.bind( *this, &DesertStrikeScenario::toogleEditPanel );
   showSettings. activated.bind( *this, &DesertStrikeScenario::toogleSettingsPanel );
+
+  if( GameSettings::smallMenu )
+    toogleMinimap(2);
   }
 
 void DesertStrikeScenario::setupTopUi( Resource &res, Tempest::Widget *top ) {
@@ -883,8 +904,6 @@ Tempest::Widget *DesertStrikeScenario::createConsole( InGameControls *mainWidget
   mmapbox = img;
 
   mmap = new Minimap(res,game, player(1));
-  mmap->base->renderScene.bind( mainWidget->renderScene );
-  mainWidget->updateView.bind( *mmap->base, &UnitView::updateView );
   mmap->base->onClick.bind(*mmap, &Minimap::hideInfo);
 
   mmap->onUnit.    bind( this, &DesertStrikeScenario::onUnitToBuy     );
@@ -1014,9 +1033,9 @@ void DesertStrikeScenario::aiTick( int npl ) {
     };
 
   BuildElement b[] = {
-    {"pikeman",      3, "incvisitor",   1 },
+    {"pikeman",      3, "incvisitor",   2 },
     {"pikeman",      5, "gelion",       1 },
-    {"gelion",       2, "fire_mage",    1 },
+    {"gelion",       3, "water_mage",   2 },
     {"incvisitor",   1, "pikeman",      3 },
     {"incvisitor",   6, "fire_element", 1 },
 

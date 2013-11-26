@@ -97,7 +97,7 @@ struct MapSelectMenu::ColorChoser: AbstractListBox {
       w->setLayout(Tempest::Horizontal);
       for( int r=0; r<3; ++r ){
         ColorBtn *b = new ColorBtn(res);
-        b->cl = Player::colors[(i*3+r)%8];
+        b->cl = Player::colors[(i*3+r)%9];
         b->onClicked.bind( onClicked );
 
         w->layout().add( b );
@@ -163,6 +163,9 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow), re
   bmenu->icon = triangle;
   bmenu->setMinimumSize(75,75);
   bmenu->setMaximumSize(75,75);
+  bmenu->frame   = Tempest::Sprite();
+  bmenu->back[0] = Tempest::Sprite();
+  bmenu->back[1] = Tempest::Sprite();
 
   Widget* mbox = new Widget();
   mbox->setLayout(Tempest::Horizontal);
@@ -176,7 +179,11 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow), re
   optMenu->onItemSelected.bind(this, &MapSelectMenu::setDificulty);
   optMenu->onColor.bind(this, &MapSelectMenu::setColor );
 
-  optMenu->icon = res.pixmap("gui/icon/castle");
+  optMenu->icon = res.pixmap("gui/icon/settings");
+  optMenu->frame   = Tempest::Sprite();
+  optMenu->back[0] = Tempest::Sprite();
+  optMenu->back[1] = Tempest::Sprite();
+
   optMenu->setMinimumSize(75,75);
   optMenu->setMaximumSize(75,75);
   mbox->layout().add(optMenu);
@@ -190,6 +197,9 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow), re
   btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/2.png"), L"td2.sav"} );
   btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/3.png"), L"td3.sav"} );
   btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/4.png"), L"td4.sav"} );
+  btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/5.png"), L"td5.sav"} );
+  btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/6.png"), L"td6.sav"} );
+  btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/7.png"), L"td7.sav"} );
 
   timer.timeout.bind(this, &MapSelectMenu::updateT);
   timer.start(10);
@@ -222,9 +232,13 @@ void MapSelectMenu::paintEvent(Tempest::PaintEvent &e) {
     }
 
   p.setTexture( triangle );
-  p.drawRect(10, h()/2-triangle.h()/2, triangle.w(), triangle.h() );
+  if( rect(0).x+rect(0).w<w()/2 )
+    p.drawRect( leftBtn() );
+
   p.setFlip(1,0);
-  p.drawRect( w()-triangle.w(), h()/2-triangle.h()/2, triangle.w(), triangle.h() );
+
+  if( rect(btns.size()-1).x>w()/2 )
+    p.drawRect( rightBtn() );
   }
 
 void MapSelectMenu::mouseDownEvent(Tempest::MouseEvent &e) {
@@ -242,6 +256,14 @@ void MapSelectMenu::mouseDragEvent(Tempest::MouseEvent &e) {
 void MapSelectMenu::mouseUpEvent( Tempest::MouseEvent &e ) {
   isAnim = true;
   update();
+
+  if( leftBtn().contains(e.pos()) ){
+    return;
+    }
+
+  if( rightBtn().contains(e.pos()) ){
+    return;
+    }
 
   if( (pressPos-e.pos()).manhattanLength()<15 ){
     for( size_t i=0; i<btns.size(); ++i ){
@@ -296,4 +318,12 @@ void MapSelectMenu::setColor(const Tempest::Color &cl) {
 void MapSelectMenu::setDificulty(int d) {
   GameSettings::difficulty = d;
   GameSettings::save();
+  }
+
+Tempest::Rect MapSelectMenu::leftBtn() {
+  return Tempest::Rect( 10, h()/2-triangle.h()/2, triangle.w(), triangle.h() );
+  }
+
+Tempest::Rect MapSelectMenu::rightBtn() {
+  return Tempest::Rect( w()-triangle.w(), h()/2-triangle.h()/2, triangle.w(), triangle.h() );
   }

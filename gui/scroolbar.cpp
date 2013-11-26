@@ -75,10 +75,12 @@ void ScroolBar::setRange(int min, int max) {
 
   rmin = min;
   rmax = max;
-  mvalue = std::max( rmin, std::min(mvalue, rmax) );
+  int nmvalue = std::max( rmin, std::min(mvalue, rmax) );
 
   smallStep = std::max(1, std::min( 10, range()/100 ));
   largeStep = std::max(1, std::min( 20, range()/10 ));
+
+  setValue( nmvalue );
   }
 
 int ScroolBar::range() const {

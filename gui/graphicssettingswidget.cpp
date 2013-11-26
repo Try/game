@@ -13,6 +13,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <tuple>
+
 #ifdef __ANDROID__
 GraphicsSettingsWidget::Settings::API GraphicsSettingsWidget::Settings::api
   = GraphicsSettingsWidget::Settings::openGL;
@@ -52,7 +54,34 @@ GraphicsSettingsWidget::Settings::Settings() {
 #endif
   }
 
+bool GraphicsSettingsWidget::
+  Settings::operator ==(const GraphicsSettingsWidget::Settings &s) const {
+  return std::tie(bloom,
+                  shadowMapRes,
+                  shadowFilterQ,
+                  glow,
+                  normalMap,
+                  oclusion,
+                  shadowTextures,
+                  transcurentShadows,
+                  physics,
+                  oreentation ) ==
+         std::tie(s.bloom,
+                  s.shadowMapRes,
+                  s.shadowFilterQ,
+                  s.glow,
+                  s.normalMap,
+                  s.oclusion,
+                  s.shadowTextures,
+                  s.transcurentShadows,
+                  s.physics,
+                  s.oreentation );
+  }
+
 void GraphicsSettingsWidget::Settings::setSettings( const Settings &s) {
+  if( s==st )
+    return;
+
   st = s;
   onSettingsChanged(st);
   }

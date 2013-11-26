@@ -180,15 +180,23 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
 
   size_t iSz = raw.vertex.size();
 
-  double sa = sin(angle), ca = cos(angle);
+  float sa = sin(angle), ca = cos(angle);
+
+  float tn[3], ln[3];
+
+  if( orign == ParticleSystemDeclaration::Screen )
+    for( int i=0; i<3; ++i ){
+      ln[i] = left[i]*ca - top[i]*sa;
+      tn[i] = left[i]*sa + top[i]*ca;
+      }
 
   for( int i=0; i<2; ++i )
     for( int r=0; r<2; ++r ){
       double dx, dy, dz;
       if( orign == ParticleSystemDeclaration::Screen ){
-        dx = mul[i]*left[0] + mul[r]*top[0];
-        dy = mul[i]*left[1] + mul[r]*top[1];
-        dz = mul[i]*left[2] + mul[r]*top[2];
+        dx = mul[i]*ln[0] + mul[r]*tn[0];
+        dy = mul[i]*ln[1] + mul[r]*tn[1];
+        dz = mul[i]*ln[2] + mul[r]*tn[2];
         } else
       if( orign == ParticleSystemDeclaration::XYOrign ){
         dx = -mul[i]*1;
@@ -204,8 +212,8 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
 
       double sdx = sz*dx, sdy = sz*dy;
 
-      v.x = x + sdx*ca - sdy*sa;
-      v.y = y + sdx*sa + sdy*ca;
+      v.x = x + sdx;//sdx*ca - sdy*sa;
+      v.y = y + sdy;//sdx*sa + sdy*ca;
       v.z = z + sz*dz;
 
       v.nx = v.nx+0.25*dx;

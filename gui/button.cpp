@@ -188,6 +188,9 @@ void Button::drawFrame( Tempest::Painter &p ) {
   }
 
 void Button::drawFrame( Tempest::Painter & p, const Tempest::Rect &vRect ) {
+  if( frame.size().isEmpty() )
+    return;
+
   int fx = 0, fy = 0;
 
   int px = vRect.x, py = vRect.y,

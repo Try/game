@@ -35,9 +35,6 @@ class ScenarioMission1::IntroWidget:public ModalWindow{
       p->layout().add( p2 );
 
       UnitView *v = new UnitView(res);
-      v->renderScene.bind( renderScene );
-      updateView.bind( *v, &UnitView::updateView );
-
       v->setupUnit( game, "chest" );
       p->layout().add( v );
 

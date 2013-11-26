@@ -10,7 +10,9 @@
 #include <cstdint>
 
 class RichText;
+class ScroolWidget;
 class UnitView;
+class LineEdit;
 
 struct DesertStrikeScenario::NumButton: public Button {
   NumButton( Resource & r );
@@ -23,6 +25,10 @@ struct DesertStrikeScenario::NumButton: public Button {
   Tempest::Sprite numFrame;
 
   Tempest::signal<> sellGesture;
+  Tempest::Color    color;
+
+  private:
+    bool gestureState;
   };
 
 struct DesertStrikeScenario::BuyButton: public NumButton {
@@ -217,6 +223,11 @@ struct DesertStrikeScenario::MiniBuyPanel: public TranscurentPanel {
 
   void sellU( const ProtoObject & unitToBuy );
   Game &game;
+
+  ScroolWidget *scrool;
+  BuyButton *cas;
+
+  void scrooltoPath(int p);
   };
 
 class DesertStrikeScenario::CentralPanel: public Tempest::Widget {
@@ -241,6 +252,7 @@ struct DesertStrikeScenario::WinLoseScreen: public ModalWindow {
   WinLoseScreen(Resource& res, Tempest::Widget *owner , Game &game);
 
   void paintEvent(Tempest::PaintEvent &e);
+  void closeEvent(Tempest::CloseEvent &e);
 
   bool isWin;
   uint64_t stime;
@@ -253,7 +265,7 @@ struct DesertStrikeScenario::Hint: public ModalWindow{
   void paintEvent(Tempest::PaintEvent &e);
 
   Tempest::Texture2d hintView;
-  Game &game;
+  Game &game;  
   };
 
 struct DesertStrikeScenario::UInfo: public ModalWindow{
@@ -261,9 +273,24 @@ struct DesertStrikeScenario::UInfo: public ModalWindow{
   ~UInfo();
 
   void paintEvent(Tempest::PaintEvent &e);
+  void resizeEvent( int w, int h );
 
   Tempest::Texture2d hintView;
   Game &game;
+  Resource &res;
+
+  bool pause;
+  LineEdit * uname;
+  UnitView * uview;
+  Panel    * wnd;
+
+  LineEdit *hp, *damage, *armor;
+  RichText *desc;
+
+  Panel   * efectiveUnits;
+
+  void showUnit( const std::string& s );
+  void closeEvent(Tempest::CloseEvent &e);
   };
 
 #endif // DESERTSTRIKESCENARIOWIDGETS_H

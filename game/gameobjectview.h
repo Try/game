@@ -45,7 +45,7 @@ class GameObjectView {
     void loadView(const Resource &r, Physics &p, bool env );
     void loadView(const Resource &r, const ProtoObject::View &src, bool isEnv ) ;
     void loadView(const Model &model, const ProtoObject::View &view);
-    void loadView(const Tempest::Model<MVertex> &model);
+    void loadView(const Model &model);
 
     void setViewPosition(float x, float y );
     void setViewPosition(float x, float y, float z );
@@ -69,6 +69,7 @@ class GameObjectView {
     void higlight( int time, Selection s );
     void setVisible( bool v );
 
+    double rotation() const;
     void rotate(int delta);
     void setRotation(int delta);
     void setViewDirection( int x, int y );
@@ -79,6 +80,10 @@ class GameObjectView {
 
     int x() const;
     int y() const;
+
+    float viewX() const;
+    float viewY() const;
+    float viewZ() const;
 
     void setPosition( int x, int y );
 

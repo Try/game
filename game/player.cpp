@@ -8,7 +8,7 @@
 #include "util/gameserializer.h"
 #include "world.h"
 
-const Tempest::Color Player::colors[8] = {
+const Tempest::Color Player::colors[9] = {
   Tempest::Color(1, 1, 1 ),
   Tempest::Color(1, 1, 0 ),
   Tempest::Color(1, 0, 0 ),
@@ -17,6 +17,7 @@ const Tempest::Color Player::colors[8] = {
   Tempest::Color(1, 0, 1 ),
   Tempest::Color(0, 1, 1 ),
   Tempest::Color(0, 0, 0 ),
+  Tempest::Color(1, 0.5, 0 ),
   };
 
 Player::Player( int num ) {

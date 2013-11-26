@@ -53,7 +53,7 @@ class GameObject {
                    bool env );
     void loadView(const Model &model , const ProtoObject::View &pview);
 
-    void loadView(const Tempest::Model<MVertex> &model );
+    void loadView(const Model &model );
 
     void setPosition( int x, int y );
     void setPosition( int x, int y, int z );
@@ -76,6 +76,10 @@ class GameObject {
     int x() const;
     int y() const;
     int z() const;
+
+    float viewX() const;
+    float viewY() const;
+    float viewZ() const;
 
     bool isSelected() const;
     void select();

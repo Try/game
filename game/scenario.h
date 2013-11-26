@@ -42,6 +42,7 @@ struct Scenario {
 
     virtual void onStartGame() {}
     virtual void tick();
+    virtual void onRender();
     virtual void uiTick();
     virtual void onEndGame()   {}
     virtual void restartGame() {}

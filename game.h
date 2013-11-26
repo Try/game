@@ -128,6 +128,7 @@ class Game : public Tempest::Window {
     bool isPaused() const;
 
     void setCameraPosition(float x, float y);
+    void setCameraPosition(float x, float y, float z);
     void setCameraPos(GameObject& obj);
     void setCameraPosSmooth(GameObject& obj, float maxK);
     void minimapEvent( float x, float y,

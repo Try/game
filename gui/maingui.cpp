@@ -23,6 +23,7 @@
 #include "lang/lang.h"
 
 #include "gui/richtext.h"
+#include "gui/closedialog.h"
 
 #include "game.h"
 #include "util/lexicalcast.h"
@@ -163,7 +164,7 @@ void MainGui::paintHint( Tempest::PaintEvent &e ){
       --HintSys::time;
 
     p.setFont( Tempest::Font(14) );
-    Tempest::Size dpos = RichText::bounds( res, HintSys::hint() );
+    Tempest::Size dpos = RichText::bounds( HintSys::hint() );
     //Font(14).textSize(res, HintSys::hint());
     dpos.w += 30;
     dpos.h += 30;
@@ -180,13 +181,13 @@ void MainGui::paintHint( Tempest::PaintEvent &e ){
     p.setBlendMode( Tempest::alphaBlend );
 
     MainGui::drawFrame( p, hintFrame, pos, dpos );
-    RichText::renderText( pos.x+15, pos.y+15, res, p, HintSys::hint() );
+    RichText::renderText( pos.x+15, pos.y+15, p, HintSys::hint() );
     //p.drawText( pos.x+15, pos.y+15, HintSys::hint() );
     }
 
   if( fps>=0 ){
     p.setFont( Tempest::Font(14) );
-    RichText::renderText( 0, 0, res, p, fpsStr);
+    RichText::renderText( 0, 0, p, fpsStr);
     }
   }
 
@@ -275,6 +276,12 @@ int MainGui::keyUpEvent(Tempest::KeyEvent &e) {
 
 int MainGui::closeEvent(Tempest::CloseEvent &e) {
   Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::Close);
+
+  if( !e.isAccepted() ){
+    CloseDialog::showCloseDialog( e, res, mainwidget );
+    return e.isAccepted();
+    }
+
   return e.isAccepted();
   }
 

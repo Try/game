@@ -55,7 +55,7 @@ class Terrain {
 
     void buildGeometry();
 
-    Tempest::Model<MVertex> waterGeometry( int cX, int cY ) const;
+    Model waterGeometry( int cX, int cY ) const;
 
     Model fogGeometry( int cX, int cY ) const;
 

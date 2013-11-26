@@ -30,6 +30,10 @@ Tempest::Widget &ScroolWidget::centralWidget() {
   return *cen;
   }
 
+void ScroolWidget::hideScroolBar() {
+  setScroolBarVisible(0);
+  }
+
 void ScroolWidget::setScroolBarVisible(bool v) {
   if( v==sb.isVisible() )
     return;
@@ -40,6 +44,9 @@ void ScroolWidget::setScroolBarVisible(bool v) {
 
 void ScroolWidget::setOrientation(Tempest::Orientation ori) {
   mlay = new ProxyLayout(ori);
+  mlay->scroolAfterEnd    = ((ProxyLayout&)cen->layout()).scroolAfterEnd;
+  mlay->scroolBeforeBegin = ((ProxyLayout&)cen->layout()).scroolBeforeBegin;
+
   mlay->scrool = &sb;
   cen->setLayout( mlay );
 
@@ -63,6 +70,16 @@ bool ScroolWidget::hasScroolAfterEnd() const {
   return mlay->scroolAfterEnd;
   }
 
+void ScroolWidget::scroolBeforeBegin(bool s) {
+  mlay->scroolBeforeBegin = s;
+  resizeEv( w(), h() );
+  mlay->applyLayout();
+  }
+
+bool ScroolWidget::hasScroolBeforeBegin() const {
+  return mlay->scroolBeforeBegin;
+  }
+
 void ScroolWidget::mouseWheelEvent(Tempest::MouseEvent &e) {
   if( !rect().contains(e.x+x(), e.y+y()) || !sb.isVisible() ){
     e.ignore();
@@ -79,6 +96,8 @@ void ScroolWidget::mouseMoveEvent(Tempest::MouseEvent &e) {
 
 void ScroolWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
   e.ignore();
+  if( sb.isVisible() )
+    return;
 
   if( e.gestureType()==Tempest::AbstractGestureEvent::gtDragGesture ){
     Tempest::DragGesture &d = (Tempest::DragGesture&)(e);
@@ -93,7 +112,8 @@ void ScroolWidget::gestureEvent(Tempest::AbstractGestureEvent &e) {
     }
   }
 
-void ScroolWidget::scrool(int ) {
+void ScroolWidget::scrool( int v ) {
+  sb.setValue( v );
   mlay->applyLayout();
   }
 
@@ -124,7 +144,7 @@ void ScroolWidget::resizeEv(int , int ) {
   }
 
 ScroolWidget::ProxyLayout::ProxyLayout(Tempest::Orientation ori)
-  :LinearLayout(ori), scroolAfterEnd(1){
+  :LinearLayout(ori), scroolAfterEnd(1), scroolBeforeBegin(0){
 
   }
 
@@ -139,20 +159,32 @@ void ScroolWidget::ProxyLayout::applyLayout() {
     sh += s.h;
     }
 
-  Tempest::Size sback;
-  if( widgets().size() )
+  Widget* sbox = owner()->owner();
+
+  Tempest::Size sback, stop;
+  if( widgets().size() ){
     sback = sizeHint( widgets().back() );
+    stop  = sizeHint( widgets()[0] );
+    }
 
   if( orientation()==Tempest::Vertical ){
+    int sscroll = 0;
+    if( scroolBeforeBegin )
+      sscroll = -std::max(sbox->h()-stop.h, stop.h);
+
     if( scroolAfterEnd )
-      scrool->setRange(0, sh-std::min( sback.h, scrool->h()) ); else
-      scrool->setRange(0, sh-scrool->h() );
+      scrool->setRange( sscroll, sh-std::min( sback.h, sbox->h()) ); else
+      scrool->setRange( sscroll, sh-scrool->h() );
     owner()->setPosition( 0, -scrool->value() );
     owner()->resize( owner()->w(), sh );
     } else {
+    int sscroll = 0;
+    if( scroolBeforeBegin )
+      sscroll = -std::max(sbox->w()-stop.w, stop.w);
+
     if( scroolAfterEnd )
-      scrool->setRange(0, sw-std::min(sback.w, scrool->w()));else
-      scrool->setRange(0, sw-scrool->w() );
+      scrool->setRange( sscroll, sw-std::min(sback.w, sbox->w()));else
+      scrool->setRange( sscroll, sw-scrool->w() );
     owner()->setPosition( -scrool->value(), 0 );
     owner()->resize( sw, owner()->h());
     }

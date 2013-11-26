@@ -58,7 +58,7 @@ void MissionTargets::setupTagets() {
     std::wstring str = Lang::tr( game.scenario().tagets()[i].hint );
     t->setText( str );
 
-    Tempest::Size sz = RichText::bounds(res, str);
+    Tempest::Size sz = RichText::bounds(str);
     t->setMaximumSize( sz );
 
     w = std::max(w, sz.w);

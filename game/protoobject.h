@@ -34,7 +34,7 @@ struct ProtoObject {
 
         int splashSize, splashDamage;
 
-        std::string bullet;
+        std::string bullet, explosion;
         size_t type;
         };
 
@@ -88,6 +88,7 @@ struct ProtoObject {
       NoAnim,
       Physic
       } deathAnim;
+    std::vector<std::string> deathExplosion;
 
     std::string  name;
     std::wstring mouseHint;

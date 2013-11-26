@@ -14,6 +14,7 @@
 
 #include "game/missions/desertstrikescenario.h"
 #include "game/missions/desertstriketutorialscenario.h"
+#include "game/missions/desertstrikescenariowidgets.h"
 
 struct MainMenu::Btn : public Button {
   Btn( Resource &res ):Button(res){
@@ -50,7 +51,7 @@ MainMenu::MainMenu(Game &game, Resource &res, Tempest::Widget* owner, bool start
   fbackgr  = firstRun;
   firstRun = false;
 
-  setLayout( Vertical );
+  setLayout( Horizontal );
 
   Widget *m = new Panel(res);
 
@@ -73,7 +74,20 @@ MainMenu::MainMenu(Game &game, Resource &res, Tempest::Widget* owner, bool start
   m->layout().add( button(res, Lang::tr("$(game_menu/options)"), &MainMenu::showOptions) );
   m->layout().add( button(res, Lang::tr("$(game_menu/rate)"),    &MainMenu::rate) );
 
-  layout().add( new Tempest::Widget() );
+  Button *help = new Button(res);
+  help->setMinimumSize(50, 50);
+  help->setMaximumSize(help->minSize());
+  help->setSizePolicy( FixedMin );
+  help->clicked.bind( this, &MainMenu::showHelp );
+  help->icon = res.pixmap("gui/info");
+
+  Widget* wl = new Widget();
+  wl->setLayout( Vertical );
+  wl->layout().add( new Widget() );
+  wl->layout().add( help );
+  wl->layout().add( new Widget() );
+
+  layout().add(wl);
   layout().add(m);
   layout().add( new Tempest::Widget() );
   showAds(true);
@@ -130,20 +144,24 @@ void MainMenu::paintEvent(Tempest::PaintEvent &e) {
   }
 
 void MainMenu::startMap(const std::wstring &m) {
-  if( !game.load( L"campagin/"+m ) )
+  Game &g = game;
+
+  if( !g.load( L"campagin/"+m ) )
     return;
 
-  game.setupScenario<DesertStrikeScenario>();
-  deleteLater();
-  game.unsetPause();
+  //deleteLater();
+  g.setupScenario<DesertStrikeScenario>();
+  g.unsetPause();
   }
 
 void MainMenu::tutorial() {
-  if( !game.load( L"campagin/td1_1.sav" ) )
+  Game &g = game;
+
+  if( !g.load( L"campagin/td1_1.sav" ) )
     return;
 
-  game.setupScenario<DesertStrikeTutorialScenario>();
-  deleteLater();
+  //deleteLater();
+  g.setupScenario<DesertStrikeTutorialScenario>();
   }
 
 void MainMenu::start() {
@@ -168,6 +186,10 @@ void MainMenu::rate() {
 
   env->CallStaticVoidMethod(clazz, rate);
 #endif
+  }
+
+void MainMenu::showHelp() {
+  new DesertStrikeScenario::UInfo(res, this, game);
   }
 
 void MainMenu::updateParticles() {
@@ -198,6 +220,17 @@ void MainMenu::showAds(bool s) {
 
   env->CallStaticVoidMethod(clazz, showAds, s);
 #endif
+  }
+
+int MainMenu::adsHeight() {
+#ifdef __ANDROID__
+  JNIEnv *env         = Tempest::AndroidAPI::jenvi();
+  jclass clazz        = env->FindClass( "com/tempest/game/GameActivity" );
+  jmethodID adsHeight = env->GetStaticMethodID( clazz, "adsHeight", "()I");
+
+  return env->CallStaticIntMethod(clazz, adsHeight);
+#endif
+  return 0;
   }
 
 MainMenu::Particle MainMenu::mkParticle() {

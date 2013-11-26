@@ -315,6 +315,9 @@ void WarriorBehavior::damageTo(GameObject &dobj) {
     b.plOwner      = obj.player().number();
     b.atack        = a;
 
+    if( a.explosion.size() )
+      b.explosion  = &a.explosion;
+
     b.tick();
     obj.world().game.resources().sound("fire_ball").play();
     } else {

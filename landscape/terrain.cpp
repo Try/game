@@ -153,6 +153,9 @@ MVertex Terrain::mkVertex(int ix, int iy, int plane) {
   vx.by = bnormal[1];
   vx.bz = bnormal[2];
 
+  vx.h  = 0;
+  std::fill( vx.color, vx.color+4, 255 );
+
   return vx;
   }
 
@@ -466,9 +469,8 @@ void Terrain::computePlanes() {
       }
   }
 
-Tempest::Model<MVertex>
-      Terrain::waterGeometry(int cX, int cY ) const {
-  Tempest::Model<MVertex> model;
+Model Terrain::waterGeometry(int cX, int cY ) const {
+  Model model;
   MVertex v;// = {0,0,0, 0,0, {0,0,1}, 1};
   v.h = 0;
   //v.dir[0] = 1;
@@ -535,14 +537,6 @@ Tempest::Model<MVertex>
           v.h = v.h*3;
           v.h = std::min( 1.0f, std::max( float(v.h), 0.0f) );
 
-          /*
-          v.dir[0] =  heightAt(i+dx[q],r+dy[q]-1)
-                     -heightAt(i+dx[q],r+dy[q]+1);
-
-          v.dir[1] =  heightAt(i+dx[q]-1,r+dy[q])
-                     -heightAt(i+dx[q]+1,r+dy[q]);
-          */
-
           land.push_back(v);
           }
 
@@ -550,8 +544,6 @@ Tempest::Model<MVertex>
   if( Model::hasFP16 )
     decl = MVertex ::decl(); else
     decl = MVertexF::decl();
-
-  // decl.add( Tempest::Decl::half2, Tempest::Usage::TexCoord, 1 );
 
   std::vector<uint16_t> index;
   TnlOptimize::index( land, index );

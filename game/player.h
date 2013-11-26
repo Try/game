@@ -21,7 +21,7 @@ class Player {
     Player(int num );
     virtual ~Player();
 
-    static const Tempest::Color colors[8];
+    static const Tempest::Color colors[9];
     GameObject * editObj;
 
     void addUnit( GameObject * u );

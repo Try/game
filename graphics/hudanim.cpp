@@ -17,12 +17,13 @@ HudAnim::HudAnim( Scene & s,
   t = 100;
   }
 
-void HudAnim::setPosition(float x, float y, float z) {
+HudAnim &HudAnim::setPosition(float x, float y, float z) {
   view.setPosition( World::coordCastD(x),
                     World::coordCastD(y) );
   view.setViewPosition( x,
                         y,
                         z );
+  return *this;
   }
 
 void HudAnim::tick() {
@@ -30,6 +31,10 @@ void HudAnim::tick() {
 
   float s = t/100.0;
   view.setViewSize(s,s,s);
+  }
+
+void HudAnim::setTimeout( int tin ) {
+  t = tin;
   }
 
 bool HudAnim::isEnd() const {
@@ -86,4 +91,50 @@ void StormEfect::findEnemy( GameObject &tg,
       tg.addEfectFlg( EfectBase::Strorm );
       }
     }
+  }
+
+ForceFieldEfect::ForceFieldEfect( Scene &s,
+                                  World &w,
+                                  const ProtoObject &proto,
+                                  const PrototypesLoader &pl,
+                                  Resource &res,
+                                  Physics &p )
+  : w(w),
+    view( s, w, proto, pl ) {
+  t = 4*Game::ticksPerSecond;
+  view.loadView( res, p, 0 );
+  }
+
+ForceFieldEfect::~ForceFieldEfect() {
+  int size = 3;
+  Terrain &terrain = w.terrain();
+  terrain.editBuildingsMap( x - size/2+size%2,
+                            y - size/2+size%2,
+                            size, size, -1);
+  }
+
+void ForceFieldEfect::setPosition(int ix, int iy, float /*z*/) {
+  x = ix/Terrain::quadSize;
+  y = iy/Terrain::quadSize;
+
+  int vx = x*Terrain::quadSize, vy = y*Terrain::quadSize;
+  view.setPosition( vx, vy );
+  view.setViewPosition( World::coordCast(vx),
+                        World::coordCast(vy)  );
+  view.tick();
+
+  Terrain &terrain = w.terrain();
+
+  int size = 3;
+  terrain.editBuildingsMap( x - size/2+size%2,
+                            y - size/2+size%2,
+                            size, size, 1);
+  }
+
+void ForceFieldEfect::tick() {
+  t -= 1;
+  }
+
+bool ForceFieldEfect::isEnd() const {
+  return t<=0;
   }

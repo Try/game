@@ -56,7 +56,7 @@ int main( int, char** ){
 #ifdef __ANDROID__
   Lang::load("lang/l.lang", Tempest::AndroidAPI::iso3Locale() );
 #else
-  Lang::load("lang/l.lang", L"eng");
+  Lang::load("lang/l.lang", L"rus");
 #endif
   Tempest::Application app;
   setupTh();

@@ -10,7 +10,7 @@ Bullet::Bullet( Scene & s,
                 World & wrld,
                 const ProtoObject &p,
                 const PrototypesLoader & pl )
-  :view( s, wrld, p, pl ) {
+  :view( s, wrld, p, pl ), explosion(0) {
   x = 0;
   y = 0;
   z = 0;

@@ -13,7 +13,7 @@ Tempest::VertexDeclaration::Declarator MVertexF::mkDecl() {
 
   d.add( Tempest::Decl::float4,  Tempest::Usage::Position )
    .add( Tempest::Decl::float4,  Tempest::Usage::Normal   )
-   .add( Tempest::Decl::float4,  Tempest::Usage::BiNormal )
+   .add( Tempest::Decl::float2,  Tempest::Usage::BiNormal )
    .add( Tempest::Decl::float2,  Tempest::Usage::TexCoord )
    .add( Tempest::Decl::color,   Tempest::Usage::Color    );
 

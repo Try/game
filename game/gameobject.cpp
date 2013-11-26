@@ -144,7 +144,7 @@ void GameObject::loadView( const Model &model,
   view.loadView( model, pview );
   }
 
-void GameObject::loadView(const Tempest::Model<MVertex> &model ){
+void GameObject::loadView(const Model &model ){
   m.isEnv = true;
   view.loadView( model );
   }
@@ -297,6 +297,18 @@ int GameObject::z() const {
   return m.z;
   }
 
+float GameObject::viewX() const {
+  return view.viewX();
+  }
+
+float GameObject::viewY() const {
+  return view.viewY();
+  }
+
+float GameObject::viewZ() const {
+  return view.viewZ();
+  }
+
 bool GameObject::isSelected() const {
   return m.isSelected;
   }
@@ -447,6 +459,13 @@ void GameObject::tick( const Terrain &terrain ) {
 
       for( int r=0; r<3; ++r )
         m.dieVec[r] += bullets[i]->mvec[r];
+
+      if( bullets[i]->explosion )
+        wrld.emitEfect<HudAnim>( *bullets[i]->explosion )
+            .setPosition( World::coordCast(x()),
+                          World::coordCast(y()),
+                          World::coordCast(z()) )
+            .setTimeout(50);
 
       std::swap( bullets[i], bullets.back() );
       bullets.pop_back();

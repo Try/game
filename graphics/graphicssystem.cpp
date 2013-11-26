@@ -364,8 +364,8 @@ void GraphicsSystem::resizeEvent( int w, int h, bool isFullScreen ){
 
 Tempest::Device::Options GraphicsSystem::makeOpt(bool isFullScreen) {
   Tempest::Device::Options opt;
-  opt.windowed = !isFullScreen;
-  opt.vSync    = !opt.windowed;
+  opt.displaySettings.fullScreen = isFullScreen;
+  opt.vSync = !opt.displaySettings.fullScreen;
 
   return opt;
   }

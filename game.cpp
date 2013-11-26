@@ -144,7 +144,7 @@ void Game::loadData() {
 
 void Game::initGame() {
   Tempest::Application::processEvents();
-  bool dsScenario = 1;
+  bool dsScenario = 0;
 
   gui.showMenuFunc.removeBinds();
 
@@ -262,6 +262,9 @@ void Game::tick() {
   }
 
 void Game::onRender( double dt ){  
+  world->onRender(dt);
+  scenario().onRender();
+
   World::CameraViewBounds b;
   F3 vb[4];
   vb[0] = scenario().unProject(   0, 0   );
@@ -290,8 +293,6 @@ void Game::onRender( double dt ){
     } else {
     graphics.setFog( player().fog() );
     }
-
-  world->onRender(dt);
   }
 
 void Game::update(){
@@ -453,7 +454,9 @@ void Game::keyUpEvent( Tempest::KeyEvent & e ) {
   }
 
 void Game::closeEvent(Tempest::CloseEvent &e) {
-  gui.closeEvent(e);
+  if( isActive() && showMode()!=Minimized )
+    gui.closeEvent(e); else
+    e.ignore();
   }
 
 void Game::gestureEvent(Tempest::AbstractGestureEvent &e) {
@@ -647,6 +650,10 @@ void Game::setCameraPos(GameObject &obj) {
 void Game::setCameraPosition(float x, float y) {
   world->camera.setPosition( x,y, world->camera.z() );
   world->moveCamera(0,0);
+  }
+
+void Game::setCameraPosition(float x, float y, float z) {
+  world->camera.setPosition( x,y,z );
   }
 
 void Game::setCameraPosSmooth( GameObject &obj, float maxK ) {
