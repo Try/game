@@ -8,14 +8,17 @@
 #include "lineedit.h"
 
 #include "lang/lang.h"
+#include "mainmenu.h"
+
+#include "maingui.h"
 
 OptionsWidget::OptionsWidget( Resource &res, Widget* ow ):ModalWindow(res,ow) {
   setLayout( Tempest::Vertical );
 
   Widget *m = new Panel(res);
 
-  m->setMaximumSize(320, 300);
-  m->setMinimumSize(320, 300);
+  m->setMaximumSize(400*MainGui::uiScale, 300*MainGui::uiScale);
+  m->setMinimumSize(400*MainGui::uiScale, 300*MainGui::uiScale);
   m->setSizePolicy( Tempest::FixedMin );
   m->setSpacing(16);
   m->setMargin(25);
@@ -30,6 +33,8 @@ OptionsWidget::OptionsWidget( Resource &res, Widget* ow ):ModalWindow(res,ow) {
   layout().add(m);
   layout().add( new Tempest::Widget() );
   layout().add( new Tempest::Widget() );
+
+  setMargin(0,0,0, MainMenu::adsHeight() );
   }
 
 void OptionsWidget::mkControls( Resource& res, Tempest::Widget *m) {
@@ -59,8 +64,11 @@ void OptionsWidget::mkControls( Resource& res, Tempest::Widget *m) {
   lb->setCurrentItem(shadowl);
 
   lb->onItemSelected.bind(this, &OptionsWidget::shadow);
+  lb->icon = res.pixmap("gui/triangle2");
 
   bumpL = s.normalMap ? 1:0;
+  aTest = s.atest;
+
   CheckBox *cb = 0;
   cb = addWidget<CheckBox>(m, res, "$(options/bump)"   );
   cb->setChecked(bumpL);
@@ -71,6 +79,7 @@ void OptionsWidget::mkControls( Resource& res, Tempest::Widget *m) {
   physicl = s.physics;
   lb->setCurrentItem(physicl);
   lb->onItemSelected.bind(this, &OptionsWidget::physics);
+  lb->icon = res.pixmap("gui/triangle2");
 
   std::vector< std::wstring > lo;
   lo.push_back( Lang::tr("$(options/any)") );
@@ -81,6 +90,11 @@ void OptionsWidget::mkControls( Resource& res, Tempest::Widget *m) {
   oreentationl = s.oreentation;
   lb->setCurrentItem( oreentationl );
   lb->onItemSelected.bind(this, &OptionsWidget::oreentation);
+  lb->icon = res.pixmap("gui/triangle2");
+
+  cb = addWidget<CheckBox>(m, res, "$(options/atest)"   );
+  cb->setChecked(aTest);
+  cb->checked.bind(this, &OptionsWidget::atest );
 
   Widget* w = new Widget();
   w->setLayout( Tempest::Horizontal );
@@ -121,6 +135,10 @@ Tempest::Widget *OptionsWidget::mkPriview(Resource &res) {
   return w;
   }
 
+void OptionsWidget::atest(bool s) {
+  aTest = s;
+  }
+
 void OptionsWidget::bump(int s) {
   bumpL = s;
   }
@@ -145,6 +163,8 @@ void OptionsWidget::applySettings() {
   s.normalMap    = bumpL>0;
   s.physics      = physicl;
   s.oreentation  = oreentationl;
+
+  s.atest        = aTest;
 
   GraphicsSettingsWidget::Settings::setSettings(s);
   GraphicsSettingsWidget::Settings::save();

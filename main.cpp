@@ -47,12 +47,6 @@ void setupTh(){}
 #endif
 
 int main( int, char** ){
-  /*
-  Tempest::Pixmap pm("data/textures/land/grass1.png");
-  pm.setFormat( Tempest::Pixmap::Format_DXT1 );
-  pm.save("data/textures/land/t.dds");
-  pm.setFormat( Tempest::Pixmap::Format_RGB );
-  pm.save("data/textures/land/t.png");*/
 #ifdef __ANDROID__
   Lang::load("lang/l.lang", Tempest::AndroidAPI::iso3Locale() );
 #else
@@ -60,6 +54,7 @@ int main( int, char** ){
 #endif
   Tempest::Application app;
   setupTh();
+
   Game game( Tempest::Window::Maximized );
   game.show();
 

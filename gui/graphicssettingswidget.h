@@ -29,6 +29,7 @@ class GraphicsSettingsWidget:public Panel {
 
       int   physics;
       int   oreentation;
+      bool  atest;
 
       enum API{
         openGL,

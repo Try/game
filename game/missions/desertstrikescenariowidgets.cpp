@@ -23,8 +23,8 @@
 #include "gui/mainmenu.h"
 
 DesertStrikeScenario::NumButton::NumButton( Resource & r ):Button(r) {
-  setMinimumSize( 55, 55 );
-  setMaximumSize( 55, 55 );
+  setMinimumSize( DesertStrikeScenario::buttonOptimalSize );
+  setMaximumSize( DesertStrikeScenario::buttonOptimalSize );
 
   numFrame = res.pixmap("gui/hintFrame");
   num = 0;
@@ -143,8 +143,8 @@ DesertStrikeScenario::GradeButton::GradeButton( Resource & r,
   texture = res.pixmap("gui/colors");
   //setText( obj.name );
 
-  setMinimumSize( 55, 55 );
-  setMaximumSize( 55, 55 );
+  setMinimumSize( DesertStrikeScenario::buttonOptimalSize );
+  setMaximumSize( DesertStrikeScenario::buttonOptimalSize );
   setFont( Tempest::Font(15) );
 
   clicked.bind( this, &GradeButton::emitClick);
@@ -177,8 +177,8 @@ void DesertStrikeScenario::TranscurentPanel::mouseDownEvent(Tempest::MouseEvent 
 
 struct DesertStrikeScenario::Minimap::BuyButton: public Button {
   BuyButton( Resource & r ):Button(r) {
-    setMinimumSize( 55, 55 );
-    setMaximumSize( 55, 55 );
+    setMinimumSize( DesertStrikeScenario::buttonOptimalSize );
+    setMaximumSize( DesertStrikeScenario::buttonOptimalSize );
 
     Tempest::Sprite t;
     t = res.pixmap("gui/icon/gold");
@@ -190,8 +190,8 @@ struct DesertStrikeScenario::Minimap::BuyButton: public Button {
 
 struct DesertStrikeScenario::Minimap::GradeButton: public Button {
   GradeButton( Resource & r, DPlayer& pl ):Button(r), pl(pl) {
-    setMinimumSize( 55, 55 );
-    setMaximumSize( 55, 55 );
+    setMinimumSize( DesertStrikeScenario::buttonOptimalSize );
+    setMaximumSize( DesertStrikeScenario::buttonOptimalSize );
 
     Tempest::Sprite t;
     t       = res.pixmap("gui/icon/gold");
@@ -644,16 +644,16 @@ DesertStrikeScenario::SpellPanel::SpellPanel( Resource & res,
   :TranscurentPanel(res), game(game){
   using namespace Tempest;
 
-  setMinimumSize(75, 200);
-  setMaximumSize(75, 200);
+  setMinimumSize(20+buttonOptimalSize.w, 35+buttonOptimalSize.h*3);
+  setMaximumSize(20+buttonOptimalSize.w, 35+buttonOptimalSize.h*3);
   layout().setMargin(15);
 
   setSizePolicy( FixedMin );
   setLayout( Vertical );
 
   Button * c = new CameraButton(res, game);
-  c->setMinimumSize( 55, 55 );
-  c->setMaximumSize( 55, 55 );
+  c->setMinimumSize( DesertStrikeScenario::buttonOptimalSize );
+  c->setMaximumSize( DesertStrikeScenario::buttonOptimalSize );
   c->icon = res.pixmap("gui/icon/camera");
   c->clicked.bind( toogleCameraMode );
   layout().add( c );
@@ -823,8 +823,8 @@ DesertStrikeScenario::UpgradePanel::UpgradePanel( Resource & res,
   :TranscurentPanel(res), game(game), mmap(mmap){
   using namespace Tempest;
 
-  setMinimumSize(75, 200);
-  setMaximumSize(75, 200);
+  setMinimumSize(20+buttonOptimalSize.w, 35+buttonOptimalSize.h*3);
+  setMaximumSize(20+buttonOptimalSize.w, 35+buttonOptimalSize.h*3);
   layout().setMargin(10);
 
   setSizePolicy( FixedMin );
@@ -883,7 +883,12 @@ void DesertStrikeScenario::CentralPanel::paintEvent(Tempest::PaintEvent &e) {
 
   //PainterGUI& pt = (PainterGUI&)p.device();
   p.setColor( k*cl.r(), k*cl.g(), k*cl.b(), 1 );
-  p.setBlendMode( Tempest::addBlend );
+  if( cl == Tempest::Color(0,0,0,1) ){
+    p.setBlendMode( Tempest::alphaBlend );
+    p.setFlip(0,1);
+    } else
+    p.setBlendMode( Tempest::addBlend );
+
   p.setScissor( Tempest::Rect(0,0,w(),h()) );
 
   p.setTexture( bg );
@@ -892,6 +897,7 @@ void DesertStrikeScenario::CentralPanel::paintEvent(Tempest::PaintEvent &e) {
               bg.w(), h0,
               0,0, bg.w(), bg.h());
   p.setColor(1,1,1,0.5);
+  p.setFlip(0,0);
 
   p.setBlendMode( Tempest::alphaBlend );
   p.setTexture(cride);
@@ -1232,7 +1238,7 @@ void DesertStrikeScenario::UInfo::resizeEvent(int, int) {
 
 DesertStrikeScenario::MiniBuyPanel::MiniBuyPanel(Resource &res, Game &game, DPlayer &pl)
   :TranscurentPanel(res), game(game){
-  setMaximumSize( maxSize().w, 90 );
+  setMaximumSize( maxSize().w, buttonOptimalSize.w+35 );
 
   setLayout( Tempest::Horizontal );
   ScroolWidget *w = new ScroolWidget(res);
@@ -1255,7 +1261,7 @@ DesertStrikeScenario::MiniBuyPanel::MiniBuyPanel(Resource &res, Game &game, DPla
 
         BuyButton * u = new BuyButton(res, obj, pl, i);
 
-        u->setMinimumSize( 80, 80 );
+        u->setMinimumSize( buttonOptimalSize.w+25, buttonOptimalSize.w+25 );
         u->setMaximumSize( u->minSize() );
         u->onClick.bind( *this, &MiniBuyPanel::buyU );
         u->onSell .bind(*this, &MiniBuyPanel::sellU);
@@ -1268,7 +1274,7 @@ DesertStrikeScenario::MiniBuyPanel::MiniBuyPanel(Resource &res, Game &game, DPla
     const ProtoObject & obj = game.prototype( f[i] );
 
     BuyButton * u = new BuyButton(res, obj, pl, 0);
-    u->setMinimumSize( 80, 80 );
+    u->setMinimumSize( buttonOptimalSize.w+25, buttonOptimalSize.w+25 );
     u->setMaximumSize( u->minSize() );
 
     u->onClick.bind( *this, &MiniBuyPanel::buyG );

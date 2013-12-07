@@ -18,10 +18,12 @@ class AbstractListBox : public Button {
 
   protected:
     void mouseDownEvent(Tempest::MouseEvent &e);
+    void mouseUpEvent(Tempest::MouseEvent &e);
 
     Resource &res;
     OverlayWidget * overlay;
     bool needToShow;
+    uint64_t lastRM;
 
     virtual Tempest::Widget *createDropList();
     void close();

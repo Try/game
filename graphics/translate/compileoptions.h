@@ -7,7 +7,7 @@
 
 class CompileOptions{
   public:
-    CompileOptions():lang(Cg), maxVaryings(8){}
+    CompileOptions():lang(Cg), maxVaryings(8), atestRef(0){}
     std::set<std::string> options;
 
     enum Lang{
@@ -18,6 +18,7 @@ class CompileOptions{
       };
     Lang lang;
     int  maxVaryings;
+    float atestRef;
   };
 
 #endif // COMPILEOPTIONS_H

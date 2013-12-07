@@ -75,7 +75,7 @@ void Scenario::tick() {
 }
 
 void Scenario::onRender(){
-}
+  }
 
 void Scenario::uiTick() {
   moveCamera();
@@ -100,7 +100,7 @@ void Scenario::mouseDownEvent(Tempest::MouseEvent &e) {
     selectionRectTracking = 1;
 
   gui.selectionRect() = Tempest::Rect(e.x, e.y, 0, 0);
-  updateMousePos(e);
+  updateMousePos(e.pos());
   }
 
 void Scenario::mouseUpEvent(Tempest::MouseEvent &e) {
@@ -142,7 +142,7 @@ void Scenario::mouseUpEvent(Tempest::MouseEvent &e) {
     }
 
   selectionRectTracking = false;
-  updateMousePos(e);
+  updateMousePos(e.pos());
 
   if( e.button==Tempest::MouseEvent::ButtonLeft && player.editObj ){
     msg.message( player.number(), Behavior::EditNext );
@@ -187,7 +187,7 @@ void Scenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
                                -((r.y+r.h)/hh - 1.0) );
     }
 
-  updateMousePos(e);
+  updateMousePos(e.pos());
   }
 
 void Scenario::mouseWheelEvent(Tempest::MouseEvent &e) {
@@ -220,14 +220,14 @@ bool Scenario::isSelectionRectTracking() const {
   return selectionRectTracking;
   }
 
-void Scenario::updateMousePos(Tempest::MouseEvent &e) {
+void Scenario::updateMousePos(const Tempest::Point &e) {
   World  &world  = game.curWorld();
   Player &player = game.player();
 
   int w = game.w(),
       h = game.h();
 
-  curMPos = e.pos();
+  curMPos = e;
 
   F3 v = unProject( curMPos.x, curMPos.y );
   int vx = World::coordCastD(v.data[0])/Terrain::quadSize,
@@ -593,7 +593,7 @@ Tempest::Widget *Scenario::createEditPanel( InGameControls *mainWidget, Resource
   using namespace Tempest;
 
   TabWidget *tabs = new TabWidget(res);
-  tabs->resize( 200, 400 );
+  tabs->resize( 200*MainGui::uiScale, 400*MainGui::uiScale );
 
   Widget *p = new Widget();
   tabs->addTab(p);

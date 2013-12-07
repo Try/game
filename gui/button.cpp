@@ -6,6 +6,8 @@
 #include "sound/sound.h"
 #include <Tempest/Utility>
 
+#include "maingui.h"
+
 Button::Button(Resource &res)
        : res(res), hotKey(this, Tempest::KeyEvent::K_NoKey) {
   fnt = Tempest::Font(15);
@@ -21,9 +23,11 @@ Button::Button(Resource &res)
 #ifdef __ANDROID__
   h = 35;
 #endif
+  h *= MainGui::uiScale;
+  fnt.setSize( fnt.size()*MainGui::uiScale );
 
   Tempest::SizePolicy p;
-  p.maxSize = Tempest::Size(128, h);
+  p.maxSize = Tempest::Size(128*MainGui::uiScale, h);
   p.minSize = Tempest::Size(27, h);
   p.typeV   = Tempest::FixedMax;
   p.typeH   = Tempest::FixedMax;

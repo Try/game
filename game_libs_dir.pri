@@ -16,6 +16,7 @@ INCLUDEPATH += "C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_wi
 LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/freetype-dev_2.4.2-1_win32/lib"
 LIBS += -L"C:/Users/Try/Home/Programming/Tempest/lib"
 
+LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/glew-1.5.4-mingw32/lib"
 LIBS += -L"C:/Users/Try/Home/Programming/SharedLibs/bullet-2.80-rev2531/bullet-2.80-rev2531/build-bullet"
 
 LIBS += -L"$$(DXSDK_DIR)Lib/x86"

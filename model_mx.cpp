@@ -35,6 +35,9 @@ Tempest::VertexDeclaration::Declarator MVertex::mkDecl() {
    .add( Tempest::Decl::float2, Tempest::Usage::TexCoord )
    .add( Tempest::Decl::color,  Tempest::Usage::Color    );
 
+  size_t sz = sizeof( MVertexF ), sz2 = sizeof(MVertex);
+  (void)sz2;
+  T_ASSERT(sz<=64);
   return d;
   }
 

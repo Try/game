@@ -36,7 +36,7 @@ ShaderSource::ShaderSource() {
   isTexture = false;
 
   hasTmp    = false;
-  tmpUsed   = false;
+  isTmp    = false;
 
   std::fill( cvalue, cvalue+4, 0 );
   std::fill( mathSW, mathSW+4, '-');
@@ -91,17 +91,18 @@ ShaderSource::Code ShaderSource::code( VertexInputAssembly &d,
 
         const std::string& tt = ObjectCode::toString(cx.nodes[i]->textureSemantic);
         if( f==m.end() ){
-          cx.nodes[i]->uniformName = "t"+tt+to_string(id);
+          cx.nodes[i]->uniformName = "t"+tt+to_string( int(id) );
           m[ ix ] = id;
           ++id;
           } else {
-          cx.nodes[i]->uniformName = "t"+tt+to_string(f->second);
+          cx.nodes[i]->uniformName = "t"+tt+to_string( int(f->second) );
           }
         }
       }
     }
 
   Code c;
+  preATest(cx);
   optNodes(cx);
   mkRState(cx, c);
 
@@ -112,8 +113,12 @@ ShaderSource::Code ShaderSource::code( VertexInputAssembly &d,
   mkTransformVarying(cx);
 
   {
+  std::string dcode;
+  dcode = atest("\n  ", cx);
+
   std::string scode = color("\n  ", cx),
               tcode = compileTmp(cx,"\n  ", false);
+
 
   std::stringstream fs;
   if( cx.lang==CompileOptions::GLSLES )
@@ -149,7 +154,10 @@ ShaderSource::Code ShaderSource::code( VertexInputAssembly &d,
     fs << std::endl;
     }
 
-  fs << "  " << tcode << scode;
+  fs << "  " << tcode;
+  if( 1 )
+    fs << dcode;
+  fs << scode;
 
   if( cx.lang==CompileOptions::Cg )
     fs << "return fs;\n  }" << std::endl; else
@@ -422,7 +430,6 @@ std::string ShaderSource::src( const std::string & sep,
     return name;
     } else
   if( hasTmp && !ccVarying ){
-    tmpUsed = true;
     cx.tmp.insert(this);
     return expand( "tmp" + to_string(hasTmp), csize, vecSz, cx );
     } else
@@ -501,6 +508,35 @@ std::string ShaderSource::color( const std::string &sep,
   if( v.lang==CompileOptions::Cg )
     return fr[0]+"float4(0.0);"+sep; else
     return fr[1]+"vec4(0.0);"+sep;
+  }
+
+void ShaderSource::preATest( ShaderSource::Context & cx ) const {
+  if( cx.opt->atestRef <= 0.5/255 )
+    return;
+
+  for( size_t i=0; i<cx.nodes.size(); ++i )
+    if( cx.nodes[i]->type==Texture &&
+        cx.nodes[i]->textureSemantic ==tsDiffuse ){
+      ShaderSource &cl = *cx.nodes[i];
+      cl.isTmp = true;
+      return;
+      }
+  }
+
+std::string ShaderSource::atest(const std::string &sep, ShaderSource::Context &cx) const {
+  if( cx.opt->atestRef <= 0.5/255 )
+    return "";
+
+  for( size_t i=0; i<cx.nodes.size(); ++i )
+    if( cx.nodes[i]->type==Texture &&
+        cx.nodes[i]->textureSemantic ==tsDiffuse ){
+      ShaderSource &cl = *cx.nodes[i];
+
+      return "if( " + cl.src(sep, cx, false, 4)+".a < "+ to_string(cx.opt->atestRef) +" )"
+                    + sep +"  discard;" + sep + sep;
+      }
+
+  return "";
   }
 
 std::string ShaderSource::transform( const std::string &sep,
@@ -1090,8 +1126,8 @@ void ShaderSource::optNodes(ShaderSource::Context &v) {
     ok = false;
     for( size_t i=0; i<v.nodes.size(); ++i )
       if( !v.nodes[i]->hasTmp ){
-        bool isTmp = false;
-        for( size_t r=i+1; r<v.nodes.size(); ++r ){
+        bool isTmp = v.nodes[i]->isTmp;
+        for( size_t r=i+1; !isTmp && r<v.nodes.size(); ++r ){
           if( v.nodes[i]->nodes.size() &&
               *v.nodes[i]==*v.nodes[r]  ){
             isTmp = true;
@@ -1102,14 +1138,16 @@ void ShaderSource::optNodes(ShaderSource::Context &v) {
             }
           }
 
-        if( isTmp )
+        if( isTmp ){
+          v.nodes[i]->hasTmp = id;
           ++id;
+          }
         }
     }
 
   for( size_t i=0; i<v.nodes.size(); ++i )
     if( v.nodes[i]->hasTmp ){
-      bool isTmp = false;
+      bool isTmp = v.nodes[i]->isTmp;
       for( size_t r=0; r<v.nodes.size(); ++r ){
         if( i!=r &&//v.nodes[i].get()!=v.nodes[r].get() &&
             v.nodes[r]->hasTmp && *v.nodes[i]==*v.nodes[r]  ){
@@ -1599,6 +1637,12 @@ const std::string &ShaderSource::floatN( const Context &cx, int n) {
 const std::string &ShaderSource::floatN(const ShaderSource::Context &cx,
                                         int n, int m) {
   return floatN(cx.lang,n,m);
+  }
+
+std::string ShaderSource::to_string(float i) {
+  std::stringstream ss;
+  ss << i;
+  return ss.str();
   }
 
 std::string ShaderSource::to_string(int i) {

@@ -6,18 +6,22 @@
 #include "panel.h"
 #include "richtext.h"
 #include "button.h"
+#include "game.h"
 
 #include "lang/lang.h"
 
 bool CloseDialog::shown = false;
 
-CloseDialog::CloseDialog(Resource & res , Widget *owner):ModalWindow(res, owner) {
+CloseDialog::CloseDialog( Game& game,
+                          Resource & res,
+                          Widget *owner)
+  :ModalWindow(res, owner), game(game) {
   shown = true;
 
   Panel *p = new Panel(res);
   p->setMargin(8);
   p->setSizePolicy( Tempest::FixedMin );
-  p->setMinimumSize(300, 200);
+  p->setMinimumSize(300*MainGui::uiScale, 200*MainGui::uiScale);
   p->setLayout( Tempest::Vertical );
 
   RichText* r = new RichText(res);
@@ -42,9 +46,13 @@ CloseDialog::CloseDialog(Resource & res , Widget *owner):ModalWindow(res, owner)
   layout().add( new Widget() );
   layout().add( p );
   layout().add( new Widget() );
+
+  pause = game.isPaused();
+  game.pause(1);
   }
 
 CloseDialog::~CloseDialog() {
+  game.pause(pause);
   shown = false;
   }
 
@@ -53,11 +61,12 @@ void CloseDialog::closeEvent(Tempest::CloseEvent &) {
   }
 
 void CloseDialog::showCloseDialog( Tempest::CloseEvent &e,
+                                   Game &game,
                                    Resource & res, Widget* owner ) {
   if( shown ){
     return;
     }
 
-  new CloseDialog(res, owner);
+  new CloseDialog(game, res, owner);
   e.accept();
   }

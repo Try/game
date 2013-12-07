@@ -28,11 +28,16 @@
 #include "game.h"
 #include "util/lexicalcast.h"
 
+#include "gamesettings.h"
+
+int MainGui::uiScale = 1;
+
 MainGui::MainGui( Tempest::Device &,
+                  Game &game,
                   int w, int h,
                   Resource &r,
                   PrototypesLoader &pr )
-  : res(r), prototypes(pr) {
+  : res(r), game(game), prototypes(pr) {
   mainwidget = 0;
   fps = -1;
   central.resize(w,h);
@@ -49,7 +54,7 @@ MainGui::MainGui( Tempest::Device &,
 
   str += L"/\\|!@#$%^&*()_-=+";
 
-  for( int i=10; i<=16; ++i ){
+  for( int i=10*uiScale; i<=16*uiScale; i+=uiScale ){
     Tempest::Font f(i);
 
     for( int bold = 0; bold<=1; ++bold )
@@ -163,7 +168,7 @@ void MainGui::paintHint( Tempest::PaintEvent &e ){
     if( !HintSys::vrect().contains(mousePos) )
       --HintSys::time;
 
-    p.setFont( Tempest::Font(14) );
+    p.setFont( Tempest::Font(14*uiScale) );
     Tempest::Size dpos = RichText::bounds( HintSys::hint() );
     //Font(14).textSize(res, HintSys::hint());
     dpos.w += 30;
@@ -278,7 +283,7 @@ int MainGui::closeEvent(Tempest::CloseEvent &e) {
   Tempest::SystemAPI::processEvents(&central, e, Tempest::Event::Close);
 
   if( !e.isAccepted() ){
-    CloseDialog::showCloseDialog( e, res, mainwidget );
+    CloseDialog::showCloseDialog( e, game, res, mainwidget );
     return e.isAccepted();
     }
 
@@ -383,12 +388,10 @@ void MainGui::setCutsceneMode(bool cs) {
   }
 
 void MainGui::setFPS(float f) {
-#ifndef NO_DEBUG
-  if( fps!=f ){
+  if( GameSettings::showFps && fps!=f ){
     fpsStr = L"fps = "+Lexical::upcastw(f);
     fps = f;
     }
-#endif
   }
 
 void MainGui::saveGame() {

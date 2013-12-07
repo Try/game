@@ -23,6 +23,7 @@ class MainMenu : public ModalWindow {
     void paintEvent(Tempest::PaintEvent &e);
 
     void startMap(const std::wstring &mx );
+    void startMapExt(const std::wstring &mx );
     void tutorial();
     void start();
     void continueGame();

@@ -60,7 +60,7 @@ SaveDialog::SaveDialog(Resource &res, Widget *w)
   menu.topWidget->setMaximumSize( menu.topPanel->sizePolicy().maxSize.w,
                                  30 );
   menu.topWidget->setSizePolicy( menu.topPanel->sizePolicy().typeH,
-                                Tempest::FixedMax );
+                                 Tempest::FixedMax );
 
   menu.bottom->setMaximumSize( menu.bottom->sizePolicy().maxSize.w,
                                30 );

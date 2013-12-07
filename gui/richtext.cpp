@@ -4,6 +4,8 @@
 #include <Tempest/Font>
 #include "resource.h"
 
+#include "maingui.h"
+
 std::vector<RichText::Char2Draw> RichText::buffer;
 
 RichText::RichText( Resource & res ):res(res) {
@@ -56,7 +58,7 @@ void RichText::rText( int dx, int dy,
                       Tempest::Painter *p,
                       const std::wstring &txt,
                       Tempest::Size & rect ) {
-  Tempest::Font font(15);
+  Tempest::Font font(15*MainGui::uiScale);
 
   if( p ){
     p->setFont(font);

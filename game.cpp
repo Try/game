@@ -31,6 +31,8 @@
 #include <cmath>
 #include "gui/gamemessages.h"
 
+#include <Tempest/Log>
+
 const int Game::ticksPerSecond = 35;
 
 Game::Game( ShowMode sm )
@@ -44,7 +46,7 @@ Game::Game( ShowMode sm )
                 graphics.iboHolder,
                 graphics.vsHolder,
                 graphics.fsHolder ),
-      gui( graphics.device, w(), h(), resource, proto ),
+      gui( graphics.device, *this, w(), h(), resource, proto ),
       msg(*this),
 #     ifdef __ANDROID__
       serializator(L"./serialize_tmp.obj", Serialize::Null )
@@ -52,9 +54,14 @@ Game::Game( ShowMode sm )
       serializator(L"./serialize_tmp.obj", Serialize::Write )
 #     endif
       {
+  Tempest::Log() << "Game()";
   paused       = false;
   setMultiTouchTracking(1);
   //needToUpdate = false;
+
+#ifdef __ANDROID__
+  MainGui::uiScale = Tempest::AndroidAPI::densityDpi()/320 + 1;
+#endif
 
   currentPlayer = 1;
   isLoading     = true;
@@ -144,7 +151,7 @@ void Game::loadData() {
 
 void Game::initGame() {
   Tempest::Application::processEvents();
-  bool dsScenario = 0;
+  bool dsScenario = 1;
 
   gui.showMenuFunc.removeBinds();
 
@@ -371,7 +378,7 @@ void Game::render() {
   }
 
 void Game::resizeEvent( Tempest::SizeEvent &e ){
-  if( !isLoading )
+  if( world )
     world->camera.setPerespective(true, w(), h() );
 
   graphics.resizeEvent( e.w, e.h, isFullScreenMode() );
@@ -790,6 +797,11 @@ void Game::setupMaterials( AbstractGraphicObject &obj,
   if( contains( src.materials, "water" ) ){
     material.usage.water = true;
     }
+
+  if( src.shadedMaterial!=size_t(-1) )
+    if( proto.material(src.shadedMaterial)=="tree" ){
+      material.usage.blush = true;
+      }
 
   if( contains( src.materials, "blush" ) ){
     material.usage.blush = true;

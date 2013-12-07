@@ -17,6 +17,8 @@ class DesertStrikeScenario  : public Scenario {
     ~DesertStrikeScenario();
 
     static void createMenu(Resource &res, Game &game, Tempest::Widget * w );
+    static Tempest::Size buttonOptimalSize;
+    static int uiScale;
     struct UInfo;
   protected:
     virtual void onStartGame();
@@ -112,8 +114,13 @@ class DesertStrikeScenario  : public Scenario {
     UpgradePanel   *upgradePanel;
 
     static const char * units[3][4];
-  private:
     int  tNum, interval;
+
+    void spawn(const char* u, int pl,
+                int x,
+                int y, int tgX, int tgY);
+    void moveCamera();
+  private:
     static bool defaultMainMenu;
 
     struct ScaleCtrl{

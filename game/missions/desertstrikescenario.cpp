@@ -28,6 +28,9 @@ const char * DesertStrikeScenario::units[3][4] = {
   {"fire_element", "golem"}
   };
 
+Tempest::Size DesertStrikeScenario::buttonOptimalSize = Tempest::Size(55);
+int           DesertStrikeScenario::uiScale           = 1;
+
 struct DesertStrikeScenario::GoldButton : public Button {
   GoldButton( Resource &res, Game& g ):Button(res), game(g){}
 
@@ -88,7 +91,7 @@ DesertStrikeScenario::DesertStrikeScenario(Game &g, MainGui &ui, BehaviorMSGQueu
   sctrl.isScaleMode = false;
 
   winAnim.isWinAnim = false;
-  waveNum           = 0;
+  waveNum           = 0;  
   }
 
 DesertStrikeScenario::~DesertStrikeScenario() {
@@ -119,7 +122,7 @@ void DesertStrikeScenario::mouseDownEvent( Tempest::MouseEvent &e ) {
     sctrl.isScaleMode = (sctrl.mouseD0>5);
     sctrl.angle0      = game.curWorld().camera.spinX();
     }
-  updateMousePos(e);
+  updateMousePos( mpressPos );
   }
 
 void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
@@ -135,7 +138,7 @@ void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
     World  &world  = game.curWorld();
     Player &player = game.player();
 
-    updateMousePos(e);    
+    updateMousePos(e.pos());
     isMouseTracking = false;
 
     if( e.button==Tempest::MouseEvent::ButtonLeft && player.editObj ){
@@ -176,6 +179,7 @@ void DesertStrikeScenario::mouseUpEvent( Tempest::MouseEvent & e ) {
         }
       }
     }
+  updateMousePos(e.pos());
   }
 
 void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
@@ -226,7 +230,8 @@ void DesertStrikeScenario::mouseMoveEvent( Tempest::MouseEvent &e ) {
       }
     }
 
-  updateMousePos(e);
+  mpressPos = e.pos();
+  updateMousePos(e.pos());
   }
 
 void DesertStrikeScenario::customEvent(const std::vector<char> &m) {
@@ -494,6 +499,8 @@ void DesertStrikeScenario::onRender() {
   if( winAnim.isWinAnim )
     return;
 
+  updateMousePos( mpressPos );
+
   if( hasVTracking ){
     //unitToView = 0;
 
@@ -507,8 +514,9 @@ void DesertStrikeScenario::onRender() {
         l = x*x + y*y;
         }
 
-      for( size_t i=0; i<player().unitsCount(); ++i )
-        if( player().unit(i).getClass().data.speed>0 ){
+      for( size_t i=0; i<player().unitsCount(); ++i ){
+        const ProtoObject &p = player().unit(i).getClass();
+        if( p.data.speed>0 ){
           GameObject &u = player().unit(i);
           int x = (u.x() - player(u.playerNum()).spawnPoint.x )/Terrain::quadSize,
               y = (u.y() - player(u.playerNum()).spawnPoint.y )/Terrain::quadSize;
@@ -519,6 +527,7 @@ void DesertStrikeScenario::onRender() {
             l = l2;
             }
           }
+        }
       }
 
     if( unitToView ){
@@ -561,11 +570,14 @@ void DesertStrikeScenario::toogleMinimap( int page ) {
     return;
     }
 
-  mmapbox     ->setVisible( !mmapbox     ->isVisible() );
-  buyUnitPanel->setVisible( !buyUnitPanel->isVisible() );
-  miniBuy     ->setVisible( !miniBuy     ->isVisible() );
+  mmapbox->setVisible( !mmapbox->isVisible() );
+  buyUnitPanel->setVisible( 0 );
+  miniBuy     ->setVisible( 1 );
+  //mmapbox     ->setVisible( !mmapbox     ->isVisible() );
+  //buyUnitPanel->setVisible( !buyUnitPanel->isVisible() );
+  //miniBuy     ->setVisible( !miniBuy     ->isVisible() );
 
-  GameSettings::smallMenu = miniBuy->isVisible();
+  GameSettings::smallMenu = !mmapbox->isVisible();
   GameSettings::save();
   }
 
@@ -638,24 +650,42 @@ void DesertStrikeScenario::mkUnits( int p,
 
     for( int i=0; i<plc; ++i ){
       if( 1 || c < 3*plc ){
-        GameObject& obj = game.curWorld().addObject( utypes[r], pl.number());
         ++c;
         ++id;
-
         Tempest::Point dpos = du*(id/qc) + dv*(id%qc);
 
-        obj.setPosition( x+dpos.x, y+dpos.y );
-
-        obj.behavior.message( Behavior::MoveSingle, tgX, tgY );
-        obj.behavior.message( Behavior::AtackMove,  tgX, tgY );
+        spawn( utypes[r].c_str(),
+               pl.number(),
+               x+dpos.x, y+dpos.y,
+               tgX, tgY );
         }
       }
     }
   }
 
+void DesertStrikeScenario::spawn( const char* u,
+                                  int pl,
+                                  int x, int y,
+                                  int tgX, int tgY ) {
+  GameObject& obj = game.curWorld().addObject( u, pl);
+  //Tempest::Point dpos = du*(id/qc) + dv*(id%qc);
+
+  obj.setPosition( x, y );
+
+  obj.behavior.message( Behavior::MoveSingle, tgX, tgY );
+  obj.behavior.message( Behavior::AtackMove,  tgX, tgY );
+  }
+
+void DesertStrikeScenario::moveCamera(){
+  if( !unitToView )
+    Scenario::moveCamera();
+  }
+
 void DesertStrikeScenario::onStartGame() {
   unitToView   = 0;
   hasVTracking = 1;
+
+  mpressPos = Tempest::Point( game.w()/2, game.h()/2 );
 
   revPlPos = rand()%2;
 
@@ -771,7 +801,13 @@ void DesertStrikeScenario::updateCenterOwner() {
 void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
   using namespace Tempest;
 
+  //Size scrSz = SystemAPI::screenSize();
+
+  DesertStrikeScenario::uiScale = MainGui::uiScale;//std::min(scrSz.w/1000, scrSz.h/1000)+1;
+  buttonOptimalSize = Size(uiScale*55);
+
   mainWidget = mw;
+  mpressPos = Tempest::Point( mw->w()/2, mw->h()/2 );
   //currPl     = 1;
 
   showEditPanel = Shortcut(mainWidget, Tempest::KeyEvent::K_F9);
@@ -837,6 +873,10 @@ void DesertStrikeScenario::setupUI( InGameControls *mw, Resource &res ) {
 
   showEditPanel.activated.bind( *this, &DesertStrikeScenario::toogleEditPanel );
   showSettings. activated.bind( *this, &DesertStrikeScenario::toogleSettingsPanel );
+
+  mmapbox->setVisible( 1 );
+  buyUnitPanel->setVisible( 0 );
+  miniBuy     ->setVisible( 1 );
 
   if( GameSettings::smallMenu )
     toogleMinimap(2);
@@ -1127,7 +1167,7 @@ void DesertStrikeScenario::showMainMenu( bool start ) {
   }
 
 void DesertStrikeScenario::WinAnim::setup(const Tempest::Point &p , bool win) {
-  timer     = 40;
+  timer     = 60;
   isWinAnim = 1;
   viewPos   = p;
 

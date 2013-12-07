@@ -16,6 +16,7 @@ class OptionsWidget : public ModalWindow {
                   Resource& res,
                   const std::string& desc );
 
+    void atest( bool s );
     void bump( int s );
     void shadow( int s );
     void physics( int p );
@@ -25,6 +26,7 @@ class OptionsWidget : public ModalWindow {
 
     int shadowl, physicl;
     int bumpL, oreentationl;
+    bool aTest;
   };
 
 #endif // OPTIONSWIDGET_H

@@ -103,6 +103,7 @@ void MiniMapView::render() {
         terr.set(i,r, pix);
         }
 
+    this->terr = Tempest::Texture2d();
     this->terr = res.ltexHolder.create(terr, false, false);
     }
 
@@ -117,11 +118,13 @@ void MiniMapView::render() {
 
     drawUnits(renderTo, wx);
     //aceptFog(renderTo, wx.game.player().fog() );
+    units = Tempest::Texture2d();
     units = res.ltexHolder.create(renderTo, false, false);
 
     Tempest::Pixmap& fogTex = tmpPix;
     aceptFog(fogTex, wx.game.player().fog() );
 
+    fog   = Tempest::Texture2d();
     fog   = res.ltexHolder.create(fogTex, false, false);
     }
 

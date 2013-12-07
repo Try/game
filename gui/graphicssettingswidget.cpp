@@ -40,6 +40,7 @@ GraphicsSettingsWidget::Settings::Settings() {
   oclusion           = true;
   shadowTextures     = true;
   transcurentShadows = true;
+  atest              = true;
 #ifdef __ANDROID__
   physics            = 1;
   shadowMapRes       = 512;
@@ -51,6 +52,7 @@ GraphicsSettingsWidget::Settings::Settings() {
   oclusion           = false;
   shadowTextures     = false;
   transcurentShadows = false;
+  atest              = false;
 #endif
   }
 
@@ -65,7 +67,8 @@ bool GraphicsSettingsWidget::
                   shadowTextures,
                   transcurentShadows,
                   physics,
-                  oreentation ) ==
+                  oreentation,
+                  atest ) ==
          std::tie(s.bloom,
                   s.shadowMapRes,
                   s.shadowFilterQ,
@@ -75,7 +78,8 @@ bool GraphicsSettingsWidget::
                   s.shadowTextures,
                   s.transcurentShadows,
                   s.physics,
-                  s.oreentation );
+                  s.oreentation,
+                  s.atest );
   }
 
 void GraphicsSettingsWidget::Settings::setSettings( const Settings &s) {
@@ -113,6 +117,7 @@ void GraphicsSettingsWidget::Settings::save() {
   doc.AddMember("shadowFilterQ", st.shadowFilterQ, doc.GetAllocator() );
   doc.AddMember("glow",          st.glow,          doc.GetAllocator() );
   doc.AddMember("normalMap",     st.normalMap,     doc.GetAllocator() );
+  doc.AddMember("atest",         st.atest,         doc.GetAllocator() );
 
   doc.AddMember("physics",       st.physics,     doc.GetAllocator() );
   doc.AddMember("oreentation",   st.oreentation, doc.GetAllocator() );
@@ -172,6 +177,8 @@ bool GraphicsSettingsWidget::Settings::load() {
     st.glow = d["glow"].GetBool();
   if( d["normalMap"].IsBool() )
     st.normalMap = d["normalMap"].GetBool();
+  if( d["atest"].IsBool() )
+    st.atest = d["atest"].GetBool();
 
   if( d["physics"].IsInt() )
     st.physics = d["physics"].GetInt();

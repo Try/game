@@ -40,7 +40,7 @@ class ShaderSource {
     char mathSW[4];
 
     mutable int  hasTmp;
-    mutable bool tmpUsed;
+    mutable bool isTmp;
     bool wasPreprocessed;
 
     float cvalue[4]; int csize, csize1;
@@ -138,6 +138,8 @@ class ShaderSource {
     static std::string expand(const std::string &s, int oldS, int sz, const Context &cx);
     std::string src(const std::string &sep, Context &v, bool vshader, int vecSz) const;
     std::string color(const std::string &sep, Context &v) const;
+    void preATest(Context &v) const;
+    std::string atest(const std::string &sep, Context &v) const;
     std::string transform(const std::string &sep, Context &v) const;
 
     std::string varying(Context &v) const;
@@ -200,6 +202,7 @@ class ShaderSource {
     static const std::string& floatN(const Context &cx, int n, int m );
 
     static std::string to_string( int i );
+    static std::string to_string( float i );
 
     void argsSize( int &sz0,
                    int &sz1,

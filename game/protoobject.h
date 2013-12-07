@@ -53,7 +53,8 @@ struct ProtoObject {
       enum ShadowType{
         NoShadow,
         BasicShadow,
-        BiasShadow
+        BiasShadow,
+        AtestShadow
         };
 
       ShadowType shadowType;

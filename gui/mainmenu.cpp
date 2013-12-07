@@ -11,10 +11,12 @@
 #include "game.h"
 
 #include "mapselectmenu.h"
+#include "maingui.h"
 
 #include "game/missions/desertstrikescenario.h"
 #include "game/missions/desertstriketutorialscenario.h"
 #include "game/missions/desertstrikescenariowidgets.h"
+#include "game/missions/advanceicscenario.h"
 
 struct MainMenu::Btn : public Button {
   Btn( Resource &res ):Button(res){
@@ -55,8 +57,8 @@ MainMenu::MainMenu(Game &game, Resource &res, Tempest::Widget* owner, bool start
 
   Widget *m = new Panel(res);
 
-  m->setMaximumSize(200, 300);
-  m->setMinimumSize(200, 300);
+  m->setMaximumSize(200*MainGui::uiScale, 300*MainGui::uiScale);
+  m->setMinimumSize(200*MainGui::uiScale, 300*MainGui::uiScale);
   m->setSizePolicy( Tempest::FixedMin );
   m->setSpacing(16);
   m->setMargin(25);
@@ -75,7 +77,7 @@ MainMenu::MainMenu(Game &game, Resource &res, Tempest::Widget* owner, bool start
   m->layout().add( button(res, Lang::tr("$(game_menu/rate)"),    &MainMenu::rate) );
 
   Button *help = new Button(res);
-  help->setMinimumSize(50, 50);
+  help->setMinimumSize( DesertStrikeScenario::buttonOptimalSize );
   help->setMaximumSize(help->minSize());
   help->setSizePolicy( FixedMin );
   help->clicked.bind( this, &MainMenu::showHelp );
@@ -108,7 +110,7 @@ Button *MainMenu::button( Resource &res, const std::wstring& s,
                           void (MainMenu::*f)() ) {
   Button *b = new Btn(res);
   b->setText(s);
-  b->setMaximumSize( Tempest::Size(250, 50) );
+  b->setMaximumSize( Tempest::Size(250*MainGui::uiScale, 50*MainGui::uiScale) );
   b->setFont( Tempest::Font(20) );
   b->setSizePolicy( Tempest::Preferred, Tempest::FixedMax );
   b->clicked.bind(this, f);
@@ -146,11 +148,21 @@ void MainMenu::paintEvent(Tempest::PaintEvent &e) {
 void MainMenu::startMap(const std::wstring &m) {
   Game &g = game;
 
-  if( !g.load( L"campagin/"+m ) )
+  if( !g.load( m ) )
     return;
 
   //deleteLater();
   g.setupScenario<DesertStrikeScenario>();
+  g.unsetPause();
+  }
+
+void MainMenu::startMapExt(const std::wstring &mx) {
+  Game &g = game;
+
+  if( !g.load( mx ) )
+    return;
+
+  g.setupScenario<AdvanceICScenario>();
   g.unsetPause();
   }
 
@@ -160,13 +172,14 @@ void MainMenu::tutorial() {
   if( !g.load( L"campagin/td1_1.sav" ) )
     return;
 
-  //deleteLater();
   g.setupScenario<DesertStrikeTutorialScenario>();
+  g.unsetPause();
   }
 
 void MainMenu::start() {
   MapSelectMenu *m = new MapSelectMenu(res, this);
   m->acepted.bind(this, &MainMenu::startMap);
+  m->aceptedExt.bind(this, &MainMenu::startMapExt);
   }
 
 void MainMenu::continueGame() {

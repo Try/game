@@ -69,7 +69,7 @@ Tempest::Widget* ListBox::createDropList() {
   box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
   box->setPosition( mapToRoot( Tempest::Point(0,h()) ) );
-  box->resize(170, 200);
+  box->resize(170*MainGui::uiScale, 200*MainGui::uiScale);
 
   ScroolWidget *sw = new ScroolWidget( res );
 

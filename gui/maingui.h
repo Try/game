@@ -42,10 +42,13 @@ namespace Tempest{
 class MainGui {
   public:
     MainGui( Tempest::Device &dev,
+             Game &game,
              int w, int h,
              Resource &r,
              PrototypesLoader & prototypes );
     ~MainGui();
+
+    static int uiScale;
 
     void showMenu();
     Tempest::signal<Resource&, Game&, Tempest::Widget*> showMenuFunc;
@@ -136,6 +139,7 @@ class MainGui {
     InGameControls *mainwidget;
     float fps;
     std::wstring fpsStr;
+    Game &game;
 
     CentralWidget central;
     PrototypesLoader & prototypes;

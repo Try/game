@@ -104,9 +104,9 @@ struct Scenario {
     Tempest::Point curMPos;
     Tempest::KeyEvent::KeyType   lastKEvent;
 
-    void updateMousePos( Tempest::MouseEvent &e );
+    void updateMousePos( const Tempest::Point &e );
 
-    void moveCamera();
+    virtual void moveCamera();
 
     Resource    & res;
 

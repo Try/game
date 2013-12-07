@@ -66,11 +66,19 @@ MaterialServer::MaterialServer( Tempest::VertexShaderHolder &vsHolder,
   Tempest::Device& dev = vsHolder.device();
 
 //#ifdef __ANDROID__
-  if( dev.renderer().find_first_of("Tegra")!=std::string::npos ){
+  size_t pos = dev.renderer().find("Tegra");
+  if( pos!=std::string::npos ){
     GraphicsSettingsWidget::Settings s = GraphicsSettingsWidget::Settings::settings();
     s.normalMap    = false;
     s.shadowMapRes = 1024;
+    s.atest        = true;
 
+    GraphicsSettingsWidget::Settings::setSettings(s);
+    }
+
+  if( dev.renderer().find("Mali-400")!=std::string::npos ){
+    GraphicsSettingsWidget::Settings s = GraphicsSettingsWidget::Settings::settings();
+    s.atest        = true;
     GraphicsSettingsWidget::Settings::setSettings(s);
     }
 //#endif
@@ -84,6 +92,8 @@ size_t MaterialServer::idOfMaterial( const std::string &m ) {
   }
 
 void MaterialServer::load( Resource &r ) {
+  GraphicsSettingsWidget::Settings s = GraphicsSettingsWidget::Settings::settings();
+
   res = &r;
   mat.clear();
   efect.clear();
@@ -100,14 +110,24 @@ void MaterialServer::load( Resource &r ) {
   blt_to_tex = pushEfect(*res, "blt_to_tex");
   mirron_blt = pushEfect(*res, "mirron_blt");
 
-  shadow_main[1] = idOfMaterial("shadow_main");
-  shadow_main[2] = idOfMaterial("shadow_bias");
+  shadow_main[1] = idOfMaterial("shadow_main" );
+  shadow_main[2] = idOfMaterial("shadow_bias" );
+  shadow_main[3] = idOfMaterial("shadow_atest");
 
   {
     Tempest::RenderState r = mat[shadow_main[2]]->m.renderState();
     r.setCullFaceMode( Tempest::RenderState::CullMode::front );
     mat[shadow_main[2]]->m.setRenderState(r);
   }
+  {
+    Tempest::RenderState r = mat[shadow_main[3]]->m.renderState();
+    r.setCullFaceMode( Tempest::RenderState::CullMode::front );
+    mat[shadow_main[3]]->m.setRenderState(r);
+  }
+
+  if( !s.atest )
+    shadow_main[3] = shadow_main[2];
+
   {
     size_t id = idOfMaterial("terrain_minor");
 
@@ -345,6 +365,12 @@ void MaterialServer::setupObjectConstants( const AbstractGraphicObject &obj,
 
   object = obj.transform();
 
+  const Material& m = obj.material();
+
+  if( m.usage.blush ){
+    object = Material::animateObjMatrix(object);
+    }
+
   Tempest::Matrix4x4& mvp = context.mvp;
   mvp = context.proj;
   mvp.mul( mWorld );
@@ -353,7 +379,6 @@ void MaterialServer::setupObjectConstants( const AbstractGraphicObject &obj,
   context.shMatrix = context.shView;
   context.shMatrix.mul( object );
 
-  const Material& m = obj.material();
   context.texture[0][0] = m.diffuse;
   context.texture[1][0] = m.normal;
 
@@ -369,6 +394,8 @@ void MaterialServer::setupObjectConstants( const AbstractGraphicObject &obj,
   }
 
 void MaterialServer::pushMaterial( Resource &res, const std::string &s ) {
+  GraphicsSettingsWidget::Settings st = GraphicsSettingsWidget::Settings::settings();
+
   std::shared_ptr<Mat> m = std::make_shared<Mat>(vsHolder, fsHolder);
 
   Tempest::VertexDeclaration::Declarator decl = MVertex::decl();
@@ -381,6 +408,9 @@ void MaterialServer::pushMaterial( Resource &res, const std::string &s ) {
   CompileOptions opt;
   opt.lang = lang;
   setupOpt(opt);
+  if( (s=="tree" || s=="shadow_atest") && st.atest )
+    opt.atestRef = 0.5;
+
   m->m.install( *m->code.codeOf(), opt, assemb );
 
   T_ASSERT( m->m.vs.isValid() && m->m.fs.isValid() );

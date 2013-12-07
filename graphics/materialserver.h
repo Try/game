@@ -52,7 +52,7 @@ class MaterialServer {
     Tempest::LocalTexturesHolder&  localTex;
     ShaderSource::Lang lang;
 
-    size_t shadow_main[3], main_material, water;
+    size_t shadow_main[4], main_material, water;
     size_t blt, blt_to_tex, gauss, mirron_blt;
 
     Tempest::Texture2d hWater[2]; bool sswater;

@@ -6,10 +6,14 @@
 #include "gui/scroolwidget.h"
 #include "gui/panel.h"
 
+#include <Tempest/Application>
+
 AbstractListBox::AbstractListBox( Resource &r) : Button(r), res(r) {
   clicked.bind( *this, &AbstractListBox::showList );
   overlay = 0;
   needToShow = 1;
+
+  lastRM = Tempest::Application::tickCount();
   }
 
 AbstractListBox::~AbstractListBox() {
@@ -67,11 +71,17 @@ void AbstractListBox::close() {
 
 void AbstractListBox::rmOverlay(Tempest::Widget *) {
   overlay = 0;
+  lastRM = Tempest::Application::tickCount();
   }
 
 void AbstractListBox::mouseDownEvent(Tempest::MouseEvent &e) {
+  needToShow = Tempest::Application::tickCount()!=lastRM;
   Button::mouseDownEvent(e);
-  needToShow = (overlay==0);
+  }
+
+void AbstractListBox::mouseUpEvent(Tempest::MouseEvent &e) {
+  Button::mouseUpEvent(e);
+  needToShow = true;
   }
 
 Tempest::Widget* AbstractListBox::createDropList() {
@@ -79,7 +89,7 @@ Tempest::Widget* AbstractListBox::createDropList() {
   box->setLayout( Tempest::Horizontal );
   box->layout().setMargin(6);
   box->setPosition( mapToRoot( Tempest::Point(0,h()) ) );
-  box->resize(170, 200);
+  box->resize(170*MainGui::uiScale, 200*MainGui::uiScale);
 
   ScroolWidget *sw = new ScroolWidget( res );
   for( int i=0; i<10; ++i ){

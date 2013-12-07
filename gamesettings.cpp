@@ -9,9 +9,10 @@
 
 #include <Tempest/Android>
 
-int GameSettings::difficulty = 1;
+int GameSettings::difficulty = 0;
 Tempest::Color GameSettings::color = Tempest::Color(1,1,0,1);
 bool GameSettings::smallMenu = false;
+bool GameSettings::showFps   = false;
 
 GameSettings::GameSettings() {
 
@@ -37,6 +38,7 @@ void GameSettings::save(const char *file) {
 
   doc.AddMember("color",         cl,         doc.GetAllocator() );
   doc.AddMember("smallMenu",     smallMenu,  doc.GetAllocator() );
+  doc.AddMember("showFps",       showFps,    doc.GetAllocator() );
 
   doc.Accept( writer );
 
@@ -89,6 +91,9 @@ void GameSettings::load(const char *file) {
 
   if( d["smallMenu"].IsBool() )
     smallMenu = d["smallMenu"].GetBool();
+
+  if( d["showFps"].IsBool() )
+    smallMenu = d["showFps"].GetBool();
 
   if( d["color"].IsObject() ){
     const Value& cl = d["color"];

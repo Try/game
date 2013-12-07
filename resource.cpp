@@ -6,6 +6,7 @@
 #include <Tempest/Sprite>
 
 #include <Tempest/SystemAPI>
+#include <Tempest/Log>
 
 #include "sound/sound.h"
 
@@ -34,6 +35,7 @@ Resource::Resource( Tempest::TextureHolder       & tx,
     vsHolder(vsh),
     fsHolder(fsh),
     pixmaps( ltexHolder ){
+  Tempest::Log() <<"Resource()";
   Model::hasFP16 = tx.device().caps().hasHalf2 && tx.device().caps().hasHalf4;
 
   models.owner   = this;
@@ -354,6 +356,7 @@ void Resource::load( Box<Texture> &textures,
       tex.data = texHolder.load(f);
       }
 
+    T_ASSERT( !tex.data.isEmpty() );
     textures.add(k, tex );
     textures.loaded[f] = k;
     }

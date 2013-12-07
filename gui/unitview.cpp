@@ -94,7 +94,7 @@ void UnitView::updateView() {
     }
 
   if( texture.width()!=w() || texture.height()!=h() ){
-    texture = res.texHolder.create( w(), h(), Tempest::AbstractTexture::Format::RGBA5 );
+    texture = res.texHolder.create( w(), h(), Tempest::AbstractTexture::Format::RGBA );
     }
 
   if( pEng ){

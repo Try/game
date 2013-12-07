@@ -46,10 +46,9 @@ void ModalWindow::mouseMoveEvent(Tempest::MouseEvent &)
 void ModalWindow::paintEvent(Tempest::PaintEvent &e) {
   {
   Tempest::Painter p(e);
-  p.setTexture( frame );
   p.setBlendMode( Tempest::alphaBlend );
-  p.drawRect( 0,0, w(), h(),
-              0,4, 1,1 );
+  p.setColor( Tempest::Color(0,0,0,0.5));
+  p.drawRect( 0,0, w(), h() );
   }
 
   paintNested(e);

@@ -2,6 +2,8 @@ QT    -= core gui
 CONFIG -= app_bundle
 CONFIG -= qt
 
+DESTDIR = ../bin
+
 TARGET = game
 QMAKE_CXXFLAGS += -std=gnu++0x -Wall
 #QMAKE_LFLAGS   += -pg
@@ -179,7 +181,8 @@ HEADERS += \
     game/missions/desertstriketutorialscenario.h \
     game/objectefect.h \
     gamesettings.h \
-    gui/closedialog.h
+    gui/closedialog.h \
+    game/missions/advanceicscenario.h
 
 SOURCES += \
     main.cpp \
@@ -312,44 +315,45 @@ SOURCES += \
     game/missions/desertstriketutorialscenario.cpp \
     game/objectefect.cpp \
     gamesettings.cpp \
-    gui/closedialog.cpp
+    gui/closedialog.cpp \
+    game/missions/advanceicscenario.cpp
 
 OTHER_FILES += \
-    ../game-build-desktop/data/shadow_map.vert \
-    ../game-build-desktop/data/shadow_map.frag \
-    ../game-build-desktop/data/blitShader.vert \
-    ../game-build-desktop/data/blitShader.frag \
-    ../game-build-desktop/data/main_material.frag \
-    ../game-build-desktop/data/main_material.vert \
-    ../game-build-desktop/data/data.xml \
-    ../game-build-desktop/data/game.xml \
-    ../game-build-desktop/data/shaders.xml \
-    ../game-build-desktop/data/pixmaps.xml \
-    ../game-build-desktop/data/icons.xml \
+    ../bin/data/shadow_map.vert \
+    ../bin/data/shadow_map.frag \
+    ../bin/data/blitShader.vert \
+    ../bin/data/blitShader.frag \
+    ../bin/data/main_material.frag \
+    ../bin/data/main_material.vert \
+    ../bin/data/data.xml \
+    ../bin/data/game.xml \
+    ../bin/data/shaders.xml \
+    ../bin/data/pixmaps.xml \
+    ../bin/data/icons.xml \
     gui/gen/ui_loaddialog.xml \
-    ../game-build-desktop/data/game_objects/land.xml \
-    ../game-build-desktop/data/spell.xml \
-    ../game-build-desktop/data/hud.xml \
-    ../game-build-desktop/data/particle.xml \
+    ../bin/data/game_objects/land.xml \
+    ../bin/data/spell.xml \
+    ../bin/data/hud.xml \
+    ../bin/data/particle.xml \
     Android.mk \
-    ../game-build-desktop/data/game_objects/rocks.xml \
-    ../game-build-desktop/data/game_objects/bush.xml \
-    ../game-build-desktop/data/game_objects/tree.xml \
-    ../game-build-desktop/data/upgrades.xml \
-    ../game-build-desktop/data/data.json \
-    ../game-build-desktop/data/pixmaps.json \
-    ../game-build-desktop/data/icons.json \
-    ../game-build-desktop/data/shaders.json \
-    ../game-build-desktop/data/game.json \
-    ../game-build-desktop/data/game_objects/bush.json \
-    ../game-build-desktop/data/game_objects/land.json \
-    ../game-build-desktop/data/game_objects/rocks.json \
-    ../game-build-desktop/data/hud.json \
-    ../game-build-desktop/campagin/td.xml \
-    ../game-build-desktop/campagin/td.json \
-    ../game-build-desktop/data/particle.json \
-    ../game-build-desktop/data/spell.json \
-    ../game-build-desktop/data/upgrades.json \
-    ../game-build-desktop/data/game_objects/tree.json \
+    ../bin/data/game_objects/rocks.xml \
+    ../bin/data/game_objects/bush.xml \
+    ../bin/data/game_objects/tree.xml \
+    ../bin/data/upgrades.xml \
+    ../bin/data/data.json \
+    ../bin/data/pixmaps.json \
+    ../bin/data/icons.json \
+    ../bin/data/shaders.json \
+    ../bin/data/game.json \
+    ../bin/data/game_objects/bush.json \
+    ../bin/data/game_objects/land.json \
+    ../bin/data/game_objects/rocks.json \
+    ../bin/data/hud.json \
+    ../bin/campagin/td.xml \
+    ../bin/campagin/td.json \
+    ../bin/data/particle.json \
+    ../bin/data/spell.json \
+    ../bin/data/upgrades.json \
+    ../bin/data/game_objects/tree.json \
     game_libs_dir.pri
 

@@ -10,6 +10,9 @@ std::unordered_map<std::wstring, std::wstring> Lang::lang;
 std::wstring Lang::leters;
 
 void Lang::load(const char *f, const wchar_t* iso3Code ) {
+  lang.clear();
+  leters.clear();
+
   ifstream fin( f );
   std::unordered_set<wchar_t, std::hash<size_t> > let;
 

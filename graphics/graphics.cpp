@@ -14,6 +14,7 @@
 #include <cmath>
 
 #include <Tempest/DisplaySettings>
+#include <Tempest/Log>
 
 Graphics::Graphics( void *hwnd, bool isFullScreen )
   : api( createAPI() ),
@@ -31,6 +32,7 @@ Graphics::Graphics( void *hwnd, bool isFullScreen )
     uiRender( vsHolder, fsHolder ),
     hintRender( vsHolder, fsHolder ),
     msrv( vsHolder, fsHolder, localTex, lang() ){
+  Tempest::Log() << "Graphics()";
   time   = 0;
   useHDR = 0;
 
@@ -68,6 +70,8 @@ Graphics::Graphics( void *hwnd, bool isFullScreen )
 
   smBorderVs     = vsHolder.surfaceShader(opt);
   smBorderFs     = fsHolder.surfaceShader(opt);
+
+  Tempest::Log() << "~Graphics()";
   }
 
 bool Graphics::render( Tempest::Surface &scene,
@@ -101,6 +105,8 @@ bool Graphics::render( Scene &scene,
                        size_t dt) {
   if( !device.startRender() )
     return false;
+
+  Material::wind = sin( 2.0*M_PI*(dt%(16*1024))/(16*1024.0) );
 
   onRender( std::max<size_t>(dt-time, 0) );
   //gui.update( *widget, device );
@@ -380,6 +386,7 @@ int Graphics::draw( const Frustum &frustum,
   }
 
 Tempest::AbstractAPI *Graphics::createAPI() {
+  Tempest::Log() << "Graphics::createAPI()";
 #ifndef __ANDROID__
   if( GraphicsSettingsWidget::Settings::api ==
       GraphicsSettingsWidget::Settings::directX )
@@ -456,7 +463,7 @@ Tempest::Texture2d Graphics::depth(int w, int h) {
 
 Tempest::Texture2d Graphics::shadowMap(int w, int h) {
   if( GraphicsSettingsWidget::Settings::api
-      == GraphicsSettingsWidget::Settings::openGL)
+      == GraphicsSettingsWidget::Settings::openGL )
     return localTex.create(w,h, Tempest::AbstractTexture::Format::RGBA8 );
 
   return localTex.create(w,h, Tempest::AbstractTexture::Format::Luminance16 );

@@ -11,6 +11,7 @@ class GameSettings {
     static int difficulty;
     static Tempest::Color color;
     static bool smallMenu;
+    static bool showFps;
 
     static void save( const char* file );
     static void load( const char* file );

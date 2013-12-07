@@ -1,6 +1,7 @@
 #include "lineedit.h"
 
 #include "resource.h"
+#include "maingui.h"
 
 using namespace Tempest;
 
@@ -19,6 +20,8 @@ LineEdit::LineEdit(Resource &res):res(res), anim(0) {
   onFocusChange.bind( *this, &LineEdit::storeText );
 
   scrool = 0;
+
+  font.setSize( font.size()*MainGui::uiScale );
 
   SizePolicy p = sizePolicy();
   p.maxSize.h = font.size() + font.size()/2;
@@ -227,7 +230,7 @@ void LineEdit::keyDownEvent( KeyEvent &e ) {
   }
 
 void LineEdit::updateSel() {
-  Point a = sp, b = ep;
+  Tempest::Point a = sp, b = ep;
 
   if( a.x > b.x )
     std::swap(a,b);

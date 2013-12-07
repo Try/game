@@ -54,7 +54,7 @@ void DesertStrikeTutorialScenario::onUnitToBuy( const std::string & ) {
   }
 
 void DesertStrikeTutorialScenario::onUnitHired(const std::string &) {
-  if( state==stAcceptUnit ){
+  if( state==stBuyArmy ){
     timer = Game::ticksPerSecond*5;
     state = stGoldInfo;
     disableUnitBlock();

@@ -13,7 +13,7 @@ class MapSelectMenu : public ModalWindow {
     MapSelectMenu( Resource &res, Widget* ow );
     ~MapSelectMenu();
 
-    Tempest::signal<std::wstring> acepted;
+    Tempest::signal<std::wstring> acepted,aceptedExt;
   private:
     Tempest::Texture2d mPriview, base;
     Tempest::Sprite    triangle;
@@ -24,6 +24,7 @@ class MapSelectMenu : public ModalWindow {
     void mouseUpEvent(Tempest::MouseEvent &e);
 
     void acceptMap(const std::wstring &str);
+    void acceptMapExt(const std::wstring &str);
 
     struct Btn;
 
@@ -52,9 +53,16 @@ class MapSelectMenu : public ModalWindow {
     void setDificulty( int d );
 
     Resource &res;
+    Widget *customList, *center;
 
     Tempest::Rect leftBtn();
     Tempest::Rect rightBtn();
+
+    void setStd();
+    void setCustom();
+    std::vector<std::wstring> filesInDir( const std::wstring &dirName );
+
+    struct CustBtn;
   };
 
 #endif // MAPSELECTMENU_H

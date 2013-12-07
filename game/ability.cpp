@@ -417,6 +417,9 @@ bool Ability::iceBolt( World &w,
                        GameObject &tg,
                        const Spell & s ) {
   int cd = u.coolDown( s.id );
+  if( u.team()==tg.team() )
+    return 0;
+
   if( cd==0 && !tg.behavior.find<BuildingBehavior>() ){
     u.setCoolDown( s.id, s.coolDown );
 

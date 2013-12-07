@@ -59,6 +59,8 @@ void Panel::mouseWheelEvent(Tempest::MouseEvent &) {
   }
 
 void Panel::gestureEvent(Tempest::AbstractGestureEvent &e) {
+  if( !Tempest::Rect(0,0,w(),h()).contains(e.hotSpot()) )
+    e.ignore();
   }
 
 void Panel::paintEvent( Tempest::PaintEvent &e ) {

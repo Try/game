@@ -192,7 +192,7 @@ void ParticleSystemEngine::emitParticle( Model::Raw &raw,
 
   for( int i=0; i<2; ++i )
     for( int r=0; r<2; ++r ){
-      double dx, dy, dz;
+      double dx = 0, dy = 0, dz = 0;
       if( orign == ParticleSystemDeclaration::Screen ){
         dx = mul[i]*ln[0] + mul[r]*tn[0];
         dy = mul[i]*ln[1] + mul[r]*tn[1];

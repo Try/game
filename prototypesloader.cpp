@@ -366,6 +366,9 @@ void PrototypesLoader::readView( ProtoObject::View &v,
   if( shadowT=="bias" )
     v.shadowType = ProtoObject::View::BiasShadow;
 
+  if( shadowT=="atest" )
+    v.shadowType = ProtoObject::View::AtestShadow;
+
   if( e["size"].IsNumber() ){
     double tmp = e["size"].GetDouble();
     std::fill( v.size, v.size+3, tmp );

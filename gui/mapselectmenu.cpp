@@ -12,11 +12,30 @@
 #include "game/player.h"
 
 #include "gamesettings.h"
+#include "scroolwidget.h"
 
 #include <cmath>
+#include "maingui.h"
+
+#ifndef __ANDROID__
+#include <dirent.h>
+#endif
 
 struct Btn:Button{
   Btn(Resource &res):Button(res){}
+  };
+
+struct MapSelectMenu::CustBtn:Button{
+  CustBtn(Resource &res):Button(res){}
+
+  void emitClick(){
+    Button::emitClick();
+    onClicked( fname );
+    update();
+    }
+
+  Tempest::signal<std::wstring> onClicked;
+  std::wstring fname;
   };
 
 struct MapSelectMenu::ColorBtn: Button{
@@ -116,11 +135,12 @@ struct MapSelectMenu::ColorChoser: AbstractListBox {
   };
 
 struct MapSelectMenu::Options: AbstractListBox {
-  Options(Resource & r):AbstractListBox(r), res(r){}
+  Options(Resource & r):AbstractListBox(r), res(r){
+    }
 
   Tempest::Widget *createDropList(){
     Panel *p = new Panel(res);
-    p->resize(140,150);
+    p->resize(140*MainGui::uiScale,150*MainGui::uiScale);
     p->setLayout( Tempest::Vertical );
     p->setMargin(10);
 
@@ -137,6 +157,7 @@ struct MapSelectMenu::Options: AbstractListBox {
     l->setItemList(d);
     l->setCurrentItem( GameSettings::difficulty );
     l->onItemSelected.bind( onItemSelected );
+    l->icon = res.pixmap("gui/triangle2");
 
     p->layout().add( l );
 
@@ -151,7 +172,8 @@ struct MapSelectMenu::Options: AbstractListBox {
   Resource & res;
   };
 
-MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow), res(res) {
+MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow)
+  : ModalWindow(res, ow), res(res), customList(0) {
   base     = res.ltexHolder.load("data/icons/maps/base.png");
   mPriview = res.ltexHolder.load("data/icons/maps/1.png");
 
@@ -174,6 +196,19 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow), re
   mbox->layout().add(bmenu);
   mbox->layout().add( new Widget() );
 
+  if(0){
+    Button *b = new Button(res);
+    b->setText("standart");
+    b->clicked.bind(this, &MapSelectMenu::setStd);
+    mbox->layout().add( b );
+
+    b = new Button(res);
+    b->setText("custom");
+    b->clicked.bind(this, &MapSelectMenu::setCustom);
+    mbox->layout().add( b );
+  }
+
+  mbox->layout().add( new Widget() );
   Options *optMenu = new Options(res);
   optMenu->clicked.bind(this, &MapSelectMenu::showOptions );
   optMenu->onItemSelected.bind(this, &MapSelectMenu::setDificulty);
@@ -191,6 +226,10 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow), re
   setLayout(Tempest::Vertical);
   layout().add( mbox );
 
+  center = new Widget();
+  center->setLayout( Tempest::Vertical );
+  layout().add( center );
+
   isAnim  = false;
   mouseDx = 0;
   btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/1.png"), L"td1_1.sav"} );
@@ -201,6 +240,9 @@ MapSelectMenu::MapSelectMenu(Resource &res, Widget *ow):ModalWindow(res, ow), re
   btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/6.png"), L"td6.sav"} );
   btns.push_back( Map{ res.ltexHolder.load("data/icons/maps/7.png"), L"td7.sav"} );
 
+  for( size_t i=0; i<btns.size(); ++i )
+    btns[i].path = L"campagin/" + btns[i].path;
+
   timer.timeout.bind(this, &MapSelectMenu::updateT);
   timer.start(10);
   }
@@ -210,11 +252,18 @@ MapSelectMenu::~MapSelectMenu() {
   }
 
 void MapSelectMenu::paintEvent(Tempest::PaintEvent &e) {
-  ModalWindow::paintEvent(e);
+  //ModalWindow::paintEvent(e);
 
   Tempest::Painter p(e);
-
+  p.setColor( Tempest::Color(0,0,0,0.9));
   p.setBlendMode( Tempest::alphaBlend );
+  p.drawRect( size().toRect() );
+  p.setColor( Tempest::Color(1) );
+
+  paintNested(e);
+
+  if( customList )
+    return;
 
   for( size_t i=0; i<btns.size(); ++i ){
     {
@@ -278,6 +327,11 @@ void MapSelectMenu::acceptMap( const std::wstring& str ) {
   deleteLater();
   }
 
+void MapSelectMenu::acceptMapExt(const std::wstring &str) {
+  aceptedExt(str);
+  deleteLater();
+  }
+
 void MapSelectMenu::updateT() {
   if( isAnim ){
     int dv = base.width()*0.75;
@@ -326,4 +380,59 @@ Tempest::Rect MapSelectMenu::leftBtn() {
 
 Tempest::Rect MapSelectMenu::rightBtn() {
   return Tempest::Rect( w()-triangle.w(), h()/2-triangle.h()/2, triangle.w(), triangle.h() );
+  }
+
+void MapSelectMenu::setStd() {
+  delete customList;
+  customList = 0;
+  }
+
+void MapSelectMenu::setCustom() {
+  if( customList )
+    return;
+
+  customList = new Panel(res);
+  customList->setMaximumSize(400, 800);
+  customList->setLayout( Tempest::Vertical );
+  ScroolWidget* items = new ScroolWidget(res);
+
+  auto files = filesInDir( L"save/" );
+  for( size_t i=0; i<files.size(); ++i ){
+    if( files[i]!=L"." &&
+        files[i]!=L".." ){
+      CustBtn *b = new CustBtn(res);
+      b->fname = L"save/"+files[i];
+      b->onClicked.bind( this, &MapSelectMenu::acceptMapExt );
+      b->setText( files[i] );
+
+      items->centralWidget().layout().add( b );
+      }
+    }
+  customList->setMargin(10);
+  customList->layout().add( items );
+
+  center->layout().add( customList );
+  }
+
+std::vector<std::wstring> MapSelectMenu::filesInDir( const std::wstring &dirName ){
+  std::vector<std::wstring> vec;
+  (void)dirName;
+
+#ifndef __ANDROID__
+  _WDIR *dir = _wopendir ( dirName.c_str() );//data->curDir;
+  struct _wdirent *ent;
+
+  //dir = _wopendir ( dirName.c_str() );
+  if (dir != NULL) {
+    /* print all the files and directories within directory */
+    while ((ent = _wreaddir (dir)) != NULL) {
+      vec.push_back( ent->d_name );
+      }
+    _wclosedir (dir);
+    } else {
+    //return EXIT_FAILURE;
+    }
+#endif
+
+  return vec;
   }
